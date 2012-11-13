@@ -1,17 +1,23 @@
-function [bpimg rhist] = hbp_img(T, img, mhist);
+function [bpimg rhist] = hbp_img(T, img, mhist)
 % HBP_IMG
+%
+% [bpimg rhist] = hbp_img(T, img, mhist);
 %
 % Perform un-windowed histogram backprojection on image img using model histogram
 % mhist.
 %
-% 
+% ARGUMENTS:
+%
+% T     - csSegmented object
+% img   - Matrix containing image pixels
+% mhist - Model histogram
 
 % Stefan Wong 2012
 
 	%Get image parameters and set up histogram bins
 	[img_h img_w d] = size(img);
 	bpimg           = zeros(img_h, img_w);
-	imhist          = zeros(1:T.N_BINS);
+	imhist          = zeros(1,T.N_BINS, 'uint8');
 	if(T.FPGA_MODE)
 		bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
 	else
@@ -34,7 +40,7 @@ function [bpimg rhist] = hbp_img(T, img, mhist);
 	for x = 1:img_w
 		for y = 1:img_h
 			idx        = find(bins > img(y,x), 1, 'first');
-			bpimg(j,i) = rhist(idx);
+			bpimg(y,x) = rhist(idx);
 		end
 	end
 

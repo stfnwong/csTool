@@ -11,6 +11,12 @@ function opt = optParser(options)
 	if(~iscell(options))
 		error('Options must be cell array containing name/value pairs');
 	end
+
+	%Create a new options structure
+	opt.nFrames = 1;
+	opt.fNum    = 1;
+	opt.path    = ' ';
+	opt.verbose = 0;
 	
 	for k = 1:length(options)
 		if(ischar(options{k]))
@@ -18,7 +24,7 @@ function opt = optParser(options)
 			if(strncmpi(options{k}, 'nframes', 7))
 				opt.nFrames = varargin{k+1};
 			elseif(strncmpi(options{k}, 'fnum', 4))
-				opt.fnum = varargin{k+1};
+				opt.fNum = varargin{k+1};
 			elseif(strncmpi(options{k}, 'path', 4))
 				if(~ischar(options{k+1}))
 					error('Path must be string');
@@ -28,6 +34,7 @@ function opt = optParser(options)
 			end
 		end
 	end
+
 
 end 	%optParser()
 

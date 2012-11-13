@@ -8,7 +8,7 @@ classdef csSegmenter
 
 % Stefan Wong 2012
 
-	properties (SetAccess = 'private', GetAccess = 'private')
+	properties (SetAccess = private, GetAccess = private)
 		method;
 		mhist;
 		imRegion;	
@@ -23,8 +23,10 @@ classdef csSegmenter
 	end
 
 	% Internal ENUM for method
-	properties (Constant = 'true')
-		HIST_BP = 1;
+	properties (Constant = true)
+		HIST_BP_IMG   = 1;
+		HIST_BP_BLOCK = 2;
+		HIST_BP_ROW   = 3;
 	end
 
 	methods (Access = 'public');
@@ -33,25 +35,56 @@ classdef csSegmenter
 
 			switch nargin
 				case 0
-					
 					%Default histogram properties
 					S.DATA_SZ   = 256;
 					S.BLK_SZ    = 16;
 					S.N_BINS    = 16;
 					S.FPGA_MODE = 0;
+					%Default internals
+					S.method    = 1;
+					S.mhist     = zeros(1, S.N_BINS);
+					S.imRegion  = zeros(2,2);
+                case 1
+                    %Object copy case
+                    if(isa(varargin{1}, 'csSegmenter'))
+                        S = varargin{1};
+                    %elseif(iscell(varargin{1}))
+                    else
+						if(~isa(varargin{1}, 'struct'))
+							error('Expecting options structure');
+						end
+						opts        = varargin{1};
+						S.DATA_SZ   = opts.dataSz;
+						S.BLK_SZ    = opts.blkSz;
+						S.FPGA_MODE = opts.fpgaMode;
+						S.N_BINS    = opts.nBins;
+						S.method    = opts.method;
+						S.mhist     = opts.mhist;
+						S.imRegion  = opts.imRegion;
+                    end
+                otherwise
+                    error('Incorrect arguments to constructor');
+            end
 					
 
 		end 	%csSegmenter CONSTRUCTOR
 
 		% ---- GETTER METHODS ----- %
+		function mhist = getMhist(T)
+			mhist = T.mhist;
+		end	
+	
+		function dataSz = getDataSz(T)
+			dataSz = T.DATA_SZ;
+		end
 	
 		% ---- disp(T) : DISPLAY METHOD
 		function disp(T)
-			tDisplay(T);
+			csSegmenter.segDisplay(T);
 		end 	%disp()
 
-		% --- getMhist() : GENERATE NEW MODEL HISTOGRAM
-		function mhist = getMhist(T, img)
+		% --- genMhist() : GENERATE NEW MODEL HISTOGRAM
+		function T = genMhist(T, img)
 
 			if(isempty(T.imRegion))
 				error('Empty region in T.imRegion');
@@ -62,52 +95,56 @@ classdef csSegmenter
 			ymin  = T.imRegion(2,1);
 			ymax  = T.imRegion(2,2);
 			%Generate histogram bins
-			bin   = T.N_BINS.*(1:T.N_BINS);
-			mhist = zeros(1,T.N_BINS);
+			bins   = T.N_BINS.*(1:T.N_BINS);
+			t_mhist = zeros(1,T.N_BINS);
 			%Find histogram	
 			for y = ymin : ymax
 				for x = xmin : xmax
 					idx = find(bins > img(y,x), 1, 'first');
-					mhist(idx) = mhist(idx) + 1;
+					t_mhist(idx) = t_mhist(idx) + 1;
 				end
 			end
 			%Normalise histogram
-			mhist = mhist ./ max(max(mhist));
+			t_mhist = t_mhist ./ max(max(t_mhist));
 			if(T.FPGA_MODE)
-				mhist = fix(T.DATA_SZ.*mhist);
+				t_mhist = fix(T.DATA_SZ.*t_mhist);
 			end
 			%Set mhist data in segmenter object
-			T.mhist = mhist;
+			T.mhist = t_mhist;
 			
-		end 	%getMhist()
+		end 	%genMhist()
 
 		% ---- INTERFACE METHODS ----- %
 		function frameSegment(T, fh)
 
-			%Sanitise input
-			if(~isa(fh, 'csFrame'))
-				error('Invalid frame handle');
-			end
-			
+			im = rgb2hsv(fh.img);
+			im = fix(T.DATA_SZ .* im(:,:,1));
 			switch T.method
-				case HIST_BP
-					%Perform histogram backprojection	
-				case PCA
+				case T.HIST_BP_IMG
+					[bpimg rhist] = hbp_img(T, im, T.mhist);
+				case T.HIST_BP_BLOCK
+					[bpimg rhist] = hbp_block(T, im, T.mhist);
+				case T.HIST_BP_ROW
+					[bpimg rhist] = hbp_row(T, im, T.mhist);
+				case T.PCA
 					fprintf('Currently not implemented\n');
 				otherwise
 					error('Invalid segmentation method in T.method');
 			end
+			%Write frame data
+			fh.setBpImg(bpimg);
+			fh.setRHist(rhist);
 
 		end 	%frameSegment()
 
 		% ---- SETTER METHODS ----- %
-		function setImRegion(T, imregion)
+		function T = setImRegion(T, imregion)
 		% SETIMREGION
 		%
 		% Set a new image region to generate model histogram from
 	
 			%Perform sanity check in imregion	
-			sz = size(imregion)
+			sz = size(imregion);
 			if(sz(1) ~= 2 || sz(2) ~= 2)
 				error('imregion must be 2x2 matrix');
 			end
@@ -116,10 +153,10 @@ classdef csSegmenter
 		end 	%setImRegion()
 		
 		% ---- setDataSz() : SET WORD SIZE FOR FPGA MODE 
-		function setDataSz(T, size)
+		function T = setDataSz(T, size)
 		
 			if(isdouble(size))
-				error('Data size must be integer');
+				size = uint8(size);
 			end
 			T.DATA_SZ = size;
 		end 	%setDataSize()
@@ -143,7 +180,7 @@ classdef csSegmenter
 		%Options parser
 		sOpt = optParser(options);
 		%display function
-		tDisplay(T);
+		segDisplay(T);
 	end 		%csSegmenter METHODS (Static)
 
 

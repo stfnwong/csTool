@@ -6,11 +6,11 @@ function moments = imgAccum(T, bpimg)
 % Stefan Wong 2012
 
 	if(T.BP_THRESH > 0)
-		[idy idx] = find(bpimg > T.BP_THRESH)
-		M00       = find(bpimg > T.BP_THRESH)
+		[idy idx] = find(bpimg > T.BP_THRESH);
+		M00       = find(bpimg > T.BP_THRESH);
 	else
-		[idy idx = find(bpimg > 0);
-		M00      = find(bpimg > 0);
+		[idy idx] = find(bpimg > 0);
+		M00       = find(bpimg > 0);
 	end
 	%Do sanity check
 	if(isempty(idx) || isempty(idy))

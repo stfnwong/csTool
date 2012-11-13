@@ -28,7 +28,7 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 
 	%Use threshold?
 	if(T.BP_THRESH > 0)
-		[idy idx] = find(bpimg > T.BP_THRESH)
+		[idy idx] = find(bpimg > T.BP_THRESH);
 	else
 		[idy idx] = find(bpimg > 0);
 	end
@@ -72,7 +72,7 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 		axmin  = prevParam(5);
 		st     = sin(theta);
 		ct     = cos(theta);
-		nc     = [ct st ; -st ct] * [xc yc];
+		nc     = [ct st ; -st ct] * [xc yc]';
 		%find a vector that contains pixels within the rotated boundary
 		winvec = find(abs(idx - nc(2)) <  axmaj & abs(idy - nc(1)) < axmin);
 		%Compute moment sums
@@ -84,7 +84,7 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 		M02    = idy(winvec) * idy(winvec);
 	else
 		%Solve 4 linear constraints for bounding box
-
+		fprintf('WARNING: Linear constraints not yet implemented!\n');
 	end
 	%Normalise moment sums
 	xm      = M10 / M00;

@@ -1,8 +1,16 @@
 function [bpimg rhist] = hbp_block(T, img, mhist);
 % HBP_BLOCK
 %
+% [bpimg rhist] = hbp_block(T, img, mhist);
+%
 % Perform block-wise histogram backprojeciton on img using model histogram specified
 % in mhist. 
+% ARGUMENTS:
+% 
+% T     - csSegmenter object
+% img   - Matrix containing image data. This is assumed to be a grayscale hue image
+% mhist - Model histogram 
+%
 
 % TODO: Clean up documentation
 

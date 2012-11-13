@@ -1,20 +1,48 @@
 classdef csTracker 
 % CSTRACKER
-%
+% tracker = csTracker(option_struct);
+% 
 % Object tracker class for camshift tracker. This object performs target tracking 
 % on the image data contained in the frame handle frHandle.
+%
+% PROPERTIES:
+% method      - Tracking method to use. The methods are enumerated as per the below
+%               scheme:
+%          
+%               1 : MOMENT_WINACCUM - Windowed moment accumulation
+%               2 : MOMENT_IMGACCUM - Moment accumulation over entire image space
+%               3 : KERNEL_DENSITY  - Compute full kernel density estimation. This 
+%                                     method is windowed as per MOMENT_WINACCUM 
+% ROT_MATRIX  - Use Rotation matrix to compute window orientation. If this options is
+%               not set, the window boundaries are computed using a set of linear 
+%               constraints. 
+% CORDIC_MODE - Use Cordic to compute window orientation. This option can be combined
+%               with the ROT_MATRIX option, which will cause the rotation matrix to be
+%               computed with a cordic function. TODO: Add option to generated vector
+%               from cordic iteration.
+% BP_THRESH   - Threshold the backprojection stage by some integer. By default this 
+%               value is set to 0 (no threshold applied)
+%
+% METHODS:
+%
+%
 
 % Stefan Wong 2012
 
 	properties (SetAccess = 'private', GetAccess = 'public')
 		method;
+		olfFrameParams;
 		ROT_MATRIX;
 		CORDIC_MODE;
 		BP_THRESH;
+		%Convergence criteria for mean shift
+		FIXED_ITER;
+		EPSILON;
+		MAX_ITER;
 	end
 
 	% METHOD ENUM
-	properties (Constant = 'true')
+	properties (Constant = true)
 		MOMENT_WINACCUM = 1;
 		MOMENT_IMGACCUM = 2;
 		KERNEL_DENSITY  = 3;
@@ -29,17 +57,29 @@ classdef csTracker
 			switch nargin
 				case 0
 					%Default setup
-					method      = 1;
-					ROT_MATRIX  = 0;
-					CORDIC_MODE = 0;
-					BP_THRESH   = 0;
+					T.method      = 1;
+					T.ROT_MATRIX  = 0;
+					T.CORDIC_MODE = 0;
+					T.BP_THRESH   = 0;
+					T.FIXED_ITER  = 1;
+					T.MAX_ITER    = 8;
+					T.EPSILON     = 0;
 				case 1
 					%Check object copy case
 					if(isa(varargin{1}, 'csTracker'))
 						T = varargin{1};
 					else
-						%Pass option structure to optParser
-						ctOpt = csTracker.optParser(varargin{1});
+						if(~isa(varargin{1}, 'struct'))
+							error('Expecting options structure');
+						end
+						opts = varargin{1};
+						T.method      = opts.method;
+						T.ROT_MATRIX  = opts.rotMatrix;
+						T.CORDIC_MODE = opts.cordicMode;
+						T.BP_THRESH   = opts.bpThresh;
+						T.FIXED_ITER  = opts.fixedIter;
+						T.MAX_ITER    = opts.maxIter;
+						T.EPSILON     = opts.epsilon;
 					end
 				otherwise
 					error('Incorrect input arguments');
@@ -48,30 +88,90 @@ classdef csTracker
 		end 	%csTracker CONSTRUCTOR
 
 		% ---- trackFrame() : PERFORM TRACKING ON FRAME
-		function [moments wparam] = trackFrame(T, fh)
+		function trackFrame(T, fh, varargin)
 		% TRACKFRAME
 		% Peform tracking computation on the frame handle contained in fh.
 
 		%TODO: Use varagout for wparam?
 
-			%Sanity check arguments
-			if(~ishandle(fh) || ~isa(fh, 'csFrame'))
-				error('Invalid frame handle');
-			end
+			%Get initial tracking position
+			if(nargin > 2)
+				wpos = varargin{2};
+			else
+				wpos = fh.winInit;
+			end	
 
-			switch T.method
-				case MOMENT_WINACCUM
-					[moments wparam] = winAccum(T, fh.bpimg);
-				case MOMENT_IMGACCUM
-					wparam           = [];
-					moments          = imgAccum(T, fh.bpimg);
-				case KERNEL_DENISTY
-					fprintf('Not yet implemented\n');
-				otherwise
-					error('Invalid tracking type');
+			if(T.FIXED_ITER)
+				%Allocate memory
+				tVec    = zeros(2, T.MAX_ITER);
+				wparam  = cell(1, T.MAX_ITER);
+				moments = cell(1, T.MAX_ITER);
+				for n = 1:T.MAX_ITER
+					switch T.method
+						case T.MOMENT_WINACCUM
+							[moments wparam] = winAccum(T, fh.bpImg, 'wparam', wpos);
+						case T.MOMENT_IMGACCUM
+							wparam           = [];
+							moments          = imgAccum(T, fh.bpImg);
+						case T.KERNEL_DENSITY
+							fprintf('Not yet implemented\n');
+						otherwise
+							error('Invalid tracking type');
+					end
+					%Write out results
+					tVec(:,n)  = [moments(1) ; moments(2)];
+					wparam{n}  = wparam;
+					moments{n} = moments;
+					%Get initial window position for next frame
+					wpos       = wparam;					
+				end
+			else
+				%For now, preallocate twice MAX_ITER for tVec
+				tVec    = zeros(1, T.MAX_ITER * 2);
+				wparam  = cell(1, T.MAX_ITER * 2);
+				moments = cell(1, T.MAX_ITER * 2);
+				%Converge until tVec(n) - tVec(n-1) < T.EPSILON
+				n   = 1;
+				eps = [T.EPSILON + 1; T.EPSILON + 1];
+				while( eps(1) > T.EPSILON && eps(2) > T.EPSILON)
+					switch T.method
+						case T.MOMENT_WINACCUM
+							[moments wparam] = winAccum(T, fh.bpimg, 'wparam', wpos);
+						case T.MOMENT_IMGACCUM
+							wparam           = [];
+							moments          = imgAccum(T, fh.bpimg);
+						case T.KERNEL_DENSITY
+							fprintf('Not yet implemented\n');
+						otherwise
+							error('Invalid tracking type');
+					end
+					%Write out results
+					tVec(:,n)  = [moments(1) ; moments(2)];
+					wparam{n}  = wparam; 
+					moments{n} = moments;
+					%Compute new eps
+					if(n == 1)
+						eps = tVec(:,1);
+					else
+						eps = tVec(:,n) - tVec(:,n-1);
+					end
+					n = n + 1;
+					if(n > T.MAX_ITER)
+						fprintf('WARNING: Failed to converge in %d iters\n', T.MAX_ITER);
+						break;
+					end
+				end
 			end
+				%Write data out to frame handle
+				fh.setTVec(tVec);
+				fh.setWparams(wparam);
+				fh.setMoments(moments);
 		
 		end 	%trackFrame()
+
+		function disp(T)
+			csTracker.tDisplay(T);
+		end
 
 
 
@@ -87,8 +187,7 @@ classdef csTracker
 	end 		%csTracker METHODS (Private)
 
 	methods (Static)
-		% Option parser
-		ctOpt = optParser(options)
+		tDisplay(T);
 	end 		%csTracker METHODS (Static)
 
 end 			%classdef csTracker()
