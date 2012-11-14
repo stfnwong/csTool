@@ -23,6 +23,7 @@ classdef csFrame < handle
 % METHODS:
 %
 % ---- SETTER METHODS ----
+% setBpSum(T, bpsum)       - Set Backprojection image sum to 'bpsum'
 % setBpImg(T, bpimg)       - Set Backprojection image to 'bpimg'
 % setImg(T, img)           - Set Image to 'img'
 % setFilename(T, fname)    - Set filename to 'fname'
@@ -115,6 +116,10 @@ classdef csFrame < handle
 		end 	%csFrame() CONSTRUCTOR
 		
 		% ---- SETTER METHODS ---- %
+		function setBpSum(T, bpsum)
+			T.bpSum = bpsum;
+		end
+
 		function setBpImg(T, bpimg)
 			T.bpImg = bpimg;
 		end 	%setBpImg();
@@ -145,7 +150,7 @@ classdef csFrame < handle
 		end 	%setWParams()
 
 		function setInitParams(T, initParams)
-			T.initParams = initParams;
+			T.winInit = initParams;
 		end
 
 		function setMoments(T, moments)
@@ -181,14 +186,20 @@ classdef csFrame < handle
 			else
 				fprintf('Backprojection image not set\n');
 			end
-            wsz = size(cf.winParams);
+			params = cf.winParams{end}; 
+            wsz    = size(params);
 			if(wsz(2) > 1)
 				fprintf('TRACKING WINDOW PARAMETERS:\n');
-				fprintf('Window centered at %d,%d (x,y)\n', cf.winParams(1), cf.winParams(2));
-				fprintf('Orientation: %f radians\n', cf.winParams(3));
-				fprintf('Bounding region:\n');
-				fprintf('X axis : %d\n', cf.winParams(4) * 2);
-				fprintf('Y axis : %d\n', cf.winParams(5) * 2);
+				fprintf('xc    : %d\n', params(1));
+				fprintf('yc    : %d\n', params(2));
+				fprintf('theta : %d\n', params(3));
+				fprintf('axmaj : %d\n', params(4));
+				fprintf('axmin : %d\n', params(5));
+				%fprintf('Window centered at %d,%d (x,y)\n', params(1), params(2));
+				%fprintf('Orientation: %f radians\n', params(3));
+				%fprintf('Bounding region:\n');
+				%fprintf('X axis : %d\n', params(4) * 2);
+				%fprintf('Y axis : %d\n', params(5) * 2);
 			else
 				fprintf('Window parameters not set\n');
 			end

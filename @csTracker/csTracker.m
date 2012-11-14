@@ -31,7 +31,8 @@ classdef csTracker
 
 	properties (SetAccess = 'private', GetAccess = 'public')
 		method;
-		olfFrameParams;
+		verbose;
+		fParams;			%old frame parameters
 		ROT_MATRIX;
 		CORDIC_MODE;
 		BP_THRESH;
@@ -46,6 +47,10 @@ classdef csTracker
 		MOMENT_WINACCUM = 1;
 		MOMENT_IMGACCUM = 2;
 		KERNEL_DENSITY  = 3;
+		methodStr = {'Windowed moment accumulation', ...
+			         'Un-windowed moment accumulation', ...
+					 'Kernel Density Estimation' };
+		pStr = 'csTracker :';
 	end
 
 	methods (Access = 'public')
@@ -58,6 +63,7 @@ classdef csTracker
 				case 0
 					%Default setup
 					T.method      = 1;
+					T.verbose     = 0;
 					T.ROT_MATRIX  = 0;
 					T.CORDIC_MODE = 0;
 					T.BP_THRESH   = 0;
@@ -74,6 +80,7 @@ classdef csTracker
 						end
 						opts = varargin{1};
 						T.method      = opts.method;
+						T.verbose     = opts.verbose;
 						T.ROT_MATRIX  = opts.rotMatrix;
 						T.CORDIC_MODE = opts.cordicMode;
 						T.BP_THRESH   = opts.bpThresh;
@@ -86,6 +93,22 @@ classdef csTracker
 			end
 		
 		end 	%csTracker CONSTRUCTOR
+		
+		% ---- setPrevParams() : STORE PARAMETERS FOR SUBSEQUENT FRAME
+		function Tout = setPrevParams(T, params)
+			%SETPREVPARAMS
+			% Tout = setPrevParams(T, params) sets the initial window
+			% parameters for the next frame. Typically, the final window
+			% position from the current frame is used
+			
+			%Do basic arg check
+			if(length(params) ~= 5)
+				error('Incorrect number of parameters');
+			end
+			Tout         = T;
+			Tout.fParams = params;
+			return;
+		end
 
 		% ---- trackFrame() : PERFORM TRACKING ON FRAME
 		function trackFrame(T, fh, varargin)
@@ -98,14 +121,15 @@ classdef csTracker
 			if(nargin > 2)
 				wpos = varargin{2};
 			else
-				wpos = fh.winInit;
+				%wpos = fh.winInit;
+				wpos = T.fParams;
 			end	
 
 			if(T.FIXED_ITER)
 				%Allocate memory
-				tVec    = zeros(2, T.MAX_ITER);
-				wparam  = cell(1, T.MAX_ITER);
-				moments = cell(1, T.MAX_ITER);
+				tVec     = zeros(2, T.MAX_ITER);
+				fwparam  = cell(1, T.MAX_ITER);
+				fmoments = cell(1, T.MAX_ITER);
 				for n = 1:T.MAX_ITER
 					switch T.method
 						case T.MOMENT_WINACCUM
@@ -119,17 +143,22 @@ classdef csTracker
 							error('Invalid tracking type');
 					end
 					%Write out results
-					tVec(:,n)  = [moments(1) ; moments(2)];
-					wparam{n}  = wparam;
-					moments{n} = moments;
+					tVec(:,n)   = [moments(1) ; moments(2)];
+					fwparam{n}   = wparam;
+					fmoments{n} = moments;
 					%Get initial window position for next frame
-					wpos       = wparam;					
+					wpos        = wparam;		
+					%DEBUG
+					fprintf('wparam for iter %d\n', n);
+					wparam
+					fprintf('moments for iter %d\n', n);
+					moments
 				end
 			else
 				%For now, preallocate twice MAX_ITER for tVec
-				tVec    = zeros(1, T.MAX_ITER * 2);
-				wparam  = cell(1, T.MAX_ITER * 2);
-				moments = cell(1, T.MAX_ITER * 2);
+				tVec     = zeros(1, T.MAX_ITER * 2);
+				fwparam  = cell(1, T.MAX_ITER * 2);
+				fmoments = cell(1, T.MAX_ITER * 2);
 				%Converge until tVec(n) - tVec(n-1) < T.EPSILON
 				n   = 1;
 				eps = [T.EPSILON + 1; T.EPSILON + 1];
@@ -146,9 +175,9 @@ classdef csTracker
 							error('Invalid tracking type');
 					end
 					%Write out results
-					tVec(:,n)  = [moments(1) ; moments(2)];
-					wparam{n}  = wparam; 
-					moments{n} = moments;
+					tVec(:,n)   = [moments(1) ; moments(2)];
+					fwparam{n}  = wparam; 
+					fmoments{n} = moments;
 					%Compute new eps
 					if(n == 1)
 						eps = tVec(:,1);
@@ -164,8 +193,19 @@ classdef csTracker
 			end
 				%Write data out to frame handle
 				fh.setTVec(tVec);
-				fh.setWparams(wparam);
-				fh.setMoments(moments);
+				fh.setWparams(fwparam);
+				fh.setMoments(fmoments);
+				%DEBUG
+				fprintf('disp(fh):\n');
+				disp(fh);
+% 				fprintf('fh.winParams...\n');
+% 				for k = 1:length(fh.winParams)
+% 					w = fh.winParams{k};
+% 					for n = 1:length(w)
+% 						fprintf('winParams{%d} element %d : %d\n', k, n, w(n));
+% 					end
+% 				end
+% 				fprintf('END\n');
 		
 		end 	%trackFrame()
 

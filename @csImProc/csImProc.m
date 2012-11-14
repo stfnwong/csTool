@@ -25,19 +25,19 @@ classdef csImProc
 	
 	methods 
 		% ---- CONSTRUCTOR ---- %
-		function I = csImProc(varargin)
+		function P = csImProc(varargin)
 
 			switch nargin
 				case 0
-					I.trackType  = 1;
-					I.segType    = 1;
-					I.iSegmenter = csSegmenter();
-					I.iTracker   = csTracker();
-					I.verbose    = 0;
+					P.trackType  = 1;
+					P.segType    = 1;
+					P.iSegmenter = csSegmenter();
+					P.iTracker   = csTracker();
+					P.verbose    = 0;
 				case 1
 					%Object copy case
 					if(isa(varargin{1}, 'csImProc'))
-						I = varargin{1};
+						P = varargin{1};
 					%elseif(iscell(varargin{1}))
 						%Options cell, send to parser
 						%ipOpt = csImProc.optParser(varargin{1});
@@ -46,26 +46,26 @@ classdef csImProc
 							error('Expecting options structure');
 						end
 						opts        = varargin{1};
-						I.trackType = opts.trackType;
-						I.segType   = opts.segType;
-						I.verbose   = opts.verbose;
+						P.trackType = opts.trackType;
+						P.segType   = opts.segType;
+						P.verbose   = opts.verbose;
 						%Check for segmenter options
 						if(isa(opts.segOpts, 'struct'))
 							if(opts.verbose)
 								fprintf('Parsing segmenter options...\n');
 							end
-							I.iSegmenter = csSegmenter(opts.segOpts);
+							P.iSegmenter = csSegmenter(opts.segOpts);
 						else
-							I.iSegmenter = csSegmenter();
+							P.iSegmenter = csSegmenter();
 						end
 						%Check for tracker options
 						if(isa(opts.trackOpts, 'struct'))
 							if(opts.verbose)
 								fprintf('Parsing tracker options...\n');
 							end
-							I.iTracker   = csTracker(opts.trackOpts);
+							P.iTracker   = csTracker(opts.trackOpts);
 						else
-							I.iTracker   = csTracker();
+							P.iTracker   = csTracker();
 						end
 					end
 				otherwise
@@ -78,7 +78,7 @@ classdef csImProc
 		% These method wrap the corresponding function in either the
 		% segmenter or tracker objects
 		
-		function T = initProc(T, varargin)
+		function Pout = initProc(P, varargin)
 			%INITPROC
 			%
 			% Perform processing initialisations for csImProc object
@@ -100,14 +100,22 @@ classdef csImProc
 			if(~exist('imregion', 'var'))
 				error('No image region specified');
 			end
+			Pout = P;
 			im = rgb2hsv(fh.img);
-			im = fix(T.iSegmenter.getDataSz().*im(:,:,1));
-			T.iSegmenter = T.iSegmenter.setImRegion(imregion);
-			T.iSegmenter = T.iSegmenter.genMhist(im);
-			
+			im = fix(P.iSegmenter.getDataSz().*im(:,:,1));
+			Pout.iSegmenter = P.iSegmenter.setImRegion(imregion);
+			Pout.iSegmenter = P.iSegmenter.genMhist(im);
+			return;
 		end
 		
-		function frameProc(T, fh)
+		% ---- setFParams() : EXPOSE iTracker.fParams
+		function Pout = setFParams(P, params)
+			P.iTracker = P.iTracker.setPrevParams(params);
+			Pout = P;
+			%Pout = P.iTracker.setPrevParams(params);
+		end
+		
+		function Pout = procFrame(P, fh)
 			%FRAMEPROC
 			%
 			% Perform segmentation and tracking on a single frame
@@ -116,29 +124,37 @@ classdef csImProc
 			if(~isa(fh, 'csFrame'))
 				error('Invalid frame handle fh');
 			end
-			T.iSegmenter.frameSegment(fh);
-			T.iTracker.trackFrame(fh);
+			Pout = P;
+			Pout.iSegmenter.segFrame(fh);
+			Pout.iTracker.trackFrame(fh);
+			%DEBUG
+			fprintf('fh.winParams{end}\n');
+			disp(fh.winParams{end});
+			Pout.iTracker = P.iTracker.setPrevParams(fh.winParams{end});
 		end
 
-		function T = setVerbose(T)
-			T.verbose = 1;
+		function P = setVerbose(P)
+			P.verbose = 1;
 		end
 		
-		function mhist = getCurMhist(T)
-			mhist = T.iSegmenter.getMhist();
+		function mhist = getCurMhist(P)
+			mhist = P.iSegmenter.getMhist();
+		end
+		
+		function params = getTrackerFParams(P)
+			params = P.iTracker.fParams;
 		end
 
-
 		% ---- Display function ---- %
-		function disp(I)
-			csImProc.dispImProc(I);
+		function disp(P)
+			csImProc.dispImProc(P);
 		end
 	end 		%csImProc METHODS (Public)
 	
 	% ---- METHODS IN FILES ---- %
 	methods (Static)
 		%Display function
-		dispImProc(I);
+		dispImProc(P);
 		%Option parser
 		ipOpt = optParser(options);
 	end 		%csImProc METHODS (Static)

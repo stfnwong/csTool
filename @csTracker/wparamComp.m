@@ -6,7 +6,10 @@ function wparam = wparamComp(T, moments)
 % will give erroneous results
 
 % Stefan Wong 2012
-
+	
+	if(length(moments) ~= 5)
+		error('Incorrect size in parameter [moments]');
+	end
 	%Pull moments out of array
 	xm  = moments(1);
 	ym  = moments(2);

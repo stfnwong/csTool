@@ -14,7 +14,9 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 			if(ischar(varargin{k}))
 				%Check which option this is
 				if(strncmpi(varargin{k}, 'wparam', 6))
-					prevParam = varargin{k+1};
+					wparam = varargin{k+1};
+					%DEBUG
+					fprintf('got wparam with length %d\n', length(wparam));
 				end
 			end
 		end		
@@ -59,29 +61,31 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 		wparam  = zeros(1,5);
 		return;
 	end
+	
 	%Find edge of constraining rectangle.
 	%Depending on options set in csTracker, we either apply a rotation matrix to the
 	%parameters, or we solve a set of 4 linear constraints and take pixels that fall
 	%within the intersection of the lines
 	if(T.ROT_MATRIX)
 		%use rotation matrix
-		xc     = prevParam(1);
-		yc     = prevParam(2);
-		theta  = prevParam(3) * (pi/180);
-		axmaj  = prevParam(4);
-		axmin  = prevParam(5);
+		xc     = wparam(1);
+		yc     = wparam(2);
+		theta  = wparam(3) * (pi/180);
+		axmaj  = wparam(4);
+		axmin  = wparam(5);
 		st     = sin(theta);
 		ct     = cos(theta);
 		nc     = [ct st ; -st ct] * [xc yc]';
 		%find a vector that contains pixels within the rotated boundary
-		winvec = find(abs(idx - nc(2)) <  axmaj & abs(idy - nc(1)) < axmin);
+		winvec = find(abs(idx - nc(2)) <=  axmaj & abs(idy - nc(1)) <= axmin);
 		%Compute moment sums
 		M00    = length(winvec);
-		M10    = sum(idx(winvec));
-		M01    = sum(idy(winvec));
-		M11    = idx(winvec) * idy(winvec);
-		M20    = idx(winvec) * idx(winvec);
-		M02    = idy(winvec) * idy(winvec);
+		M10    = sum(sum(idx(winvec)));
+		M01    = sum(sum(idy(winvec)));
+		M11    = sum(idx(winvec) .* idy(winvec));
+		M20    = sum(idx(winvec) .* idx(winvec));
+		M02    = sum(idy(winvec) .* idy(winvec));
+
 	else
 		%Solve 4 linear constraints for bounding box
 		fprintf('WARNING: Linear constraints not yet implemented!\n');
@@ -95,5 +99,6 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 	moments = [xm ym xym xxm yym];
 	%Compute window parameters from moments
 	wparam  = wparamComp(T, moments);
+
 
 end 	%winAccum()

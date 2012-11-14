@@ -64,9 +64,7 @@ classdef csSegmenter
                     end
                 otherwise
                     error('Incorrect arguments to constructor');
-            end
-					
-
+			end
 		end 	%csSegmenter CONSTRUCTOR
 
 		% ---- GETTER METHODS ----- %
@@ -84,7 +82,7 @@ classdef csSegmenter
 		end 	%disp()
 
 		% --- genMhist() : GENERATE NEW MODEL HISTOGRAM
-		function T = genMhist(T, img)
+		function Tout = genMhist(T, img)
 
 			if(isempty(T.imRegion))
 				error('Empty region in T.imRegion');
@@ -110,13 +108,17 @@ classdef csSegmenter
 				t_mhist = fix(T.DATA_SZ.*t_mhist);
 			end
 			%Set mhist data in segmenter object
-			T.mhist = t_mhist;
+			Tout       = T;
+			Tout.mhist = t_mhist;
+			return;
 			
 		end 	%genMhist()
 
 		% ---- INTERFACE METHODS ----- %
-		function frameSegment(T, fh)
-
+		function segFrame(T, fh)
+			% segFrame(T, fh)
+			%
+			% perform specified segmentation on frame with handle fh
 			im = rgb2hsv(fh.img);
 			im = fix(T.DATA_SZ .* im(:,:,1));
 			switch T.method
@@ -132,6 +134,8 @@ classdef csSegmenter
 					error('Invalid segmentation method in T.method');
 			end
 			%Write frame data
+			bpsum = sum(sum(bpimg));
+			fh.setBpSum(bpsum);
 			fh.setBpImg(bpimg);
 			fh.setRHist(rhist);
 

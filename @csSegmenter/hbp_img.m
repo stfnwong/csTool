@@ -17,7 +17,7 @@ function [bpimg rhist] = hbp_img(T, img, mhist)
 	%Get image parameters and set up histogram bins
 	[img_h img_w d] = size(img);
 	bpimg           = zeros(img_h, img_w);
-	imhist          = zeros(1,T.N_BINS, 'uint8');
+	imhist          = zeros(1,T.N_BINS);
 	if(T.FPGA_MODE)
 		bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
 	else

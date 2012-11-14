@@ -18,9 +18,9 @@ function moments = imgAccum(T, bpimg)
 	end
 	M10     = sum(idx);
 	M01     = sum(idy);
-	M11     = sum(idx * idy);
-	M20     = sum(idx * idx);
-	M02     = sum(idy * idy);
+	M11     = sum(idx .* idy);
+	M20     = sum(idx .* idx);
+	M02     = sum(idy .* idy);
 	%Nomalise
 	xm      = M10 / M00;
 	ym      = M01 / M00;
