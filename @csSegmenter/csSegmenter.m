@@ -1,4 +1,4 @@
-classdef csSegmenter
+classdef csSegmenter < handle
 % CSSEGMENTER
 %
 % Segmentation object for camshift tracker. This object performs target segmentation
@@ -75,6 +75,10 @@ classdef csSegmenter
 		function dataSz = getDataSz(T)
 			dataSz = T.DATA_SZ;
 		end
+
+        function region = getImRegion(T)
+            region = T.imRegion;
+        end
 	
 		% ---- disp(T) : DISPLAY METHOD
 		function disp(T)
@@ -82,7 +86,7 @@ classdef csSegmenter
 		end 	%disp()
 
 		% --- genMhist() : GENERATE NEW MODEL HISTOGRAM
-		function Tout = genMhist(T, img)
+		function genMhist(T, img)
 
 			if(isempty(T.imRegion))
 				error('Empty region in T.imRegion');
@@ -108,9 +112,7 @@ classdef csSegmenter
 				t_mhist = fix(T.DATA_SZ.*t_mhist);
 			end
 			%Set mhist data in segmenter object
-			Tout       = T;
-			Tout.mhist = t_mhist;
-			return;
+			T.mhist = t_mhist;
 			
 		end 	%genMhist()
 
@@ -142,7 +144,7 @@ classdef csSegmenter
 		end 	%frameSegment()
 
 		% ---- SETTER METHODS ----- %
-		function T = setImRegion(T, imregion)
+		function setImRegion(T, imregion)
 		% SETIMREGION
 		%
 		% Set a new image region to generate model histogram from
@@ -157,7 +159,7 @@ classdef csSegmenter
 		end 	%setImRegion()
 		
 		% ---- setDataSz() : SET WORD SIZE FOR FPGA MODE 
-		function T = setDataSz(T, size)
+		function setDataSz(T, size)
 		
 			if(isdouble(size))
 				size = uint8(size);

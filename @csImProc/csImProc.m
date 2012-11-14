@@ -100,23 +100,24 @@ classdef csImProc
 			if(~exist('imregion', 'var'))
 				error('No image region specified');
 			end
-			Pout = P;
 			im = rgb2hsv(fh.img);
 			im = fix(P.iSegmenter.getDataSz().*im(:,:,1));
-			Pout.iSegmenter = P.iSegmenter.setImRegion(imregion);
-			Pout.iSegmenter = P.iSegmenter.genMhist(im);
+			P.iSegmenter.setImRegion(imregion);
+			P.iSegmenter.genMhist(im);
+			Pout = P;
 			return;
 		end
 		
 		% ---- setFParams() : EXPOSE iTracker.fParams
 		function Pout = setFParams(P, params)
-			P.iTracker = P.iTracker.setPrevParams(params);
+			P.iTracker.setParams(params);
 			Pout = P;
 			%Pout = P.iTracker.setPrevParams(params);
 		end
 		
+        % ---- procFrame () : PROCESS A FRAME
 		function Pout = procFrame(P, fh)
-			%FRAMEPROC
+			%PROCFRAME
 			%
 			% Perform segmentation and tracking on a single frame
 			
@@ -124,17 +125,20 @@ classdef csImProc
 			if(~isa(fh, 'csFrame'))
 				error('Invalid frame handle fh');
 			end
-			Pout = P;
-			Pout.iSegmenter.segFrame(fh);
-			Pout.iTracker.trackFrame(fh);
-			%DEBUG
-			fprintf('fh.winParams{end}\n');
-			disp(fh.winParams{end});
-			Pout.iTracker = P.iTracker.setPrevParams(fh.winParams{end});
+			P.iSegmenter.segFrame(fh);
+			P.iTracker.trackFrame(fh);
+            Pout = P;
 		end
 
-		function P = setVerbose(P)
+		function Pout = setVerbose(P)
 			P.verbose = 1;
+            Pout = P;
+		end
+		
+		% ---- GETTER METHODS ---- %
+
+		function region = getImRegion(P)
+			region = P.iSegmenter.getImRegion();
 		end
 		
 		function mhist = getCurMhist(P)

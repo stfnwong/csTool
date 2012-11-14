@@ -1,4 +1,4 @@
-classdef csTracker 
+classdef csTracker < handle
 % CSTRACKER
 % tracker = csTracker(option_struct);
 % 
@@ -95,7 +95,7 @@ classdef csTracker
 		end 	%csTracker CONSTRUCTOR
 		
 		% ---- setPrevParams() : STORE PARAMETERS FOR SUBSEQUENT FRAME
-		function Tout = setPrevParams(T, params)
+		function setParams(T, params)
 			%SETPREVPARAMS
 			% Tout = setPrevParams(T, params) sets the initial window
 			% parameters for the next frame. Typically, the final window
@@ -105,9 +105,7 @@ classdef csTracker
 			if(length(params) ~= 5)
 				error('Incorrect number of parameters');
 			end
-			Tout         = T;
-			Tout.fParams = params;
-			return;
+			T.fParams = params;
 		end
 
 		% ---- trackFrame() : PERFORM TRACKING ON FRAME
@@ -148,11 +146,6 @@ classdef csTracker
 					fmoments{n} = moments;
 					%Get initial window position for next frame
 					wpos        = wparam;		
-					%DEBUG
-					fprintf('wparam for iter %d\n', n);
-					wparam
-					fprintf('moments for iter %d\n', n);
-					moments
 				end
 			else
 				%For now, preallocate twice MAX_ITER for tVec
@@ -195,18 +188,8 @@ classdef csTracker
 				fh.setTVec(tVec);
 				fh.setWparams(fwparam);
 				fh.setMoments(fmoments);
-				%DEBUG
-				fprintf('disp(fh):\n');
-				disp(fh);
-% 				fprintf('fh.winParams...\n');
-% 				for k = 1:length(fh.winParams)
-% 					w = fh.winParams{k};
-% 					for n = 1:length(w)
-% 						fprintf('winParams{%d} element %d : %d\n', k, n, w(n));
-% 					end
-% 				end
-% 				fprintf('END\n');
-		
+				%Write internal frame parameters
+				T.fParams = fwparam{end};
 		end 	%trackFrame()
 
 		function disp(T)
