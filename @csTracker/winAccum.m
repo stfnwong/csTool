@@ -9,6 +9,9 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 
 % Stefan Wong 2012
 
+	%INTERNAL DEBUGGING CONSTANT
+	DEBUG = 1;
+
 	if(nargin > 1)
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
@@ -74,12 +77,31 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 		axmaj  = wparam(4);
 		axmin  = wparam(5);
 		%TODO: Problem here with rotation matrix
-		st     = sin(theta);
-		ct     = cos(theta);
-		nc     = [ct st ; -st ct] * [xc yc]';
-		nc     = fix(nc)
-		%find a vector that contains pixels within the rotated boundary
-		winvec = find(abs(idx - nc(1)) <=  axmaj & abs(idy - nc(2)) <= axmin);
+		if(DEBUG)
+			fprintf('winAccum() forced debug mode...\n');
+			%get bounding region limits and perform sanity check
+			xlim               = [(xc - axmaj) (xc + axmaj)];
+			ylim               = [(yc - axmin) (yc + axmin)];
+			xlim(xlim > img_w) = img_w;
+			ylim(ylim > img_h) = img_h;
+			xlim(xlim < 0)     = 0;
+			ylim(ylim < 0)     = 0;
+			xlim, ylim
+			%xbound             = find(idx > xlim(1) & idx < xlim(2));
+			%ybound             = find(idy > ylim(1) & idy < ylim(2)); 
+			winvec             = find((idx > xlim(1) & idx < xlim(2)) & ...
+                                      (idy > ylim(1) & idy < ylim(2)));
+		else
+			st     = sin(theta);
+			ct     = cos(theta);
+			nc     = [ct st ; -st ct] * [xc yc]';
+			nc     = fix(nc)
+			%find a vector that contains pixels within the rotated boundary
+			winvec = find(abs(idx - nc(1)) <=  axmaj & abs(idy - nc(2)) <= axmin);
+		end
+		if(length(winvec) < 1)
+			error('No pixels fell into window');
+		end
 		%Compute moment sums
 		M00    = length(winvec);
 		M10    = sum(sum(idx(winvec)));
@@ -98,9 +120,16 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 	xym     = M11 / M00;
 	xxm     = M20 / M00;
 	yym     = M02 / M00;
-	moments = [xm ym xym xxm yym];
+	moments = fix([xm ym xym xxm yym])
 	%Compute window parameters from moments
 	wparam  = wparamComp(T, moments);
+	%do sanity check on wparam
+	if(wparam(4) > img_w)
+		fprintf('WARNING: wparam(4) > %d (%f)\n', img_w, wparam(4));
+	end
+	if(wparam(5) > img_h)
+		fprintf('WARNIING: wparam(5) > %d (%f(\n', img_h, wparam(5));
+	end
 
 
 end 	%winAccum()

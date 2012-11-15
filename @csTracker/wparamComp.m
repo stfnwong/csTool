@@ -18,7 +18,7 @@ function wparam = wparamComp(T, moments)
 	yym = moments(5);
 
 	%Compute covariance terms
-	u11      = xym - (xm * xm);
+	u11      = xym - (xm * ym);
 	u20      = xxm - (xm * xm);
 	u02      = yym - (ym * ym);
 	%Compute eigenvector termsa

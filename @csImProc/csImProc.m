@@ -84,6 +84,7 @@ classdef csImProc
 			% Perform processing initialisations for csImProc object
 			
 			%Check arguments
+            setDefault = 0;
 			for k = 1:length(varargin)
 				if(isa(varargin{k}, 'csFrame'))
 					fh = varargin{k};
@@ -106,7 +107,7 @@ classdef csImProc
 			im = fix(P.iSegmenter.getDataSz().*im(:,:,1));
 			P.iSegmenter.setImRegion(imregion);
 			P.iSegmenter.genMhist(im);
-            if(exist('setDefault', 'var'))
+            if(setDefault)
                 xc     = fix((imregion(1,2) - imregion(1,1))/2);
                 yc     = fix((imregion(2,2) - imregion(2,1))/2);
                 theta  = 0;
