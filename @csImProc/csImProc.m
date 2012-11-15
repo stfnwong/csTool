@@ -90,6 +90,8 @@ classdef csImProc
 				elseif(ischar(varargin{k}))
 					if(strncmpi(varargin{k}, 'imregion', 8))
 						imregion = varargin{k+1};
+                    elseif(strncmpi(varargin{k}, 'setdef', 6))
+                        setDefault = 1;
 					end
 				end
 			end
@@ -104,6 +106,15 @@ classdef csImProc
 			im = fix(P.iSegmenter.getDataSz().*im(:,:,1));
 			P.iSegmenter.setImRegion(imregion);
 			P.iSegmenter.genMhist(im);
+            if(exist('setDefault', 'var'))
+                xc     = fix((imregion(1,2) - imregion(1,1))/2);
+                yc     = fix((imregion(2,2) - imregion(2,1))/2);
+                theta  = 0;
+                axmaj  = imregion(1,2) - imregion(1,1);
+                axmin  = imregion(2,2) - imregion(2,1);
+                wparam = [xc yc theta axmaj axmin];
+                P.iTracker.setParams(wparam);
+            end
 			Pout = P;
 			return;
 		end
@@ -114,6 +125,33 @@ classdef csImProc
 			Pout = P;
 			%Pout = P.iTracker.setPrevParams(params);
 		end
+
+        % ---- DEBUG: This function exists ONLY to test the 
+        % ---- persistance of handle classes in the csImProc object
+        % ---- and should NOT appear in the final code
+        function Pout = procLoop(P, fh)
+
+            %get an array of frame handles and store them in fh
+            if(length(fh) < 2)
+                error('No point in this test for single frame');
+            end
+            wb = waitbar(0, 'Processing frame data...');
+            nFrames = length(fh);
+            for n = 1:nFrames;
+                %DEBUG
+                fprintf('======== FRAME %d ========\n', n);
+                fprintf('P.iTracker.fParams at start of frame\n');
+                disp(P.iTracker.fParams);
+                P.iSegmenter.segFrame(fh(n));
+                P.iTracker.trackFrame(fh(n));
+                %DEBUG
+                fprintf('P.iTracker.fParams after trackFrame()\n');
+                disp(P.iTracker.fParams);
+                waitbar(n/nFrames, wb, sprintf('Processed frame %d/%d...', n, nFrames));
+            end
+            close(wb);
+            Pout = P;
+        end
 		
         % ---- procFrame () : PROCESS A FRAME
 		function Pout = procFrame(P, fh)

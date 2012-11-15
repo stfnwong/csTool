@@ -47,10 +47,10 @@ classdef csTracker < handle
 		MOMENT_WINACCUM = 1;
 		MOMENT_IMGACCUM = 2;
 		KERNEL_DENSITY  = 3;
-		methodStr = {'Windowed moment accumulation', ...
-			         'Un-windowed moment accumulation', ...
-					 'Kernel Density Estimation' };
-		pStr = 'csTracker :';
+		methodStr       = {'Windowed moment accumulation', ...
+			               'Un-windowed moment accumulation', ...
+					       'Kernel Density Estimation' };
+		pStr            = 'csTracker :';
 	end
 
 	methods (Access = 'public')
@@ -112,8 +112,6 @@ classdef csTracker < handle
 		function trackFrame(T, fh, varargin)
 		% TRACKFRAME
 		% Peform tracking computation on the frame handle contained in fh.
-
-		%TODO: Use varagout for wparam?
 
 			%Get initial tracking position
 			if(nargin > 2)
@@ -195,8 +193,6 @@ classdef csTracker < handle
 		function disp(T)
 			csTracker.tDisplay(T);
 		end
-
-
 
 	end 		%csTracker METHODS (Public)
 

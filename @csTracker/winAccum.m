@@ -73,11 +73,13 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 		theta  = wparam(3) * (pi/180);
 		axmaj  = wparam(4);
 		axmin  = wparam(5);
+		%TODO: Problem here with rotation matrix
 		st     = sin(theta);
 		ct     = cos(theta);
 		nc     = [ct st ; -st ct] * [xc yc]';
+		nc     = fix(nc)
 		%find a vector that contains pixels within the rotated boundary
-		winvec = find(abs(idx - nc(2)) <=  axmaj & abs(idy - nc(1)) <= axmin);
+		winvec = find(abs(idx - nc(1)) <=  axmaj & abs(idy - nc(2)) <= axmin);
 		%Compute moment sums
 		M00    = length(winvec);
 		M10    = sum(sum(idx(winvec)));
