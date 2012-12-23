@@ -54,6 +54,10 @@ classdef csImProc
 							if(opts.verbose)
 								fprintf('Parsing segmenter options...\n');
 							end
+							if(P.verbose)
+								fprintf('csImProc.iSegmenter options:\n');
+								disp(opts.segOpts);
+							end
 							P.iSegmenter = csSegmenter(opts.segOpts);
 						else
 							P.iSegmenter = csSegmenter();
@@ -62,6 +66,10 @@ classdef csImProc
 						if(isa(opts.trackOpts, 'struct'))
 							if(opts.verbose)
 								fprintf('Parsing tracker options...\n');
+							end
+							if(P.verbose)
+								fprintf('csImProc.iTracker options:\n');
+								disp(opts.trackOpts);
 							end
 							P.iTracker   = csTracker(opts.trackOpts);
 						else
@@ -158,14 +166,23 @@ classdef csImProc
 		function Pout = procFrame(P, fh)
 			%PROCFRAME
 			%
-			% Perform segmentation and tracking on a single frame
+			% Perform segmentation and tracking for the frame in fh. If fh
+			% is vector of frame handles, procFrame automatically processes
+			% each element of fh in a loop.
 			
 			%Sanity check inputs
 			if(~isa(fh, 'csFrame'))
 				error('Invalid frame handle fh');
 			end
-			P.iSegmenter.segFrame(fh);
-			P.iTracker.trackFrame(fh);
+			if(length(fh) > 1)
+				for k = 1:length(fh)
+					P.iSegmenter.segFrame(fh(k));
+					P.iTracker.trackFrame(fh(k));
+				end
+			else
+				P.iSegmenter.segFrame(fh);
+				P.iTracker.trackFrame(fh);
+			end
             Pout = P;
 		end
 
@@ -200,6 +217,8 @@ classdef csImProc
 		dispImProc(P);
 		%Option parser
 		ipOpt = optParser(options);
+		spvec = buf_spEncode(bpimg, varargin);
+		bpvec = buf_spDecode(spvec, varargin);
 	end 		%csImProc METHODS (Static)
 
 

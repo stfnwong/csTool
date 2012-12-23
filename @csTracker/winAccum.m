@@ -100,7 +100,10 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 			winvec = find(abs(idx - nc(1)) <=  axmaj & abs(idy - nc(2)) <= axmin);
 		end
 		if(length(winvec) < 1)
-			error('No pixels fell into window');
+			fprintf('WARNING: No pixels fell within window\n');
+			moments = zeros(1,5);
+			wparam  = zeros(1,5);
+			return;
 		end
 		%Compute moment sums
 		M00    = length(winvec);
@@ -115,12 +118,12 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 		fprintf('WARNING: Linear constraints not yet implemented!\n');
 	end
 	%Normalise moment sums
-	xm      = M10 / M00;
-	ym      = M01 / M00;
-	xym     = M11 / M00;
-	xxm     = M20 / M00;
-	yym     = M02 / M00;
-	moments = fix([xm ym xym xxm yym])
+	%xm      = M10 / M00;
+	%ym      = M01 / M00;
+	%xym     = M11 / M00;
+	%xxm     = M20 / M00;
+	%yym     = M02 / M00;
+	moments = [M00 M10 M01 M11 M20 M02];
 	%Compute window parameters from moments
 	wparam  = wparamComp(T, moments);
 	%do sanity check on wparam

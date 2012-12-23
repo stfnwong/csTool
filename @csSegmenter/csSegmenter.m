@@ -17,6 +17,7 @@ classdef csSegmenter < handle
 		DATA_SZ;
 		BLK_SZ;
 		FPGA_MODE;
+		GEN_BP_VEC;
 		%global settings
 		mGenVec;			%Methods generate vectors
 		verbose;
@@ -36,14 +37,15 @@ classdef csSegmenter < handle
 			switch nargin
 				case 0
 					%Default histogram properties
-					S.DATA_SZ   = 256;
-					S.BLK_SZ    = 16;
-					S.N_BINS    = 16;
-					S.FPGA_MODE = 0;
+					S.DATA_SZ    = 256;
+					S.BLK_SZ     = 16;
+					S.N_BINS     = 16;
+					S.FPGA_MODE  = 0;
+					S.GEN_BP_VEC = 0;
 					%Default internals
-					S.method    = 1;
-					S.mhist     = zeros(1, S.N_BINS);
-					S.imRegion  = zeros(2,2);
+					S.method     = 1;
+					S.mhist      = zeros(1, S.N_BINS);
+					S.imRegion   = zeros(2,2);
                 case 1
                     %Object copy case
                     if(isa(varargin{1}, 'csSegmenter'))
@@ -53,14 +55,15 @@ classdef csSegmenter < handle
 						if(~isa(varargin{1}, 'struct'))
 							error('Expecting options structure');
 						end
-						opts        = varargin{1};
-						S.DATA_SZ   = opts.dataSz;
-						S.BLK_SZ    = opts.blkSz;
-						S.FPGA_MODE = opts.fpgaMode;
-						S.N_BINS    = opts.nBins;
-						S.method    = opts.method;
-						S.mhist     = opts.mhist;
-						S.imRegion  = opts.imRegion;
+						opts         = varargin{1};
+						S.DATA_SZ    = opts.dataSz;
+						S.BLK_SZ     = opts.blkSz;
+						S.FPGA_MODE  = opts.fpgaMode;
+						S.GEN_BP_VEC = opts.gen_bpvec;
+						S.N_BINS     = opts.nBins;
+						S.method     = opts.method;
+						S.mhist      = opts.mhist;
+						S.imRegion   = opts.imRegion;
                     end
                 otherwise
                     error('Incorrect arguments to constructor');
@@ -137,9 +140,12 @@ classdef csSegmenter < handle
 			end
 			%Write frame data
 			bpsum = sum(sum(bpimg));
-			fh.setBpSum(bpsum);
-			fh.setBpImg(bpimg);
-			fh.setRHist(rhist);
+            set(fh, 'bpSum', bpsum);
+            set(fh, 'bpImg', bpimg);
+            set(fh, 'rhist', rhist);
+			%fh.setBpSum(bpsum);
+			%fh.setBpImg(bpimg);
+			%fh.setRHist(rhist);
 
 		end 	%frameSegment()
 

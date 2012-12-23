@@ -1,4 +1,4 @@
-classdef csFrame < handle
+classdef csFrame < hgsetget
 % csFrame 
 % 
 % Handle class for frame objects in camshift tracker. 
@@ -36,9 +36,10 @@ classdef csFrame < handle
 
 % Stefan Wong 2012
 
-	properties (SetAccess = private, GetAccess = public)
+	properties (SetAccess = public, GetAccess = public)
 		img;		%original image data
 		bpImg;		%backprojection image
+		bpVec;		%backprojection vector
 		bpSum;		%number of non-background pixels in bpImg
 		rhist;		%ratio histogram for this frame
 		winParams;	%window parameters for tracking
@@ -60,6 +61,7 @@ classdef csFrame < handle
 					%Set default
 						cf.img       = [];
 						cf.bpImg     = [];
+						cf.bpVec     = [];
 						cf.bpSum     = [];
 						cf.rhist     = zeros(1,16, 'uint8');
 						cf.winParams = cell(1,1);
@@ -77,6 +79,7 @@ classdef csFrame < handle
 						cf.img       = opts.img;
 						cf.bpImg     = opts.bpImg;
 						cf.bpSum     = opts.bpSum;
+						cf.bpVec     = opts.bpVec;
 						cf.rhist     = opts.rhist;
 						cf.winInit   = opts.winInit;
 						cf.nIters    = opts.nIters;
@@ -101,6 +104,7 @@ classdef csFrame < handle
 						%Not enough info to set params, so init to empty
 						cf.img       = [];
 						cf.bpImg     = [];
+						cf.bpVec     = [];
 						cf.bpSum     = [];
 						cf.rhist     = zeros(1,16);
 						cf.winParams = cell(1,1);
@@ -116,19 +120,23 @@ classdef csFrame < handle
 		end 	%csFrame() CONSTRUCTOR
 		
 		% ---- SETTER METHODS ---- %
-		function setBpSum(T, bpsum)
+		function set.bpSum(T, bpsum)
 			T.bpSum = bpsum;
 		end
 
-		function setBpImg(T, bpimg)
+		function set.bpImg(T, bpimg)
 			T.bpImg = bpimg;
 		end 	%setBpImg();
+
+		function set.bpVec(T, bpvec)
+			T.bpVec = bpvec;
+		end 	%setbpVec
 	
-		function setImg(T, img)
+		function set.img(T, img)
 			T.img = img;
 		end 	%setImg()
 
-		function setFilename(T, fname)
+		function set.filename(T, fname)
 			%Sanity check arguments
 			if(~ischar(fname))
 				error('Filename must be string');
@@ -136,11 +144,11 @@ classdef csFrame < handle
 			T.filename = fname;
 		end 	%setFilename()
 
-		function setRHist(T, rhist)
+		function set.rhist(T, rhist)
 			T.rhist = rhist;
 		end 	%setRHist()
 
-		function setWparams(T, wparams)
+		function set.winParams(T, wparams)
 			%Sanity check inputs
 			if(~iscell(wparams))
 				error('Window parameters must be in cell array');
@@ -149,42 +157,45 @@ classdef csFrame < handle
 			T.nIters    = length(wparams);
 		end 	%setWParams()
 
-		function setInitParams(T, initParams)
+		function set.winInit(T, initParams)
 			T.winInit = initParams;
 		end
 
-		function setMoments(T, moments)
+		function set.moments(T, moments)
 			if(~iscell(moments))
 				error('Moment sums must be in cell array');
 			end
 			T.moments = moments;
 		end
 
-		function setTVec(T, vec)
+		function set.tVec(T, vec)
 			T.tVec = vec;
 		end 	%setTVec()
 
 		% ---- DISPLAY : disp(csFrame)
 		function disp(cf)
-		% disp
+		% DISP()
 		%
-		% Format frame contents for console display
+		% Format handle contents for display in console
 			
-			if(strncmpi(cf.filename, ' ', 1))
+			%if(strncmpi(cf.filename, ' ', 1))
+			if(strncmpi(cf.filename, ' '))
 				fprintf('Image data not read yet\n');
 			else
-				fprintf('Image: %s\n', cf.filename);
+				fprintf('Image : %s\n', cf.filename);
 			end
 			if(~isempty(cf.img))
 				sz = size(cf.img);
-				fprintf('Image dimensions: %d x %d (h x w)\n', sz(1), sz(2));
+				fprintf('img   : %d x %d (h x w)\n', sz(1), sz(2));
 			else
 				fprintf('No image data assigned\n');
 			end
 			if(~isempty(cf.bpImg))
-				fprintf('%d pixels in backprojection image\n', cf.bpSum);
+				sz = size(cf.bpImg);
+				fprintf('bpImg : %d x %d (h x w)\n', sz(1), sz(2));
+				fprintf('bpSum : %d\n', cf.bpSum);
 			else
-				fprintf('Backprojection image not set\n');
+				fprintf('bpImg : Not set\n');
 			end
 			params = cf.winParams{end}; 
             wsz    = size(params);

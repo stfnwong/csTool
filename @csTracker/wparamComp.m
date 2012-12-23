@@ -1,21 +1,40 @@
-function wparam = wparamComp(T, moments)
+function wparam = wparamComp(T, moments, varargin)
 % WPARAMCOMP
 %
 % Compute window parameters from moment sums.
 % Moment sums are assumed to be normalised. If moments are not normalised this method
 % will give erroneous results
 
+%TODO: Clean up normalisation requirements
+
 % Stefan Wong 2012
-	
-	if(length(moments) ~= 5)
-		error('Incorrect size in parameter [moments]');
+	IS_NORM = 0;
+	if(nargin > 2)
+		if(strncmpi(varargin{1}, 'norm', 4))
+			IS_NORM = 1;
+		end
 	end
-	%Pull moments out of array
-	xm  = moments(1);
-	ym  = moments(2);
-	xym = moments(3);
-	xxm = moments(4);
-	yym = moments(5);
+	if(IS_NORM)
+		if(length(moments) ~= 5)
+			error('Incorrect size in parameter [moments]');
+		end
+		%Pull moments out of array
+		xm  = moments(1);
+		ym  = moments(2);
+		xym = moments(3);
+		xxm = moments(4);
+		yym = moments(5);
+	else
+		if(length(moments) ~= 6)
+			error('Incorrect size in parameter [moments]');
+		end
+		xm  = moments(2) / moments(1);
+		ym  = moments(3) / moments(1);
+		xym = moments(4) / moments(1);
+		xxm = moments(5) / moments(1);
+		yym = moments(6) / moments(1);
+	end
+
 
 	%Compute covariance terms
 	u11      = xym - (xm * ym);
@@ -35,6 +54,6 @@ function wparam = wparamComp(T, moments)
 		theta = (180/pi) * 0.5 * atan((2*u11)/mu2_diff);
 	end
 	%Format output
-	wparam = [xm ym theta axmaj axmin];
+	wparam = [xm ym theta sqrt(axmaj) sqrt(axmin)];
 
 end 	%wparamComp()

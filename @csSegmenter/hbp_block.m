@@ -1,7 +1,7 @@
-function [bpimg rhist] = hbp_block(T, img, mhist);
+function [bpdata rhist] = hbp_block(T, img, mhist);
 % HBP_BLOCK
 %
-% [bpimg rhist] = hbp_block(T, img, mhist);
+% [bpdata rhist] = hbp_block(T, img, mhist);
 %
 % Perform block-wise histogram backprojeciton on img using model histogram specified
 % in mhist. 
@@ -10,7 +10,11 @@ function [bpimg rhist] = hbp_block(T, img, mhist);
 % T     - csSegmenter object
 % img   - Matrix containing image data. This is assumed to be a grayscale hue image
 % mhist - Model histogram 
-%
+% 
+% If the option GEN_BP_VEC is set in the csSegmenter object, bpdata will be returned
+% as a 2xN matrix of backprojected data points. Otherwise, bpdata will be a HxW matrix
+% of binary values, where H and W are the height and width of the input image.
+
 
 % TODO: Clean up documentation
 
@@ -74,6 +78,12 @@ function [bpimg rhist] = hbp_block(T, img, mhist);
 			bpimg(y_pix, x_pix) = bpblk;
 		end
 	end
+	%Perform vector conversion, if required
+	if(T.GEN_BP_VEC)
+		bpdata = bpimg2vec(bpimg);
+	else
+		bpdata = bpimg;
+	end
 	%Compute overall ratio histogram
 	rhist = zeros(1, T.N_BINS);
 	for x = 1:BLOCKS_X
@@ -85,5 +95,6 @@ function [bpimg rhist] = hbp_block(T, img, mhist);
 	if(T.FPGA_MODE)
 		rhist = rhist .* T.DATA_SZ;
 	end
+	
 	
 end 	%hbp_block()

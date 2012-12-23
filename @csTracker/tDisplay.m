@@ -8,6 +8,7 @@ function tDisplay(T)
 		error('Invalid paramter');
 	end
 
+	fprintf('\n-------- csTracker --------\n');
 	%Format fields for display
 	if(T.verbose)
 		fprintf('csTracker verbose mode on\n');
@@ -29,13 +30,17 @@ function tDisplay(T)
 	%BP_THRESH
 	fprintf('csTracker.BP_THRESH   = %d\n', T.BP_THRESH);
 	%Window parameters
-	fprintf('csTracker.fParams :\n');
-	fprintf('-------------------\n');
-	fprintf('xc    : %d\n', T.fParams(1));
-	fprintf('yc    : %d\n', T.fParams(2));
-	fprintf('theta : %d\n', T.fParams(3));
-	fprintf('axmaj : %d\n', T.fParams(4));
-	fprintf('axmin : %d\n', T.fParams(5));		
-	fprintf('-------------------\n');
+	if(~isempty(T.fParams))
+		fprintf('csTracker.fParams :\n');
+		fprintf('-------------------\n');
+		fprintf('xc    : %d\n', T.fParams(1));
+		fprintf('yc    : %d\n', T.fParams(2));
+		fprintf('theta : %d\n', T.fParams(3));
+		fprintf('axmaj : %d\n', T.fParams(4));
+		fprintf('axmin : %d\n', T.fParams(5));		
+		fprintf('-------------------\n');
+	else
+		fprintf('csTracker.fParams : Unset\n');
+	end
 
 end 	%tDisplay()

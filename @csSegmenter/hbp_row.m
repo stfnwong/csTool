@@ -1,7 +1,21 @@
-function [bpimg rhist] = hbp_row(T, img, mhist)
+function [bpdata rhist] = hbp_row(T, img, mhist)
 % HBP_ROW
 %
+% [bpdata rhist] = hbp_row(T, img, mhist)
+%
 % Perform histogram backprojection on each row of the image
+% 
+% ARGUMENTS:
+%
+% T     - csSegmenter object
+% img   - Matrix containing image data. This is assumed to be a grayscale hue image
+% mhist - Model histogram
+%
+% If the option GEN_BP_VEC is set in the csSegmenter object, bpdata will be returned
+% as a 2xN matrix of backprojected data points. Otherwise, bpdata will be a HxW matrix
+% of binary values, where H and W are the height and width of the input image
+%
+% ARGUMENTS:
 % TODO: Finish documentation
 
 % Stefan Wong 2012
@@ -31,6 +45,13 @@ function [bpimg rhist] = hbp_row(T, img, mhist)
 			end
 		end
 		%Backproject this row
+	end
+
+	%Convert to bpvec, if required
+	if(GEN_BP_VEC)
+		bpdata = bpimg2vec(bpimg);
+	else
+		bpdata = bpimg;
 	end
 		
 

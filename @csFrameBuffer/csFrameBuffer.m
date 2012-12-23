@@ -16,6 +16,8 @@ classdef csFrameBuffer
 %
 % METHODS
 %
+% See also csFrame, csSegmenter, csTracker
+% 
 
 % Stefan Wong 2012
 
@@ -30,7 +32,11 @@ classdef csFrameBuffer
 		path;			%Path to frame data
 		ext;			%File extension for frame data
 		fNum;			%Which frame to start reading from 
-		verbose;		%Be verbose
+		%verbose;		%Be verbose
+	end
+
+	properties (SetAccess = 'private', GetAccess = 'public')
+		verbose;		%Be verbose (show debug messages)
 	end
 
 	% ---- PUBLIC METHODS ---- %
@@ -39,6 +45,11 @@ classdef csFrameBuffer
 		function fb = csFrameBuffer(varargin)
 		% CSFRAMEBUFFER
 		% Create new csFrameBuffer object
+		%
+		% USAGE:
+		% F = csFrameBuffer();
+		% F = csFrameBuffer(opts_struct);
+		%
 		% TODO: Document fully
 
 			switch nargin
@@ -96,14 +107,32 @@ classdef csFrameBuffer
 
 		% -------- GETTER FUNCTIONS -------- %
 
-		% ---- getFrameHandle() : OBTAIN FRAME HANDLE ---- %
-		function fh = getFrameHandle(this, N)
-			fh = this.frameBuf(N);
+		function fh = getFrameHandle(F, N)
+		% GETFRAMEHANDLE
+		% USAGE : fh = getFrameHandle(N)
+		% 
+		% Obtain the handle to frame N. If N is a scalar, getFrameHandle returns a 
+		% single handle to the Nth frame in the buffer. If N is a vector of intergers,
+		% getFrameHandle returns an array containing handles for the corresponding 
+		% frames
+		%
+			if(length(N) > 1)
+				if(N(end) > F.nFrames)
+					error('N out of bounds (N=%d, bufsize=%d)', N, F.nFrames);
+				end
+				for k = length(N):-1:1
+					fh(k) = F.frameBuf(N(k));
+				end
+			else
+				if(N > F.nFrames)
+					error('N out of bounds (N=%d, bufsize=%d)', N, F.nFrames);
+				end
+				fh = F.frameBuf(N);
+			end
 		end 	%getFrameHandle()
 		
-		% ---- getNumFrames() : GET TOTAL NUMBER OF FRAMES STORED IN BUFFER
-		function n = getNumFrames(this)
-			n = this.nFrames;
+		function n = getNumFrames(F)
+			n = F.Frames;
 		end 	%getNumFrames()
 
 		% -------- SETTER FUNCTIONS -------- %
@@ -140,8 +169,7 @@ classdef csFrameBuffer
 		function [FB status] = loadFrameData(FB, varargin)
 		% LOADFRAMEDATA
 		%
-		% Read image files specified at path into frameBuf for segmentation and 
-		% tracking. 
+		% Load filenames specified by FB.path and FB.fNum into frame buffer
 		
 			%If varargin is a string, take this as being a path to data and 
 			%use in place of FB.path
@@ -170,14 +198,10 @@ classdef csFrameBuffer
 			fnum = FB.fNum;
 			for k = 1:FB.nFrames
 				fn  = sprintf('%s_%03d.%s', fpath, fnum, FB.ext);
-				img = imread(fn, FB.ext);
-				FB.frameBuf(k).setFilename(fn);		
-				FB.frameBuf(k).setImg(img);
-				%setFilename(FB.frameBuf(k), fn);
-				%setImg(FB.frameBuf(k), img);
-				%if(FB.verbose)
-					fprintf('Read frame %3d (%s)\n', k, fn);
-				%end
+                set(FB.frameBuf(k), 'filename', fn);
+				if(FB.verbose)
+					fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);
+				end
 				fnum = fnum + 1;
 			end
 			if(FB.verbose)
@@ -211,6 +235,28 @@ classdef csFrameBuffer
 				end
 			end
 		end
+
+		function clearImData(F, varargin)
+		% CLEARIMDATA
+		% Set any image data in the buffer equal to the empty matrix. Pass a integer
+		% N as an optional argument to clear only the data for the Nth frame, or a 
+		% vector of integers to clear image data for frames N(1) to N(end). 
+		
+			if(nargin > 1)
+				N = varargin{1};
+				if(length(N) > 1)
+					for k = N(1):N(end)
+						set(F.frameBuf(k), 'img', []);
+					end
+				else
+					set(F.frameBuf(k), 'img', []);
+				end
+			else
+				for k = 1:F.nFrames
+					set(F.frameBuf(k), 'img', []);
+				end
+			end
+		end 	%clearImData()
 
 		% -------- DISPLAY --------
 		function disp(fb)

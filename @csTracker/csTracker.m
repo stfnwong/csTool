@@ -64,6 +64,7 @@ classdef csTracker < handle
 					%Default setup
 					T.method      = 1;
 					T.verbose     = 0;
+					T.fParams     = [];
 					T.ROT_MATRIX  = 0;
 					T.CORDIC_MODE = 0;
 					T.BP_THRESH   = 0;
@@ -81,6 +82,7 @@ classdef csTracker < handle
 						opts = varargin{1};
 						T.method      = opts.method;
 						T.verbose     = opts.verbose;
+						T.fParams     = opts.fparams;
 						T.ROT_MATRIX  = opts.rotMatrix;
 						T.CORDIC_MODE = opts.cordicMode;
 						T.BP_THRESH   = opts.bpThresh;
@@ -183,9 +185,12 @@ classdef csTracker < handle
 				end
 			end
 				%Write data out to frame handle
-				fh.setTVec(tVec);
-				fh.setWparams(fwparam);
-				fh.setMoments(fmoments);
+                set(fh, 'tVec',      tVec);
+                set(fh, 'winParams', fwparam);
+                set(fh, 'moments',   fmoments);
+				%fh.setTVec(tVec);
+				%fh.setWparams(fwparam);
+				%fh.setMoments(fmoments);
 				%Write internal frame parameters
 				T.fParams = fwparam{end};
 		end 	%trackFrame()

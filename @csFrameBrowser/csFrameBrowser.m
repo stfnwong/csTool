@@ -34,14 +34,21 @@ classdef csFrameBrowser
 		wparams;        %Window parameters for current frame
 		%Internal plotting options
 		PLOT_GAUSSIAN;
-		verbose;
+		STRICT_AXES_TEST;
 	end
 	
 	%Axes handles for plotting
+	%TODO: Test if using figure handles and extracting the children for
+	%plotting is better than using the axes handles directly. This is to
+	%address the mysterious self un-setting preview axes handle
 	properties (SetAccess = 'private', GetAccess = 'public')
+% 		figPreview;
+% 		figBuffer;
+% 		figHist;
 		axPreview;
 		axBuffer;
 		axHist;
+		verbose;	%Be verbose (print debug messages)
 	end
 
 	methods (Access = 'public')
@@ -77,73 +84,129 @@ classdef csFrameBrowser
 						B.filename      = ' ';
 						B.frameParams   = zeros(1,3);
 						B.wparams       = zeros(1,3);
-						%Extract axes handles
-						B.axPreview     = opts.axPreview;
-						B.axBuffer      = opts.axBuffer;
-						B.axHist        = opts.axHist;
+						if(ishandle(opts.axPreview))
+							B.axPreview    = opts.axPreview;
+						else
+							fprintf('WARNING: Invalid handle in opts.axPreview\n');
+							B.axPreview     = 0;
+						end
+						if(ishandle(opts.axBuffer))
+							B.axBuffer      = opts.axBuffer;
+						else
+							fprintf('WARNING: Invalid handle in opts.axBuffer\n');
+							B.axBuffer      = 0;
+						end
+						if(ishandle(opts.axHist))
+							B.axHist        = opts.axHist;
+						else
+							fprintf('WARNING: Invalid handle in opts.axHist\n');
+							B.axHist        = 0;
+						end
 					end
 			end
 		
 		end 	%csFrameBroweser CONSTRUCTOR
 
 		% ---- INTERFACE METHODS ---- %
-		function plotFrame(T, fh)
+		function plotFrame(B, fh)
 			if(~isa(fh, 'csFrame'))
 				error('Invalid frame handle');
 			end
-            genFramePlot(T, fh);
+            drawFramePlot(B, fh);
 		end 	%plotFrame()
 		
-		function plotPreview(T, fh, varargin)
+		function plotPreview(B, fh, varargin)
 			if(~isa(fh, 'csFrame'))
 				error('Invalid frame handle');
 			end
 			if(nargin > 2)
 				if(ischar(varargin{1}))
 					if(strncmpi(varargin{1}, 'bpimg', 5))
-						genPrevPlot(T, fh, 'bpimg');
+						drawPrevPlot(B, fh, 1);
 					end
 				end
 			else
-				genPrevPlot(T,fh);
+				drawPrevPlot(B,fh);
 			end
 		end
 		
-		function plotHist(T, fh)
+		function plotHist(B, fh)
 			if(~isa(fh, 'csFrame'))
 				error('Invalid frame handle');
 			end
-			genHistPlot(T, fh);
+			drawHistPlot(B, fh);
 		end
+		
+		% -- Methods for printing data in console
+		function printTrackData(fh, varargin)
+			if(~isa(fh, 'csFrame'))
+				error('Invalid frame handle');
+			end
+			if(length(fh) > 1)
+				%Print data for each frame handle in turn
+			else
+				winParams = get(fh, 'winParams');
+				fprintf('xc    : %f\n', winParams(1));
+				fprintf('yc    : %f\n', winParams(2));
+				fprintf('theta : %f\n', winParams(3));
+				fprintf('axmaj : %f\n', winParams(4));
+				fprintf('axmin : %f\n', winParams(5));
+			end
+		end		%printTrackData()
 
 		% ---- GETTER METHODS ---- %
-		function wparams = getCurWparams(T)
-			wparams = T.wparams;
+		function wparams = getCurWparams(B)
+			wparams = B.wparams;
 		end 	%getCurWparams()
 
-		function fstats = getCurFParams(T)
-			fstats = T.frameParams;
+		function fstats = getCurFParams(B)
+			fstats = B.frameParams;
 		end 	%getCurFStats()
 		
 		% ---- SETTER METHODS ---- %
-		function setGaussPlot(T, gp)
+		% Set axes handles
+		function Bout = setAxPreview(B, axPreview)
+			if(~ishandle(axPreview))
+				error('Invalid handle axPreview');
+			end
+			Bout = B;
+			Bout.axPreview = axPreview;
+		end		%setAxPreview()
+		
+		function Bout = setAxBuffer(B, axBuffer)
+			if(~ishandle(axBuffer))
+				error('Invalid handle axBuffer');
+			end
+			Bout = B;
+			Bout.axBuffer = axBuffer;
+		end
+		
+		function Bout = setAxHist(B, axHist)
+			if(~ishandle(axHist))
+				error('Invalid handle axHist');
+			end
+			Bout = B;
+			Bout.axHist = axHist;
+		end
+		
+		function setGaussPlot(B, gp)
 			if(gp ~= 1 || gp ~= 0)
 				error('Set value out of range');
 			end
-			T.GAUSS_PLOT = gp;
+			B.GAUSS_PLOT = gp;
 		end 	%setGaussPlot
 		
-		% ---- PRINT FRAME PARAMS ---- %
-		function printParams(T, fh)
-			%sanity check
-			if(~isa(fh, 'csFrame'))
-				error('Invalid frame handle');
-			end
-		end
+% 		% ---- PRINT FRAME PARAMS ---- %
+% 		function printParams(T, fh)
+% 			%sanity check
+% 			if(~isa(fh, 'csFrame'))
+% 				error('Invalid frame handle');
+% 			end
+% 		end
 
         % ---- DISPLAY FUNCTION ---- %
         function disp(T)
-            csFrameBrower.fbrsDisplay(T);
+            csFrameBrowser.fbrsDisplay(T);
         end
 		
 

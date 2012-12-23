@@ -1,7 +1,7 @@
-function [bpimg rhist] = hbp_img(T, img, mhist)
+function [bpdata rhist] = hbp_img(T, img, mhist)
 % HBP_IMG
 %
-% [bpimg rhist] = hbp_img(T, img, mhist);
+% [bpdata rhist] = hbp_img(T, img, mhist);
 %
 % Perform un-windowed histogram backprojection on image img using model histogram
 % mhist.
@@ -11,6 +11,10 @@ function [bpimg rhist] = hbp_img(T, img, mhist)
 % T     - csSegmented object
 % img   - Matrix containing image pixels
 % mhist - Model histogram
+%
+% If the option GEN_BP_VEC is set in the csSegmenter object, bpdata will be returned
+% as a 2xN matrix of backprojected data points. Otherwise bpdata will be a HxW matrix
+% of binary values, where H and W are the height and width of a the input image
 
 % Stefan Wong 2012
 
@@ -42,6 +46,11 @@ function [bpimg rhist] = hbp_img(T, img, mhist)
 			idx        = find(bins > img(y,x), 1, 'first');
 			bpimg(y,x) = rhist(idx);
 		end
+	end
+	if(T.GEN_BP_VEC)
+		bpdata = bpimg2vec(bpimg);
+	else
+		bpdata = bpimg;
 	end
 
 end 		%hbp_img()
