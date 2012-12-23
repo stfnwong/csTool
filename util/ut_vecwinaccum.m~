@@ -1,0 +1,28 @@
+function [moments wparam] = ut_vecwinaccum(bpvec, winregion)
+% UT_VECWINACCUM
+%
+% [moments wparam] = ut_vecwinaccumm(bpvec, winregion)
+%
+% Utility function to perform basic windowed accumulation. This function is
+% inteded to unit test behaviour within csTool and is not reccomended for
+% production use.
+%
+% ARGUMENTS:
+% bpvec     - Backprojection vector 
+% winregion - 2x2 matrix containing the limits of a bounding box in the
+%             form:
+%             [xmin xmax ; ymin ymax]
+%
+%
+
+% Stefan Wong 2012
+
+	%argcheck
+	if(size(winregion) ~= [2 2])
+		error('Incorrect matrix size in winregion (must be 2x2)');
+	end
+	
+	xmin = winregion(1,1);
+	xmax = winregion
+
+end		%ut_vecwinaccum()

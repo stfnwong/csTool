@@ -1,0 +1,7 @@
+CAMSHIFT TOOL
+Version 0.5b
+
+New version of Camshift Testing Tool. (This version should be put into version control
+and the previous version in module_test/iverilog/hbp/cst deprecated
+
+Stefan Wong 2012

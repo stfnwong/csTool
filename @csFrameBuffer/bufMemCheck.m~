@@ -1,0 +1,16 @@
+function status = bufMemCheck(nFrames, path, varargin)
+% BUFMEMCHECK
+%
+% Estimate size of frame buffer object
+
+% Stefan Wong 2012
+
+	%Check arguments
+	if(~ischar(path))
+		error('Path must be string');
+	end
+	if(nargin > 2)
+	
+
+
+end 
