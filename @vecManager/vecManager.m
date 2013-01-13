@@ -10,12 +10,17 @@ classdef vecManager
 	properties (SetAccess = 'private', GetAccess = 'private')
 		wfilename;
 		rfilename;
+		destDir;
 		vecdata;
 		vfParams;		%verification parameters structure
 		bpvecFmt;		%character code for backprojection vector format
 		% DATA PARAMETERS
 		errorTol;		%integer error tolerance in data (ie: +/- errorTol)
 		dataSz;			%size of data word in FPGA
+	end 	
+
+	properties (SetAcess = 'private', GetAccess = 'public')
+		verbose;
 	end
 
 	methods (Access = 'public')
@@ -45,120 +50,193 @@ classdef vecManager
 
 		% ---- SETTER METHODS ----%
 		% ---- setRLoc : SET READ LOCATION
-		function setRLoc(V, rloc)
+		function VM = setRLoc(V, rloc)
 			if(~ischar(rloc))
 				error('Read location must be path to file (string)');
 			end
 			V.rfilename = rloc;
+			VM = V;
 		end 	%setRLoc()
 
 		% ---- setWLoc() : SET WRITE LOCATION
-		function setWLoc(V, wloc)
+		function VM = setWLoc(V, wloc)
 			if(~ischar(wloc))
 				error('Write location must be path to file (string)');
 			end
 			V.wfilename = wloc;
+			VM = V;
 		end 	%setWLoc()
 
-		% ---- PROCESSING METHODS ---- %
-		function vec = genBpImgVec(V, bpimg, varargin)
-		% GENBPIMGVEC
-		% Generate backprojection image test data from bpimg. This method takes the 
-		% data in bpImg and transforms it into a format suitable for importing into a
-		% testbench for module verification. The data in bpimg is expected to be a 
-		% matrix of dimension H x W, where H and W are the height and width of the 
-		% backprojection image respectively (if a vector is used during testing, call
-		% bpvec2img() on it first). Formatting arguments can be optionally specified.
-		%
-		% ARGUMENTS:
-		% V - vecManager object
-		% bpImg - Backprojection image to generate test data from 
-		%
-		% OPTIONAL FORMATTING ARGUMENTS
-		% Pass the string 'fmt' followed by a string containing one of the following 
-		% format codes 
-		%
-		% - '16c', '8c', '4c' : 16, 8, or 4 element column vectors
-		% - '16r', '8r', '4r' : 16, 8, or 4 element row vectors
-		% - 'scalar'          : Single pixel per element 
-		% 
-		% If no format code is specified, genBpImgVec() uses the character code found
-		% in V.bpvecFmt
-		%
-
-		% Stefan Wong 2012
-
-			%Parse arguments
-			if(nargin > 1)
-				if(ischar(varargin{1}))
-					if(strncmpi(varargin{1}, 'fmt', 3))
-						fmt = varargin{2};
-					end
-				else
-					error('Expecting type char in varargin{1}');
-				end
-			else
-				fmt = V.bpvecFmt;
+		% ---- setDestDir() ; SET DESTINATION DIRECTORY
+		function VM = setDestDir(V, dir)
+			if(~ischar(dir))
+				error('Destination Directory must be path to file (string)');
 			end
+			V.destDir = dir;
+			VM = V;
+		end 	%setDestDir()
 
+		% ---- PROCESSING METHODS ---- %
+		% These methods provide one level of indirection to the methods in files.
+		% Each file method operates on a single file handle at a time, and so the
+		% responsibility to stripe out the file handles is placed with the methods
+		% here 
+		
+		function [type val] = parseFmt(V, fmt)
+		% PARSEFMT
+		% [type val] = parseFmt(fmt)
+		%
+		% Parse a formatting code for vector generation
+		% Formatting codes are of the form :
+		%
+		% '16c', '8c', '4c' for column vectors
+		% '16r', '8r', '4r' for row vectors
+		%
+		%  For scalar data, enter an empty or invalid formatting code
 			switch(fmt)
 				case '16c'
 					type = 'col';
 					val  = 16;
-				case '8c' 
+				case '8c'
 					type = 'col';
 					val  = 8;
 				case '4c'
 					type = 'col';
 					val  = 4;
-				case '16r' 
+				case '16r'
 					type = 'row';
 					val  = 16;
 				case '8r'
-					type = 'row';
+					type = 'row'
 					val  = 8;
 				case '4r'
-					type = 'row';
+					type = 'row
 					val  = 4;
-				case 'scalar'
-					type = 'scalar';
 				otherwise
-					error('Invalid formatting code');
+					type = 'scalar'
+					val  = 0;	
+			end
+		end 	%parseFmt()
+
+		function writeRGBVec(V, fh, varargin)
+			%sanity check
+			if(~isa(fh, 'csFrame'))
+				error('Invalid frame handle fh'n);
 			end
 			
-			switch(type)
-				case 'row'
-					rdim = w/val; 
-					vec  = cell(h, rdim);
-					for y = 1:h
-						for x = 1:rdim
-							vec{y,x} = data(y, x:x+val)
-						end
-					end
-				case 'col'
-					cdim = h/val;
-					vec  = cell(rdim, w);
-					for x = 1:w
-						for y = 1:cdim;
-							vec{y,x} = data(y:y+val, x);
-						end
-					end
-				case 'scalar'
-					vec = data;
-				otherwise
-					%probably never get here, but just in case
-					error('Invalid direction');
+			%Parse optional arguments
+			if(nargin > 2)
+				[opts.type opts.val] = parseFmt(V, varargin{1});
+			else
+				opts.type = 'scalar';
+				opts.val  = 0;
+			end	
+			
+			if(length(fh) > 1)
+				for k = 1:length(fh)
+					opts.num = k;
+					%Change the trailing number in the filename	
+					vec = genRGBRaster(V, fh(k), opts);
+				end	
+			else
+				vec = genRGBRaster(V, fh, opts);
 			end
-				
+		end 	%writeRGBVec()
 
-		end 	%genBpImgVec() 
+		function writeHSVVec(V, fh, varargin)
+			%sanity check
+			if(~isa(fh, 'csFrame'))
+				error('Invalid frame handle fh');
+			end
+
+			if(nargin > 2)
+				[opts.type opts.val] = parseFmt(V, varargin{1});
+			else
+				opts.type = 'scalar';
+				opts.val  = 0;
+			end
+		
+			if(length(fh) > 1)	
+				for k = 1:length(fh)
+					vec      = genHSVRaster(V, fh(k), opts);
+					%write vector here
+				end
+			else
+				vec = genHSVRaster(V, fh, opts)
+			end
+					
+		end 	%writeHSVVec()
+
+		function writeHueVec(V, fh, varargin)
+			%sanity check
+			if(~isa(fh, 'csFrame'))
+				error('Invalid frame handle fh');
+			end
+	
+			if(nargin > 2)
+				[opts.type opts.val] = parseFmt(V, varargin{1});
+			else
+				opts.type = 'scalar';
+				opts.val  = 0;
+			end
+
+			if(length(fh) > 1)
+				for k = 1:length(fh)
+					vec = genHueVec(V, fh(k), opts);
+					vecDiskWrite(V, vec);
+				end
+			else
+				vec = genHueVec(V, fh, opts);
+			end
+		end 	%writeHueVec()
+
+		function writeBPVec(V, fh, varargin)
+			%sanity check
+			if(~isa(fh, 'csFrame'))
+				error('Invalid frame handle fh');
+			end
+		
+			if(nargin > 2)
+				[opts.type opts.val] = parseFmt(V, varargin{1});
+			else
+				opts.type = 'scalar';
+				opts.val  = 0;
+			end	
+			
+			if(length(fh) > 1)
+				for k = 1:length(fh)
+					vec      = genBPVec(V, fh(k), opts);a
+					%write vector here
+				end
+			else
+				vec = genBPVec(V, fh, opts);
+			end
+		end 	%writeBPVec()
+
+		function writeTrackingVec(V, fh)
+			%sanity check
+			if(~isa(fh, 'csFrame'))
+				error('Invalid frame handle fh');
+			end
+
+			if(length(fh) > 1)
+				for k = 1:length(fh)
+					vec = genTrackingVec(V, fh(k), k);
+					%write vector here
+				end
+			else
+				vec = genTrackingVec(V, fh);
+			end
+		end 	%writeTrackingVec()
 
 	end 		%vecManager METHODS (Public)
 
 	methods (Access = 'private')
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
+		       vecDiskWrite(V, data, varargin);			%commit data to disk
 		fvec = genFrameVec(T, fh, gmode);
+		data = genBPVec(V, fh, fmt, varargin);
 		data = genBpImgData(V, bpImg, varargin);
 		data = genBpVecData(V, bpVec, varargin);
 		% ----- TEST VECTOR VERIFICATION ---- %
