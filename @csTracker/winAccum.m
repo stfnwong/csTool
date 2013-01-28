@@ -1,4 +1,4 @@
-function [moments wparam] = winAccum(T, bpimg, varargin)
+function [moments wparam] = winAccum(T, bpvec, varargin)
 % WINACCUM
 %
 % Windowed moment accumulation for camshift tracker. This method performs the moment
@@ -18,52 +18,63 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 				%Check which option this is
 				if(strncmpi(varargin{k}, 'wparam', 6))
 					wparam = varargin{k+1};
-					%DEBUG
-					fprintf('got wparam with length %d\n', length(wparam));
 				end
 			end
 		end		
 	else
 		%Not enough arguments to have any window parameters from a previous frame, 
 		% so compute new ones from imgAccum();
-		moments = imgAccum(T, bpimg);
+		moments = imgAccum(T, bpvec);
 		wparam  = wparamComp(moments);
 		return;
 	end
 
 	%Use threshold?
-	if(T.BP_THRESH > 0)
-		[idy idx] = find(bpimg > T.BP_THRESH);
-	else
-		[idy idx] = find(bpimg > 0);
-	end
-	if(isempty(idx) || isempty(idy))
-		fprintf('ERROR: Image contains no segmented pixels\n');
-		moments = zeros(1,5);
-		wparam  = zeros(1,5);
-		return;
-	end
-	if(T.verbose)
-		%Show idx, idy array sizes
-		szx = size(idx);
-		szy = size(idy);
-		fprintf('%s size idx [%d %d]\n', T.pStr, szx(1), szx(2));
-		fprintf('%s size idy [%d %d]\n', T.pStr, szy(1), szy(2));
-	end
+% 	if(T.BP_THRESH > 0)
+% 		[idy idx] = find(bpvec > T.BP_THRESH);
+% 	else
+% 		[idy idx] = find(bpvec > 0);
+% 	end
+% 	if(isempty(idx) || isempty(idy))
+% 		fprintf('ERROR: Image contains no segmented pixels\n');
+% 		moments = zeros(1,5);
+% 		wparam  = zeros(1,5);
+% 		return;
+% 	end
+
+    if(T.BP_THRESH > 0)
+        [~, idx] = find(bpvec(1,:) > T.BP_THRESH & bpvec(2,:) > T.BP_THRESH);
+    else
+        [~, idx] = find(bpvec(1,:) > 0 * bpvec(2,:) > 0);
+    end
+    if(isempty(idx))
+        fprintf('ERROR: Image contains no segmented pixels\n');
+        moments = zeros(1,5);
+        wparam  = zeros(1,5);
+        return;
+    end
+
 	%Get image size
-	[img_h img_w d] = size(bpimg);
+	[img_h img_w d] = size(bpvec);
 	if(d > 1)
 		fprintf('%s more than one channel found!\n', T.pStr);
 	end
-	%Do sanity check on idx, ody
-	if(length(idx) > img_w * img_h || length(idy) > img_w * img_h)
-		fprintf('%s idx length : %d\n', T.pStr, length(idx));
-		fprintf('%s idy length : %d\n', T.pStr, length(idy));
-		fprintf('%s img size   : %d\n', T.pStr, img_w * img_h);
-		moments = zeros(1,5);
-		wparam  = zeros(1,5);
-		return;
-	end
+	%Do sanity check on idx
+    if(length(idx) > img_w * img_h)
+        fprintf('%s idx length : %d\n', T.pStr, length(idx));
+        fprintf('%s img size   : %d\n', T.pStr, img_w * img_h);
+        moments = zeros(1,5);
+        wparam  = zeros(1,5);
+        return ;
+    end
+% 	if(length(idx) > img_w * img_h || length(idy) > img_w * img_h)
+% 		fprintf('%s idx length : %d\n', T.pStr, length(idx));
+% 		fprintf('%s idy length : %d\n', T.pStr, length(idy));
+% 		fprintf('%s img size   : %d\n', T.pStr, img_w * img_h);
+% 		moments = zeros(1,5);
+% 		wparam  = zeros(1,5);
+% 		return;
+% 	end
 	
 	%Find edge of constraining rectangle.
 	%Depending on options set in csTracker, we either apply a rotation matrix to the
@@ -76,29 +87,17 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 		theta  = wparam(3) * (pi/180);
 		axmaj  = wparam(4);
 		axmin  = wparam(5);
-		%TODO: Problem here with rotation matrix
-		if(DEBUG)
-			fprintf('winAccum() forced debug mode...\n');
-			%get bounding region limits and perform sanity check
-			xlim               = [(xc - axmaj) (xc + axmaj)];
-			ylim               = [(yc - axmin) (yc + axmin)];
-			xlim(xlim > img_w) = img_w;
-			ylim(ylim > img_h) = img_h;
-			xlim(xlim < 0)     = 0;
-			ylim(ylim < 0)     = 0;
-			xlim, ylim
-			%xbound             = find(idx > xlim(1) & idx < xlim(2));
-			%ybound             = find(idy > ylim(1) & idy < ylim(2)); 
-			winvec             = find((idx > xlim(1) & idx < xlim(2)) & ...
-                                      (idy > ylim(1) & idy < ylim(2)));
-		else
-			st     = sin(theta);
-			ct     = cos(theta);
-			nc     = [ct st ; -st ct] * [xc yc]';
-			nc     = fix(nc)
-			%find a vector that contains pixels within the rotated boundary
-			winvec = find(abs(idx - nc(1)) <=  axmaj & abs(idy - nc(2)) <= axmin);
-		end
+        %Find pixels in window
+        xlim               = [(xc - axmaj) (xc + axmaj)];
+        ylim               = [(yc - axmin) (yc + axmin)];
+        xlim(xlim > img_w) = img_w;
+        ylim(ylim > img_h) = img_h;
+        xlim(xlim < 0)     = 0;
+        ylim(ylim < 0)     = 0;
+        [~, idx] = find(bpvec(1,:) >= xlim(1) & bpvec(1,:) <= xlim(2) ...
+                      & bpvec(2,:) >= ylim(1) & bpvec(2,:) <= ylim(2));
+        winvec    = bpvec(:,idx);
+
 		if(length(winvec) < 1)
 			fprintf('WARNING: No pixels fell within window\n');
 			moments = zeros(1,5);
@@ -107,11 +106,11 @@ function [moments wparam] = winAccum(T, bpimg, varargin)
 		end
 		%Compute moment sums
 		M00    = length(winvec);
-		M10    = sum(sum(idx(winvec)));
-		M01    = sum(sum(idy(winvec)));
-		M11    = sum(idx(winvec) .* idy(winvec));
-		M20    = sum(idx(winvec) .* idx(winvec));
-		M02    = sum(idy(winvec) .* idy(winvec));
+		M10    = sum(winvec(1,:));
+		M01    = sum(winvec(2,:));
+		M11    = sum(winvec(1,:) .* winvec(2,:));
+		M20    = sum(winvec(1,:) .* winvec(1,:));
+		M02    = sum(winvec(2,:) .* winvec(2,:));
 
 	else
 		%Solve 4 linear constraints for bounding box

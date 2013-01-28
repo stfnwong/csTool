@@ -75,11 +75,24 @@ function [bpvec varargout] = buf_spDecode(spvec, varargin)
 		imsz   = stat_struct.imsz;
 	else
 		%try and work out the backprojection vector size
+		imsz   = 640 * 480;
+		if(length(spvec) < (imsz/4))
+			fac = 4;
+		elseif(length(spvec) < (imsz/2))
+			fac = 2;
+		else
+			fac = 1;
+		end
+		%assume anchor point as top-left
+		anchor = 'tl';
+		bpsz   = (imsz/fac);
 	end
 	
+	%Get a vector to write contents back to
+	bpvec = zeros(2, length(spvec))
 	for k = 1:length(spvec)
-		%write estimated elements back into vector, interpolating for large
-		%blocks
+		%write estimated elements back into vector, interpolating for large blocks
+		bpvec(:,k) = 
 	end
 	
 

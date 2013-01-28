@@ -9,7 +9,7 @@ function bpimg = vec2bpimg(vec, varargin)
 	error(nargchk(1,3,nargin, 'struct'));
 	if(nargin > 1)
 		dim = varargin{1};
-		sz  = size(dim)
+		sz  = size(dim);
 		if(sz(1) ~= 1 || sz(2) ~= 2)
 			error('Dim must be 1x2 vector of [w h]');
 		end
@@ -19,8 +19,8 @@ function bpimg = vec2bpimg(vec, varargin)
 		bpimg = zeros(dim(2), dim(1));
 	else
 		%figure out the max and min span of the vec data
-		xmax  = range(idx);
-		ymax  = range(idy);
+		xmax  = range(vec(1,:));
+		ymax  = range(vec(2,:));
 		bpimg = zeros(ymax, xmax);
 	end
 

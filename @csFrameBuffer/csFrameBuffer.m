@@ -16,6 +16,20 @@ classdef csFrameBuffer
 %
 % METHODS
 %
+% fb = csFrameBuffer(...) [Constructor] 
+% Create a new csFrameBuffer object. Calling the constructor with no arguments will
+% create a new csFrameBuffer with the default initialisation. Pass in an options 
+% structure to override default setup
+%
+% setPath
+%
+% setNFrames
+%
+%
+% getFrameHandle
+%
+% loadFrameData
+%
 % See also csFrame, csSegmenter, csTracker
 % 
 
@@ -82,9 +96,9 @@ classdef csFrameBuffer
 						end
 						%init buffer
 						tpath = sprintf('%s_%03d', opts.path, opts.fNum);
-						if(csFrameBuffer.bufMemCheck(opts.nFrames, tpath))
-							fprintf('WARNING: Buffer may exhaust memory\n');
-						end
+						%if(csFrameBuffer.bufMemCheck(opts.nFrames, tpath))
+						%	fprintf('WARNING: Buffer may exhaust memory\n');
+						%end
 						for n = opts.nFrames:-1:1
 							t_buf(n) = csFrame();
 						end
@@ -130,6 +144,13 @@ classdef csFrameBuffer
 				fh = F.frameBuf(N);
 			end
 		end 	%getFrameHandle()
+
+        function printFrameContents(F)
+            %Loop over all frame handles in buffer and show contents
+            for k = 1:F.Frames
+                disp(F.frameBuf(k));
+            end
+        end     %printFrameContents
 		
 		function n = getNumFrames(F)
 			n = F.Frames;
@@ -169,7 +190,10 @@ classdef csFrameBuffer
 		function [FB status] = loadFrameData(FB, varargin)
 		% LOADFRAMEDATA
 		%
-		% Load filenames specified by FB.path and FB.fNum into frame buffer
+		% [FB status] = loadFrameData(FB, ...[options]... )
+		%
+		% Load filenames specified by FB.path and FB.fNum into frame buffer. To
+		% override the path, pass the new path as an argument to loadFrameData.
 		
 			%If varargin is a string, take this as being a path to data and 
 			%use in place of FB.path

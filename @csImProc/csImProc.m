@@ -101,6 +101,8 @@ classdef csImProc
 						imregion = varargin{k+1};
                     elseif(strncmpi(varargin{k}, 'setdef', 6))
                         setDefault = 1;
+					elseif(strncmpi(varargin{k}, 'params', 6))
+						params = varargin{k+1};
 					end
 				end
 			end
@@ -111,7 +113,12 @@ classdef csImProc
 			if(~exist('imregion', 'var'))
 				error('No image region specified');
 			end
-			im = rgb2hsv(fh.img);
+
+			if(P.verbose)
+				fprintf('Reading image from %s...\n', get(fh, 'filename'));
+			end
+            im = imread(get(fh, 'filename'), 'TIFF');
+            im = rgb2hsv(im);
 			im = fix(P.iSegmenter.getDataSz().*im(:,:,1));
 			P.iSegmenter.setImRegion(imregion);
 			P.iSegmenter.genMhist(im);
@@ -123,7 +130,14 @@ classdef csImProc
                 axmin  = imregion(2,2) - imregion(2,1);
                 wparam = [xc yc theta axmaj axmin];
                 P.iTracker.setParams(wparam);
-            end
+            else
+				%Actually, this is a cumbersome construction... refactor?
+				if(exist('params', 'var'))
+					P.iTracker.setParams(params);
+				else
+					fprintf('WARNING: No params passed to initProc()\n');
+				end
+			end
 			Pout = P;
 			return;
 		end
@@ -175,10 +189,13 @@ classdef csImProc
 				error('Invalid frame handle fh');
 			end
 			if(length(fh) > 1)
+				h = waitbar(0, sprintf('Processing frame (1/%d)...', length(fh));
 				for k = 1:length(fh)
 					P.iSegmenter.segFrame(fh(k));
 					P.iTracker.trackFrame(fh(k));
+					waitbar(k/length(fh), h, sprintf('Processing frame (%d/%d)...', k, length(fh)));
 				end
+				delete(h);	%get rid of waitbar
 			else
 				P.iSegmenter.segFrame(fh);
 				P.iTracker.trackFrame(fh);

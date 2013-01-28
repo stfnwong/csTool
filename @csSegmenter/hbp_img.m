@@ -21,7 +21,7 @@ function [bpdata rhist] = hbp_img(T, img, mhist)
 	%Get image parameters and set up histogram bins
 	[img_h img_w d] = size(img);
 	bpimg           = zeros(img_h, img_w, 'uint8');
-	imhist          = zeros(1,T.N_BINS);
+    imhist          = zeros(1,T.N_BINS);
 	if(T.FPGA_MODE)
 		bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
 	else
@@ -41,16 +41,19 @@ function [bpdata rhist] = hbp_img(T, img, mhist)
 	%clean up garbage values
 	rhist(isnan(rhist)) = 0;
 	rhist(isinf(rhist)) = 1;
+	% TODO: MEX this?
 	for x = 1:img_w
 		for y = 1:img_h
 			idx        = find(bins > img(y,x), 1, 'first');
 			bpimg(y,x) = rhist(idx);
 		end
 	end
-	if(T.GEN_BP_VEC)
-		bpdata = bpimg2vec(bpimg);
-	else
-		bpdata = bpimg;
-	end
+	imshow(bpimg)
+	%DEBUG:
+	fprintf('(hbp_img) : size bpimg:\n');
+	disp(size(bpimg));	
+	bpdata = bpimg2vec(bpimg);
+	fprintf('(hbp_img) : size bpdata:\n');
+	disp(size(bpdata));
 
 end 		%hbp_img()

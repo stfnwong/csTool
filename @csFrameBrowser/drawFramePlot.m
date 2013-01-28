@@ -15,7 +15,7 @@ function drawFramePlot(B, fh)
 	%Get a clean axes
 	cla(B.axBuffer);
 	%Get bpimg and scale plot
-	frame           = fh.bpImg;
+	frame           = vec2bpimg(get(fh, 'bpVec'));
 	[img_h img_w d] = size(frame);
 	if(B.verbose)
 		if(d > 1)
@@ -39,11 +39,12 @@ function drawFramePlot(B, fh)
 		xc      = fix(wparams(1));
 		yc      = fix(wparams(2));
 		%h       = Z(yc, xc);
+        h       = 1;
 		hold(B.axBuffer, 'on');
 		ph = plot(B.axBuffer, xc, yc, 'Marker', 'x');
 		set(ph, 'MarkerSize', 16, 'LineWidth', 4, 'Color', [1 0 0 ]);
-		th = text(B.axBuffer, xc+1, yc+1, h+1, sprintf('Iteration %d', n));
-		set(th, 'FontSize', 10);
+		%th = text(B.axBuffer, xc+1, yc+1, h+1, sprintf('Iteration %d', n));
+		%set(th, 'FontSize', 10);
 	end
 	%Label plot
 	xlabel(B.axBuffer, 'Width');

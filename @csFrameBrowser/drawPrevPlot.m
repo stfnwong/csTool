@@ -37,8 +37,8 @@ function drawPrevPlot(B, fh, varargin)
 		axis(B.axPreview, 'tight');
 	end
 	% -- DEBUG --
-	if(B.verbose)
-		fprintf('PLACED BACKPROJECTION IMAGE ONTO AXES HANDLE %f\n', B.axPreview);
-	end
+	%if(B.verbose)
+	%	fprintf('PLACED BACKPROJECTION IMAGE ONTO AXES HANDLE %f\n', B.axPreview);
+	%end
 
 end		%drawPrevPlot()

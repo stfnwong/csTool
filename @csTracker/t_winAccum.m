@@ -18,8 +18,6 @@ function [moments wparam] = t_winAccum(T, bpimg, varargin)
 				%Check which option this is
 				if(strncmpi(varargin{k}, 'wparam', 6))
 					wparam = varargin{k+1};
-					%DEBUG
-					fprintf('got wparam with length %d\n', length(wparam));
 				end
 			end
 		end		

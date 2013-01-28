@@ -43,7 +43,7 @@ classdef csTracker < handle
 	end
 
 	% METHOD ENUM
-	properties (Constant = true)
+	properties (Constant = true, GetAccess = 'public')
 		MOMENT_WINACCUM = 1;
 		MOMENT_IMGACCUM = 2;
 		KERNEL_DENSITY  = 3;
@@ -72,7 +72,6 @@ classdef csTracker < handle
 					T.MAX_ITER    = 8;
 					T.EPSILON     = 0;
 				case 1
-					%Check object copy case
 					if(isa(varargin{1}, 'csTracker'))
 						T = varargin{1};
 					else
@@ -114,6 +113,22 @@ classdef csTracker < handle
 		function trackFrame(T, fh, varargin)
 		% TRACKFRAME
 		% Peform tracking computation on the frame handle contained in fh.
+		%
+		% trackFrame(T, fh)
+		% trackFrame(T, fh, wpos)
+		%
+		% csTracker.trackFrame() performs the tracking method specified in T.method 
+		% on the frame contained in the frame handle fh. The window position is read
+		% out of T.fparams. To override this behaviour, pass an extra parameter to
+		% csTracker.trackFrame() containing the preferred window position. Note that
+		% it is the callers responsibility to ensure this argument is correct.
+		%
+		% The value is T.FIXED_ITER determines the kind of tracking loop to use. If 
+		% T.FIXED_ITER is 1, the tracking will perform T.MAX_ITER loops for every 
+		% frame. This can be useful to see that there are no side effects to 
+		% overtracking in the FPGA. If T.FIXED_ITER is 0, the tracking will continue
+		% until eps is less than T.EPSILON in each dimension of eps (e.g: eps(1) <
+		% T>EPSILON && eps(2) < T.EPSILON)
 
 			%Get initial tracking position
 			if(nargin > 2)
@@ -128,13 +143,15 @@ classdef csTracker < handle
 				tVec     = zeros(2, T.MAX_ITER);
 				fwparam  = cell(1, T.MAX_ITER);
 				fmoments = cell(1, T.MAX_ITER);
+                fprintf('(csTracker) Size bpVec :\n');
+                disp(size(get(fh, 'bpVec')));
 				for n = 1:T.MAX_ITER
 					switch T.method
 						case T.MOMENT_WINACCUM
-							[moments wparam] = winAccum(T, fh.bpImg, 'wparam', wpos);
+							[moments wparam] = winAccum(T, get(fh, 'bpVec'), 'wparam', wpos);
 						case T.MOMENT_IMGACCUM
 							wparam           = [];
-							moments          = imgAccum(T, fh.bpImg);
+							moments          = imgAccum(T, get(fh, 'bpVec'));
 						case T.KERNEL_DENSITY
 							fprintf('Not yet implemented\n');
 						otherwise
@@ -146,7 +163,15 @@ classdef csTracker < handle
 					fmoments{n} = moments;
 					%Get initial window position for next frame
 					wpos        = wparam;		
+                    %TODO: Place a test here for early convergence?
+                    % BAIL if no pixels in window
+                    if(sum(moments) == 0)
+						fprintf('No pixels in previous window (iter %d) - ending loop\n', n);
+						break;
+					end
 				end
+				%DEBUG
+				fprintf('Outside tracking loop...\n');
 			else
 				%For now, preallocate twice MAX_ITER for tVec
 				tVec     = zeros(1, T.MAX_ITER * 2);
@@ -158,10 +183,10 @@ classdef csTracker < handle
 				while( eps(1) > T.EPSILON && eps(2) > T.EPSILON)
 					switch T.method
 						case T.MOMENT_WINACCUM
-							[moments wparam] = winAccum(T, fh.bpimg, 'wparam', wpos);
+							[moments wparam] = winAccum(T, get(fh, 'bpVec'), 'wparam', wpos);
 						case T.MOMENT_IMGACCUM
 							wparam           = [];
-							moments          = imgAccum(T, fh.bpimg);
+							moments          = imgAccum(T, get(fh, 'bpVec'));
 						case T.KERNEL_DENSITY
 							fprintf('Not yet implemented\n');
 						otherwise

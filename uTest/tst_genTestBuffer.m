@@ -8,6 +8,7 @@
 %
 % Stefan Wong 2012
 
+
 %Check for options in workspace 
 if(~exist('fbuf_opts', 'var'))
 	error('tst_genTestBuffer requires fbu_opts struct in workspace');

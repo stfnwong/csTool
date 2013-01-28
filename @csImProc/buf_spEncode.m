@@ -76,18 +76,17 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 			end
 		end
 	end
-	
+	eps     = 0;	%adjustment factor
 	[h w d] = size(bpimg);
 	imsz    = h * w;
 	bpsum   = sum(sum(bpimg));
 	spvec   = zeros(2, imsz/4);
 	if(auto)
-		%try to determine parameters automatically
-		
-		if(bpsum < (imsz/4))
+		%try to determine parameters automatically	
+		if(bpsum < (imsz/4) + eps)
 			fac    = 1;
 			thresh = 1;
-		elseif(bpsum < (imsz/2))
+		elseif(bpsum < (imsz/2) + eps)
 			fac    = 2;
 			thresh = 2;
 		else
@@ -98,6 +97,8 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 	end
 	
 	k = 1;		%vector index
+	% NOTE: Would it be worth moving the switch outside the loop? (Could test this in
+	% profiler, although MATLAB may do some optimizations here anyway)
 	for x = 1:w/fac
 		for y = 1:h/fac
 			blk = bpimg(y:y+fac-1, x:x+fac-1);

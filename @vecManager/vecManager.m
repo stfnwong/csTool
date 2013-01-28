@@ -19,7 +19,7 @@ classdef vecManager
 		dataSz;			%size of data word in FPGA
 	end 	
 
-	properties (SetAcess = 'private', GetAccess = 'public')
+	properties (SetAccess = 'private', GetAccess = 'public')
 		verbose;
 	end
 
@@ -38,15 +38,6 @@ classdef vecManager
 					error('Incorrect constructor arguments');
 			end
 		end 	%vecManager() CONSTRUCTOR
-
-		% ---- GETTER METHODS ---- %
-		function getVecFormat(V)
-			%Display vector read/write formats
-		end 	%getVecFormat()
-	
-		function readTestVec(V)
-		
-		end 	%readTestVec
 
 		% ---- SETTER METHODS ----%
 		% ---- setRLoc : SET READ LOCATION
@@ -81,8 +72,35 @@ classdef vecManager
 		% Each file method operates on a single file handle at a time, and so the
 		% responsibility to stripe out the file handles is placed with the methods
 		% here 
+
+		%NOTES ON ARCHITECTURE
+		% Or 'why does are there so many similar functions?'
+		%
+		% I have though about consolidating the various vector functions here in the
+		% vecManager class into a single function that has all the common parsing and
+		% vector looping components, with some kind of parser or options system that
+		% selects the different vector types to write. However (at least for now) I've
+		% decided to leave these seperate, even though large parts of them are similar
+		% Before explaining why, let me just note that originally I wanted to have it
+		% so that the actual vector formatting was in a seperate file, partly to keep
+		% this class definition short, and partly so that the actual vector generation
+		% didn't have to deal with striping vectors, parsing arguments, and so on. 
+		% This implied that there should be one level of indireciton in the class 
+		% definition, which strips out all the frame handles, and deals with any
+		% options that are passed in, and then calls the 'dumb' vector generation 
+		% method with those options, possibly in a loop.
+		%
+		% I've decided for the time being that it is actually cleaner to have multiple
+		% similar methods because tracking vectors are actually a bit different to 
+		% RGB/HSV/Hue vectors. It could be that there is a writeColourVec() method at
+		% some point that takes a string argument that specifies the particular type
+		% of vector to use (but not a tracking vector), which basically has to do
+		% a switch before the loop unrolls the frame handle vector
+		%
+		% To some extent, this argument is undermined by the implementation of 
+		% vecDiskWrite()
 		
-		function [type val] = parseFmt(V, fmt)
+		function [type val] = parseFmt(fmt)
 		% PARSEFMT
 		% [type val] = parseFmt(fmt)
 		%
@@ -107,13 +125,13 @@ classdef vecManager
 					type = 'row';
 					val  = 16;
 				case '8r'
-					type = 'row'
+					type = 'row';
 					val  = 8;
 				case '4r'
-					type = 'row
+					type = 'row';
 					val  = 4;
 				otherwise
-					type = 'scalar'
+					type = 'scalar';
 					val  = 0;	
 			end
 		end 	%parseFmt()
@@ -121,7 +139,7 @@ classdef vecManager
 		function writeRGBVec(V, fh, varargin)
 			%sanity check
 			if(~isa(fh, 'csFrame'))
-				error('Invalid frame handle fh'n);
+				error('Invalid frame handle fh');
 			end
 			
 			%Parse optional arguments
@@ -134,12 +152,13 @@ classdef vecManager
 			
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					opts.num = k;
-					%Change the trailing number in the filename	
-					vec = genRGBRaster(V, fh(k), opts);
+					vec  = genRGBVec(V, fh(k), opts);
+					dest = sprintf('%s-frame%02d', V.filename, k);
+					vecDiskWrite(V, vec, 'dest', dest);
 				end	
 			else
-				vec = genRGBRaster(V, fh, opts);
+				vec = genRGBVec(V, fh, opts);
+                vecDiskWrite(V, vec);
 			end
 		end 	%writeRGBVec()
 
@@ -158,11 +177,13 @@ classdef vecManager
 		
 			if(length(fh) > 1)	
 				for k = 1:length(fh)
-					vec      = genHSVRaster(V, fh(k), opts);
-					%write vector here
+					vec  = genHSVVec(V, fh(k), opts);
+					dest = sprintf('%s-frame%02d', V.filename, k);
+					vecDiskWrite(V, vec, 'dest', dest); 
 				end
 			else
-				vec = genHSVRaster(V, fh, opts)
+				vec = genHSVVec(V, fh, opts);
+                vecDiskWrite(V, vec);
 			end
 					
 		end 	%writeHSVVec()
@@ -182,11 +203,13 @@ classdef vecManager
 
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					vec = genHueVec(V, fh(k), opts);
-					vecDiskWrite(V, vec);
+					vec  = genHueVec(V, fh(k), opts);
+					dest = sprintf('%s-frame%02d', V.filename, k);
+					vecDiskWrite(V, vec, 'dest', dest);
 				end
 			else
 				vec = genHueVec(V, fh, opts);
+                vecDiskWrite(V, vec);
 			end
 		end 	%writeHueVec()
 
@@ -205,11 +228,13 @@ classdef vecManager
 			
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					vec      = genBPVec(V, fh(k), opts);a
-					%write vector here
+					vec  = genBPVec(V, fh(k), opts);
+					dest = sprintf('%s-frame%02d', V.filename, k);
+					vecDiskWrite(V, vec, 'dest', dest);
 				end
 			else
 				vec = genBPVec(V, fh, opts);
+                vecDiskWrite(V, vec);
 			end
 		end 	%writeBPVec()
 
@@ -221,11 +246,13 @@ classdef vecManager
 
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					vec = genTrackingVec(V, fh(k), k);
-					%write vector here
+					vec  = genTrackingVec(V, fh(k), k);
+					dest = sprintf('%s-frame%02d', V.filename, k);
+					vecDiskWrite(V, vec, 'dest', dest);
 				end
 			else
 				vec = genTrackingVec(V, fh);
+                vecDiskWrite(V, vec);
 			end
 		end 	%writeTrackingVec()
 
@@ -234,13 +261,19 @@ classdef vecManager
 	methods (Access = 'private')
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
-		       vecDiskWrite(V, data, varargin);			%commit data to disk
-		fvec = genFrameVec(T, fh, gmode);
-		data = genBPVec(V, fh, fmt, varargin);
-		data = genBpImgData(V, bpImg, varargin);
-		data = genBpVecData(V, bpVec, varargin);
+		         vecDiskWrite(V, data, varargin);			%commit data to disk
+		vec    = vecDiskRead(V, file, varargin);
+		vec    = genTrackingVec(fh);
+		vec    = genBPVec(fh, fmt, varargin);
+        vec    = genHueVec(fh, opts);
+        vec    = genHSVVec(fh, opts);
+		vec    = genBpImgData(V, bpImg, varargin);
+		vec    = genBpVecData(V, bpVec, varargin);
 		% ----- TEST VECTOR VERIFICATION ---- %
-		status = verifyVec(T, vec);
+		status = verifyTrackingVec(V, fh, vec);
+		status = verifyHSVVec(V, fh, vec);
+		status = verifyBPVec(V, fh, vec, varargin);
+		
 	end 		%vecManager METHODS (Private)
 
 

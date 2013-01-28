@@ -5,9 +5,6 @@ function fbufDisplay(fb)
 
 % Stefan Wong 2012
 
-	if(~isa(fb, 'csFrameBuffer'))
-		error('Argument not csFrameBuffer object');
-	end
     fprintf('csFrameBuffer:\n');
     %Show buffer
     if(fb.nFrames == 0)
