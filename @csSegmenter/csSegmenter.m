@@ -52,8 +52,8 @@ classdef csSegmenter < handle
 		HIST_BP_BLOCK = 2;
 		HIST_BP_ROW   = 3;
 		%Method strings
-		methodStr     = {'Pixel-Wise HBP',
-                         'Block-Wise HBP',
+		methodStr     = {'Pixel-Wise HBP', ...
+                         'Block-Wise HBP', ...
                          'Row-Wise HBP'
                         };
 	end
@@ -91,7 +91,7 @@ classdef csSegmenter < handle
 					S.BLK_SZ     = 16;
 					S.N_BINS     = 16;
 					S.FPGA_MODE  = 0;
-					S.GEN_BP_VEC = 0;
+					%S.GEN_BP_VEC = 0;
 					%Default internals
 					S.method     = 1;
 					S.mhist      = zeros(1, S.N_BINS);
@@ -109,7 +109,7 @@ classdef csSegmenter < handle
 						S.DATA_SZ    = opts.dataSz;
 						S.BLK_SZ     = opts.blkSz;
 						S.FPGA_MODE  = opts.fpgaMode;
-						S.GEN_BP_VEC = opts.gen_bpvec;
+						%S.GEN_BP_VEC = opts.gen_bpvec;
 						S.N_BINS     = opts.nBins;
 						S.method     = opts.method;
 						S.mhist      = opts.mhist;
@@ -240,6 +240,9 @@ classdef csSegmenter < handle
 		end 	%setDataSize()
 
 		% ---- setSegMethod() : SET SEGMENTATION METHOD 
+        function setSegMethod(T, method)
+            T.method = method;
+        end     %setSegMethod();
 
 	end 		%csSegmenter METHODS (Public)
 

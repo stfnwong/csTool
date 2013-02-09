@@ -189,7 +189,7 @@ classdef csImProc
 				error('Invalid frame handle fh');
 			end
 			if(length(fh) > 1)
-				h = waitbar(0, sprintf('Processing frame (1/%d)...', length(fh));
+				h = waitbar(0, sprintf('Processing frame (1/%d)...', length(fh)));
 				for k = 1:length(fh)
 					P.iSegmenter.segFrame(fh(k));
 					P.iTracker.trackFrame(fh(k));

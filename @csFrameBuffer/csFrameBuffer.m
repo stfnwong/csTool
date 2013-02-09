@@ -121,6 +121,10 @@ classdef csFrameBuffer
 
 		% -------- GETTER FUNCTIONS -------- %
 
+		function ext = getExt(F)
+			ext = F.ext;
+		end 	%getExt()
+
 		function fh = getFrameHandle(F, N)
 		% GETFRAMEHANDLE
 		% USAGE : fh = getFrameHandle(N)
@@ -289,7 +293,46 @@ classdef csFrameBuffer
                 error('Argument must be csFrameBuffer object');
             end
             fbufDisplay(fb);
-		end 	
+		end     %disp()
+
+        function fbufDisplay(fb)
+        %FBUFDISPLAY
+        %
+        % Show csFrameBuffer in console
+
+        % Stefan Wong 2012
+
+            fprintf('csFrameBuffer:\n');
+            %Show buffer
+            if(fb.nFrames == 0)
+                fprintf('WARNING: Frame Buffer not set\n');
+            else
+                fprintf('csFrameBuffer.nFrames = %d\n', fb.nFrames);
+                fsz = size(fb.frameBuf(1).img);
+                fprintf('Frame size: %d x %d\n', fsz(2), fsz(1));
+            end
+            %Show path
+            if(fb.path == ' ')
+                fprintf('WARNING: csFrameBuffer.path not set\n');
+            else
+                fprintf('csFrameBuffer.path : %s\n', fb.path);
+            end
+            %Show extension
+            if(fb.ext == ' ')
+                fprintf('WARNING: csFrameBuffer.ext not set\n');
+            else
+                fprintf('csFrameBuffer.ext : %s\n', fb.ext);
+            end
+            %Show frame number
+            fprintf('csFrameBuffer.fNum = %d\n', fb.fNum);
+            if(fb.verbose == 1)
+                fprintf('csFrameBuffer verbose mode on\n');
+            else
+                fprintf('csFrameBuffer verbose mode off\n');
+            end
+
+        end 	%fbufDisplay()
+
 
 	end 		%csFrameBuffer METHODS (Public)
 	
@@ -298,7 +341,7 @@ classdef csFrameBuffer
 		% ---- Check memory usage of frame buffer ---- %
 		status = bufMemCheck(nFrames, path, varargin);
 		% ---- Display object properties ---- %
-		fbufDisplay(fb);
+		%fbufDisplay(fb);
 
 	end 		%csFrameBuffer METHODS (Static)
 

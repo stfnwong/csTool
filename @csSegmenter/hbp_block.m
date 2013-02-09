@@ -79,11 +79,12 @@ function [bpdata rhist] = hbp_block(T, img, mhist);
 		end
 	end
 	%Perform vector conversion, if required
-	if(T.GEN_BP_VEC)
-		bpdata = bpimg2vec(bpimg);
-	else
-		bpdata = bpimg;
-	end
+	%if(T.GEN_BP_VEC)
+	%	bpdata = bpimg2vec(bpimg);
+	%else
+	%	bpdata = bpimg;
+	%end
+	bpdata = bpimg2vec(bpimg);
 	%Compute overall ratio histogram
 	rhist = zeros(1, T.N_BINS);
 	for x = 1:BLOCKS_X

@@ -94,6 +94,15 @@ classdef csTracker < handle
 			end
 		
 		end 	%csTracker CONSTRUCTOR
+
+        % ---- SETTER METHODS ---- %
+        function setTrackMethod(T, method)
+            %sanity check
+            if(method < 1 || method > length(T.methodStr))
+                error('Method value out of range (must be 1 to %d)', T.methodStr)
+            end
+            T.method = method;
+        end     %setTrackMethod()
 		
 		% ---- setPrevParams() : STORE PARAMETERS FOR SUBSEQUENT FRAME
 		function setParams(T, params)
