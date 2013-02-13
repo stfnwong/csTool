@@ -47,6 +47,7 @@ classdef csFrame < hgsetget
 		moments;    %Moment sums accumulated for this image
 		nIters;		%number of iterations taken to converge
 		tVec;		%tracking vector
+		dims;		%dimensions of image (type : uint16)
 		filename;	%name of original image file
 	end
 	

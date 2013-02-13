@@ -118,6 +118,10 @@ classdef csTracker < handle
 			T.fParams = params;
 		end
 
+		function setVerbose(T, verbose)
+			T.verbose = verbose;
+		end
+
 		% ---- trackFrame() : PERFORM TRACKING ON FRAME
 		function trackFrame(T, fh, varargin)
 		% TRACKFRAME

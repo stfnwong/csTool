@@ -197,20 +197,30 @@ classdef csFrameBuffer
 		% [FB status] = loadFrameData(FB, ...[options]... )
 		%
 		% Load filenames specified by FB.path and FB.fNum into frame buffer. To
-		% override the path, pass the new path as an argument to loadFrameData.
+		% override the path, pass the string 'path' followed by the path name. To
+		% override fNum, pass 'num' followed by number of frames to read.
 		
 			%If varargin is a string, take this as being a path to data and 
 			%use in place of FB.path
 			if(nargin > 1)
-				if(ischar(varargin{1}))
-					fpath = varargin{1};
-					if(FB.verbose)
-						fprintf('Using %s as path\n', fpath);
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'path', 4))
+							fpath = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'num', 3))
+							fnum  = varargin{k+1};
+						end
 					end
 				end
-			else
+			end
+			%Catch unmodified variables
+			if(~exist('fpath', 'var'))
 				fpath = FB.path;
 			end
+			if(~exist('fnum', 'var'))
+				fnum = FB.fNum;
+			end
+
 			%Check parameters are sensible
 			if(isempty(fpath) || ~ischar(fpath))
 				fprintf('Path not correctly set, exiting...\n');

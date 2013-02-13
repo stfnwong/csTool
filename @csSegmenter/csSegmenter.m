@@ -132,6 +132,10 @@ classdef csSegmenter < handle
         function region = getImRegion(T)
             region = T.imRegion;
         end
+
+		function verbose = getVerbose(T)
+			verbose = T.verbose;
+		end
 	
 		% ---- disp(T) : DISPLAY METHOD
 		function disp(T)
@@ -243,6 +247,10 @@ classdef csSegmenter < handle
         function setSegMethod(T, method)
             T.method = method;
         end     %setSegMethod();
+
+		function setVerbose(T, verbose)
+			T.verbose = verbose;
+		end
 
 	end 		%csSegmenter METHODS (Public)
 
