@@ -25,6 +25,9 @@ if(strncmpi(inp, 'y', 1))
 	savepath;
 end
 fprintf('\n');
+
+% TODO: Add MEX compilation part here
+
 %END OF INSTALL
 fprintf('csTool install complete.\n');
 fprintf('\n---------------------------------------------------------------\n');

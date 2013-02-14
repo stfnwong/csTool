@@ -119,11 +119,32 @@ classdef csFrameBuffer
 			end
 		end 	%csFrameBuffer CONSTRUCTOR
 
+		% -----------------------------------%
 		% -------- GETTER FUNCTIONS -------- %
-
+		% -----------------------------------%
+		
 		function ext = getExt(F)
+		% GETEXT
+		%
+		% Returns the current file extension type
 			ext = F.ext;
 		end 	%getExt()
+		
+		function n = getNumFrames(F)
+		% GETNUMFRAMES
+		%
+		% Returns the number of frame handles currently stored in the
+		% buffer
+			n = F.Frames;
+		end 	%getNumFrames()
+		
+		function path = getPath(F)
+		% GETPATH
+		%
+		% Return a string containing the current internal path
+		
+			path = F.path;
+		end		%getPath()
 
 		function fh = getFrameHandle(F, N)
 		% GETFRAMEHANDLE
@@ -149,20 +170,64 @@ classdef csFrameBuffer
 			end
 		end 	%getFrameHandle()
 
-        function printFrameContents(F)
+        function printFrameContents(F, varargin)
+		% PRINTFRAMECONTENTS
+		%
+		% Shows in console the values assigned to fields of the frame
+		% handles currently in the buffer. Call with no arguments to show
+		% values for all frames in the buffer. Call with a scalar or vector
+		% to show the values for a single frame or range of frames
+		
+			if(length(varargin) > 0)
+				N = varargin{1};
+			else
+				N = F.Frames;
+			end
             %Loop over all frame handles in buffer and show contents
-            for k = 1:F.Frames
-                disp(F.frameBuf(k));
-            end
+			if(length(N) > 1)
+				for k = N(1):N(end)
+					disp(F.frameBuf(k));
+				end
+			else
+				disp(F.frameBuf(N));
+			end
+			
         end     %printFrameContents
 		
-		function n = getNumFrames(F)
-			n = F.Frames;
-		end 	%getNumFrames()
-
+		function path = showPath(fb, varargin)
+		% SHOWPATH
+		%
+		% Show the value of the internal path variable. NOTE: This function
+		% is deprecated, use getPath(), getNumFrames(), and getExt() instead
+			
+			error(nargchk(1,3,nargin));
+			if(nargin == 1)
+				path = sprintf('%s_%03d.%s', fb.path, fb.fNum, fb.ext);
+			else
+				if(ischar(varargin{1}))
+					%Check which path to return
+					if(strncmpi(varargin{1}, 'start', 5))
+						path = sprintf('%s', fb.frameBuf(1).filename);
+					elseif(strncmpi(varargin{1}, 'end', 3))
+						path = sprintf('%s', fb.frameBuf(end).filename);
+					else
+						error('Unrecognised option');
+					end
+				else
+					error('Optional argument must be string');
+				end
+			end
+		end
+		
+		% ---------------------------------- %
 		% -------- SETTER FUNCTIONS -------- %
-
+		% ---------------------------------- %
+		
         function FB = setPath(FB, path)
+		% SETPATH
+		% 
+		% Alter the path to files stored locally in the csFrameBuffer
+		% object. 
         
             if(~ischar(path))
                 error('Path must be string');
@@ -171,17 +236,22 @@ classdef csFrameBuffer
 		end
 		
 		function FB = setNFrames(FB, nFrames)
+		% SETNFRAMES
+		%
+		% Set the number of frames N stored locally in the csFrameBuffer
+		% object. If this method is called, the internal buffer will be
+		% re-allocated, overwriting any prevously held frame handles.
 			
 			%Estimate memory usage
-			if(isempty(FB.path) || ~ischar(FB.path))
-				fprintf('WARNING: Path not set, cannot estimate memory usage\n');
-			else
-				tpath = sprintf('%s_%03d', FB.path, FB.fNum);
-				if(csFrameBuffer.bufMemCheck(nFrames, tpath))
-					fprintf('WARNING: %d frames likely in GB range\n', nFrames);
-					fprintf('Estimated size : %d bytes\n', mem/8);
-				end
-			end
+% 			if(isempty(FB.path) || ~ischar(FB.path))
+% 				fprintf('WARNING: Path not set, cannot estimate memory usage\n');
+% 			else
+% 				tpath = sprintf('%s_%03d', FB.path, FB.fNum);
+% 				if(csFrameBuffer.bufMemCheck(nFrames, tpath))
+% 					fprintf('WARNING: %d frames likely in GB range\n', nFrames);
+% 					fprintf('Estimated size : %d bytes\n', mem/8);
+% 				end
+% 			end
 			FB.nFrames = nFrames;
 			%Re-allocate buffer
 			for n = nFrames:-1:1
@@ -190,6 +260,10 @@ classdef csFrameBuffer
 			FB.frameBuf = t_buf;
 			
 		end
+		
+		% -----------------------------------%
+		%         PROCESSING FUNCTIONS       %
+		% -----------------------------------%
 		
 		function [FB status] = loadFrameData(FB, varargin)
 		% LOADFRAMEDATA
@@ -233,7 +307,6 @@ classdef csFrameBuffer
 				return;
 			end
 			%Load data into buffer
-			fnum = FB.fNum;
 			for k = 1:FB.nFrames
 				fn  = sprintf('%s_%03d.%s', fpath, fnum, FB.ext);
                 set(FB.frameBuf(k), 'filename', fn);
@@ -252,27 +325,6 @@ classdef csFrameBuffer
 			return;
 
 		end 	%loadFrameData()
-
-		function path = showPath(fb, varargin)
-			
-			error(nargchk(1,3,nargin));
-			if(nargin == 1)
-				path = sprintf('%s_%03d.%s', fb.path, fb.fNum, fb.ext);
-			else
-				if(ischar(varargin{1}))
-					%Check which path to return
-					if(strncmpi(varargin{1}, 'start', 5))
-						path = sprintf('%s', fb.frameBuf(1).filename);
-					elseif(strncmpi(varargin{1}, 'end', 3))
-						path = sprintf('%s', fb.frameBuf(end).filename);
-					else
-						error('Unrecognised option');
-					end
-				else
-					error('Optional argument must be string');
-				end
-			end
-		end
 
 		function clearImData(F, varargin)
 		% CLEARIMDATA

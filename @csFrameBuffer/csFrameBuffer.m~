@@ -16,6 +16,22 @@ classdef csFrameBuffer
 %
 % METHODS
 %
+% fb = csFrameBuffer(...) [Constructor] 
+% Create a new csFrameBuffer object. Calling the constructor with no arguments will
+% create a new csFrameBuffer with the default initialisation. Pass in an options 
+% structure to override default setup
+%
+% setPath
+%
+% setNFrames
+%
+%
+% getFrameHandle
+%
+% loadFrameData
+%
+% See also csFrame, csSegmenter, csTracker
+% 
 
 % Stefan Wong 2012
 
@@ -30,7 +46,11 @@ classdef csFrameBuffer
 		path;			%Path to frame data
 		ext;			%File extension for frame data
 		fNum;			%Which frame to start reading from 
-		verbose;		%Be verbose
+		%verbose;		%Be verbose
+	end
+
+	properties (SetAccess = 'private', GetAccess = 'public')
+		verbose;		%Be verbose (show debug messages)
 	end
 
 	% ---- PUBLIC METHODS ---- %
@@ -39,6 +59,11 @@ classdef csFrameBuffer
 		function fb = csFrameBuffer(varargin)
 		% CSFRAMEBUFFER
 		% Create new csFrameBuffer object
+		%
+		% USAGE:
+		% F = csFrameBuffer();
+		% F = csFrameBuffer(opts_struct);
+		%
 		% TODO: Document fully
 
 			switch nargin
@@ -70,7 +95,10 @@ classdef csFrameBuffer
 							fprintf('Verbose mode on\n');
 						end
 						%init buffer
-						if(bufMemCheck(opts.path, '
+						tpath = sprintf('%s_%03d', opts.path, opts.fNum);
+						%if(csFrameBuffer.bufMemCheck(opts.nFrames, tpath))
+						%	fprintf('WARNING: Buffer may exhaust memory\n');
+						%end
 						for n = opts.nFrames:-1:1
 							t_buf(n) = csFrame();
 						end
@@ -91,107 +119,80 @@ classdef csFrameBuffer
 			end
 		end 	%csFrameBuffer CONSTRUCTOR
 
+		% -----------------------------------%
 		% -------- GETTER FUNCTIONS -------- %
-
-		% ---- getFrameHandle() : OBTAIN FRAME HANDLE ---- %
-		function fh = getFrameHandle(this, N)
-			fh = this.frameBuf(N);
-		end 	%getFrameHandle()
+		% -----------------------------------%
 		
-		% ---- getNumFrames() : GET TOTAL NUMBER OF FRAMES STORED IN BUFFER
-		function n = getNumFrames(this)
-			n = this.nFrames;
-		end 	%getNumFrames()
-
-		% -------- SETTER FUNCTIONS -------- %
-
-        function FB = setPath(FB, path)
-        
-            if(~ischar(path))
-                error('Path must be string');
-            end
-            FB.path = path;
-		end
-		
-		function FB = setNFrames(FB, nFrames)
-			
-			%Estimate memory usage
-			if(isempty(FB.path) || ~ischar(FB.path))
-				fprintf('WARNING: Path not set, cannot estimate memory usage\n');
-			else
-				status = bufMemCheck(nFrames, FB.path);
-				img = imread(FB.path, FB.ext);
-				[img_w img_h d] = size(img);
-				mem = img_w * img_h * 8 * nFrames;
-				if(mem > 10^9)
-					fprintf('WARNING: %d frames likely in GB range\n', nFrames);
-					fprintf('Estimated size : %d bytes\n', mem/8);
-				end
-			end
-			FB.nFrames = nFrames;
-			%Re-allocate buffer
-			for n = nFrames:-1:1
-				t_buf(n) = csFrame();
-			end
-			FB.frameBuf = t_buf;
-			
-		end
-		
-		function [FB status] = loadFrameData(FB, varargin)
-		% LOADFRAMEDATA
+		function ext = getExt(F)
+		% GETEXT
 		%
-		% Read image files specified at path into frameBuf for segmentation and 
-		% tracking. 
-		
-			%If varargin is a string, take this as being a path to data and 
-			%use in place of FB.path
-			if(nargin > 1)
-				if(ischar(varargin{1}))
-					fpath = varargin{1};
-					if(FB.verbose)
-						fprintf('Using %s as path\n', fpath);
-					end
+		% Returns the current file extension type
+			ext = F.ext;
+		end 	%getExt()
+
+		function fh = getFrameHandle(F, N)
+		% GETFRAMEHANDLE
+		% USAGE : fh = getFrameHandle(N)
+		% 
+		% Obtain the handle to frame N. If N is a scalar, getFrameHandle returns a 
+		% single handle to the Nth frame in the buffer. If N is a vector of intergers,
+		% getFrameHandle returns an array containing handles for the corresponding 
+		% frames
+		%
+			if(length(N) > 1)
+				if(N(end) > F.nFrames)
+					error('N out of bounds (N=%d, bufsize=%d)', N, F.nFrames);
+				end
+				for k = length(N):-1:1
+					fh(k) = F.frameBuf(N(k));
 				end
 			else
-				fpath = FB.path;
+				if(N > F.nFrames)
+					error('N out of bounds (N=%d, bufsize=%d)', N, F.nFrames);
+				end
+				fh = F.frameBuf(N);
 			end
-			%Check parameters are sensible
-			if(isempty(fpath) || ~ischar(fpath))
-				fprintf('Path not correctly set, exiting...\n');
-				status = 0;
-				return;
-			end
-			if(isempty(FB.ext) || ~ischar(FB.ext))
-				fprintf('Extension not correctly set, exiting...\n');
-				status = 0;
-				return;
-			end
-			%Load data into buffer
-			fnum = FB.fNum;
-			for k = 1:FB.nFrames
-				fn  = sprintf('%s_%03d.%s', fpath, fnum, FB.ext);
-				img = imread(fn, FB.ext);
-				FB.frameBuf(k).setFilename(fn);		
-				FB.frameBuf(k).setImg(img);
-				%setFilename(FB.frameBuf(k), fn);
-				%setImg(FB.frameBuf(k), img);
-				%if(FB.verbose)
-					fprintf('Read frame %3d (%s)\n', k, fn);
-				%end
-				fnum = fnum + 1;
-			end
-			if(FB.verbose)
-				fprintf('\n File read complete\n');
-				fprintf('Read %d frames\n', k);
-			end
-			%write back data
-			FB.fNum = fnum;
-            status = 1;
-			return;
+		end 	%getFrameHandle()
 
-		end 	%loadFrameData()
-
+        function printFrameContents(F, varargin)
+		% PRINTFRAMECONTENTS
+		%
+		% Shows in console the values assigned to fields of the frame
+		% handles currently in the buffer. Call with no arguments to show
+		% values for all frames in the buffer. Call with a scalar or vector
+		% to show the values for a single frame or range of frames
+		
+			if(length(varargin) > 0)
+				N = varargin{1};
+			else
+				N = F.Frames;
+			end
+            %Loop over all frame handles in buffer and show contents
+			if(length(N) > 1)
+				for k = 1:N
+					disp(F.frameBuf(k));
+				end
+			else
+				disp(F.frameBuf(N));
+			end
+			
+        end     %printFrameContents
+		
+		function n = getNumFrames(F)
+		% GETNUMFRAMES
+		%
+		% Returns the number of frame handles currently stored in the
+		% buffer
+		
+			n = F.Frames;
+		end 	%getNumFrames()
+		
+		
 		function path = showPath(fb, varargin)
+		% SHOWPATH
+		%
+		% Show the value of the internal path variable. NOTE: This function
+		% is deprecated, use getPath, getF
 			
 			error(nargchk(1,3,nargin));
 			if(nargin == 1)
@@ -212,6 +213,134 @@ classdef csFrameBuffer
 			end
 		end
 
+		% -------- SETTER FUNCTIONS -------- %
+
+        function FB = setPath(FB, path)
+		% SETPATH
+		% 
+		% Alter the path to files stored locally in the csFrameBuffer
+		% object. 
+        
+            if(~ischar(path))
+                error('Path must be string');
+            end
+            FB.path = path;
+		end
+		
+		function FB = setNFrames(FB, nFrames)
+		% SETNFRAMES
+		%
+		% Set the number of frames N stored locally in the csFrameBuffer
+		% object. If this method is called, the internal buffer will be
+		% re-allocated, overwriting any prevously held frame handles.
+			
+			%Estimate memory usage
+			if(isempty(FB.path) || ~ischar(FB.path))
+				fprintf('WARNING: Path not set, cannot estimate memory usage\n');
+			else
+				tpath = sprintf('%s_%03d', FB.path, FB.fNum);
+				if(csFrameBuffer.bufMemCheck(nFrames, tpath))
+					fprintf('WARNING: %d frames likely in GB range\n', nFrames);
+					fprintf('Estimated size : %d bytes\n', mem/8);
+				end
+			end
+			FB.nFrames = nFrames;
+			%Re-allocate buffer
+			for n = nFrames:-1:1
+				t_buf(n) = csFrame();
+			end
+			FB.frameBuf = t_buf;
+			
+		end
+		
+		% -----------------------------------%
+		%         PROCESSING FUNCTIONS       %
+		% -----------------------------------%
+		
+		function [FB status] = loadFrameData(FB, varargin)
+		% LOADFRAMEDATA
+		%
+		% [FB status] = loadFrameData(FB, ...[options]... )
+		%
+		% Load filenames specified by FB.path and FB.fNum into frame buffer. To
+		% override the path, pass the string 'path' followed by the path name. To
+		% override fNum, pass 'num' followed by number of frames to read.
+		
+			%If varargin is a string, take this as being a path to data and 
+			%use in place of FB.path
+			if(nargin > 1)
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'path', 4))
+							fpath = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'num', 3))
+							fnum  = varargin{k+1};
+						end
+					end
+				end
+			end
+			%Catch unmodified variables
+			if(~exist('fpath', 'var'))
+				fpath = FB.path;
+			end
+			if(~exist('fnum', 'var'))
+				fnum = FB.fNum;
+			end
+
+			%Check parameters are sensible
+			if(isempty(fpath) || ~ischar(fpath))
+				fprintf('Path not correctly set, exiting...\n');
+				status = 0;
+				return;
+			end
+			if(isempty(FB.ext) || ~ischar(FB.ext))
+				fprintf('Extension not correctly set, exiting...\n');
+				status = 0;
+				return;
+			end
+			%Load data into buffer
+			fnum = FB.fNum;
+			for k = 1:FB.nFrames
+				fn  = sprintf('%s_%03d.%s', fpath, fnum, FB.ext);
+                set(FB.frameBuf(k), 'filename', fn);
+				if(FB.verbose)
+					fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);
+				end
+				fnum = fnum + 1;
+			end
+			if(FB.verbose)
+				fprintf('\n File read complete\n');
+				fprintf('Read %d frames\n', k);
+			end
+			%write back data
+			FB.fNum = fnum;
+            status = 1;
+			return;
+
+		end 	%loadFrameData()
+
+		function clearImData(F, varargin)
+		% CLEARIMDATA
+		% Set any image data in the buffer equal to the empty matrix. Pass a integer
+		% N as an optional argument to clear only the data for the Nth frame, or a 
+		% vector of integers to clear image data for frames N(1) to N(end). 
+		
+			if(nargin > 1)
+				N = varargin{1};
+				if(length(N) > 1)
+					for k = N(1):N(end)
+						set(F.frameBuf(k), 'img', []);
+					end
+				else
+					set(F.frameBuf(k), 'img', []);
+				end
+			else
+				for k = 1:F.nFrames
+					set(F.frameBuf(k), 'img', []);
+				end
+			end
+		end 	%clearImData()
+
 		% -------- DISPLAY --------
 		function disp(fb)
             %seems to be an issue here with parameter....
@@ -219,13 +348,55 @@ classdef csFrameBuffer
                 error('Argument must be csFrameBuffer object');
             end
             fbufDisplay(fb);
-		end 	
+		end     %disp()
+
+        function fbufDisplay(fb)
+        %FBUFDISPLAY
+        %
+        % Show csFrameBuffer in console
+
+        % Stefan Wong 2012
+
+            fprintf('csFrameBuffer:\n');
+            %Show buffer
+            if(fb.nFrames == 0)
+                fprintf('WARNING: Frame Buffer not set\n');
+            else
+                fprintf('csFrameBuffer.nFrames = %d\n', fb.nFrames);
+                fsz = size(fb.frameBuf(1).img);
+                fprintf('Frame size: %d x %d\n', fsz(2), fsz(1));
+            end
+            %Show path
+            if(fb.path == ' ')
+                fprintf('WARNING: csFrameBuffer.path not set\n');
+            else
+                fprintf('csFrameBuffer.path : %s\n', fb.path);
+            end
+            %Show extension
+            if(fb.ext == ' ')
+                fprintf('WARNING: csFrameBuffer.ext not set\n');
+            else
+                fprintf('csFrameBuffer.ext : %s\n', fb.ext);
+            end
+            %Show frame number
+            fprintf('csFrameBuffer.fNum = %d\n', fb.fNum);
+            if(fb.verbose == 1)
+                fprintf('csFrameBuffer verbose mode on\n');
+            else
+                fprintf('csFrameBuffer verbose mode off\n');
+            end
+
+        end 	%fbufDisplay()
+
 
 	end 		%csFrameBuffer METHODS (Public)
 	
 	% ---- METHODS IN FILES ---- %
 	methods (Static)
+		% ---- Check memory usage of frame buffer ---- %
 		status = bufMemCheck(nFrames, path, varargin);
+		% ---- Display object properties ---- %
+		%fbufDisplay(fb);
 
 	end 		%csFrameBuffer METHODS (Static)
 

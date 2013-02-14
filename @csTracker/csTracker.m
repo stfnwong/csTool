@@ -95,7 +95,10 @@ classdef csTracker < handle
 		
 		end 	%csTracker CONSTRUCTOR
 
+		% ------------------------ %
         % ---- SETTER METHODS ---- %
+		% ------------------------ %
+		
         function setTrackMethod(T, method)
             %sanity check
             if(method < 1 || method > length(T.methodStr))
