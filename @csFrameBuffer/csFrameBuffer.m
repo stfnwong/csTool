@@ -45,6 +45,7 @@ classdef csFrameBuffer
 		msVec;			%Meanshift vectors for each frame (ie: how much target moved)
 		path;			%Path to frame data
 		ext;			%File extension for frame data
+		fName;			%filename 
 		fNum;			%Which frame to start reading from 
 		%verbose;		%Be verbose
 	end
@@ -135,7 +136,7 @@ classdef csFrameBuffer
 		%
 		% Returns the number of frame handles currently stored in the
 		% buffer
-			n = F.Frames;
+			n = F.nFrames;
 		end 	%getNumFrames()
 		
 		function path = getPath(F)
