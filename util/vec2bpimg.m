@@ -18,6 +18,11 @@ function bpimg = vec2bpimg(vec, varargin)
 	if(exist('dim','var'))
 		bpimg = zeros(dim(2), dim(1));
 	else
+		if(numel(vec) == 0)
+			fprintf('ERROR: argument vec contains no elements\n');
+			bpimg = [];
+			return;
+		end
 		%figure out the max and min span of the vec data
 		xmax  = range(vec(1,:));
 		ymax  = range(vec(2,:));

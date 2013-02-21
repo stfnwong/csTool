@@ -59,13 +59,27 @@ classdef csFrameBuffer
 		% ---- CONSTRUCTOR ---- %
 		function fb = csFrameBuffer(varargin)
 		% CSFRAMEBUFFER
-		% Create new csFrameBuffer object
+		% Create new csFrameBuffer object. If no options struct is supplied, the 
+		% resulting csFrameBuffer object will be initialised to have the following 
+		% values:
+		%
+		% 	frameBuf = csFrame()
+		% 	nFrames  = 0
+		% 	path     = ' '
+		% 	ext      = 'tif'
+		% 	fNum     = 1;
+		% 	fName    = ' '
+		% 	verbose  = 0;
+		%
+		% To initialise the csFrameBuffer object with different options, pass in a 
+		% structure with members whose names match the properties of the csFrameBuffer
 		%
 		% USAGE:
 		% F = csFrameBuffer();
 		% F = csFrameBuffer(opts_struct);
 		%
-		% TODO: Document fully
+		% See classdef documentation for further information about methods and 
+		% properties for this class.
 
 			switch nargin
 				case 0
@@ -91,6 +105,7 @@ classdef csFrameBuffer
 						fb.nFrames  = opts.nFrames;
 						fb.path     = opts.path;
 						fb.fNum     = opts.fNum;
+						fb.fName    = opts.fName;
 						fb.verbose  = fb.verbose;
 						if(fb.verbose)
 							fprintf('Verbose mode on\n');
@@ -219,10 +234,63 @@ classdef csFrameBuffer
 				end
 			end
 		end
+
+		function filename = showFilename(FB, varargin)
+		% SHOWFILENAME
+		% Assemble the filename from the string components in the csFrameBuffer object
+		% 
+		% The filename is reconstructed according to the pattern below:
+		%
+		% path -> fName -> '_' -> fNum -> ext
+		%
+		% which is concatenated into the string filename.
+
+			%Parse path at the end. That way if the files are in the current directory
+			%we just don't bother concatenating the path on at the start
+			filename = strcat(FB.fName, '_', FB.fNum, FB.ext);
+			if(~isempty(FB.path))
+				filename = strcat(FB.path, filename);
+			end
+
+		end 	%showFilename
 		
 		% ---------------------------------- %
 		% -------- SETTER FUNCTIONS -------- %
 		% ---------------------------------- %
+
+		function [FB status] = parseFilename(FB, fname, varargin)
+		% PARSEFILENAME
+		% This method parses the filename specified by fname and sets the correct
+		% values in FB.path, FB.fName, FB.fNum, and FB.ext. The returned status flag
+		% indicates whether or not the filename was parsed correctly. The caller can
+		% consider the values as set when status returns 0 (no errors).
+		% 
+
+			if(~ischar(fname))
+				error('Filename must be string');
+			end
+			if(FB.verbose)
+				[str num ext path exitflag] = fname_parse(fname, 'd')
+			else
+				[str num ext path exitflag] = fname_parse(fname)
+			end
+			if(exitflag == -1)
+				%Check what fields we do have
+				if(isempty(ext))
+					status = -1;
+					FB     = FB;
+					return;
+				end
+			else
+				FB.ext   = ext;
+			end	
+			FB.fName = str;
+			FB.fNum  = num;
+			FB.path  = path;
+			status   = 0;
+			return;
+
+		end 	%parseFilename()
 		
         function FB = setPath(FB, path)
 		% SETPATH
@@ -258,9 +326,16 @@ classdef csFrameBuffer
 			for n = nFrames:-1:1
 				t_buf(n) = csFrame();
 			end
+			if(FB.verbose)
+				fprintf('Reallocated buffer to size %d\n', FB.nFrames);
+			end
 			FB.frameBuf = t_buf;
 			
 		end
+
+		function FB = setVerbose(FB, verbose)
+			FB.verbose = verbose;	
+		end 	%setVerbose()
 		
 		% -----------------------------------%
 		%         PROCESSING FUNCTIONS       %
@@ -293,7 +368,12 @@ classdef csFrameBuffer
 				fpath = FB.path;
 			end
 			if(~exist('fnum', 'var'))
-				fnum = FB.fNum;
+				%Ensure that fnum is numeric
+				if(ischar(FB.fNum))
+					fnum = str2double(FB.fNum);
+				else
+					fnum = FB.fNum;
+				end
 			end
 
 			%Check parameters are sensible
@@ -307,9 +387,16 @@ classdef csFrameBuffer
 				status = 0;
 				return;
 			end
+
+			if(FB.verbose)
+				fprintf('fpath: %s\n', fpath);
+				fprintf('fName: %s\n', FB.fName);
+				fprintf('fnum : %d\n', fnum);
+				fprintf('ext  : %s\n', FB.ext);
+			end
 			%Load data into buffer
 			for k = 1:FB.nFrames
-				fn  = sprintf('%s_%03d.%s', fpath, fnum, FB.ext);
+				fn  = sprintf('%s%s_%03d.%s', fpath, FB.fName, fnum, FB.ext);
                 set(FB.frameBuf(k), 'filename', fn);
 				if(FB.verbose)
 					fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);
