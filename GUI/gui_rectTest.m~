@@ -1,0 +1,36 @@
+%% RECTTEST
+%
+% Test of imrect functions
+
+function gui_rectTest()
+	%Generate handles struct
+	handles.rf = [];
+	%Generate figure handle
+	if(~exist('rfig', 'var'))
+		rfig = figure('Name', 'imrect() figure');
+		set(rfig, 'WindowButtonDownFcn', {rfig_wbDown, handles});
+		set(rfig, 'WindowButtonUpFcn',   {rfig_wbUp, handles});
+	else
+		figure(rfig);
+	end
+	%Generate axes handle
+	if(~exist('rax', 'var'))
+		rax = axes('parent', rfig);
+	end
+	%Add axes and figure handles
+	handles.axHandle = 
+end
+
+
+
+
+
+function rfig_wbDown(hObject, eventdata, handles)
+
+	handles.rf = imrect(
+
+end
+
+function rfig_wbUp(hObject, eventdata, handles)
+
+end

@@ -1,0 +1,99 @@
+###############################################################
+#
+#         TODO LIST FOR CSTOOL DEVELOPMENT
+#
+###############################################################
+
+ARCHITECTURAL:
+
+- Completely convert bpdata to be vector, rather than matrix (image grid)
+- Write GUI class
+- Flatten class heirachy. Once the GUI class is finished, there may be no more need
+ for the csImProc class, as the GUI methods can call the csSegmenter and csTracker
+ methods directly
+
+- Write set of tracker unit tests
+- Write set of segmenter unit tests
+
+- Write new segmentation methods (PCA, HMM, etc etc)
+
+
+FUNCTIONAL:
+
+- Finish all vector reading/writing methods
+- Write tests for these methods
+
+The format of tests for the vecManager class should probably go something like this:
+
+1) Get a series of frames
+2) Segment
+3) Track
+(Results from the segmentation and tracking are stored in the framebuffer)
+4) Generate a set of test vectors and write to disk
+5) Read the vector back from disk
+6) Run through the compare routine
+
+The output from the disk read process will depend on what kind of vector is generated.
+When an HSV vector is generated, we may either get back a column vector of hue values,
+a column vector of backprojection values, or a row vector of backprojection values.
+
+FUNCTIONAL (GUI):
+
+So after some experimentation, it looks like the GUI doesn't quite work like I 
+expected. At the time of writing, I create the persistent objects in the GUI before
+the GUI is generated in another script (csToolStartGUI.m), and then place these in 
+the opening function when the GUI is brought up. This sort of implies a kind of 
+peicemeal initialisation process where we query every settable object in the GUI and 
+use a setter method to change properties as required. A better idea might be something
+like :
+
+	- Have an autosave/autoload system that can save and recall the settings for all
+	 the GUI controls. When the GUI starts, look for the autosave file and load the
+	 values into the controls, and if the filen doesn't exist, use some defaults. 
+	 Then pull the information out of each UI control, assemble an options structure
+	 for each object, and initialise the objects, placing the result in the handles
+	 structure for the GUI.
+
+	- Go through the classes and create a more comprehensive collection of setter
+	 methods so that when modifications are made in the GUI they can be updated in 
+	 the objects as well.
+
+The last point wasn't really that important in the previous command-line csTool as
+it was used more as a batch processing utility (ie: read a set of files, perform 
+processing, write out results).
+It it worth noting here that the number of options that can be set in csTool is 
+quite large, which makes laying them all out on a panel prohibitive space-wise.
+I think that a sub-GUI which can be brought up for each of the objects is a better 
+solution especially since the segmenter and tracker objects are really just 
+organisationally convenient (ie: they store no persistent data), and so we can 
+basically just destory and re-create them with a new constructor call if need be.
+This also preempts the dreaded 'option-parser' scenario I once had in mind, where
+there would be a seperate option parser, and the constructor would just call this
+when a struct appeared in the input argument list (the original csTool actually had
+this, but it seemed to defeat the point of having a class structure in the first 
+place).
+
+EXTRA:
+
+- Put a full interpreter in GUI, so that every command can be accomplished by text
+input
+
+
+
+
+CLEANUP
+
+- Make the class definitions follow this format:
+		1) Constructor
+		2) Getters
+		3) Setters
+		4) Processing methods (if any), e.g: tracking, segmentation...
+		5) Static 
+
+Currently the classdefs do loosely follow this, but some of the get and set elements 
+are in odd places, and should be more consistent.
+
+- Generally clean up help files, particularly the ones in classdefs, which should have
+a complete listing of all the methods and properties, as well as a brief use case 
+(even just calling syntax) for each method, and a 1 line description of each 
+property

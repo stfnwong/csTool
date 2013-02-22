@@ -1,0 +1,28 @@
+VARIOUS DESIGN NOTES FOR CSTOOL
+
+
+Pre-Caching buffer:
+
+This is one possible answer to the question 'where should the image data be read from disk?'. We could pre-read some proportion of the frames before processing, dor the processing on those frames, and then delete behind us the image data associated with the finished frame before performing the process again on some other subset of the remaining frame.
+
+Reading frames from disk is the slowest operation in the image processing loop
+
+
+
+
+RELATIONSHIP BETWEEN csImProc AND csSegmenter
+
+imRegion is a property of csSegmenter, but perhaps it should be passed to csImProc.procFrame, which sets up the imRegion property in csImProc's csSegmenter object. This way the initialisation step is taken care of implicitly in the call.
+
+On the other hand, in the context of a GUI driven operation, this means that each processing run requires there to be an imRegion matrix in the call. This could be avoided in 2 ways:
+
+1) Explicitly decouple these functions, force a (seperate) init step each time. 
+2) Have an 'imregion' option that specifies a new imRegion is to be passed in, otherwise use whatever is currently in csImProc.iSegmenter.imRegion.
+
+1 gives better seperation of concerns. Both suffer from the problem of passing data down through a series of classes. 
+
+CONSIDERAION FOR CONSOLE USE
+Ideally, the classes should all be usable from the MATLAB prompt without requiring a 
+GUI. This way, batch processing can be performed in a script without spending time
+drawing any results. This means that the csFrameBrowser class should still be 
+finished at some point, even though it isn't needed for the GUI version of csTool.

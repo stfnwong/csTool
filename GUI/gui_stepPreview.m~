@@ -1,0 +1,3 @@
+function status = gui_stepPreview(frameIndex, handles, dir)
+% STEPPREVIEW
+% (Transport panel callback) Step preview forward 

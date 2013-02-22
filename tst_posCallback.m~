@@ -1,0 +1,16 @@
+function tst_posCallback(src, evendata, varargin)
+
+	if(nargin > 2)
+		if(isa(varargin{1}, 'struct'))
+			%This is the handles structure
+			handles = varargin{1};
+		end
+	end
+	fig_pos = get(src, 'Position');
+	fprintf('Figure position\n');
+	disp(fig_pos);
+	
+	if(exist('handles', 'var'))
+		fprin
+
+end		%tst_posCallback()
