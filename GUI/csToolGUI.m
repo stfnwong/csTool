@@ -502,7 +502,7 @@ function csToolFigure_WindowButtonDownFcn(hObject, eventdata, handles) %#ok <INU
 		if(~isfield(handles, 'rect'))
 			%DEBUG
 			fprintf('Creating new rect handle\n');
-			rh           = imrect(ah, [cPos(1) cPos(2) 10 10]);
+			rh           = imrect(ah, [cPos(1) cPos(2) 64 64]);
 			addNewPositionCallback(rh, @(p) title(mat2str(p, 3)));
 			crFcn        = makeConstrainToRectFcn('imrect', get(ah, 'XLim'), get(ah, 'YLim'));
 			setPositionConstraintFcn(rh, crFcn);
@@ -511,10 +511,10 @@ function csToolFigure_WindowButtonDownFcn(hObject, eventdata, handles) %#ok <INU
 			rs.xi        = cPos(1);
 			rs.yi        = cPos(2);
 			rs.handle    = rh;
-			handles.rect = rs;
+			handles.rect = rs;		%Save struct
 		else
 			%DEBUG
-			fprintf('Already recthandle in handles.rect\n');
+			fprintf('Rect handle exists\n');
 		end
 	end
 	
@@ -544,6 +544,10 @@ function csToolFigure_WindowButtonUpFcn(hObject, eventdata, handles) %#ok<INUSL,
 		end
 		%Did we start drawing a rectangle?
 		if(isfield(handles, 'rect'))
+			r = handles.rect;
+			if(isfield(r, 'rh'))
+				fprintf('rect.rh exists\n');
+			end
 			fprintf('rect handle exists\n');
 		end	
 	end
@@ -651,16 +655,43 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				fh = handles.frameBuf.getFrameHandle(k);
 				fprintf('fh(%d) filename : %s\n', k, get(fh, 'filename'));
 			end
-		case 'r'
+		case 'R'
 			%Select rectangle as imRegion
 			if(isfield(handles, 'rect'))
 				fprintf('Deleting rect handle\n');
-				delete(handles.rect.rh);
+				%Be paranoid about structure field check in case a
+				%parameter fails to initialise correctly in the callback
+				r = handles.rect;
+				if(isfield(r, 'rh'))
+					delete(handles.rect.rh);
+				else
+					fprintf('WARNING: No rh field in handles.rect\n');
+				end
 				handles = rmfield(handles, 'rect');
 				set(hObject, 'WindowButtonMotionFcn', '');
 			else
 				%DEBUG
 				fprintf('No rect field in handles struct\n');
+			end
+		case 'r'
+			if(isfield(handles, 'rect'))
+				%Get data from imrect, then clear field
+				rPos = fix(getPosition(handles.rect));
+				fprintf('imRegion is set as :\n');
+				disp(rPos);
+				handles.segmenter.setImRegion(rPos);
+				delete(handles.rect);
+				handles = rmfield(handes.rect);
+			else
+				%Set a new imrect
+				fprintf('Setting new imrect object...\n');
+				bounds = [get(handles.fig_framePreview, 'XLim') ...
+						  get(handles.fig_framePreview, 'YLim')];
+				rh  = imrect(handles.fig_framePreview, [bounds(1)/2 bounds(2)/2 64 64]);
+				addNewPositionCallback(rh, @(p) title(mat2str(p,3)));
+				fcn = makeConstrainToRectFcn('imrect', bounds(1), bounds(2));
+				setPositionConstraintFcn(rh, fcn);
+				handles.rect = rh;
 			end
 	end
 	
@@ -701,7 +732,15 @@ end     %menu_FileSave_Callback()
 % --- Executes on button press in bSegOpts.
 function bSegOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
-    ss = csToolSegOpts(handles.segmenter, handles.segOpts);
+	if(handles.debug)
+		ss = csToolSegOpts(handles.segmenter, handles.segOpts, 'debug');
+	else
+		ss = csToolSegOpts(handles.segmenter, handles.segOpts);
+	end
+	if(~isa(ss, 'struct'))
+		fprintf('WARNING: csToolSegOpts returned non-struct output\n');
+		return;
+	end
 	%Update handles and UI elements
 	handles.segmenter = ss.segmenter;
 	handles.segOpts   = ss.segOpts;
@@ -713,7 +752,15 @@ end     %bSegOpts_Callback()
 % --- Executes on button press in bTrackOpts.
 function bTrackOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
-    ts = csToolTrackOpts(handles.tracker, handles.trackOpts);
+	if(handles.debug)
+		ts = csToolTrackOpts(handles.tracker, handles.trackOpts, 'debug');
+	else
+		ts = csToolTrackOpts(handles.tracker, handles.trackOpts);
+	end
+	if(~isa(ts, 'struct'))
+		fprintf('WARNING: csToolTrackOpts returned non-struct output\n');
+		return;
+	end
 	%Update handles and UI elements
 	handles.tracker   = ts.tracker;
 	handles.trackOpts = ts.trackOpts;

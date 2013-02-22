@@ -22,7 +22,7 @@ function varargout = csToolSegOpts(varargin)
 
 % Edit the above text to modify the response to help csToolSegOpts
 
-% Last Modified by GUIDE v2.5 03-Feb-2013 01:25:49
+% Last Modified by GUIDE v2.5 22-Feb-2013 23:09:03
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -52,64 +52,42 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to csToolSegOpts (see VARARGIN)
 
-
+	handles.debug = 0;
     %Need to pass in a handles to csSegmenter and current set of segmenter
     %options.
     if(length(varargin) < 1)
         error('No csSegmenter object in csToolSegOpts');
     else
         fprintf('DEBUG: Passing input params (csToolSegOpts)');
-        if(~isa(varargin{1}, 'csSegmenter'))
+		if(~isa(varargin{1}, 'csSegmenter'))
             error('Incorrect parameter in csToolSegOpts (expecting csSegmenter)');
         else
             handles.segmenter = varargin{1};
-        end
-        if(~isa(varargin{2}, 'struct'))
+		end
+		if(~isa(varargin{2}, 'struct'))
             error('Incorrect parameter in csToolSegOpts (expecting options struct)');
         else
             fprintf('DEBUG: segopts:\n');
             disp(varargin{2});
             handles.segopts = varargin{2};
-        end
+		end
+		if(length(varargin) > 2)
+			if(strncmpi(varargin{3}, 'debug', 5))
+				handles.debug = 1;
+			end
+		end
     end
 
     %DEBUG
     fprintf('csToolSegOpts DEBUG:\n');
     disp(handles);
     %Do any custom initialisation
-    init_lbSegMethod(handles);
-    init_editTextBoxes(handles);
-
-
-    % Choose default command line output for csToolSegOpts
-    handles.output = hObject;
-    % Update handles structure
-    guidata(hObject, handles);
-
-    % UIWAIT makes csToolSegOpts wait for user response (see UIRESUME)
-    % uiwait(handles.figSegOpts);
-
-
-% --- Outputs from this function are returned to the command line.
-function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
-
-    % Get default command line output from handles structure
-    varargout{1} = handles.output;
-
-
-%---------------------------------------------------------------%
-%                 OPTIONS PANEL INTIALISATION                   %
-%---------------------------------------------------------------%
-
-function init_lbSegMethod(handles)
-
+    %init_lbSegMethod(handles);
+    %init_editTextBoxes(handles);
     %Populate list
     mstr = handles.segmenter.methodStr;
     set(handles.lbSegMethod, 'String', mstr);
     set(handles.lbSegMethod, 'Value', 1);
-
-function init_editTextBoxes(handles)
-
     %Place current settings into editable text boxes
     set(handles.etBlkSz, 'String', num2str(handles.segopts.blkSz));
     set(handles.etDataSz, 'String', num2str(handles.segopts.dataSz));
@@ -121,6 +99,27 @@ function init_editTextBoxes(handles)
         set(handles.chkFPGA, 'Value', 0);
     end
     %set(handles.chkFPGA, 'Value', handles.segopts.fpgaMode);
+
+    % Choose default command line output for csToolSegOpts
+    handles.output = hObject;
+    % Update handles structure
+    guidata(hObject, handles);
+
+    % UIWAIT makes csToolSegOpts wait for user response (see UIRESUME)
+    uiwait(handles.figSegOpts);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
+
+    % Get default command line output from handles structure
+	if(handles.debug)
+		fprintf('Values in handles.output...\n');
+		t = handles.output;
+		disp(t);
+	end
+    varargout{1} = handles.output;
+	delete(hObject);
 
 
 % --- Executes on button press in bAccept.
@@ -156,16 +155,24 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
     handles.segmenter = csSegmenter(opts);
 	handles.output    = struct('segmenter', handles.segmenter, 'segOpts', opts);
 	guidata(hObject, handles);
-    close(handles.figSegOpts);
+	figSegOpts_CloseRequestFcn(hObject, eventdata, handles);
 
     
 % --- Executes on button press in bCancel.
 function bCancel_Callback(hObject, eventdata, handles)   %#ok <INUSL>
-    
     %Exit GUI without saving changes
-    close(handles.figSegOpts);
+	figSegOpts_CloseRequestFcn(hObject, eventdata, handles);
 
+% --- Executes when user attempts to close figSegOpts.
+function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSD, DEFNU>
 
+	get(hObject)
+
+	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
+		uiresume(hObject);
+	else
+		delete(hObject);
+	end
 
 %---------------------------------------------------------------%
 %                         CREATE FUNCTIONS                      %
@@ -174,31 +181,24 @@ function bCancel_Callback(hObject, eventdata, handles)   %#ok <INUSL>
 
 % --- Executes during object creation, after setting all properties.
 function etBlkSz_CreateFcn(hObject, eventdata, handles)  %#ok <INUSL>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
-    end
-
+	end
 
 % --- Executes during object creation, after setting all properties.
 function etDataSz_CreateFcn(hObject, eventdata, handles)    %#ok<INUSD,DEFNU>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
-    end
-
+	end
 
 % --- Executes during object creation, after setting all properties.
 function etNBins_CreateFcn(hObject, eventdata, handles)    %#ok<INUSD,DEFNU>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
 
-
 % --- Executes during object creation, after setting all properties.
 function lbSegMethod_CreateFcn(hObject, eventdata, handles) %#ok <INUSL>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
@@ -209,12 +209,10 @@ function lbSegMethod_CreateFcn(hObject, eventdata, handles) %#ok <INUSL>
 
 % --- Executes on selection change in lbSegMethod.
 function lbSegMethod_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>
-
-% --- Executes on button press in chkFPGA.
 function chkFPGA_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>
-
 function etBlkSz_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
-
 function etDataSz_Callback(hObject, eventdata, handles)     %#ok<INUSD,DEFNU>
-
 function etNBins_Callback(hObject, eventdata, handles)  %#ok <INUSD,DEFNU>
+
+
+

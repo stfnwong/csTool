@@ -22,7 +22,7 @@ function varargout = csToolTrackOpts(varargin)
 
 % Edit the above text to modify the response to help csToolTrackOpts
 
-% Last Modified by GUIDE v2.5 03-Feb-2013 02:15:54
+% Last Modified by GUIDE v2.5 22-Feb-2013 22:18:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,57 +52,66 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to csToolTrackOpts (see VARARGIN)
 
+	handles.debug = 0;
     %Get segmenter object
     if(length(varargin) < 1)
         error('Expecting handles structure in csToolTrackOpts');
-    else
-        if(~isa(varargin{1}, 'csTracker'))
+	else
+		if(~isa(varargin{1}, 'csTracker'))
             error('Incorrect parameter in csToolTrackOpts (expecting csTracker)');
         else
             handles.tracker = varargin{1};
-        end
-        if(~isa(varargin{2}, 'struct'))
+		end
+		if(~isa(varargin{2}, 'struct'))
             error('Incorrect parameter in csToolTrackOpts (expecting options structure)');
         else
             handles.trackopts = varargin{2};
-        end
+		end
+		if(length(varargin) > 2)
+			if(strncmpi(varargin{3}, 'debug', 5))
+				handles.debug = 1;
+			end
+		end
     end
 
-    init_lbTrackMethod(handles);
-    init_editTextBoxes(handles);
-
+    %init_lbTrackMethod(handles);
+    %init_editTextBoxes(handles);
+	mstr = handles.tracker.methodStr;
+    set(handles.lbTrackMethod, 'String', mstr);
+    set(handles.lbTrackMethod, 'Value', 1);
+    set(handles.etEpsilon,     'String', num2str(handles.trackopts.epsilon));
+    set(handles.etThresh,      'String', num2str(handles.trackopts.bpThresh));
+    set(handles.etMaxIter,     'String', num2str(handles.trackopts.maxIter));
+    set(handles.chkRotMatrix,  'Value',  handles.trackopts.rotMatrix);
+    set(handles.chkCordic,     'Value',  handles.trackopts.cordicMode);
+    set(handles.chkFixedIter,  'Value',  handles.trackopts.fixedIter);
+	
     % Choose default command line output for csToolTrackOpts
     handles.output = hObject;
     % Update handles structure
     guidata(hObject, handles);
 
     % UIWAIT makes csToolTrackOpts wait for user response (see UIRESUME)
-    % uiwait(handles.figTrackOpts);
+    uiwait(handles.figTrackOpts);
 
 
 % --- Outputs from this function are returned to the command line.
 function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
+
+	if(handles.debug)
+		fprintf('Value of handles.output...\n');
+		t = handles.output;
+		disp(t);
+	end
     varargout{1} = handles.output;
+	delete(handles.figTrackOpts);
 
 %---------------------------------------------------------------%
 %                      LOCAL INITIALISATION                     %
 %---------------------------------------------------------------%
 
-function init_lbTrackMethod(handles)
-
-    mstr = handles.tracker.methodStr;
-    set(handles.lbTrackMethod, 'String', mstr);
-    set(handles.lbTrackMethod, 'Value', 1);
-
-
-function init_editTextBoxes(handles)
-
-    set(handles.etEpsilon,    'String', num2str(handles.trackopts.epsilon));
-    set(handles.etThresh,     'String', num2str(handles.trackopts.bpThresh));
-    set(handles.etMaxIter,    'String', num2str(handles.trackopts.maxIter));
-    set(handles.chkRotMatrix, 'Value',  handles.trackopts.rotMatrix);
-    set(handles.chkCordic,    'Value',  handles.trackopts.cordicMode);
-    set(handles.chkFixedIter, 'Value',  handles.trackopts.fixedIter);
+%function init_lbTrackMethod(handles)
+%function init_editTextBoxes(handles)
 
 %---------------------------------------------------------------%
 %                    ACCEPT/CANCEL BUTTON                       %
@@ -144,17 +153,26 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
     handles.tracker = csTracker(opts);
 	handles.output  = struct('tracker', handles.tracker, 'trackOpts', opts);
 	guidata(hObject, handles);
-    close(handles.figTrackOpts);
-    
-
+	%Call close request
+	figTrackOpts_CloseRequestFcn(hObject, eventdata, handles);
 
 % --- Executes on button press in bCancel.
-function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function bCancel_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 
-    disp(handles);
-    close(handles.figTrackOpts);
+    %disp(handles);
+    handles.output = struct('tracker', handles.tracker, 'trackOpts', handles.trackOpts);
+	figTrackOpts_CloseRequestFcn(hObject, eventdata, handles);
 
+% --- Executes when user attempts to close figTrackOpts.
+function figTrackOpts_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSD>
 
+	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
+		uiresume(hObject);
+	else
+		delete(hObject);
+	end
+	
+	
 %---------------------------------------------------------------%
 %                        CREATE FUNCTIONS                       %
 %---------------------------------------------------------------%
@@ -212,3 +230,6 @@ function chkFixedIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 % --- Executes on selection change in lbTrackMethod.
 function lbTrackMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
+
+
