@@ -45,6 +45,5 @@ function rfig_keyPress(hObject, eventdata, handles)
 
 	switch eventdata.Character
 		case 'r'
-			fprintf('Deleting imrect handle...\n');
 	end
 end

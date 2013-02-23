@@ -79,9 +79,11 @@ classdef csTracker < handle
 							error('Expecting options structure');
 						end
 						opts = varargin{1};
+						fprintf('DEBUG: csTracker opts\n');
+						disp(opts);
 						T.method      = opts.method;
 						T.verbose     = opts.verbose;
-						T.fParams     = opts.fparams;
+						T.fParams     = opts.fParams;
 						T.ROT_MATRIX  = opts.rotMatrix;
 						T.CORDIC_MODE = opts.cordicMode;
 						T.BP_THRESH   = opts.bpThresh;

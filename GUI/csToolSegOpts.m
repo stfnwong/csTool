@@ -168,11 +168,17 @@ function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSD, DEF
 
 	get(hObject)
 
-	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
+	%TODO: Need to find out more about this waitstatus property....
+	if(isequal(get(hObject, 'Busy'), 1))
 		uiresume(hObject);
 	else
 		delete(hObject);
 	end
+%	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
+%		uiresume(hObject);
+%	else
+%		delete(hObject);
+%	end
 
 %---------------------------------------------------------------%
 %                         CREATE FUNCTIONS                      %

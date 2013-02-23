@@ -19,8 +19,8 @@ function handles = init_UIElements(handles)
 		%Use defaults
 		set(handles.etHighRange, 'String', 64);
 		set(handles.etLowRange, 'String', 1);
-		set(handles.etFilePath, 'String', sprintf('%s/sample.tif', ASSET_DIR));
-		set(handles.etNumFrames, 'String', 64);
+		set(handles.etFilePath, 'String', sprintf('%s/sample_001.tif', ASSET_DIR));
+		set(handles.etNumFrames, 'String', 1);
 	else
 		load(path);
 		set(handles.etHighRange, 'String', ui.highRange);

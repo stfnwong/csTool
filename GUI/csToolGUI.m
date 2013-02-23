@@ -753,6 +753,7 @@ end     %bSegOpts_Callback()
 function bTrackOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	if(handles.debug)
+		disp(handles.trackOpts);
 		ts = csToolTrackOpts(handles.tracker, handles.trackOpts, 'debug');
 	else
 		ts = csToolTrackOpts(handles.tracker, handles.trackOpts);

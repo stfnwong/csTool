@@ -103,7 +103,7 @@ function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok
 		t = handles.output;
 		disp(t);
 	end
-    varargout{1} = handles.output;
+    varargout{1} = handles.output;			%changed from handles.output
 	delete(handles.figTrackOpts);
 
 %---------------------------------------------------------------%
@@ -145,10 +145,11 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
                          'bpThresh', bpThresh, ...
                          'maxIter', maxIter, ...
                          'rotMatrix', rMat, ...
-                         'cordicModic', cordic, ...
+                         'cordicMode', cordic, ...
                          'fixedIter', fixedIter, ...
                          'verbose', handles.trackopts.verbose, ...
                          'fParams', handles.trackopts.fParams);
+
     
     handles.tracker = csTracker(opts);
 	handles.output  = struct('tracker', handles.tracker, 'trackOpts', opts);
@@ -166,6 +167,7 @@ function bCancel_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 % --- Executes when user attempts to close figTrackOpts.
 function figTrackOpts_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSD>
 
+	%TODO: Need to find out about this waitstatus property
 	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
 		uiresume(hObject);
 	else
