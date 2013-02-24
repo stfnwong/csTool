@@ -54,43 +54,43 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
 
 	handles.debug = 0;
     %Get segmenter object
-    if(length(varargin) < 1)
-        error('Expecting handles structure in csToolTrackOpts');
+
+	if(isempty(varargin))
+		fprintf('ERROR: Incorrect input arguments to csToolTrackOpts\n');
+		handles.output = [];
+		close(hObject);
+		return;
 	else
-		if(~isa(varargin{1}, 'csTracker'))
-            error('Incorrect parameter in csToolTrackOpts (expecting csTracker)');
-        else
-            handles.tracker = varargin{1};
+		if(~isa(varargin{1}, 'struct'))
+			fprintf('ERROR: Expecting trackOpts structure in csToolTrackOpts\n');
+			handles.output = [];
+			close(hObject);
+			return;
 		end
-		if(~isa(varargin{2}, 'struct'))
-            error('Incorrect parameter in csToolTrackOpts (expecting options structure)');
-        else
-            handles.trackopts = varargin{2};
-		end
-		if(length(varargin) > 2)
-			if(strncmpi(varargin{3}, 'debug', 5))
-				handles.debug = 1;
+		handles.trackopts = varargin{1};
+		if(length(varargin) > 1)
+			for k = 2:length(varargin)
+				if(strncmpi(varargin{k}, 'debug', 5))
+					handles.debug = 1;
+				elseif(strncmpi(varargin{k}, 'mstr', 4))
+					mstr = varargin{k+1};
+				end
 			end
 		end
-    end
-
-    %init_lbTrackMethod(handles);
-    %init_editTextBoxes(handles);
-	mstr = handles.tracker.methodStr;
+	end
+	tOpts = handles.trackopts;
     set(handles.lbTrackMethod, 'String', mstr);
     set(handles.lbTrackMethod, 'Value', 1);
-    set(handles.etEpsilon,     'String', num2str(handles.trackopts.epsilon));
-    set(handles.etThresh,      'String', num2str(handles.trackopts.bpThresh));
-    set(handles.etMaxIter,     'String', num2str(handles.trackopts.maxIter));
-    set(handles.chkRotMatrix,  'Value',  handles.trackopts.rotMatrix);
-    set(handles.chkCordic,     'Value',  handles.trackopts.cordicMode);
-    set(handles.chkFixedIter,  'Value',  handles.trackopts.fixedIter);
+    set(handles.etEpsilon,     'String', num2str(tOpts.epsilon));
+    set(handles.etThresh,      'String', num2str(tOpts.bpThresh));
+    set(handles.etMaxIter,     'String', num2str(tOpts.maxIter));
+    set(handles.chkRotMatrix,  'Value',  tOpts.rotMatrix);
+    set(handles.chkCordic,     'Value',  tOpts.cordicMode);
+    set(handles.chkFixedIter,  'Value',  tOpts.fixedIter);
 	
-    % Choose default command line output for csToolTrackOpts
-    handles.output = hObject;
+	handles.output = tOpts;			%default output
     % Update handles structure
     guidata(hObject, handles);
-
     % UIWAIT makes csToolTrackOpts wait for user response (see UIRESUME)
     uiwait(handles.figTrackOpts);
 
@@ -98,20 +98,13 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
 % --- Outputs from this function are returned to the command line.
 function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 
-	if(handles.debug)
-		fprintf('Value of handles.output...\n');
-		t = handles.output;
-		disp(t);
-	end
-    varargout{1} = handles.output;			%changed from handles.output
-	delete(handles.figTrackOpts);
-
-%---------------------------------------------------------------%
-%                      LOCAL INITIALISATION                     %
-%---------------------------------------------------------------%
-
-%function init_lbTrackMethod(handles)
-%function init_editTextBoxes(handles)
+% 	if(handles.debug)
+% 		fprintf('Value of handles.output...\n');
+% 		t = handles.output;
+% 		disp(t);
+% 	end
+    varargout{1} = handles.output;			
+	delete(hObject);
 
 %---------------------------------------------------------------%
 %                    ACCEPT/CANCEL BUTTON                       %
@@ -121,20 +114,24 @@ function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok
 function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
 
     %Collect arguments and init objects
+	tOpts = handles.trackopts;
     
     %trackMethod = get(handles.lbTrackMethod, 'String');
     method      = get(handles.lbTrackMethod, 'Value');
     epsilon     = str2double(get(handles.etEpsilon, 'String'));
-    if(isnan(epsilon) || isempty(epsilon) || isinf(epsilon))
-        error('Incorrect value in epsilon');
-    end
+	if(isnan(epsilon) || isinf(epsilon) || isempty(epsilon))
+		epsilon = 0;
+		set(handles.etEpsilon, 'String', num2str(epsilon));
+	end
     bpThresh    = str2double(get(handles.etThresh, 'String'));
     if(isnan(bpThresh) || isempty(bpThresh) || isinf(bpThresh))
-        error('Incorrect value in Backprojection Threshold');
+        bpThresh = 0;
+		set(handles.etThresh, 'String', num2str(bpThresh));
     end
     maxIter     = str2double(get(handles.etMaxIter, 'String'));
     if(isnan(maxIter) || isempty(maxIter) || isinf(maxIter))
-        error('Incorrect value in max iter');
+        maxIter = 16;
+		set(handles.etMaxIter, 'String', num2str(maxIter));
     end
     rMat        = get(handles.chkRotMatrix, 'Value');
     cordic      = get(handles.chkCordic, 'Value');
@@ -147,32 +144,26 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
                          'rotMatrix', rMat, ...
                          'cordicMode', cordic, ...
                          'fixedIter', fixedIter, ...
-                         'verbose', handles.trackopts.verbose, ...
-                         'fParams', handles.trackopts.fParams);
-
-    
-    handles.tracker = csTracker(opts);
-	handles.output  = struct('tracker', handles.tracker, 'trackOpts', opts);
+                         'verbose', tOpts.verbose, ...
+                         'fParams', tOpts.fParams);
+	handles.output  = opts;
 	guidata(hObject, handles);
-	%Call close request
-	figTrackOpts_CloseRequestFcn(hObject, eventdata, handles);
+	close(hObject);		%request close
+	%uiresume(hObject);
 
 % --- Executes on button press in bCancel.
-function bCancel_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
     %disp(handles);
-    handles.output = struct('tracker', handles.tracker, 'trackOpts', handles.trackOpts);
-	figTrackOpts_CloseRequestFcn(hObject, eventdata, handles);
+    %handles.output = handles.trackopts;
+	%uiresume(hObject);
+	%close(hObject);
 
 % --- Executes when user attempts to close figTrackOpts.
 function figTrackOpts_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSD>
 
-	%TODO: Need to find out about this waitstatus property
-	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
-		uiresume(hObject);
-	else
-		delete(hObject);
-	end
+	uiresume(hObject);
+	delete(hObject);
 	
 	
 %---------------------------------------------------------------%

@@ -63,38 +63,26 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
 
 	handles.debug = 0;
 
-
-    %Need to pass in a handles to csSegmenter and current set of segmenter
-    %options.
-    %if(length(varargin) < 1)
-    %    error('No csSegmenter object in csToolSegOpts');
-    %else
-    %    fprintf('DEBUG: Passing input params (csToolSegOpts)');
-	%	if(~isa(varargin{1}, 'csSegmenter'))
-    %        error('Incorrect parameter in csToolSegOpts (expecting csSegmenter)');
-    %    else
-    %        handles.segmenter = varargin{1};
-	%	end
-	%	if(~isa(varargin{2}, 'struct'))
-    %        error('Incorrect parameter in csToolSegOpts (expecting options struct)');
-    %    else
-    %        fprintf('DEBUG: segopts:\n');
-    %        disp(varargin{2});
-    %        handles.segopts = varargin{2};
-	%	end
-	%	if(length(varargin) > 2)
-	%		if(strncmpi(varargin{3}, 'debug', 5))
-	%			handles.debug = 1;
-	%		end
-	%	end
-    %end
-
-    %DEBUG
-    fprintf('csToolSegOpts DEBUG:\n');
-    disp(handles);
-    %Do any custom initialisation
-    %init_lbSegMethod(handles);
-    %init_editTextBoxes(handles);
+	if(isempty(varargin))
+		fprintf('ERROR: incorrect input arguments to csToolSegOpts\n');
+		handles.output = [];
+		close(hObject);
+		return;
+	else
+		if(~isa(varargin{1}, 'struct'))
+			fprintf('ERROR: Expecting segOpts structure in csToolSegOpts\n');
+			handles.output = [];
+			close(hObject);
+			return;
+		end
+		handles.segopts = varargin{1};
+		if(length(varargin) > 1)
+			if(strncmpi(varargin{2}, 'debug', 5))
+				handles.debug = 1;
+			end
+		end
+	end
+    
     %Populate list
     mstr = handles.segmenter.methodStr;
     set(handles.lbSegMethod, 'String', mstr);
@@ -112,23 +100,21 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
     %set(handles.chkFPGA, 'Value', handles.segopts.fpgaMode);
 
     % Choose default command line output for csToolSegOpts
-    handles.output = hObject;
-    % Update handles structure
+    handles.output = [];
     guidata(hObject, handles);
-
     % UIWAIT makes csToolSegOpts wait for user response (see UIRESUME)
-    uiwait(handles.figSegOpts);
+    uiwait(hObject);
 
 
 % --- Outputs from this function are returned to the command line.
 function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 
     % Get default command line output from handles structure
-	if(handles.debug)
-		fprintf('Values in handles.output...\n');
-		t = handles.output;
-		disp(t);
-	end
+% 	if(handles.debug)
+% 		fprintf('Values in handles.output...\n');
+% 		t = handles.output;
+% 		disp(t);
+% 	end
     varargout{1} = handles.output;
 	delete(hObject);
 

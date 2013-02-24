@@ -752,20 +752,21 @@ end     %bSegOpts_Callback()
 % --- Executes on button press in bTrackOpts.
 function bTrackOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
+	%Update trackOpts with latest
+	tOpts = handles.tracker.getOpts();
+	mstr  = handles.tracker.methodStr;
 	if(handles.debug)
-		disp(handles.trackOpts);
-		ts = csToolTrackOpts(handles.tracker, handles.trackOpts, 'debug');
+		ts = csToolTrackOpts(tOpts, 'mstr', mstr, 'debug');
 	else
-		ts = csToolTrackOpts(handles.tracker, handles.trackOpts);
+		ts = csToolTrackOpts(tOpts, 'mstr', mstr);
 	end
 	if(~isa(ts, 'struct'))
-		fprintf('WARNING: csToolTrackOpts returned non-struct output\n');
+		fprintf('ERROR: csToolSegOpts returned non-struct output\n');
 		return;
 	end
-	%Update handles and UI elements
-	handles.tracker   = ts.tracker;
-	handles.trackOpts = ts.trackOpts;
-	set(handles.trackMethodList, 'Value', trackOpts.method);
+	handles.tracker  = csTracker(ts);
+	handles.tracOpts = ts;
+	set(handles.trackMethodList, 'Value', ts.method);
 	guidata(hObject, handles);
 	
 
