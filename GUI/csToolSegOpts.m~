@@ -46,48 +46,37 @@ function varargout = csToolSegOpts(varargin)
 
 % --- Executes just before csToolSegOpts is made visible.
 function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <INUSD>
-% CSTOOLSEGIOPTS_OPENINGFCN
-% Start the csToolSegOpts GUI panel. 
-%
-% USAGE:
-% ss = csToolSegOpts(segOpts)
-% 
-% ARGUMENTS
-% segOpts   - Segmenter options structure containing setup for 
-%
-% OUTPUTS:
-% ss        - Structure containing new csSegmenter options
-%
-
-% Stefan Wong 2013
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to csToolSegOpts (see VARARGIN)
 
 	handles.debug = 0;
-
-
     %Need to pass in a handles to csSegmenter and current set of segmenter
     %options.
-    %if(length(varargin) < 1)
-    %    error('No csSegmenter object in csToolSegOpts');
-    %else
-    %    fprintf('DEBUG: Passing input params (csToolSegOpts)');
-	%	if(~isa(varargin{1}, 'csSegmenter'))
-    %        error('Incorrect parameter in csToolSegOpts (expecting csSegmenter)');
-    %    else
-    %        handles.segmenter = varargin{1};
-	%	end
-	%	if(~isa(varargin{2}, 'struct'))
-    %        error('Incorrect parameter in csToolSegOpts (expecting options struct)');
-    %    else
-    %        fprintf('DEBUG: segopts:\n');
-    %        disp(varargin{2});
-    %        handles.segopts = varargin{2};
-	%	end
-	%	if(length(varargin) > 2)
-	%		if(strncmpi(varargin{3}, 'debug', 5))
-	%			handles.debug = 1;
-	%		end
-	%	end
-    %end
+    if(length(varargin) < 1)
+        error('No csSegmenter object in csToolSegOpts');
+    else
+        fprintf('DEBUG: Passing input params (csToolSegOpts)');
+        if(~isa(varargin{1}, 'csSegmenter'))
+            error('Incorrect parameter in csToolSegOpts (expecting csSegmenter)');
+        else
+            handles.segmenter = varargin{1};
+        end
+      (~isa(varargin{2}, 'struct'))
+            error('Incorrect parameter in csToolSegOpts (expecting options struct)');
+        else
+            fprintf('DEBUG: segopts:\n');
+            disp(varargin{2});
+            handles.segopts = varargin{2};
+		end
+		if(length(varargin) > 2)
+			if(strncmpi(varargin{3}, 'debug', 5))
+				handles.debug = 1;
+			end
+		end
+    end
 
     %DEBUG
     fprintf('csToolSegOpts DEBUG:\n');
@@ -117,18 +106,13 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
     guidata(hObject, handles);
 
     % UIWAIT makes csToolSegOpts wait for user response (see UIRESUME)
-    uiwait(handles.figSegOpts);
+    % uiwait(handles.figSegOpts);
 
 
 % --- Outputs from this function are returned to the command line.
 function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 
     % Get default command line output from handles structure
-	if(handles.debug)
-		fprintf('Values in handles.output...\n');
-		t = handles.output;
-		disp(t);
-	end
     varargout{1} = handles.output;
 	delete(hObject);
 
@@ -152,10 +136,9 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
     segMethod = get(handles.lbSegMethod, 'Value');
     fpgaMode  = get(handles.chkFPGA, 'Value');
 
-    %Do any parameter massaging (ie: converting from cell array), copy mhist
-	%from old parameters, copy mhist
-	%from old parameters
-	opts      = struct('blkSz',     blkSz, ...
+    %Do any parameter massaging (ie: converting from cell array)
+	% TODO: How to deal with mhist?
+    opts      = struct('blkSz',     blkSz, ...
                        'dataSz',    dataSz, ...
                        'nBins',     nBins, ...
                        'fpgaMode', fpgaMode, ...
@@ -165,34 +148,24 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
 					   'mhist',     handles.segopts.mhist);
 
     handles.segmenter = csSegmenter(opts);
-	handles.output    = opts;
+	handles.output    = struct('segmenter', handles.segmenter, 'segOpts', opts);
 	guidata(hObject, handles);
-	uiresume(hObject);
+	figSegOpts_CloseRequestFcn(hObject, eventdata, handles);
+
     
 % --- Executes on button press in bCancel.
 function bCancel_Callback(hObject, eventdata, handles)   %#ok <INUSL>
     %Exit GUI without saving changes
-	opts = handles.segopts;
-	uiresume(hObject);
+	figSegOpts_CloseRequestFcn(hObject, eventdata, handles);
 
 % --- Executes when user attempts to close figSegOpts.
 function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSD, DEFNU>
 
-	%DEBUG
-	fprintf('hObject fields : \n');
-	get(hObject)
-
-	%TODO: Need to find out more about this waitstatus property....
-	if(isequal(get(hObject, 'Busy'), 1))
+	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
 		uiresume(hObject);
 	else
 		delete(hObject);
 	end
-%	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
-%		uiresume(hObject);
-%	else
-%		delete(hObject);
-%	end
 
 %---------------------------------------------------------------%
 %                         CREATE FUNCTIONS                      %

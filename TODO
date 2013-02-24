@@ -97,3 +97,8 @@ are in odd places, and should be more consistent.
 a complete listing of all the methods and properties, as well as a brief use case 
 (even just calling syntax) for each method, and a 1 line description of each 
 property
+
+- Adjust the csToolSegOpts and csToolTrackOpts GUIs so that the actual object handle
+isn't required. In other words, these sub-GUIs should just read in the current options
+for updating the GUI elements, and return a modified options structure to the main
+GUI. The main GUI will then instantiate the new object.
