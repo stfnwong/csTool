@@ -530,21 +530,40 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				fh = handles.frameBuf.getFrameHandle(k);
 				fprintf('fh(%d) filename : %s\n', k, get(fh, 'filename'));
 			end
-		% IMREGION SELECTION KEYS
+		% ================ IMREGION SELECTION KEYS ================ %
 		case 'r'
 			rData = handles.rData;
 			if(rData.rExist)
-				%Get co-ords and clear rect
-				rPos = getPosition(rData.rHandle);
-				%DEBUG
-				fprintf('Current rPos :\n');
-				disp(rPos);
+				%Get position and compute axis-space coords, then clear
+				rPos    = getPosition(rData.rHandle);
+				%Convert to region
+				nRegion = gui_rPos2rRegion(rPos, handles.fig_framePreview);
 				delete(rData.rHandle)
 				rData.rExist = 0;
-				rData.rRegion = rPos;		%Actually, this requires some massaging first...
+				rData.rPos = rPos;		%Actually, this requires some massaging first...
+				rData.rRegion = nRegion;
+				if(handles.debug)
+					fprintf('Current rRegion :\n');
+					disp(rData.rRegion);
+				end
+				%Set imRegion in segmenter
+				handles.segmenter.setImRegion(rData.rRegion);
+				%Restore title
+				fh = handles.frameBuf.getFrameHandle(frameIndex);
+				title(handles.fig_framePreview, get(fh, 'filename'));
 			else
 				%Create new rect
-				rh = imrect(handles.fig_framePreview, [10 10 100 100]);
+				if(isempty(rData.rPos))
+					xl = fix(get(handles.fig_framePreview ,'XLim'));
+					xl(xl == 0) = 1;
+					yl = fix(get(handles.fig_framePreview, 'YLim'));
+					yl(yl == 0) = 1;
+					nPos = [((xl(2)/2)-64) ((yl(2)/2)-64) 64 64];
+				else
+					nPos = rData.rPos;
+				end
+				rh = imrect(handles.fig_framePreview, nPos);
+				addNewPositionCallback(rh, @(p) title(handles.fig_framePreview, mat2str(p,3)));
 				crFcn = makeConstrainToRectFcn('imrect', ...
 					    get(handles.fig_framePreview, 'XLim'), ...
 						get(handles.fig_framePreview, 'YLim'));
