@@ -161,7 +161,7 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	%TODO: This might be better off going into a seperate routine
 	% Create a structure for storing imRegion properties and store it in
 	% handles structure
-	r = struct('rHandle', [], 'rExist', 0, 'rRegion', []);
+	r = struct('rHandle', [], 'rExist', 0, 'rRegion', [], 'rPos', []);
 	handles.rData = r;
 	
  	% Choose default command line output for csToolGUI
@@ -453,112 +453,15 @@ end 	%trackMethodList_Callback()
 %                  REGION SELECTION CALLBACK                      %
 % =============================================================== %
 
+% CURRENTLY MOVED TO KEYHANDLER
+% At a later stage, this might be reinstated, however due to MATLAB being
+% basically a massive pain, that could be unlikely
 
 function csToolFigure_WindowButtonDownFcn(hObject, eventdata, handles) %#ok <INUSL>
 
-% 	%DEBUG:
-% 	fprintf('BUTTON DOWN!\n');
-% 
-% 	%Perform hit test
-% 	axHandles = [handles.fig_framePreview handles.fig_bpPreview];
-% 	cPos      = get(hObject, 'CurrentPoint');
-% 	if(handles.debug)
-% 		[hit ah] = gui_axHitTest(axHandles, hObject, cPos, 'd');
-% 	else
-% 		[hit ah] = gui_axHitTest(axHandles, hObject, cPos);
-% 	end
-% 	
-% 	if(hit)
-% 		if(handles.debug)
-% 			fprintf('WINDOWBUTTONDOWNFCN\n');
-% 			fprintf('Button down within region!\n');
-% 		end
-% 		%Check which axes we hit
-% 		imrs = handles.regionStruct;
-% 		imrs.start_point     = cPos;
-% 		imrs.axHandle        = ah;
-% 		handles.regionStruct = imrs;
-% 		%When we hit an axes, draw rectangle on figure
-% 		%xi = cPos(1,1);
-% 		%yi = cPos(2,2);
-% 		%if(~isa(handles.rect.rs, 'imrect') || ~isfield(handles.rect, 'rs'))
-% 		if(~isfield(handles, 'rect'))
-% 			%DEBUG
-% 			fprintf('Creating new rect handle\n');
-% 			rh           = imrect(ah, [cPos(1) cPos(2) 64 64]);
-% 			addNewPositionCallback(rh, @(p) title(mat2str(p, 3)));
-% 			crFcn        = makeConstrainToRectFcn('imrect', get(ah, 'XLim'), get(ah, 'YLim'));
-% 			setPositionConstraintFcn(rh, crFcn);
-% 			%Place into rs struct
-% 			rs.rh        = rh;
-% 			rs.xi        = cPos(1);
-% 			rs.yi        = cPos(2);
-% 			rs.handle    = rh;
-% 			handles.rect = rs;		%Save struct
-% 		else
-% 			%DEBUG
-% 			fprintf('Rect handle exists\n');
-% 		end
-% 	end
-	
-	guidata(hObject, handles);
-
 end		%csToolFigure_WindowButtonDownFcn()
 
-
-% --- Executes on mouse press over figure background, over a disabled or
-% --- inactive control, or over an axes background.
 function csToolFigure_WindowButtonUpFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
-
-% 	%global frameIndex;
-% 	
-% 	axHandles = [handles.fig_framePreview handles.fig_bpPreview];
-% 	cPos      = get(hObject, 'CurrentPoint');
-% 	if(handles.debug)
-% 		[hit ah] = gui_axHitTest(axHandles, hObject, cPos, 'd');
-% 	else
-% 		[hit ah] = gui_axHitTest(axHandles, hObject, cPos);
-% 	end
-% 	
-% 	if(hit)
-% 		if(handles.debug)
-% 			fprintf('WINDOWBUTTONUPFCN\n');
-% 			fprintf('Button up within region\n');
-% 		end
-% 		%Did we start drawing a rectangle?
-% 		if(isfield(handles, 'rect'))
-% 			r = handles.rect;
-% 			if(isfield(r, 'rh'))
-% 				fprintf('rect.rh exists\n');
-% 			end
-% 			fprintf('rect handle exists\n');
-% 		end	
-% 	end
-		
-% 		imrs = handles.regionStruct;
-% 		if(imrs.axHandle ~= -1)
-% 			%if this isn't the same axes, then not a valid operation
-% 			if(imrs.axHandle == ah)
-% 				imrs.end_point = cPos;
-% 				imrs.imRegion  = fix([imrs.start_point ; imrs.end_point]);
-% 				if(handles.debug)
-% 					fprintf('imRegion:\n');
-% 					disp(imrs.imRegion);
-% 				end
-% 				%Set imRegion in segmenter here
-% 				handles.regionStruct = imrs;
-% 			end
-% 			%delete(handles.rect.rh);
-% 			%delete(handles.rect);
-% 		else
-% 			%Not a valid axes
-% 			delete(handles.rect.rh)
-% 			rmfield(handles.rect);
-% 		end
-
-	%Unset the WindowButtonMotionFcn 
-	%set(hObject, 'WindowButtonMotionFcn', '');
-	%guidata(hObject, handles);
 
 end 	%csToolFigure_WindowButtonUpFcn()
 
