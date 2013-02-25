@@ -530,7 +530,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				fh = handles.frameBuf.getFrameHandle(k);
 				fprintf('fh(%d) filename : %s\n', k, get(fh, 'filename'));
 			end
-		% IMREGION SELECTION KEYS
+		% ================ IMREGION SELECTION KEYS ================ %
 		case 'r'
 			rData = handles.rData;
 			if(rData.rExist)
@@ -547,7 +547,9 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 					disp(rData.rRegion);
 				end
 				%Set imRegion in segmenter
-				
+				handles.segmenter.setImRegion(rData.rRegion);
+				%Update histogram axes
+				gui_setHistograms(
 				%Restore title
 				fh = handles.frameBuf.getFrameHandle(frameIndex);
 				title(handles.fig_framePreview, get(fh, 'filename'));

@@ -58,12 +58,16 @@ function imHist = gui_genImHist(varargin)
 		fprintf('WARNING: Both img and fh passed in, using img...\n')
 	else
 		img = imread(get(fh, 'filename'), 'tif');
+		dims = size(img);
+		if(dims(3) > 3)
+			img = img(:,:,1:3);
+		end
 	end
 	if(FPGA_MODE)
 		fprintf('UNDER DEVELOPMENT (use util/gen_fpgaHist())\n');
 		ihist = zeros(1,N_BINS);
 	else
-		ihist = hist(img, N_BINS);
+		ihist = imhist(img, N_BINS);
 	end
 	
 end 	%gui_genImHist()

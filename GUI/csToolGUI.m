@@ -535,6 +535,13 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			rData = handles.rData;
 			if(rData.rExist)
 				%Get position and compute axis-space coords, then clear
+				if(isempty(rData.rHandle))
+					fprintf('ERROR: No data in rData.rHandle\n');
+					rData.rExist = 0;
+					handles.rData = rData;
+					guidata(hObject, handles);
+					return;
+				end
 				rPos    = getPosition(rData.rHandle);
 				%Convert to region
 				nRegion = gui_rPos2rRegion(rPos, handles.fig_framePreview);
@@ -546,8 +553,12 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 					fprintf('Current rRegion :\n');
 					disp(rData.rRegion);
 				end
+				handles.rData = rData;
 				%Set imRegion in segmenter
 				handles.segmenter.setImRegion(rData.rRegion);
+				%Update histogram axes
+				ihist = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex));
+				gui_setHistograms('ihistAx', handles.fig_ihistPreview, 'ihist', ihist);
 				%Restore title
 				fh = handles.frameBuf.getFrameHandle(frameIndex);
 				title(handles.fig_framePreview, get(fh, 'filename'));
@@ -570,9 +581,13 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				setPositionConstraintFcn(rh, crFcn);
 				rData.rExist = 1;
 				rData.rHandle = rh;
+				handles.rData = rData;
 			end
-			handles.rData = rData;
-			
+			%What are the values in rData?
+			if(handles.debug)
+				fprintf('rData struct :\n');
+				disp(rData);
+			end
 
 	end
 	
