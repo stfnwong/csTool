@@ -100,7 +100,7 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
     %set(handles.chkFPGA, 'Value', handles.segopts.fpgaMode);
 
     % Choose default command line output for csToolSegOpts
-    handles.output = [];
+    handles.output = handles.segopts;
     guidata(hObject, handles);
     % UIWAIT makes csToolSegOpts wait for user response (see UIRESUME)
     uiwait(hObject);
@@ -116,7 +116,7 @@ function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<I
 % 		disp(t);
 % 	end
     varargout{1} = handles.output;
-	delete(hObject);
+	delete(handles.figSegOpts);
 
 
 % --- Executes on button press in bAccept.
@@ -153,13 +153,13 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
     handles.segmenter = csSegmenter(opts);
 	handles.output    = opts;
 	guidata(hObject, handles);
-	uiresume(hObject);
+	uiresume(handles.figSegOpts);
     
 % --- Executes on button press in bCancel.
 function bCancel_Callback(hObject, eventdata, handles)   %#ok <INUSL>
     %Exit GUI without saving changes
 	opts = handles.segopts;
-	uiresume(hObject);
+	uiresume(handles.figSegOpts);
 
 % --- Executes when user attempts to close figSegOpts.
 function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSD, DEFNU>
@@ -169,8 +169,8 @@ function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSD, DEF
 	get(hObject)
 
 	%TODO: Need to find out more about this waitstatus property....
-	if(isequal(get(hObject, 'Busy'), 1))
-		uiresume(hObject);
+	if(isequal(get(handles.figSegOpts, 'Busy'), 1))
+		uiresume(handles.figSegOpts);
 	else
 		delete(hObject);
 	end

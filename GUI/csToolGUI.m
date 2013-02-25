@@ -91,7 +91,9 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 			elseif(ischar(varargin{k}))
 				if(strncmpi(varargin{k}, 'debug', 5))
 					DEBUG = 1;
-					handles.debug = 1;	%TODO: Clean up this handles.debug member
+					handles.debug = 1;
+				elseif(strncmpi(varargin{k}, 'noload', 6))
+					force_no_load = 1;
 				else
 					fprintf('Unknown switch %s, ignoring...\n', varargin{k});
 				end
@@ -113,6 +115,11 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 			NO_LOAD = 0;
 		end
 	end	
+	
+	%TODO: Clean up this mechanism
+	if(exist('force_no_load', 'var'))
+		NO_LOAD = 1;
+	end
 
 	%Check which objects have been created, and init new ones if needed
 	if(~isfield(handles, 'frameBuf'))
@@ -150,6 +157,12 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 			disp(handles.regionStruct);
 		end
 	end
+	
+	%TODO: This might be better off going into a seperate routine
+	% Create a structure for storing imRegion properties and store it in
+	% handles structure
+	r = struct('rHandle', [], 'rExist', 0, 'rRegion', []);
+	handles.rData = r;
 	
  	% Choose default command line output for csToolGUI
 	handles.output    = hObject;
@@ -191,8 +204,6 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	%Setup buttons, listboxes, etc
     handles = init_UIElements(handles);
 	%handles = init_restoreFrame(handles);
-	%Save handles
-	guidata(hObject, handles);
     fprintf('Bringing up csTool GUI...\n');
     fprintf('frameIndex is %d\n', frameIndex);
     set(handles.etCurFrame, 'String', num2str(frameIndex));
@@ -210,6 +221,9 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 		frameIndex = 1;
 	end
 	set(handles.etCurFrame, 'String', num2str(frameIndex));
+	
+	%Update handles structure
+	guidata(hObject, handles);
 
 	% UIWAIT makes csToolGUI wait for user response (see UIRESUME)
 	% uiwait(handles.csToolFigure);
@@ -237,7 +251,6 @@ end		%csToolFigure_CloseRequestFcn()
 %                        OUTPUT FUNCTION                          %
 % =============================================================== %
 
-
 % --- Outputs from this function are returned to the command line.
 function varargout = csToolGUI_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 
@@ -256,23 +269,12 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(frameIndex == 0)
         fprintf('Frame index not set (equal 0)\n');
         return;
-	end
-	
+	end	
 	[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'b');
 	[exitflag handles]   = gui_showPreview(frameIndex, handles);
 	if(exitflag == -1)
 		return;
-	end
-	
-% 	fh   = handles.frameBuf.getFrameHandle(frameIndex);
-%     img  = imread(get(fh, 'filename'), handles.frameBuf.getExt());
-% 	dims = size(img);
-% 	if(dims(3) > 3)
-% 		img = img(:,:,1:3);
-% 	end
-%     imshow(img, 'parent', handles.fig_framePreview);
-% 	gui_setPreviewTitle(get(fh, 'filename'), handles.fig_framePreview);
-	
+	end	
 	guidata(hObject, handles);
 
 end 	%bBack_Callback()
@@ -284,30 +286,12 @@ function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
 	if(frameIndex == 0)
         fprintf('Frame index not set (equal 0)\n');
         return;
-	end
-	
+	end	
 	[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'f');
 	[exitflag handles]   = gui_showPreview(frameIndex, handles);
 	if(exitflag == -1)
 		return;
 	end
-	
-% 	%bounds check and modify index
-% 	if(frameIndex ~= handles.frameBuf.getNumFrames())
-% 		frameIndex = frameIndex + 1;
-% 	end
-%     set(handles.etCurFrame, 'String', num2str(frameIndex));
-% 	%Also update preview - if csFrameBrowser doesn't get deprecated,
-% 	%use that. Otherwise update directly here
-% 	fh   = handles.frameBuf.getFrameHandle(frameIndex);
-%     img  = imread(get(fh, 'filename'), handles.frameBuf.getExt());
-% 	dims = size(img);
-% 	if(dims(3) > 3)
-% 		img = img(:,:,1:3);
-% 	end
-%     imshow(img, 'parent', handles.fig_framePreview);
-% 	gui_setPreviewTitle(get(fh, 'filename'), handles.fig_framePreview);
-	
 	guidata(hObject, handles);
 
 end 	%bForward_Callback()	
@@ -431,8 +415,7 @@ function bSegAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	bpimg = vec2bpimg(get(fh, 'bpvec'));
 	imshow(img, 'parent', handles.fig_framePreview);
 	%TODO: fparams call goes here
-	imshow(bpimg, 'parent', handles.fig_bpPreview);
-	
+	imshow(bpimg, 'parent', handles.fig_bpPreview);	
 	guidata(hObject, handles);
 
 end		%bSegAll_Callback()
@@ -473,50 +456,50 @@ end 	%trackMethodList_Callback()
 
 function csToolFigure_WindowButtonDownFcn(hObject, eventdata, handles) %#ok <INUSL>
 
-	%DEBUG:
-	fprintf('BUTTON DOWN!\n');
-
-	%Perform hit test
-	axHandles = [handles.fig_framePreview handles.fig_bpPreview];
-	cPos      = get(hObject, 'CurrentPoint');
-	if(handles.debug)
-		[hit ah] = gui_axHitTest(axHandles, hObject, cPos, 'd');
-	else
-		[hit ah] = gui_axHitTest(axHandles, hObject, cPos);
-	end
-	
-	if(hit)
-		if(handles.debug)
-			fprintf('WINDOWBUTTONDOWNFCN\n');
-			fprintf('Button down within region!\n');
-		end
-		%Check which axes we hit
-		imrs = handles.regionStruct;
-		imrs.start_point     = cPos;
-		imrs.axHandle        = ah;
-		handles.regionStruct = imrs;
-		%When we hit an axes, draw rectangle on figure
-		%xi = cPos(1,1);
-		%yi = cPos(2,2);
-		%if(~isa(handles.rect.rs, 'imrect') || ~isfield(handles.rect, 'rs'))
-		if(~isfield(handles, 'rect'))
-			%DEBUG
-			fprintf('Creating new rect handle\n');
-			rh           = imrect(ah, [cPos(1) cPos(2) 64 64]);
-			addNewPositionCallback(rh, @(p) title(mat2str(p, 3)));
-			crFcn        = makeConstrainToRectFcn('imrect', get(ah, 'XLim'), get(ah, 'YLim'));
-			setPositionConstraintFcn(rh, crFcn);
-			%Place into rs struct
-			rs.rh        = rh;
-			rs.xi        = cPos(1);
-			rs.yi        = cPos(2);
-			rs.handle    = rh;
-			handles.rect = rs;		%Save struct
-		else
-			%DEBUG
-			fprintf('Rect handle exists\n');
-		end
-	end
+% 	%DEBUG:
+% 	fprintf('BUTTON DOWN!\n');
+% 
+% 	%Perform hit test
+% 	axHandles = [handles.fig_framePreview handles.fig_bpPreview];
+% 	cPos      = get(hObject, 'CurrentPoint');
+% 	if(handles.debug)
+% 		[hit ah] = gui_axHitTest(axHandles, hObject, cPos, 'd');
+% 	else
+% 		[hit ah] = gui_axHitTest(axHandles, hObject, cPos);
+% 	end
+% 	
+% 	if(hit)
+% 		if(handles.debug)
+% 			fprintf('WINDOWBUTTONDOWNFCN\n');
+% 			fprintf('Button down within region!\n');
+% 		end
+% 		%Check which axes we hit
+% 		imrs = handles.regionStruct;
+% 		imrs.start_point     = cPos;
+% 		imrs.axHandle        = ah;
+% 		handles.regionStruct = imrs;
+% 		%When we hit an axes, draw rectangle on figure
+% 		%xi = cPos(1,1);
+% 		%yi = cPos(2,2);
+% 		%if(~isa(handles.rect.rs, 'imrect') || ~isfield(handles.rect, 'rs'))
+% 		if(~isfield(handles, 'rect'))
+% 			%DEBUG
+% 			fprintf('Creating new rect handle\n');
+% 			rh           = imrect(ah, [cPos(1) cPos(2) 64 64]);
+% 			addNewPositionCallback(rh, @(p) title(mat2str(p, 3)));
+% 			crFcn        = makeConstrainToRectFcn('imrect', get(ah, 'XLim'), get(ah, 'YLim'));
+% 			setPositionConstraintFcn(rh, crFcn);
+% 			%Place into rs struct
+% 			rs.rh        = rh;
+% 			rs.xi        = cPos(1);
+% 			rs.yi        = cPos(2);
+% 			rs.handle    = rh;
+% 			handles.rect = rs;		%Save struct
+% 		else
+% 			%DEBUG
+% 			fprintf('Rect handle exists\n');
+% 		end
+% 	end
 	
 	guidata(hObject, handles);
 
@@ -527,30 +510,30 @@ end		%csToolFigure_WindowButtonDownFcn()
 % --- inactive control, or over an axes background.
 function csToolFigure_WindowButtonUpFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
-	%global frameIndex;
-	
-	axHandles = [handles.fig_framePreview handles.fig_bpPreview];
-	cPos      = get(hObject, 'CurrentPoint');
-	if(handles.debug)
-		[hit ah] = gui_axHitTest(axHandles, hObject, cPos, 'd');
-	else
-		[hit ah] = gui_axHitTest(axHandles, hObject, cPos);
-	end
-	
-	if(hit)
-		if(handles.debug)
-			fprintf('WINDOWBUTTONUPFCN\n');
-			fprintf('Button up within region\n');
-		end
-		%Did we start drawing a rectangle?
-		if(isfield(handles, 'rect'))
-			r = handles.rect;
-			if(isfield(r, 'rh'))
-				fprintf('rect.rh exists\n');
-			end
-			fprintf('rect handle exists\n');
-		end	
-	end
+% 	%global frameIndex;
+% 	
+% 	axHandles = [handles.fig_framePreview handles.fig_bpPreview];
+% 	cPos      = get(hObject, 'CurrentPoint');
+% 	if(handles.debug)
+% 		[hit ah] = gui_axHitTest(axHandles, hObject, cPos, 'd');
+% 	else
+% 		[hit ah] = gui_axHitTest(axHandles, hObject, cPos);
+% 	end
+% 	
+% 	if(hit)
+% 		if(handles.debug)
+% 			fprintf('WINDOWBUTTONUPFCN\n');
+% 			fprintf('Button up within region\n');
+% 		end
+% 		%Did we start drawing a rectangle?
+% 		if(isfield(handles, 'rect'))
+% 			r = handles.rect;
+% 			if(isfield(r, 'rh'))
+% 				fprintf('rect.rh exists\n');
+% 			end
+% 			fprintf('rect handle exists\n');
+% 		end	
+% 	end
 		
 % 		imrs = handles.regionStruct;
 % 		if(imrs.axHandle ~= -1)
@@ -575,21 +558,10 @@ function csToolFigure_WindowButtonUpFcn(hObject, eventdata, handles) %#ok<INUSL,
 
 	%Unset the WindowButtonMotionFcn 
 	%set(hObject, 'WindowButtonMotionFcn', '');
-	guidata(hObject, handles);
+	%guidata(hObject, handles);
 
 end 	%csToolFigure_WindowButtonUpFcn()
 
-% =============== MOTION FUNCTION ================
-function csToolFigure_WindowButtonMotionFcn(hObject, eventdata, handles)	%#ok
-
-	if(isfield(handles, 'rect'))
-		%Modify the current imrect handle
-		
-	end
-	
-	guidata(hObject, handles);
-
-end		%csToolFigure_WindowButtonMotionFcn()
 
 % =============================================================== %
 %                      UIELEMENT CALLBACKS                        %
@@ -655,44 +627,31 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				fh = handles.frameBuf.getFrameHandle(k);
 				fprintf('fh(%d) filename : %s\n', k, get(fh, 'filename'));
 			end
-		case 'R'
-			%Select rectangle as imRegion
-			if(isfield(handles, 'rect'))
-				fprintf('Deleting rect handle\n');
-				%Be paranoid about structure field check in case a
-				%parameter fails to initialise correctly in the callback
-				r = handles.rect;
-				if(isfield(r, 'rh'))
-					delete(handles.rect.rh);
-				else
-					fprintf('WARNING: No rh field in handles.rect\n');
-				end
-				handles = rmfield(handles, 'rect');
-				set(hObject, 'WindowButtonMotionFcn', '');
-			else
-				%DEBUG
-				fprintf('No rect field in handles struct\n');
-			end
+		% IMREGION SELECTION KEYS
 		case 'r'
-			if(isfield(handles, 'rect'))
-				%Get data from imrect, then clear field
-				rPos = fix(getPosition(handles.rect));
-				fprintf('imRegion is set as :\n');
+			rData = handles.rData;
+			if(rData.rExist)
+				%Get co-ords and clear rect
+				rPos = getPosition(rData.rHandle);
+				%DEBUG
+				fprintf('Current rPos :\n');
 				disp(rPos);
-				handles.segmenter.setImRegion(rPos);
-				delete(handles.rect);
-				handles = rmfield(handes.rect);
+				delete(rData.rHandle)
+				rData.rExist = 0;
+				rData.rRegion = rPos;		%Actually, this requires some massaging first...
 			else
-				%Set a new imrect
-				fprintf('Setting new imrect object...\n');
-				bounds = [get(handles.fig_framePreview, 'XLim') ...
-						  get(handles.fig_framePreview, 'YLim')];
-				rh  = imrect(handles.fig_framePreview, [bounds(1)/2 bounds(2)/2 64 64]);
-				addNewPositionCallback(rh, @(p) title(mat2str(p,3)));
-				fcn = makeConstrainToRectFcn('imrect', bounds(1), bounds(2));
-				setPositionConstraintFcn(rh, fcn);
-				handles.rect = rh;
+				%Create new rect
+				rh = imrect(handles.fig_framePreview, [10 10 100 100]);
+				crFcn = makeConstrainToRectFcn('imrect', ...
+					    get(handles.fig_framePreview, 'XLim'), ...
+						get(handles.fig_framePreview, 'YLim'));
+				setPositionConstraintFcn(rh, crFcn);
+				rData.rExist = 1;
+				rData.rHandle = rh;
 			end
+			handles.rData = rData;
+			
+
 	end
 	
 	guidata(hObject, handles);
