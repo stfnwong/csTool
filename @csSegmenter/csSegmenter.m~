@@ -1,8 +1,31 @@
-classdef csSegmenter
+classdef csSegmenter < handle
 % CSSEGMENTER
 %
 % Segmentation object for camshift tracker. This object performs target segmentation
 % using the method specified in S.method, where S is the segmenter object.
+%
+% PROPERTIES:
+%
+% method    -  
+% mhist     -
+% imRegion  - 
+% N_BINS    -
+% DATA_SZ   -
+% BLK_SZ    -
+% FPGA_MODE -
+% 
+% verbose
+%
+% METHODS
+% For more detailed help about a specific method, type help 'methodname'
+%
+% csSegmenter (constructor) - create a new csSegmenter object
+% getMhist - 
+% getImRegion - 
+% getDataSz - 
+% genMhist - 
+% segFrame - 
+%
 
 %TODO: Document properly
 
@@ -17,33 +40,62 @@ classdef csSegmenter
 		DATA_SZ;
 		BLK_SZ;
 		FPGA_MODE;
+		GEN_BP_VEC;
 		%global settings
 		mGenVec;			%Methods generate vectors
 		verbose;
 	end
 
 	% Internal ENUM for method
-	properties (Constant = true)
+	properties (Constant = true, GetAccess = 'public')
 		HIST_BP_IMG   = 1;
 		HIST_BP_BLOCK = 2;
 		HIST_BP_ROW   = 3;
+		%Method strings
+		methodStr     = {'Pixel-Wise HBP', ...
+                         'Block-Wise HBP', ...
+                         'Row-Wise HBP'
+                        };
 	end
 
 	methods (Access = 'public');
 		% ---- CONSTRUCTOR ---- %
 		function S = csSegmenter(varargin)
+		% CSSEGMENTER (Constructor)
+		% Create a new csSegmenter object
+		%
+		% S = csSegmenter(...)
+		%
+		% ARGUMENTS:
+		%
+		% If no arguments are passed in, a csSegmenter is created with default 
+		% initialisations. To customise on creation, pass an options structure
+		% as the only argument to csSegmeter() with the following fields:
+		%
+		% 		opts = {
+		%				S.DATA_SZ    = size of data word in FPGA
+		%				S.BLK_SZ     = size of block for blockwise processing
+		%				S.FPGA_MODE  = use FPGA specific modelling constructs
+		%				S.GEN_BP_VEC = generate bpvec instead of bpimg
+		%				S.N_BINS     = number of bins in histogram
+		%				S.method     = segmentatation method
+		%				S.mhist      = 1 x N_BINS array of model histogram values
+		%				S.imRegion   = imregion matrix
+		%				}
+		%
 
 			switch nargin
 				case 0
 					%Default histogram properties
-					S.DATA_SZ   = 256;
-					S.BLK_SZ    = 16;
-					S.N_BINS    = 16;
-					S.FPGA_MODE = 0;
+					S.DATA_SZ    = 256;
+					S.BLK_SZ     = 16;
+					S.N_BINS     = 16;
+					S.FPGA_MODE  = 0;
+					%S.GEN_BP_VEC = 0;
 					%Default internals
-					S.method    = 1;
-					S.mhist     = zeros(1, S.N_BINS);
-					S.imRegion  = zeros(2,2);
+					S.method     = 1;
+					S.mhist      = zeros(1, S.N_BINS);
+					S.imRegion   = zeros(2,2);
                 case 1
                     %Object copy case
                     if(isa(varargin{1}, 'csSegmenter'))
@@ -53,14 +105,15 @@ classdef csSegmenter
 						if(~isa(varargin{1}, 'struct'))
 							error('Expecting options structure');
 						end
-						opts        = varargin{1};
-						S.DATA_SZ   = opts.dataSz;
-						S.BLK_SZ    = opts.blkSz;
-						S.FPGA_MODE = opts.fpgaMode;
-						S.N_BINS    = opts.nBins;
-						S.method    = opts.method;
-						S.mhist     = opts.mhist;
-						S.imRegion  = opts.imRegion;
+						opts         = varargin{1};
+						S.DATA_SZ    = opts.dataSz;
+						S.BLK_SZ     = opts.blkSz;
+						S.FPGA_MODE  = opts.fpgaMode;
+						%S.GEN_BP_VEC = opts.gen_bpvec;
+						S.N_BINS     = opts.nBins;
+						S.method     = opts.method;
+						S.mhist      = opts.mhist;
+						S.imRegion   = opts.imRegion;
                     end
                 otherwise
                     error('Incorrect arguments to constructor');
@@ -75,14 +128,34 @@ classdef csSegmenter
 		function dataSz = getDataSz(T)
 			dataSz = T.DATA_SZ;
 		end
+
+        function region = getImRegion(T)
+            region = T.imRegion;
+        end
+
+		function verbose = getVerbose(T)
+			verbose = T.verbose;
+		end
 	
 		% ---- disp(T) : DISPLAY METHOD
 		function disp(T)
 			csSegmenter.segDisplay(T);
 		end 	%disp()
 
+		% ---- getOpts() : GET A COMPLETE OPTIONS STRUCT (for csToolGUI)
+		function opts = getOpts(S)
+			opts = struct('dataSz'  , S.dataSz,   ...
+                          'blkSz'   , S.blkSz,    ...
+                          'nBins'   , S.nBins,    ...
+                          'fpgaMode', S.fpgaMode, ...
+                          'method'  , S.method,   ...
+                          'mhist'   , S.mhist,    ...
+                          'imRegion', S.imRegion, ...
+                          'verbose' , S.verbose );
+		end 	%getOpts()
+
 		% --- genMhist() : GENERATE NEW MODEL HISTOGRAM
-		function T = genMhist(T, img)
+		function genMhist(T, img)
 
 			if(isempty(T.imRegion))
 				error('Empty region in T.imRegion');
@@ -109,48 +182,60 @@ classdef csSegmenter
 			end
 			%Set mhist data in segmenter object
 			T.mhist = t_mhist;
-			return;
 			
 		end 	%genMhist()
 
 		% ---- INTERFACE METHODS ----- %
-		function frameSegment(T, fh)
-			fprintf('mhist\n');
-			T.mhist
-			im = rgb2hsv(fh.img);
-			imshow(im)					%DEBUG
+		function segFrame(T, fh)
+			% CSSEGMENTER.SEGFRAME
+			% segFrame(S, fh)
+			%
+			% Segment image specified in frame handle fh using the method specified in
+			% S.method.
+			%
+			% In the current version, the image is read from disk from within this
+			% method
+			if(T.verbose)
+				fprintf('Reading image from %s...\n', get(fh, 'filename'));
+			end
+            im = imread(get(fh, 'filename'), 'TIFF');
+			im = rgb2hsv(im);
 			im = fix(T.DATA_SZ .* im(:,:,1));
 			switch T.method
 				case T.HIST_BP_IMG
-					[bpimg rhist] = hbp_img(T, im, T.mhist);
+					[bpvec rhist] = hbp_img(T, im, T.mhist);
 				case T.HIST_BP_BLOCK
-					[bpimg rhist] = hbp_block(T, im, T.mhist);
+					[bpvec rhist] = hbp_block(T, im, T.mhist);
 				case T.HIST_BP_ROW
-					[bpimg rhist] = hbp_row(T, im, T.mhist);
+					[bpvec rhist] = hbp_row(T, im, T.mhist);
 				case T.PCA
 					fprintf('Currently not implemented\n');
 				otherwise
 					error('Invalid segmentation method in T.method');
 			end
-			%DEBUG
-			fprintf('bpimg range\n');
-			range(range(bpimg))
-			%imshow(bpimg)
-			fprintf('rhist\n');
-			rhist
+            %DEBUG:
+            fprintf('(csSegmenter) Size bpvec:\n');
+            disp(size(bpvec));
 			%Write frame data
-			bpsum = sum(sum(bpimg));
-			fh.setBpSum(bpsum);
-			fh.setBpImg(bpimg);
-			fh.setRHist(rhist);
+			bpsum = sum(sum(bpvec));
+            set(fh, 'bpSum', bpsum);
+            set(fh, 'bpVec', bpvec);
+            set(fh, 'rhist', rhist);
+			%fh.setBpSum(bpsum);
+			%fh.setBpImg(bpdata);
+			%fh.setRHist(rhist);
 
 		end 	%frameSegment()
 
 		% ---- SETTER METHODS ----- %
-		function T = setImRegion(T, imregion)
+		function setImRegion(T, imregion)
 		% SETIMREGION
 		%
-		% Set a new image region to generate model histogram from
+		% Set a new image region to generate model histogram from. The 
+        % region should be specified in a 2x2 matrix of the form:
+        %
+        %        region = [xmin xmax ; ymin ymax] 
+        %
 	
 			%Perform sanity check in imregion	
 			sz = size(imregion);
@@ -162,7 +247,7 @@ classdef csSegmenter
 		end 	%setImRegion()
 		
 		% ---- setDataSz() : SET WORD SIZE FOR FPGA MODE 
-		function T = setDataSz(T, size)
+		function setDataSz(T, size)
 		
 			if(isdouble(size))
 				size = uint8(size);
@@ -171,6 +256,13 @@ classdef csSegmenter
 		end 	%setDataSize()
 
 		% ---- setSegMethod() : SET SEGMENTATION METHOD 
+        function setSegMethod(T, method)
+            T.method = method;
+        end     %setSegMethod();
+
+		function setVerbose(T, verbose)
+			T.verbose = verbose;
+		end
 
 	end 		%csSegmenter METHODS (Public)
 
@@ -178,11 +270,11 @@ classdef csSegmenter
 	% ---- METHODS IN FILES ---- % 
 	methods (Access = 'private')
 		% ---- hbp_img()   : HISTOGRAM BACKPROJECTION OVER IMAGE
-		[bpimg rhist] = hbp_img(T, img, mhist);
+		[bpdata rhist] = hbp_img(T, img, mhist);
 		% ---- hbp_block() : HISTOGRAM BACKPROJECTION PER BLOCK
-		[bpimg rhist] = hbp_block(T, img, mhist);
+		[bpdata rhist] = hbp_block(T, img, mhist);
 		% ---- hbp_row()   : HISTOGRAM BACKPROJECTION PER ROW
-		[bpimg rhist] = hbp_row(T, img, mhist);
+		[bpdata rhist] = hbp_row(T, img, mhist);
 	end 		%csSegmenter METHODS (Private)
 
 	methods (Static)

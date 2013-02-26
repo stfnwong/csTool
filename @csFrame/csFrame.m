@@ -70,6 +70,7 @@ classdef csFrame < hgsetget
 						cf.moments   = cell(1,1);
 						cf.nIters    = 0;
 						cf.tVec      = [];
+						cf.dims      = [];
 						cf.filename  = ' ';
 				case 1
 					%Copy to new object if argument is a csFrame
@@ -85,6 +86,7 @@ classdef csFrame < hgsetget
 						cf.winInit   = opts.winInit;
 						cf.nIters    = opts.nIters;
 						cf.tVec      = opts.tVec;
+						cf.dims      = opts.dims;
 						if(ischar(opts.filename))
 							cf.filename  = opts.filename;
 						else
@@ -113,6 +115,7 @@ classdef csFrame < hgsetget
 						cf.moments   = cell(1,1);
 						cf.nIters    = 0;
 						cf.tVec      = [];
+						c.dims       = [];
 						cf.filename  = ' ';
 					end
 				otherwise
@@ -197,6 +200,18 @@ classdef csFrame < hgsetget
 				fprintf('bpSum : %d\n', cf.bpSum);
 			else
 				fprintf('bpImg : Not set\n');
+			end
+			if(~isempty(cf.bpVec))
+				sz = size(cf.bpVec);
+				fprintf('bpVec : %d x %d \n', sz(1), sz(2));
+				fprintf('bpSum : %d\n', cf.bpSum);
+			else
+				fprintf('bpVec : Not set\n');
+			end
+			if(~isempty(cf.dims))
+				fprintf('Image dimension : %d x %d\n', cf.dims(1), cf.dims(2));
+			else
+				fprintf('dims  : Not set\n');
 			end
 			params = cf.winParams{end}; 
             wsz    = size(params);

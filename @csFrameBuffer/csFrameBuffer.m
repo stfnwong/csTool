@@ -278,7 +278,7 @@ classdef csFrameBuffer
 				%Check what fields we do have
 				if(isempty(ext))
 					status = -1;
-					FB     = FB;
+					%FB     = FB;
 					return;
 				end
 			else
@@ -396,7 +396,7 @@ classdef csFrameBuffer
 			end
 			%Load data into buffer
 			for k = 1:FB.nFrames
-				fn  = sprintf('%s%s_%03d.%s', fpath, FB.fName, fnum, FB.ext);
+				fn   = sprintf('%s%s_%03d.%s', fpath, FB.fName, fnum, FB.ext); 
                 set(FB.frameBuf(k), 'filename', fn);
 				if(FB.verbose)
 					fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);

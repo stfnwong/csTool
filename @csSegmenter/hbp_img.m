@@ -1,4 +1,4 @@
-function [bpdata rhist] = hbp_img(T, img, mhist)
+function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 % HBP_IMG
 %
 % [bpdata rhist] = hbp_img(T, img, mhist);
@@ -22,11 +22,12 @@ function [bpdata rhist] = hbp_img(T, img, mhist)
 	[img_h img_w d] = size(img);
 	bpimg           = zeros(img_h, img_w, 'uint8');
     imhist          = zeros(1,T.N_BINS);
-	if(T.FPGA_MODE)
-		bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
-	else
-		bins = T.DATA_SZ .* (1:T.N_BINS);
-	end
+	%if(T.FPGA_MODE)
+	%	bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
+	%else
+	%	bins = T.DATA_SZ .* (1:T.N_BINS);
+	%end
+	bins = T.N_BINS .* (1:T.N_BINS);
 
 	for x = 1:img_w
 		for y = 1:img_h
@@ -40,7 +41,8 @@ function [bpdata rhist] = hbp_img(T, img, mhist)
 	rhist = rhist .* T.DATA_SZ;
 	%clean up garbage values
 	rhist(isnan(rhist)) = 0;
-	rhist(isinf(rhist)) = 1;
+	rhist(isinf(rhist)) = T.DATA_SZ;
+	%rhist(isinf(rhist)) = 1;
 	% TODO: MEX this?
 	for x = 1:img_w
 		for y = 1:img_h
@@ -48,11 +50,11 @@ function [bpdata rhist] = hbp_img(T, img, mhist)
 			bpimg(y,x) = rhist(idx);
 		end
 	end
-	imshow(bpimg)
 	%DEBUG:
 	fprintf('(hbp_img) : size bpimg:\n');
 	disp(size(bpimg));	
-	bpdata = bpimg2vec(bpimg);
+	fprintf('bpsum : %d\n', sum(sum(bpimg)));
+	bpdata = bpimg2vec(bpimg);	
 	fprintf('(hbp_img) : size bpdata:\n');
 	disp(size(bpdata));
 

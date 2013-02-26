@@ -1,4 +1,4 @@
-function imHist = gui_genImHist(varargin)
+function varargout = gui_genImHist(varargin)
 % GUI_GENIMHIST
 % Generate image histogram for csToolGUI. 
 % This function generates the image histogram for a frame in csToolGUI. The function
@@ -24,7 +24,9 @@ function imHist = gui_genImHist(varargin)
 	%Set internal constants
 	FPGA_MODE = 0;
 	DEBUG     = 0;
+	HSV       = 0;
 	N_BINS    = 16;
+	DATA_SZ   = 256;
 
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
@@ -35,8 +37,13 @@ function imHist = gui_genImHist(varargin)
 					img = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'region', 6))
 					region = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'hsv', 3))
+					HSV = 1;
 				elseif(strncmpi(varargin{k}, 'nbins', 5))
 					N_BINS = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'data', 4) || ...
+                       strncmpi(varargin{k}, 'size', 4))
+					DATA_SZ = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'fpga', 4))
 					FPGA_MODE = 1;
 				elseif(strncmpi(varargin{k}, 'debug', 5))
@@ -67,7 +74,15 @@ function imHist = gui_genImHist(varargin)
 		fprintf('UNDER DEVELOPMENT (use util/gen_fpgaHist())\n');
 		ihist = zeros(1,N_BINS);
 	else
-		ihist = imhist(img, N_BINS);
+		if(HSV)
+			hsvimg       = rgb2hsv(img);
+			hueimg       = DATA_SZ.*hsvimg(:,:,1);
+			varargout{1} = imhist(hueimg, N_BINS);
+		else
+			for k = 1:nargout
+				varargout{k} = imhist(img(:,:,k), N_BINS);
+			end
+		end
 	end
 	
 end 	%gui_genImHist()

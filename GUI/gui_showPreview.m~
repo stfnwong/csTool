@@ -49,18 +49,32 @@ function [status nh] = gui_showPreview(handles, varargin)
 	
 	if(exist('fh', 'var'))
 		%sanity check
+		if(~isa('fh', 'csFrame'))
+			fprintf('ERROR: I
+		img = imread(
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	if(~exist('fh', 'var') && exist('idx', 'var'))
 		if(DEBUG)
-			fprintf('%s fh is class [%s]\n', DSTR, class(fh));
+			fprintf('%s got idx and no fh\n', DSTR);
 		end
-		%if(~isa('fh', 'csFrame'))
-		%	fprintf('ERROR: fh not a csFrame, exiting...\n');
-		%	status = -1;
-		%	nh     = [];
-		%	return;
-		%end
-		img = imread(get(fh, 'filename'), 'TIFF');
-	elseif(exist('idx', 'var'))
-		%Bounds check idx, then get frame handle and read image
+		%Get an img 
 		if(idx == 0)
 			fprintf('ERROR: idx not set (equal 0)\n');
 			status = -1;
@@ -73,16 +87,28 @@ function [status nh] = gui_showPreview(handles, varargin)
 			nh     = [];
 			return;
 		end
-		fh  = handles.frameBuf.getFrameHandle(idx);
-		img = imread(get(fh, 'filename'), 'TIFF');
+		fh   = handles.fig_framePreview(idx);
+		if(DEBUG)
+			fprintf('%s class of fh : [%s]\n', DSTR, class(fh));
+		end
 	end
-	%Bounds check image and display in preview figure
+	%Another sanity check
+	if(DEBUG)
+		fprintf('%s got fh and no idx\n', DSTR);
+		fprintf('%s class of fh : [%s]\n', DSTR, class(fh));
+	end
+	if(~isa(fh, 'csFrame'))
+		fprintf('ERROR: fh not a csFrame, exiting...\n');
+		status = -1;
+		nh     = [];
+		return;
+	end
+	img  = imread(get(fh, 'filename'), 'TIFF');
 	dims = size(img);
 	if(dims(3) > 3)
-		fprintf('WARNING: Truncating dims in gui_showPreview()\n');
+		fprintf('WARNING: Truncating dims in gui_showPreview()...\n');
 		img = img(:,:,1:3);
 	end
-	set(fh, 'dims', [dims(2) dims(1)]);
 	imshow(img, 'parent', handles.fig_framePreview);
 	gui_setPreviewTitle(get(fh, 'filename'), handles.fig_framePreview);
 

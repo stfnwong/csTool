@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 22-Feb-2013 02:22:46
+% Last Modified by GUIDE v2.5 27-Feb-2013 02:55:05
 
 
 % Begin initialization code - DO NOT EDIT
@@ -271,7 +271,7 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         return;
 	end	
 	[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'b');
-	[exitflag handles]   = gui_showPreview(frameIndex, handles);
+	[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
 	if(exitflag == -1)
 		return;
 	end	
@@ -288,7 +288,7 @@ function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
         return;
 	end	
 	[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'f');
-	[exitflag handles]   = gui_showPreview(frameIndex, handles);
+	[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
 	if(exitflag == -1)
 		return;
 	end
@@ -315,6 +315,7 @@ function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	if(dims(3) > 3)
 		img = img(:,:,1:3);
 	end
+	set(fh, 'dims', [dims(2) dims(1)]);
 	%Set the new frameIndex
     frameIndex = idx;
     set(handles.etCurFrame, 'String', num2str(idx));
@@ -349,7 +350,11 @@ function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		return;
 	end
 	handles = nh;
-	[exitflag nh] = gui_showPreview(frameIndex, handles);
+	if(handles.debug)
+		[exitflag nh] = gui_showPreview(handles, 'idx', frameIndex, 'debug');
+	else
+		[exitflag nh] = gui_showPreview(handles, 'idx', frameIndex);
+	end
 	if(exitflag == -1)
 		return;
 	end
@@ -366,10 +371,20 @@ function bSegFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	global frameIndex;
 
 	fh = handles.frameBuf.getFrameHandle(frameIndex);
+
     handles.segmenter.segFrame(fh);
     %Show previews
-    bpimg = vec2bpimg(get(fh, 'bpVec'));
-    imshow(handles.fig_bpPreview, bpimg);
+	class(fh)
+	if(isa(fh, 'csFrame'))
+		fprintf('fh IS a csFrame!\n');
+	end
+	[status nh] = gui_showPreview(handles, 'fh', fh, 'seg', 'debug');
+	if(status == -1)
+		return;
+	end
+	handles = nh;
+%     bpimg = vec2bpimg(get(fh, 'bpVec'));
+%     imshow(handles.fig_bpPreview, bpimg);
 	
 	guidata(hObject, handles);
 
@@ -388,35 +403,56 @@ function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>
 
     fh = handles.frameBuf.getFrameHandle(sFrame:eFrame);
 
-    for k = 1:length(fh)
+	wb = waitbar(0, 'Segmenting Frames...');
+	N  = length(fh);
+	for k = 1:N
+		waitbar(k/N, wb, sprintf('Segmenting frame (%d/%d)...', k, N));
         handles.segmenter.segFrame(fh(k));
-    end
+	end
+	delete(wb);
     %Show preview of final frame
-    img   = imread(get(fh(k), 'filename'));
-    bpimg = vec2bpimg(get(fh(k)), 'bpVec');
-    imshow(handles.figPreview, img);
-    imshow(handles.fig_bpPreview, bpimg);
-	
+	[status nh] = gui_showPreview(handles, 'fh', fh(N), 'seg');
+	if(status == -1)
+		return;
+	end
+	handles = nh;
 	guidata(hObject, handles);
+	
+%     img   = imread(get(fh(k), 'filename'));
+%     bpimg = vec2bpimg(get(fh(k)), 'bpVec');
+%     imshow(handles.figPreview, img);
+%     imshow(handles.fig_bpPreview, bpimg);
 	
 end 	%bSegRange_Callback()
 
 function bSegAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
 	%Segment every frame in buffer
-	
-	for k = 1:handles.frameBuf.getNumFrames()
+	wb = waitbar(0, 'Segmenting Frames... ');
+	N  = handles.frameBuf.getNumFrames();
+	for k = 1:N
+		waitbar(k/N, wb, sprintf('Segmenting frame (%d/%d)...', k, N));
 		fh = handles.frameBuf.getFrameHandle(k);
 		handles.segmenter.segFrame(fh);
 	end
+	delete(wb);
 	
 	%Show preview of final frame
-	img   = imread(get(fh, 'filename'), handles.frameBuf.getExt());
-	bpimg = vec2bpimg(get(fh, 'bpvec'));
-	imshow(img, 'parent', handles.fig_framePreview);
-	%TODO: fparams call goes here
-	imshow(bpimg, 'parent', handles.fig_bpPreview);	
+	[status nh] = gui_showPreview(handles, 'fh', fh(N), 'seg');
+	if(status == -1)
+		return;
+	end
+	handles = nh;
+	
 	guidata(hObject, handles);
+	
+	
+% 	img   = imread(get(fh, 'filename'), handles.frameBuf.getExt());
+% 	bpimg = vec2bpimg(get(fh, 'bpvec'));
+% 	imshow(img, 'parent', handles.fig_framePreview);
+% 	%TODO: fparams call goes here
+% 	imshow(bpimg, 'parent', handles.fig_bpPreview);	
+% 	guidata(hObject, handles);
 
 end		%bSegAll_Callback()
 
@@ -461,7 +497,7 @@ function csToolFigure_WindowButtonDownFcn(hObject, eventdata, handles) %#ok <INU
 
 end		%csToolFigure_WindowButtonDownFcn()
 
-function csToolFigure_WindowButtonUpFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function csToolFigure_WindowButtonUpFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 end 	%csToolFigure_WindowButtonUpFcn()
 
@@ -496,7 +532,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				return;
 			end
 			handles = nh;
-			[exitflag nh] = gui_showPreview(frameIndex, handles);
+			[exitflag nh] = gui_showPreview(handles, 'idx', frameIndex);
 			if(exitflag == -1)
 				return;
 			end
@@ -513,14 +549,14 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 		case 'f'
 			%Seek frame forward
 			[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'f');
-			[exitflag handles]   = gui_showPreview(frameIndex, handles);
+			[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
 			if(exitflag == -1)
 				return;
 			end
 		case 'b'
 			%Seek frame backward
 			[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'b');
-			[exitflag handles]   = gui_showPreview(frameIndex, handles);
+			[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
 			if(exitflag == -1)
 				return;
 			end
@@ -550,18 +586,30 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				rData.rPos = rPos;		%Actually, this requires some massaging first...
 				rData.rRegion = nRegion;
 				if(handles.debug)
-					fprintf('Current rRegion :\n');
-					disp(rData.rRegion);
+					fprintf('Current rData :\n');
+					disp(rData);
 				end
 				handles.rData = rData;
-				%Set imRegion in segmenter
-				handles.segmenter.setImRegion(rData.rRegion);
+				%Set imRegion in segmenter and create model histogram
+				[status nh mhist] = init_modelHist(handles, rData.rRegion, frameIndex);
+				if(status == -1)
+					return;
+				end
+				handles = nh;
 				%Update histogram axes
-				ihist = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex));
-				gui_setHistograms('ihistAx', handles.fig_ihistPreview, 'ihist', ihist);
+				[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex), 'hsv');
+				%ihist = [r g b];
+				gui_setHistograms('ihistAx', handles.fig_ihistPreview, ... 
+					              'ihist', ihist, ...
+								  'mhistAx', handles.fig_mhistPreview, ...
+								  'mhist', mhist);
 				%Restore title
 				fh = handles.frameBuf.getFrameHandle(frameIndex);
 				title(handles.fig_framePreview, get(fh, 'filename'));
+				status = gui_setHistTitle(handles);
+				if(status == -1)
+					return;
+				end
 			else
 				%Create new rect
 				if(isempty(rData.rPos))
@@ -573,6 +621,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				else
 					nPos = rData.rPos;
 				end
+				%Create new imrect handle and populate rData structure
 				rh = imrect(handles.fig_framePreview, nPos);
 				addNewPositionCallback(rh, @(p) title(handles.fig_framePreview, mat2str(p,3)));
 				crFcn = makeConstrainToRectFcn('imrect', ...
@@ -606,13 +655,6 @@ function chkVerbose_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	handles.segmenter.setVerbose(state);
 	handles.tracker.setVerbose(state);
 	handles.frameBuf.setVerbose(state);
-% 	if(state)
-% 		handles.segmenter.setVerbose(1);
-% 		handles.tracker.setVerbose(1);
-% 	else
-% 		handles.segmenter.setVerbose(0);
-% 		handles.tracker.setVerbose(0);
-% 	end
 
 end     %chkVerbose_Callback()
 
@@ -675,6 +717,18 @@ function menu_Debug_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
 % handles    structure with handles and user data (see GUIDATA)
 
 end     %menu_Debug_Callback()
+
+function menu_DebugFrameStat_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+%Print statistics (particuarly segmentation statistics) for the currently
+%selected frame
+
+	global frameIndex;
+	
+	fh = handles.frameBuf.getFrameHandle(frameIndex);
+	fprintf('Data for frame %d :\n', frameIndex);
+	disp(fh);
+
+end		%menu_DebugFrameStat_Callback
 
 % --------------------------------------------------------------------
 function menu_DebugShow_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
@@ -769,4 +823,4 @@ function etCurFrame_Callback(hObject, eventdata, handles)	%#ok>INUSD,DEFNU>
 end     %etCurFrame_Callback()
 
 
-
+% --------------------------------------------------------------------

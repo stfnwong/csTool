@@ -1,4 +1,4 @@
-function [bpdata rhist] = hbp_block(T, img, mhist);
+function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 % HBP_BLOCK
 %
 % [bpdata rhist] = hbp_block(T, img, mhist);
@@ -23,14 +23,20 @@ function [bpdata rhist] = hbp_block(T, img, mhist);
 	%Create function handle to do block compares inside loop
 	bcomp = @(rl, rh, blk) (blk > rl) & (blk < rh);
 
+	%Check for dims parameter
+	if(~isempty(varargin))
+		dims = varargin{1};
+	end
+
 	%Get image paramters
 	[img_h img_w d] = size(img);
 	bpimg           = zeros(img_h, img_w, 'uint8');
-	if(T.FPGA_MODE)
-		bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
-	else
-		bins = T.DATA_SZ .* (1:T.N_BINS);
-	end
+	%if(T.FPGA_MODE)
+	%	bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
+	%else
+	%	bins = T.DATA_SZ .* (1:T.N_BINS);
+	%end
+	bins     = T.N_BINS .* (1:T.N_BINS);
 	%Create block memory
 	BLK_SZ   = T.BLK_SZ;
 	BLOCKS_X = fix(img_w/T.BLK_SZ);
@@ -57,11 +63,13 @@ function [bpdata rhist] = hbp_block(T, img, mhist);
 			rhist = mhist ./ ihist;
 			%Sanitise extreme values
 			rhist(isnan(rhist)) = 0;
-			if(T.FPGA_MODE)
-				rhist(isinf(rhist)) = T.DATA_SZ-1;
-			else
-				rhist(isinf(rhist)) = 1;
-			end
+			%if(T.FPGA_MODE)
+			%	rhist(isinf(rhist)) = T.DATA_SZ-1;
+			%else
+			%	rhist(isinf(rhist)) = 1;
+			%end
+			rhist(isinf(rhist)) = T.DATA_SZ;
+			rhsit = T.DATA_SZ .* rhist;		%scale to data size
 			%Save this ratio histogram
 			rhistBlk{x+1, y+1} = rhist;
 			%TODO: Check if we need to normalise here
@@ -84,7 +92,7 @@ function [bpdata rhist] = hbp_block(T, img, mhist);
 	%else
 	%	bpdata = bpimg;
 	%end
-	bpdata = bpimg2vec(bpimg);
+	bpdata = bpimg2vec(bpimg);	
 	%Compute overall ratio histogram
 	rhist = zeros(1, T.N_BINS);
 	for x = 1:BLOCKS_X

@@ -6,13 +6,13 @@ classdef csSegmenter < handle
 %
 % PROPERTIES:
 %
-% method - 
-% mhist -
-% imRegion - 
-% N_BINS
-% DATA_SZ
-% BLK_SZ
-% FPGA_MODE
+% method    -  
+% mhist     -
+% imRegion  - 
+% N_BINS    -
+% DATA_SZ   -
+% BLK_SZ    -
+% FPGA_MODE -
 % 
 % verbose
 %
@@ -201,6 +201,19 @@ classdef csSegmenter < handle
             im = imread(get(fh, 'filename'), 'TIFF');
 			im = rgb2hsv(im);
 			im = fix(T.DATA_SZ .* im(:,:,1));
+			%Check for dims property, and set if empty
+			if(isempty(get(fh, 'dims')))
+				sz   = size(im);
+				dims = [sz(2) sz(1)];
+				set(fh, 'dims', dims);
+			else
+				dims = get(fh, 'dims');
+			end
+			%DEBUG:
+			fprintf('(csSegmenter) mhist :\n');
+			disp(T.mhist);
+			fprintf('(csSegmenter) dims :\n');
+			disp(dims);
 			switch T.method
 				case T.HIST_BP_IMG
 					[bpvec rhist] = hbp_img(T, im, T.mhist);
