@@ -272,6 +272,15 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end	
+	[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex),'hsv');
+	if(exitflag == -1)
+		return;
+	end
+	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+		                           'ihist'  , ihist);
+	if(exitflag == -1)
+		return;
+	end
 	guidata(hObject, handles);
 
 end 	%bBack_Callback()
@@ -289,11 +298,22 @@ function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end
+	[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex),'hsv');             
+	if(exitflag == -1)
+		return;
+	end
+	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+		                           'ihist'  , ihist);
+	if(exitflag == -1)
+		return;
+	end
 	guidata(hObject, handles);
 
 end 	%bForward_Callback()	
 
 function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
+
+	global frameIndex;
 
 	%Get the index of the frame to goto
 	idx = str2double(get(handles.etGoto, 'String'));
@@ -308,6 +328,18 @@ function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end
+	[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex), 'hsv');
+	if(exitflag == -1)
+		return;
+	end
+	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+		                           'ihist'  , ihist);
+	if(exitflag == -1)
+		return;
+	end
+	frameIndex = idx;
+	%Update GUI
+	set(handles.etCurFrame, 'String', num2str(idx));
 	
 	guidata(hObject, handles);
 		
@@ -475,7 +507,10 @@ function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		end
 		waitbar(k/N, wb, sprintf('Tracking frame (%d/%d)...', k, N));
         handles.tracker.trackFrame(fh(k));
-		if(get(fh, 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
+		m = get(fh, 'moments');
+		w = get(fh, 'winParams');
+		if(cellfun(@isempty, m{1}) || cellfun(@isempty, w{1}))
+		%if(cellfun(@isempty, get(fh,'moments')) || cellfun(@isempty, get(fh, 'winParams')))
 			fprintf('ERROR: frame %d has no moment sums/window parameters\n', k);
 			fprintf('csToolTrackRange() exiting with %d frames unprocessed\n', N-k);
 			break;
@@ -516,7 +551,10 @@ function bTrackAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 			break;
 		end
 		handles.tracker.trackFrame(fh);
-		if(get(fh, 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
+		m = get(fh, 'moments');
+		w = get(fh, 'winParams');
+		if(cellfun(@isempty, m{1}) || cellfun(@isempty, w{1}))
+		%if(cellfun(@isempty, get(fh,'moments')) || cellfun(@isempty, get(fh, 'winParams')))
 			fprintf('ERROR: frame %d has no moment sums/window parameters\n', k);
 			fprintf('csToolTrackAll() exiting with %d frames unprocessed\n', N-k);
 			break;
@@ -561,7 +599,10 @@ function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 			break;
 		end
         handles.tracker.trackFrame(fh(k));
-		if(get(fh(k), 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
+		m = get(fh, 'moments');
+		w = get(fh, 'winParams');
+		if(cellfun(@isempty, m{1}) || cellfun(@isempty, w{1}))
+		%if(cellfun(@isempty, get(fh,'moments')) || cellfun(@isempty, get(fh, 'winParams')))
 			fprintf('ERROR: frame %d has no moment sums/window parameters.\n', k);
 			fprintf('csToolProcRange() exiting with %d frames unprocessed\n', N-k);
 			break;
@@ -601,7 +642,10 @@ function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 			break;
 		end
         handles.tracker.trackFrame(fh(k));
-		if(get(fh(k), 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
+		m = get(fh, 'moments');
+		w = get(fh, 'winParams');
+		if(cellfun(@isempty, m{1}) || cellfun(@isempty, w{1}))
+		%if(cellfun(@isempty, get(fh,'moments')) || cellfun(@isempty, get(fh, 'winParams')))
 			fprintf('ERROR: frame %d has no moment sums/window parameters.\n', k);
 			fprintf('csToolProcAll() exiting with %d frames unprocessed\n', N-k);
 			break;

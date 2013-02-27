@@ -50,12 +50,6 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 			bpimg(y,x) = rhist(idx);
 		end
 	end
-	%DEBUG:
-	fprintf('(hbp_img) : size bpimg:\n');
-	disp(size(bpimg));	
-	fprintf('bpsum : %d\n', sum(sum(bpimg)));
 	bpdata = bpimg2vec(bpimg);	
-	fprintf('(hbp_img) : size bpdata:\n');
-	disp(size(bpdata));
 
 end 		%hbp_img()

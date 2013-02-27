@@ -272,6 +272,7 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end	
+	[exitflag ihist] = gui_genImHist('fh', handles,frameBuf.getFrameah
 	guidata(hObject, handles);
 
 end 	%bBack_Callback()
@@ -295,6 +296,8 @@ end 	%bForward_Callback()
 
 function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
+	global frameIndex;
+
 	%Get the index of the frame to goto
 	idx = str2double(get(handles.etGoto, 'String'));
 	fmx = handles.frameBuf.getNumFrames();
@@ -308,6 +311,9 @@ function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end
+	frameIndex = idx;
+	%Update GUI
+	set(handles.etCurFrame, 'String', num2str(idx));
 	
 	guidata(hObject, handles);
 		
@@ -476,7 +482,10 @@ function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		waitbar(k/N, wb, sprintf('Tracking frame (%d/%d)...', k, N));
         handles.tracker.trackFrame(fh(k));
 		if(get(fh, 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
-			fprintf('ERROR: frame %d
+			fprintf('ERROR: frame %d has no moment sums/window parameters\n', k);
+			fprintf('csToolTrackRange() exiting with %d frames unprocessed\n', N-k);
+			break;
+		end
 	end
 	delete(wb);
 	
@@ -513,6 +522,11 @@ function bTrackAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 			break;
 		end
 		handles.tracker.trackFrame(fh);
+		if(get(fh, 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
+			fprintf('ERROR: frame %d has no moment sums/window parameters\n', k);
+			fprintf('csToolTrackAll() exiting with %d frames unprocessed\n', N-k);
+			break;
+		end		
 	end
 	delete(wb);
 	
@@ -593,6 +607,11 @@ function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 			break;
 		end
         handles.tracker.trackFrame(fh(k));
+		if(get(fh(k), 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
+			fprintf('ERROR: frame %d has no moment sums/window parameters.\n', k);
+			fprintf('csToolProcAll() exiting with %d frames unprocessed\n', N-k);
+			break;
+		end
 	end
 	delete(wb);
 	

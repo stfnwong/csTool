@@ -266,6 +266,21 @@ classdef csFrameBuffer
 		% -------- SETTER FUNCTIONS -------- %
 		% ---------------------------------- %
 
+		function [FB status] = clearImHist(FB, fIndex)
+		% CLEARIMHIST
+		% Clear the image histogram property of the frame handle at index fIndex. If
+		% fIndex is a vector, all frame handles in the vector are cleared
+		
+			if(length(fIndex) > 1)
+				for k = 1:fIndex(1):fIndex(end)
+					set(FB.frameBuf(k), 'ihist', []);	
+				end
+			else
+				set(FB.frameBuf(fIndex), 'ihist', []);
+			end
+
+		end 	%clearImHist
+
 		function [FB status] = parseFilename(FB, fname, varargin)
 		% PARSEFILENAME
 		% This method parses the filename specified by fname and sets the correct

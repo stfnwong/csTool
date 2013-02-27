@@ -42,6 +42,7 @@ classdef csFrame < hgsetget
 		bpVec;		%backprojection vector
 		bpSum;		%number of non-background pixels in bpImg
 		rhist;		%ratio histogram for this frame
+		ihist;		%image histogram for this frame
 		winParams;	%window parameters for tracking
 		winInit;    %Initial window parameters (final parameters from previous frame)
 		moments;    %Moment sums accumulated for this image
@@ -65,6 +66,7 @@ classdef csFrame < hgsetget
 						cf.bpVec     = [];
 						cf.bpSum     = [];
 						cf.rhist     = zeros(1,16, 'uint8');
+						cf.ihist     = [];
 						cf.winParams = cell(1,1);
 						cf.winInit   = zeros(1,5);
 						cf.moments   = cell(1,1);
@@ -83,6 +85,7 @@ classdef csFrame < hgsetget
 						cf.bpSum     = opts.bpSum;
 						cf.bpVec     = opts.bpVec;
 						cf.rhist     = opts.rhist;
+						cf.ihist     = opts.ihist;
 						cf.winInit   = opts.winInit;
 						cf.nIters    = opts.nIters;
 						cf.tVec      = opts.tVec;
@@ -110,6 +113,7 @@ classdef csFrame < hgsetget
 						cf.bpVec     = [];
 						cf.bpSum     = [];
 						cf.rhist     = zeros(1,16);
+						cf.ihist     = [];
 						cf.winParams = cell(1,1);
 						cf.winInit   = zeros(1,5);
 						cf.moments   = cell(1,1);
@@ -151,6 +155,10 @@ classdef csFrame < hgsetget
 		function set.rhist(T, rhist)
 			T.rhist = rhist;
 		end 	%setRHist()
+
+		function set.ihist(T, ihist)
+			T.ihist = ihist;
+		end 	%setIhist()
 
 		function set.winParams(T, wparams)
 			%Sanity check inputs

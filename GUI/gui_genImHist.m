@@ -11,6 +11,13 @@ function varargout = gui_genImHist(varargin)
 % read in the caller already, then the image can be passed directly with a 'img' 
 % tag in front.
 %
+% CHANGES: To speed up frame browsing, the csFrame class now buffers a copy
+% of the image histogram for that frame. If a frame handle is passed in,
+% the function will first check to see if there is an existing imhist, and
+% only if not present will a new one be generated. To clear old imhist
+% values from the frame handles, use the clearImHist() method in
+% csFrameBuffer.
+%
 % ARGUMENTS:
 % 'fh', fh         - Frame handle of image to generate histogram for
 % 'img', img       - Image to generate histogram for
@@ -57,30 +64,66 @@ function varargout = gui_genImHist(varargin)
 	%Check for not enough args
 	if(~exist('fh', 'var') && ~exist('img', 'var'))
 		fprintf('ERROR: No fh or img data passed in\n');
-		ihist = zeros(1, N_BINS);
+		varargout{1} = zeros(1, N_BINS);
 		return;
 	end
-	%Check for too many args
-	if(exist('fh', 'var') && exist('img', 'var'))
-		fprintf('WARNING: Both img and fh passed in, using img...\n')
-	else
-		img = imread(get(fh, 'filename'), 'tif');
-		dims = size(img);
-		if(dims(3) > 3)
-			img = img(:,:,1:3);
+	%Check for frame handle first, look for imhist
+	if(exist('fh', 'var'))
+		if(isempty(get(fh, 'ihist')))
+			%Load image from disk
+			img  = imread(get(fh, 'filename'), 'TIFF');
+			dims = size(img);
+			if(dims(3) > 3)
+				img = img(:,:,1:3);
+			end
+		else
+			%This could be a set of 3 histograms (RGB), so test dimensions
+			%before returning a value
+			ihist = get(fh, 'ihist');
+			sz    = size(ihist);
+			if(sz(1)  == 3)
+				switch nargout
+					case 1
+						varargout{1} = ihist(1,:);
+					case 2
+						varargout{1} = ihist(1,:);
+						varargout{2} = ihist(2,:);
+					case 3
+						varargout{1} = ihist(1,:);
+						varargout{2} = ihist(2,:);
+						varargout{3} = ihist(3,:);
+				end
+			else
+				varargout{1} = ihist;
+			end
+			return;
 		end
 	end
+
 	if(FPGA_MODE)
 		fprintf('UNDER DEVELOPMENT (use util/gen_fpgaHist())\n');
 		ihist = zeros(1,N_BINS);
+		if(exist('fh', 'var'))
+			set(fh, 'ihist', ihist);
+		end
+		varargout{1} = ihist;
 	else
 		if(HSV)
 			hsvimg       = rgb2hsv(img);
 			hueimg       = DATA_SZ.*hsvimg(:,:,1);
-			varargout{1} = imhist(hueimg, N_BINS);
+			ihist        = imhist(hueimg, N_BINS);
+			if(exist('fh', 'var'))
+				set(fh, 'ihist', ihist);
+			end
+			varargout{1} = ihist;
 		else
+			ihist = zeros(nargout, N_BINS);
 			for k = 1:nargout
-				varargout{k} = imhist(img(:,:,k), N_BINS);
+				%varargout{k} = imhist(img(:,:,k), N_BINS);
+				ihist(k,:) = imhist(img(:,:,k), N_BINS);
+			end
+			if(exist('fh', 'var'))
+				set(fh, 'ihist', ihist);
 			end
 		end
 	end
