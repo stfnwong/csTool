@@ -26,7 +26,8 @@ function vecDiskWrite(V, data, varargin)
 		sz = size(data)
 		if(sz(1) == 3)
 			%RGB/HSV vec
-			if(~exist('dest', var))
+			%if(~exist('dest', var))
+			if(isempty('dest', 'var'))
 				dest = V.wfilename;
 			end
 			rfp = fopen(sprintf('%s-red.dat', dest), 'w');

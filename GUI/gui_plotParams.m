@@ -51,9 +51,9 @@ function status = gui_plotParams(fh, axHandle, varargin)
 	end
 	hold(axHandle, 'off');
 	
-	%Plot confidence region
-	fprintf('CONFIDENCE REGION PLOT TO GO WHERE THIS TEXT APPEARS!\n');
-
-	%
+	%Parametrically plot elliptical confidence region
+	p     = params{end};
+	alpha = p(3) * (pi/180);
+	
 
 end 	%gui_plotParams()

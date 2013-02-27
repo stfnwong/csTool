@@ -599,6 +599,7 @@ function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 			break;
 		end
         handles.tracker.trackFrame(fh(k));
+		%TODO: Need a test here to get out of loop early
 		m = get(fh(k), 'moments');
 		w = get(fh(k), 'winParams');
 		if(isempty(m{1}) || isempty(w{1}) || m{1} == 0 || w{1} == 0)
