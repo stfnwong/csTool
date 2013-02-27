@@ -599,9 +599,9 @@ function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 			break;
 		end
         handles.tracker.trackFrame(fh(k));
-		m = get(fh, 'moments');
-		w = get(fh, 'winParams');
-		if(cellfun(@isempty, m{1}) || cellfun(@isempty, w{1}))
+		m = get(fh(k), 'moments');
+		w = get(fh(k), 'winParams');
+		if(isempty(m{1}) || isempty(w{1}) || m{1} == 0 || w{1} == 0)
 		%if(cellfun(@isempty, get(fh,'moments')) || cellfun(@isempty, get(fh, 'winParams')))
 			fprintf('ERROR: frame %d has no moment sums/window parameters.\n', k);
 			fprintf('csToolProcRange() exiting with %d frames unprocessed\n', N-k);
@@ -630,13 +630,14 @@ function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 					 'CreateCancelBtn', ...
 					 'setappdata(gcbf, ''canceling'', 1)');
 	for k = 1:N
+		fh = handles.frameBuf.getFrameHandle(k);
 		if(getappdata(wb, 'canceling'))
 			fprintf('Cancelled ProcRange at frame %d (%d left)\n', k, N-k);
 			break;
 		end
 		waitbar(k/N, wb, sprintf('Processing frame (%d/%d)...', k, N));
-		handles.segmenter.segFrame(fh(k));
-		if(get(fh(k), 'bpSum') == 0)
+		handles.segmenter.segFrame(fh);
+		if(get(fh, 'bpSum') == 0)
 			fprintf('ERROR: frame %d has no backprojected pixels.\n', k);
 			fprintf('csToolProcRange() exiting at with %d frames unprocessed\n', N-k);
 			break;
@@ -644,7 +645,8 @@ function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
         handles.tracker.trackFrame(fh(k));
 		m = get(fh, 'moments');
 		w = get(fh, 'winParams');
-		if(cellfun(@isempty, m{1}) || cellfun(@isempty, w{1}))
+		if(isempty(m{1}) || isempty(w{1}))
+		%if(cellfun(@isempty, m{1}) || cellfun(@isempty, w{1}))
 		%if(cellfun(@isempty, get(fh,'moments')) || cellfun(@isempty, get(fh, 'winParams')))
 			fprintf('ERROR: frame %d has no moment sums/window parameters.\n', k);
 			fprintf('csToolProcAll() exiting with %d frames unprocessed\n', N-k);
