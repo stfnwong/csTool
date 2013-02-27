@@ -46,75 +46,78 @@ function varargout = csToolSegOpts(varargin)
 
 % --- Executes just before csToolSegOpts is made visible.
 function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <INUSD>
-% This function has no output args, see OutputFcn.
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to csToolSegOpts (see VARARGIN)
+% CSTOOLSEGIOPTS_OPENINGFCN
+% Start the csToolSegOpts GUI panel. 
+%
+% USAGE:
+% ss = csToolSegOpts(segOpts)
+% 
+% ARGUMENTS
+% segOpts   - Segmenter options structure containing setup for 
+%
+% OUTPUTS:
+% ss        - Structure containing new csSegmenter options
+%
+
+% Stefan Wong 2013
 
 	handles.debug = 0;
-    %Need to pass in a handles to csSegmenter and current set of segmenter
-    %options.
-    if(length(varargin) < 1)
-        error('No csSegmenter object in csToolSegOpts');
-    else
-        fprintf('DEBUG: Passing input params (csToolSegOpts)');
-        if(~isa(varargin{1}, 'csSegmenter'))
-            error('Incorrect parameter in csToolSegOpts (expecting csSegmenter)');
-        else
-            handles.segmenter = varargin{1};
-        end
-      (~isa(varargin{2}, 'struct'))
-            error('Incorrect parameter in csToolSegOpts (expecting options struct)');
-        else
-            fprintf('DEBUG: segopts:\n');
-            disp(varargin{2});
-            handles.segopts = varargin{2};
+
+	if(isempty(varargin))
+		fprintf('ERROR: incorrect input arguments to csToolSegOpts\n');
+		handles.output = [];
+		close(hObject);
+		return;
+	else
+		if(~isa(varargin{1}, 'struct'))
+			fprintf('ERROR: Expecting segOpts structure in csToolSegOpts\n');
+			handles.output = [];
+			close(hObject);
+			return;
 		end
-		if(length(varargin) > 2)
-			if(strncmpi(varargin{3}, 'debug', 5))
-				handles.debug = 1;
+		handles.segopts = varargin{1};
+		if(length(varargin) > 1)
+			for k = 2:length(varargin)
+				if(strncmpi(varargin{k}, 'mstr', 4))
+					mstr = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'debug', 5))
+					handles.debug = 1;
+				end
 			end
 		end
-    end
-
-    %DEBUG
-    fprintf('csToolSegOpts DEBUG:\n');
-    disp(handles);
-    %Do any custom initialisation
-    %init_lbSegMethod(handles);
-    %init_editTextBoxes(handles);
+	end
+    
     %Populate list
-    mstr = handles.segmenter.methodStr;
+	sOpts = handles.segopts;
+	if(~exist('mstr', 'var'))
+		fprintf('WARNING: No method string !\n');
+		mstr = {'m1', 'm2', 'm3'};
+	end
     set(handles.lbSegMethod, 'String', mstr);
     set(handles.lbSegMethod, 'Value', 1);
     %Place current settings into editable text boxes
-    set(handles.etBlkSz, 'String', num2str(handles.segopts.blkSz));
-    set(handles.etDataSz, 'String', num2str(handles.segopts.dataSz));
-    set(handles.etNBins, 'String', num2str(handles.segopts.nBins));
+    set(handles.etBlkSz, 'String', num2str(sOpts.blkSz));
+    set(handles.etDataSz, 'String', num2str(sOpts.dataSz));
+    set(handles.etNBins, 'String', num2str(sOpts.nBins));
     %Also set checkbox
-    if(handles.segopts.fpgaMode)
+    if(sOpts.fpgaMode)
         set(handles.chkFPGA, 'Value', 1);
     else
         set(handles.chkFPGA, 'Value', 0);
     end
-    %set(handles.chkFPGA, 'Value', handles.segopts.fpgaMode);
+    %set(handles.chkFPGA, 'Value', sOpts.fpgaMode);
 
     % Choose default command line output for csToolSegOpts
-    handles.output = hObject;
-    % Update handles structure
+    handles.output = sOpts;
     guidata(hObject, handles);
-
     % UIWAIT makes csToolSegOpts wait for user response (see UIRESUME)
-    % uiwait(handles.figSegOpts);
-
+    uiwait(hObject);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 
-    % Get default command line output from handles structure
     varargout{1} = handles.output;
-	delete(hObject);
+	delete(handles.figSegOpts);
 
 
 % --- Executes on button press in bAccept.
@@ -136,9 +139,10 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
     segMethod = get(handles.lbSegMethod, 'Value');
     fpgaMode  = get(handles.chkFPGA, 'Value');
 
-    %Do any parameter massaging (ie: converting from cell array)
-	% TODO: How to deal with mhist?
-    opts      = struct('blkSz',     blkSz, ...
+    %Do any parameter massaging (ie: converting from cell array), copy mhist
+	%from old parameters, copy mhist
+	%from old parameters
+	opts      = struct('blkSz',     blkSz, ...
                        'dataSz',    dataSz, ...
                        'nBins',     nBins, ...
                        'fpgaMode', fpgaMode, ...
@@ -148,25 +152,21 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
 					   'mhist',     handles.segopts.mhist);
 
     handles.segmenter = csSegmenter(opts);
-	handles.output    = struct('segmenter', handles.segmenter, 'segOpts', opts);
+	handles.output    = opts;
 	guidata(hObject, handles);
-	figSegOpts_CloseRequestFcn(hObject, eventdata, handles);
-
+	uiresume(handles.figSegOpts);
     
 % --- Executes on button press in bCancel.
 function bCancel_Callback(hObject, eventdata, handles)   %#ok <INUSL>
     %Exit GUI without saving changes
-	figSegOpts_CloseRequestFcn(hObject, eventdata, handles);
+	handles.output = handles.segopts;
+	uiresume(handles.figSegOpts);
 
 % --- Executes when user attempts to close figSegOpts.
-function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSD, DEFNU>
+function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
-	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
-		uiresume(hObject);
-	else
-		delete(hObject);
-	end
-
+	uiresume(handles.figSegOpts);
+	delete(handles.figSegOpts);
 %---------------------------------------------------------------%
 %                         CREATE FUNCTIONS                      %
 %---------------------------------------------------------------%
@@ -174,7 +174,7 @@ function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSD, DEF
 
 % --- Executes during object creation, after setting all properties.
 function etBlkSz_CreateFcn(hObject, eventdata, handles)  %#ok <INUSL>
-    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+	ifispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
 	end
 

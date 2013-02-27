@@ -6,25 +6,28 @@ classdef csSegmenter < handle
 %
 % PROPERTIES:
 %
-% method    -  
-% mhist     -
-% imRegion  - 
-% N_BINS    -
-% DATA_SZ   -
-% BLK_SZ    -
-% FPGA_MODE -
-% 
-% verbose
+% method    - Segmentation Method to use for the frame. Strings describing each method
+%             are stored in the methodStr property. 
+% mhist     - Model Histogram to use for segmentation
+% imRegion  - Region of image to generate model histogram from (region containing 
+%             target)
+% N_BINS    - Number of bins to use in histogram (default: 16)
+% DATA_SZ   - Size of hue data word (default: 256)
+% BLK_SZ    - Size of block to use for block-based segmentation methods (default: 16)
+% FPGA_MODE - Use FPGA specific modelling constructs (eg, fixed point arithmetic, 
+%             iterative structures, etc). Slower, but often closer to verilog 
+%             simulation
+% verbose   - Be verbose
 %
 % METHODS
 % For more detailed help about a specific method, type help 'methodname'
 %
-% csSegmenter (constructor) - create a new csSegmenter object
-% getMhist - 
-% getImRegion - 
-% getDataSz - 
-% genMhist - 
-% segFrame - 
+% csSegmenter - (constructor)  create a new csSegmenter object
+% getMhist    - Return model histogram vector 
+% getImRegion - Return region matrix
+% getDataSz   - Return current data size
+% genMhist    - Generate new mhist using internal imRegion matrix
+% segFrame    - Segment the frame associated with frame handle fh
 %
 
 %TODO: Document properly
@@ -144,10 +147,10 @@ classdef csSegmenter < handle
 
 		% ---- getOpts() : GET A COMPLETE OPTIONS STRUCT (for csToolGUI)
 		function opts = getOpts(S)
-			opts = struct('dataSz'  , S.dataSz,   ...
-                          'blkSz'   , S.blkSz,    ...
-                          'nBins'   , S.nBins,    ...
-                          'fpgaMode', S.fpgaMode, ...
+			opts = struct('dataSz'  , S.DATA_SZ,   ...
+                          'blkSz'   , S.BLK_SZ,    ...
+                          'nBins'   , S.N_BINS,    ...
+                          'fpgaMode', S.FPGA_MODE, ...
                           'method'  , S.method,   ...
                           'mhist'   , S.mhist,    ...
                           'imRegion', S.imRegion, ...
@@ -209,11 +212,6 @@ classdef csSegmenter < handle
 			else
 				dims = get(fh, 'dims');
 			end
-			%DEBUG:
-			fprintf('(csSegmenter) mhist :\n');
-			disp(T.mhist);
-			fprintf('(csSegmenter) dims :\n');
-			disp(dims);
 			switch T.method
 				case T.HIST_BP_IMG
 					[bpvec rhist] = hbp_img(T, im, T.mhist);
@@ -226,18 +224,11 @@ classdef csSegmenter < handle
 				otherwise
 					error('Invalid segmentation method in T.method');
 			end
-            %DEBUG:
-            fprintf('(csSegmenter) Size bpvec:\n');
-            disp(size(bpvec));
-			%Write frame data
+       		%Write frame data
 			bpsum = sum(sum(bpvec));
             set(fh, 'bpSum', bpsum);
             set(fh, 'bpVec', bpvec);
-            set(fh, 'rhist', rhist);
-			%fh.setBpSum(bpsum);
-			%fh.setBpImg(bpdata);
-			%fh.setRHist(rhist);
-
+            set(fh, 'rhist', rhist);	
 		end 	%frameSegment()
 
 		% ---- SETTER METHODS ----- %

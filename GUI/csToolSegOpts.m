@@ -77,44 +77,45 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
 		end
 		handles.segopts = varargin{1};
 		if(length(varargin) > 1)
-			if(strncmpi(varargin{2}, 'debug', 5))
-				handles.debug = 1;
+			for k = 2:length(varargin)
+				if(strncmpi(varargin{k}, 'mstr', 4))
+					mstr = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'debug', 5))
+					handles.debug = 1;
+				end
 			end
 		end
 	end
     
     %Populate list
-    mstr = handles.segmenter.methodStr;
+	sOpts = handles.segopts;
+	if(~exist('mstr', 'var'))
+		fprintf('WARNING: No method string !\n');
+		mstr = {'m1', 'm2', 'm3'};
+	end
     set(handles.lbSegMethod, 'String', mstr);
     set(handles.lbSegMethod, 'Value', 1);
     %Place current settings into editable text boxes
-    set(handles.etBlkSz, 'String', num2str(handles.segopts.blkSz));
-    set(handles.etDataSz, 'String', num2str(handles.segopts.dataSz));
-    set(handles.etNBins, 'String', num2str(handles.segopts.nBins));
+    set(handles.etBlkSz, 'String', num2str(sOpts.blkSz));
+    set(handles.etDataSz, 'String', num2str(sOpts.dataSz));
+    set(handles.etNBins, 'String', num2str(sOpts.nBins));
     %Also set checkbox
-    if(handles.segopts.fpgaMode)
+    if(sOpts.fpgaMode)
         set(handles.chkFPGA, 'Value', 1);
     else
         set(handles.chkFPGA, 'Value', 0);
     end
-    %set(handles.chkFPGA, 'Value', handles.segopts.fpgaMode);
+    %set(handles.chkFPGA, 'Value', sOpts.fpgaMode);
 
     % Choose default command line output for csToolSegOpts
-    handles.output = handles.segopts;
+    handles.output = sOpts;
     guidata(hObject, handles);
     % UIWAIT makes csToolSegOpts wait for user response (see UIRESUME)
     uiwait(hObject);
 
-
 % --- Outputs from this function are returned to the command line.
 function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 
-    % Get default command line output from handles structure
-% 	if(handles.debug)
-% 		fprintf('Values in handles.output...\n');
-% 		t = handles.output;
-% 		disp(t);
-% 	end
     varargout{1} = handles.output;
 	delete(handles.figSegOpts);
 
@@ -150,7 +151,7 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
                        'imRegion',  handles.segopts.imRegion, ...
 					   'mhist',     handles.segopts.mhist);
 
-    handles.segmenter = csSegmenter(opts);
+    %handles.segmenter = csSegmenter(opts);
 	handles.output    = opts;
 	guidata(hObject, handles);
 	uiresume(handles.figSegOpts);
@@ -158,28 +159,16 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
 % --- Executes on button press in bCancel.
 function bCancel_Callback(hObject, eventdata, handles)   %#ok <INUSL>
     %Exit GUI without saving changes
-	opts = handles.segopts;
+	handles.output = handles.segopts;
 	uiresume(handles.figSegOpts);
 
 % --- Executes when user attempts to close figSegOpts.
-function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSD, DEFNU>
+function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
-	%DEBUG
-	fprintf('hObject fields : \n');
-	get(hObject)
-
-	%TODO: Need to find out more about this waitstatus property....
-	if(isequal(get(handles.figSegOpts, 'Busy'), 1))
-		uiresume(handles.figSegOpts);
-	else
-		delete(hObject);
-	end
-%	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
-%		uiresume(hObject);
-%	else
-%		delete(hObject);
-%	end
-
+	uiresume(handles.figSegOpts);
+	delete(handles.figSegOpts);
+	
+	
 %---------------------------------------------------------------%
 %                         CREATE FUNCTIONS                      %
 %---------------------------------------------------------------%
@@ -187,7 +176,7 @@ function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSD, DEF
 
 % --- Executes during object creation, after setting all properties.
 function etBlkSz_CreateFcn(hObject, eventdata, handles)  %#ok <INUSL>
-    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
 	end
 

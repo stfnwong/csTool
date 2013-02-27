@@ -18,15 +18,26 @@ function status = gui_plotParams(fh, axHandle, varargin)
 
 % Stefan Wong 2013
 
-	if(length(varargin) > 0)
+	%Set internal constants
+	DSTR = '(gui_plotParams) :';
+
+	if(~isempty(varargin))
 		fprintf('Optional features not yet implemented\n');
 	end
+
 
 	%Plot handles are used throughout this function, mainly so that configuration of
 	%each plot can be split across multiple lines (my vim sessions are 90 columns)
 
 	params = get(fh, 'winParams');
+	%if(isempty(params) || params == 0)
+	%	fprintf('%s no params set for this frame\n', DSTR);
+	%	status = -1;
+	%	return;
+	%end
 	
+	%Plot centroids
+	hold(axHandle, 'on');
 	for k = 1:length(params)
 		thisParam = params{k};
 		%Plot centroid
@@ -36,10 +47,12 @@ function status = gui_plotParams(fh, axHandle, varargin)
 			set(ph, 'Color', [1 0 0], 'MarkerSize', 16, 'LineWidth', 4);
 		else
 			set(ph, 'Color', [1 0 0], 'MarkerSize', 12, 'LineWidth' 2);
-		hold(axHandle, 'on');
-		
+		end
 	end
-
+	hold(axHandle, 'off');
+	
+	%Plot confidence region
+	fprintf('CONFIDENCE REGION PLOT TO GO WHERE THIS TEXT APPEARS!\n');
 
 	%
 

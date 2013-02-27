@@ -79,8 +79,6 @@ classdef csTracker < handle
 							error('Expecting options structure');
 						end
 						opts = varargin{1};
-						fprintf('DEBUG: csTracker opts\n');
-						disp(opts);
 						T.method      = opts.method;
 						T.verbose     = opts.verbose;
 						T.fParams     = opts.fParams;

@@ -53,7 +53,6 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
 % varargin   command line arguments to csToolTrackOpts (see VARARGIN)
 
 	handles.debug = 0;
-    %Get segmenter object
 
 	if(isempty(varargin))
 		fprintf('ERROR: Incorrect input arguments to csToolTrackOpts\n');
@@ -89,21 +88,15 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
     set(handles.chkFixedIter,  'Value',  tOpts.fixedIter);
 	
 	handles.output = tOpts;			%default output
-    % Update handles structure
+
     guidata(hObject, handles);
-    % UIWAIT makes csToolTrackOpts wait for user response (see UIRESUME)
     uiwait(handles.figTrackOpts);
 
 
 % --- Outputs from this function are returned to the command line.
 function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 
-% 	if(handles.debug)
-% 		fprintf('Value of handles.output...\n');
-% 		t = handles.output;
-% 		disp(t);
-% 	end
-    varargout{1} = handles.output;			
+    varargout{1} = handles.output;
 	delete(hObject);
 
 %---------------------------------------------------------------%
@@ -148,55 +141,49 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
                          'fParams', tOpts.fParams);
 	handles.output  = opts;
 	guidata(hObject, handles);
-	close(hObject);		%request close
-	%uiresume(hObject);
-
+	uiresume(handles.figTrackOpts);
+	
 % --- Executes on button press in bCancel.
 function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
     %disp(handles);
     %handles.output = handles.trackopts;
-	%uiresume(hObject);
+	uiresume(handles.figTrackOpts);
 	%close(hObject);
 
 % --- Executes when user attempts to close figTrackOpts.
-function figTrackOpts_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSD>
+function figTrackOpts_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
-	uiresume(hObject);
-	delete(hObject);
+	uiresume(handles.figTrackOpts);
+	delete(handles.figTrackOpts);
+	
+	
 	
 	
 %---------------------------------------------------------------%
 %                        CREATE FUNCTIONS                       %
 %---------------------------------------------------------------%
 
-
 % --- Executes during object creation, after setting all properties.
 function lbTrackMethod_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
 
 % --- Executes during object creation, after setting all properties.
 function etThresh_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
-
 
 % --- Executes during object creation, after setting all properties.
 function etMaxIter_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
-    end
-
+	end
 
 % --- Executes during object creation, after setting all properties.
 function etEpsilon_CreateFcn(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
@@ -208,20 +195,11 @@ function etEpsilon_CreateFcn(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
 
 % --- Executes on button press in chkCordic.
 function chkCordic_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
 function etEpsilon_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
 function etMaxIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
 function etThresh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-% --- Executes on button press in chkRotMatrix.
 function chkRotMatrix_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-% --- Executes on button press in chkFixedIter.
 function chkFixedIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-% --- Executes on selection change in lbTrackMethod.
 function lbTrackMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 

@@ -48,16 +48,6 @@ function [status nh] = gui_showPreview(handles, varargin)
 
 	
 	if(exist('fh', 'var'))
-		%sanity check
-		if(DEBUG)
-			fprintf('%s fh is class [%s]\n', DSTR, class(fh));
-		end
-		%if(~isa('fh', 'csFrame'))
-		%	fprintf('ERROR: fh not a csFrame, exiting...\n');
-		%	status = -1;
-		%	nh     = [];
-		%	return;
-		%end
 		img = imread(get(fh, 'filename'), 'TIFF');
 	elseif(exist('idx', 'var'))
 		%Bounds check idx, then get frame handle and read image
@@ -86,8 +76,10 @@ function [status nh] = gui_showPreview(handles, varargin)
 	imshow(img, 'parent', handles.fig_framePreview);
 	gui_setPreviewTitle(get(fh, 'filename'), handles.fig_framePreview);
 
-	%Also do segmented image, if requested
-	if(exist('seg', 'var'))
+	%if(exist('seg', 'var'))
+
+	%If there is segmentation data, show this as well
+	if(get(fh, 'bpSum') ~= 0)
 		bpvec  = get(fh, 'bpVec');
 		bpdims = get(fh, 'dims');
 		bpimg  = vec2bpimg(bpvec, bpdims);
@@ -100,6 +92,13 @@ function [status nh] = gui_showPreview(handles, varargin)
 		end
 		imshow(bpimg, 'parent', handles.fig_bpPreview);
 	end 
+	%If there is tracking data, overlay this onto segmentation data
+	params = get(fh, 'winParams');
+	if(cellfun(@isempty, params) || params == 0)
+		fprintf('No params set for this frame\n');
+	else
+		gui_plotParams(fh, handles.fig_bpPreview);
+	end
 	status = 0;
 	nh     = handles; 
 

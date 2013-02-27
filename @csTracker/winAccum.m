@@ -75,12 +75,20 @@ function [moments wparam] = winAccum(T, bpvec, varargin)
 % 		wparam  = zeros(1,5);
 % 		return;
 % 	end
+
+	%Quit if wparam is badly-formed
+	if(numel(wparam) == 0)
+		fprintf('%s no data in wparam\n', T.pStr);
+		moments = zeros(1,5);
+		wparam  = zeros(1,5);
+		return;
+	end
 	
 	%Find edge of constraining rectangle.
 	%Depending on options set in csTracker, we either apply a rotation matrix to the
 	%parameters, or we solve a set of 4 linear constraints and take pixels that fall
 	%within the intersection of the lines
-	if(T.ROT_MATRIX)
+	%if(T.ROT_MATRIX)
 		%use rotation matrix
 		xc     = wparam(1);
 		yc     = wparam(2);
@@ -112,10 +120,10 @@ function [moments wparam] = winAccum(T, bpvec, varargin)
 		M20    = sum(winvec(1,:) .* winvec(1,:));
 		M02    = sum(winvec(2,:) .* winvec(2,:));
 
-	else
+	%else
 		%Solve 4 linear constraints for bounding box
-		fprintf('WARNING: Linear constraints not yet implemented!\n');
-	end
+		%fprintf('WARNING: Linear constraints not yet implemented!\n');
+	%end
 	%Normalise moment sums
 	%xm      = M10 / M00;
 	%ym      = M01 / M00;

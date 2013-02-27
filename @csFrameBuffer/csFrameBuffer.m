@@ -141,14 +141,12 @@ classdef csFrameBuffer
 		
 		function ext = getExt(F)
 		% GETEXT
-		%
 		% Returns the current file extension type
 			ext = F.ext;
 		end 	%getExt()
 		
 		function n = getNumFrames(F)
 		% GETNUMFRAMES
-		%
 		% Returns the number of frame handles currently stored in the
 		% buffer
 			n = F.nFrames;
@@ -156,11 +154,21 @@ classdef csFrameBuffer
 		
 		function path = getPath(F)
 		% GETPATH
-		%
 		% Return a string containing the current internal path
 		
 			path = F.path;
 		end		%getPath()
+
+		function opts = getOpts(F)
+		% GETOPTS
+		% Return an options structure. For csToolGUI.
+			opts = struct('frameBuf', F.frameBuf, ...
+                          'nFrames',  F.nFrames,  ...
+                          'path',     F.path,     ...
+                          'ext',      F.ext,      ...
+                          'fNum',     F.fNum,     ...
+                          'verbose',  F.verbose );
+		end 	%getOpts();
 
 		function fh = getFrameHandle(F, N)
 		% GETFRAMEHANDLE

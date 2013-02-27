@@ -21,6 +21,7 @@ classdef vecManager
 
 	properties (SetAccess = 'private', GetAccess = 'public')
 		verbose;
+		fmtStr = {'scalar', '4c', '8c', '16c', '4r', '8r', '16r'};
 	end
 
 	methods (Access = 'public')
@@ -30,14 +31,48 @@ classdef vecManager
 			switch nargin
 				case 0
 					%Default init
+					V.wfilename = ' ';	
+					V.rfilename = ' ';
+					V.destDir   = ' ';
+ 					V.vecdata   = [];
+					V.vfParams  = [];
+					V.bpvecFmt  = 'scalar';
+					V.errorTol  = 0;
+					V.dataSz    = 256;
 				case 1
-					if(isa(varargin{1}, vecManager))
+					if(isa(varargin{1}, 'vecManager'))
 						V = varargin{1};
+					else
+						if(~isa(varargin{1}, 'struct'))
+							error('Expecting options structure');
+						end
+						opts = varargin{1};
+						V.wfilename = opts.wfilename;
+						V.wfilename = opts.rfilename;
+						V.destDir   = opts.destDir;
+						V.vecdata   = opts.vecdata;
+						V.vfParams  = opts.vfParams;
+						V.bpvecFmt  = opts.bpvecFmt;
+						V.errorTol  = opts.errorTol;
+						V.dataSz    = opts.dataSz;
 					end
 				otherwise
 					error('Incorrect constructor arguments');
 			end
 		end 	%vecManager() CONSTRUCTOR
+
+		% ---- GETTER METHODS ---- %
+		%Getter for csToolGUI
+		function opts = getOpts(V)
+			opts = struct('wfilename', V.wfilename, ...
+                          'rfilename', V.rfilename, ...
+                          'destDir',   V.destDir,   ...
+                          'vecdata',   V.vecdata,   ...
+                          'vfParams',  V.vfParams,  ...
+                          'bpvecFmt',  V.bpvecFmt,  ...
+                          'errorTol',  V.errorTol,  ...
+                          'dataSz',    V.dataSz );
+		end		%getOpts()
 
 		% ---- SETTER METHODS ----%
 		% ---- setRLoc : SET READ LOCATION
