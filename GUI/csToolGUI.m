@@ -804,6 +804,8 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 					return;
 				end
 				handles = nh;
+				%Set initial winparams for tracking
+				%handles.tracker.initWindow();
 				%Update histogram axes
 				[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex), 'hsv');
 				%ihist = [r g b];

@@ -24,8 +24,26 @@ classdef csTracker < handle
 %               value is set to 0 (no threshold applied)
 %
 % METHODS:
-%
-%
+% -----------------
+% Getter methods
+%------------------
+% getOpts         - Return an options structure containing the current values of all
+%                   properties in the csTracker object.
+%------------------
+% Setter methods
+%------------------
+% setTrackMethod  - Set the method to use for tracking
+% setParams       - Set window parameters to use for the current frame. This method is
+%                   automatically called from within the tracking loop to set the 
+%                   parameters for the following frame using the current parameters.
+%                   This method should be called when the target is first segmented
+%                   to set the initial window parameters.
+% setVerbose      - Set the verbose property
+%------------------
+% Processing methods
+% -----------------
+% trackFrame      - Perform selected tracking method on current frame
+% initWindow      - Set the initial window position. 
 
 % Stefan Wong 2012
 
@@ -247,12 +265,21 @@ classdef csTracker < handle
                 set(fh, 'tVec',      tVec);
                 set(fh, 'winParams', fwparam);
                 set(fh, 'moments',   fmoments);
-				%fh.setTVec(tVec);
-				%fh.setWparams(fwparam);
-				%fh.setMoments(fmoments);
 				%Write internal frame parameters
 				T.fParams = fwparam{end};
 		end 	%trackFrame()
+
+		function status = initWindow(T, varargin)
+		
+			%Do any massaging required on arguments, then call initParam()			
+			[wparam status] = initParam(T, arg);
+			if(status ~= -1)
+				T.fParam = wparam;
+			else
+				fprintf('wparam not saved (invalid)\n');
+			end
+
+		end 	%initWindow()
 
 		function disp(T)
 			csTracker.tDisplay(T);
@@ -267,6 +294,7 @@ classdef csTracker < handle
 		[moments wparam] = winAccum(T, bpimg, varargin);
 		% ---- wparamComp() : FIND WINDOW PARAMETERS FROM MOMENT SUMS
 		wparam           = wparamComp(T, moments);
+		[wparam status]  = initParam(T, varargin);
 	end 		%csTracker METHODS (Private)
 
 	methods (Static)
