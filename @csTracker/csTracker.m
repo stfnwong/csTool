@@ -269,15 +269,37 @@ classdef csTracker < handle
 				T.fParams = fwparam{end};
 		end 	%trackFrame()
 
-		function status = initWindow(T, varargin)
+		function [status varargout] = initWindow(T, varargin)
+		% INITWINDOW
+		% Use a specified initialisation scheme to set the initial window position
+		% for tracking.
 		
-			%Do any massaging required on arguments, then call initParam()			
-			[wparam status] = initParam(T, arg);
-			if(status ~= -1)
-				T.fParam = wparam;
-			else
-				fprintf('wparam not saved (invalid)\n');
+			%Forward the variable arguments to initParam, this function just checks
+			%that the param it returns is sensible
+			args   = varargin{1:end};			
+			wparam = initParam(T, args);
+			
+			%Check that wparam isn't borked
+			if(numel(wparam) == 0)
+				fprintf('ERROR: wparam contains no elements\n');
+				status = -1;
+				if(nargout > 1)
+					varargout{1} = [];
+				end
+				return;
 			end
+			if(sum(wparam) == 0)
+				fprintf('ERROR: Winparams all zeros\n');
+				status = -1;
+				if(nargout > 1)
+					varargout{1} = [];
+				end
+				return;
+			end
+			if(nargout > 1)
+				varargout{1} = wparam;
+			end
+			status = 0;
 
 		end 	%initWindow()
 
@@ -294,7 +316,7 @@ classdef csTracker < handle
 		[moments wparam] = winAccum(T, bpimg, varargin);
 		% ---- wparamComp() : FIND WINDOW PARAMETERS FROM MOMENT SUMS
 		wparam           = wparamComp(T, moments);
-		[wparam status]  = initParam(T, varargin);
+		wparam           =  initParam(T, varargin);
 	end 		%csTracker METHODS (Private)
 
 	methods (Static)

@@ -202,7 +202,7 @@ classdef csFrameBuffer
 		% values for all frames in the buffer. Call with a scalar or vector
 		% to show the values for a single frame or range of frames
 		
-			if(length(varargin) > 0)
+			if(isempty(varargin))
 				N = varargin{1};
 			else
 				N = F.Frames;

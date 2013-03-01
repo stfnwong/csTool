@@ -70,9 +70,6 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 
 	
     fprintf('Initialising csTool GUI....\n');
-	% TODO: FIX THIS
-	%Current dummy code for testing imrect selector
-	handles.rect.rs = [];
 	
 	%Parse optional arguments (if any)	
 	if(~isempty(varargin))
@@ -345,6 +342,25 @@ function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		
 end		%bGoto_Callback()
 
+
+%Seems intuitive that if you modify the current frame text that the tool
+%should navigate to that frame
+function etCurFrame_Callback(hObject, eventdata, handles)	%#ok>INUSD,DEFNU>
+
+    global frameIndex;
+
+    idx = str2double(get(hObject, 'String'));
+    %Check bounds
+    if(idx < 1 || idx > handles.frameBuf.getNumFrames())
+        fprintf('ERROR: cannot seek to frame %d, invalid\n', idx);
+    else
+        frameIndex = idx;
+    end
+    
+    guidata(hObject, handles);
+
+end     %etCurFrame_Callback()
+
 % ============================ LOAD ===================================
 
 function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -363,6 +379,13 @@ function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		return;
 	end
 	handles = nh;
+    %Re-check the frame index - this is caused by an incorrect value for
+    %the frameIndex variable being set on startup. Invesigate preferences
+    %files for culprit
+    if(frameIndex > handles.frameBuf.getNumFrames())
+        fprintf('WARNING: frameIndex exceeds buffer size - getting last frame\n');
+        frameIndex = handles.frameBuf.getNumFrames() - 1;
+    end
 	if(handles.debug)
 		[exitflag nh] = gui_showPreview(handles, 'idx', frameIndex, 'debug');
 	else
@@ -779,7 +802,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			rData = handles.rData;
 			if(rData.rExist)
 				%Get position and compute axis-space coords, then clear
-				if(isempty(rData.rHandle))
+				if(~ishandle(rData.rHandle))
 					fprintf('ERROR: No data in rData.rHandle\n');
 					rData.rExist = 0;
 					handles.rData = rData;
@@ -789,7 +812,6 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				rPos    = getPosition(rData.rHandle);
 				%Convert to region
 				nRegion = gui_rPos2rRegion(rPos, handles.fig_framePreview);
-				delete(rData.rHandle)
 				rData.rExist = 0;
 				rData.rPos = rPos;		%Actually, this requires some massaging first...
 				rData.rRegion = nRegion;
@@ -805,7 +827,21 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				end
 				handles = nh;
 				%Set initial winparams for tracking
-				%handles.tracker.initWindow();
+                if(handles.debug)
+                    fprintf('Setting initial window region\n');
+                    [status wparam] = handles.tracker.initWindow('region', rData.rRegion);
+                    if(status == -1)
+                        fprintf('ERROR: wparam not correctly set\n');
+                    else
+                        fprintf('Wparam set as [%d %d %d %d %d]\n', ...
+                        wparam(1), wparam(2), wparam(3), wparam(4), wparam(5));
+                    end
+                else
+                    status = handles.tracker.initWindow('region', rData.rRegion);
+                    if(status == -1)
+                        fprintf('ERROR: wparam not correctly set\n');
+                    end
+                end
 				%Update histogram axes
 				[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex), 'hsv');
 				%ihist = [r g b];
@@ -820,6 +856,8 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				if(status == -1)
 					return;
 				end
+                %Everything complete, delete handle
+                delete(rData.rHandle);
 			else
 				%Create new rect
 				if(isempty(rData.rPos))
@@ -1050,5 +1088,4 @@ function etFilePath_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 end     %etFilePath_Callback()
 function etGoto_Callback(hObject, eventdata, handles)		%#ok<INUSD,DEFNU>
 end		%etGoto_Callback()
-function etCurFrame_Callback(hObject, eventdata, handles)	%#ok>INUSD,DEFNU>
-end     %etCurFrame_Callback()
+
