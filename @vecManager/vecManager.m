@@ -75,6 +75,13 @@ classdef vecManager
 		end		%getOpts()
 
 		% ---- SETTER METHODS ----%
+
+		% ---- setVerbose ------- %
+		function Vout = setVerbose(V, verbose)
+			V.verbose = verbose;
+			Vout      = V;
+		end 	%setVerbose()
+			
 		% ---- setRLoc : SET READ LOCATION
 		function VM = setRLoc(V, rloc)
 			if(~ischar(rloc))

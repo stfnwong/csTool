@@ -900,9 +900,13 @@ function chkVerbose_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 % Hint: get(hObject,'Value') returns toggle state of chkVerbose
 
 	state = get(hObject, 'Value');	
+	if(handles.debug)
+		fprintf('(DEBUG) verbose value : %d\n', state);
+	end
 	handles.segmenter.setVerbose(state);
 	handles.tracker.setVerbose(state);
 	handles.frameBuf.setVerbose(state);
+	handles.vecManager.setVerbose(state);
 
 end     %chkVerbose_Callback()
 
