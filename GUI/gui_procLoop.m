@@ -85,12 +85,12 @@ function [status] = gui_procLoop(handles, varargin)
 		wb = waitbar(0, sprintf('%ss...', fs), ...
     	                'Name', sprintf('%s %d - %d', fs, range(1), range(2)), ...
                         'CreateCancelBtn', ...
-                        'setappdata(handles.csToolFigure, ''canceling'', 1)');
+                        'setappdata(gcbf, ''canceling'', 1)');
 	else
 		wb = waitbar(0, sprintf('%ss...', fs), ...
                         'Name', sprintf('%s 1 - %d', fs, N), ...
                         'CreateCancelBtn', ...
-                        'setappdata(handles.csToolFigure, ''canceling'', 1');
+                        'setappdata(gcbf, ''canceling'', 1');
 	end
 
 	%Use this until issues with waitbar cancel button are sorted
@@ -105,7 +105,7 @@ function [status] = gui_procLoop(handles, varargin)
 	status = 0;
 	%Process frames in loop
 	for k = 1:N
-		if(getappdata(handles.csToolFigure, 'canceling'))
+		if(getappdata(wb, 'canceling'))
 			fprintf('Cancelled %s at frame %d (%d left)\n', fs, k, N-k);
 			status = -1;
 			break;

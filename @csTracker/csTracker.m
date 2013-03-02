@@ -67,7 +67,8 @@ classdef csTracker < handle
 		KERNEL_DENSITY  = 3;
 		methodStr       = {'Windowed moment accumulation', ...
 			               'Un-windowed moment accumulation', ...
-					       'Kernel Density Estimation' };
+					       'Kernel Density Estimation', ...
+                           'Sparse moment window'};
 		pStr            = 'csTracker :';
 	end
 
@@ -235,7 +236,10 @@ classdef csTracker < handle
 				while( eps(1) > T.EPSILON && eps(2) > T.EPSILON)
 					switch T.method
 						case T.MOMENT_WINACCUM
-							[moments wparam] = winAccum(T, get(fh, 'bpVec'), 'wparam', wpos);
+							[moments wparam] = winAccum(T, ...
+                                                        get(fh, 'bpVec'), ...
+                                                        wpos, ...
+                                                        get(fh, 'dims'));
 						case T.MOMENT_IMGACCUM
 							wparam           = [];
 							moments          = imgAccum(T, get(fh, 'bpVec'));
@@ -312,7 +316,7 @@ classdef csTracker < handle
 		% ---- imgAccum()   : WHOLE IMAGE MOMENT ACCUMULATION
 		[moments]        = imgAccum(T, bpimg)
 		% ---- winAccum()   : WINDOWED MOMENT ACCUMULATION
-		[moments wparam] = winAccum(T, bpimg, varargin);
+		[moments wparam] = winAccum(T, bpimg, wpos, dims);
 		% ---- wparamComp() : FIND WINDOW PARAMETERS FROM MOMENT SUMS
 		wparam           = wparamComp(T, moments);
 		wparam           =  initParam(T, varargin);

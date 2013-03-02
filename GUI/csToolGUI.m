@@ -162,11 +162,13 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	%Create structure for handling imregion
 	r = struct('rHandle', [], 'rExist', 0, 'rRegion', [], 'rPos', []);
 	handles.rData = r;
+	%Hold default figure name as a property
+	handles.csToolFigName = 'csTool - CAMSHIFT Simulation Tool';
 	
 	% =============================================================== %
 	%                          csTool setup                           %
 	% =============================================================== %
-	set(gcf, 'Name', 'csTool - CAMSHIFT Simulation Tool');
+	set(gcf, 'Name', handles.csToolFigName);
 	set(gcf, 'Units', 'Pixels');
 	%Setup axes
 	cla(handles.fig_framePreview);
@@ -409,11 +411,6 @@ function bSegFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	fh = handles.frameBuf.getFrameHandle(frameIndex);
 
     handles.segmenter.segFrame(fh);
-    %Show previews
-	class(fh)
-	if(isa(fh, 'csFrame'))
-		fprintf('fh IS a csFrame!\n');
-	end
 	[status nh] = gui_showPreview(handles, 'fh', fh, 'seg', 'debug');
 	if(status == -1)
 		return;
@@ -434,48 +431,59 @@ function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>
         fprintf('ERROR: (SegRange) End frame is before start frame\n');
         return;
 	end
-	
+	%Turn off interface during processing
+	handles = gui_ifaceEnable(handles, 'off');
 	if(handles.debug)
 		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'seg', 'debug');
 	else
 		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'seg');
 	end
 	if(status == -1)
+		%Turn interface back on
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
-
     %Show preview of final frame
 	fh = handles.frameBuf.getFrameHandle(eFrame);
 	[status nh] = gui_showPreview(handles, 'fh', fh, 'seg');
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
+	%Turn interface back on 
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
-	
-
 	
 end 	%bSegRange_Callback()
 
 function bSegAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
-
-
+	
+	%Turn off interface during processing
+	handles = gui_ifaceEnable(handles, 'off');
 	if(handles.debug)
 		status = gui_procLoop(handles, 'seg', 'debug');
 	else
 		status = gui_procLoop(handles, 'seg');
 	end
 	if(status == -1)
+		%Turn interface back on 
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
-	end
-	
+	end	
 	%Show preview of final frame
 	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
-	
+	%Turn interface back on 
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
 	
 end		%bSegAll_Callback()
@@ -492,23 +500,30 @@ function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
         fprintf('ERROR: (TrackRange) End frame is before start frame\n');
         return;
 	end
-	
+	%Turn off interface
+	handles = gui_ifaceEnable(handles, 'off');
 	if(handles.debug)
 		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'track', 'debug');
 	else
 		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'track');
 	end
 	if(status == -1)
+		%Turn interface back on 
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	
 	%Show preview of final frame
 	[status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
 	if(status == -1)
+		%Turn interface back on 
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
-	
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
 	
 end		%bTrackRange_Callback()
@@ -516,22 +531,27 @@ end		%bTrackRange_Callback()
 function bTrackAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
 	%Track every frame in buffer
+	handles = gui_ifaceEnable(handles, 'off');
 	if(handles.debug)
 		status = gui_procLoop(handles, 'track', 'debug');
 	else
 		status = gui_procLoop(handles, 'track');
 	end
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 
 	%Show preview of final frame
 	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
-	
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
 
 end		%bTrackAll_Callback()
@@ -548,31 +568,34 @@ function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
         fprintf('ERROR: (TrackRange) End frame is before start frame\n');
         return;
 	end
-	
+	handles = gui_ifaceEnable(handles, 'off');
 	if(handles.debug)
 		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'proc', 'debug');
 	else
 		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'proc');
 	end
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	
 	%Show preview of final frame
 	[status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
-	
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
 
 end		%bProcRange_Callback()
 
 function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 	
-	%Segment and then track all frames
-	
+	%Segment and then track all frames	
 	if(handles.debug)
 		status = gui_procLoop(handles, 'proc', 'debug');
 	else
@@ -581,45 +604,16 @@ function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 	if(status == -1)
 		return;
 	end
-	
-% 	N  = handles.frameBuf.getNumFrames();
-% 	wb = waitbar(0, 'Processing Frames...', ...
-% 		            'Name', sprintf('Processing frame %d - %d', sFrame, eFrame), ...
-% 					 'CreateCancelBtn', ...
-% 					 'setappdata(gcbf, ''canceling'', 1)');
-% 	for k = 1:N
-% 		fh = handles.frameBuf.getFrameHandle(k);
-% 		if(getappdata(wb, 'canceling'))
-% 			fprintf('Cancelled ProcRange at frame %d (%d left)\n', k, N-k);
-% 			break;
-% 		end
-% 		waitbar(k/N, wb, sprintf('Processing frame (%d/%d)...', k, N));
-% 		handles.segmenter.segFrame(fh);
-% 		if(get(fh, 'bpSum') == 0)
-% 			fprintf('ERROR: frame %d has no backprojected pixels.\n', k);
-% 			fprintf('csToolProcRange() exiting at with %d frames unprocessed\n', N-k);
-% 			break;
-% 		end
-%         handles.tracker.trackFrame(fh(k));
-% 		m = get(fh, 'moments');
-% 		w = get(fh, 'winParams');
-% 		if(isempty(m{1}) || isempty(w{1}))
-% 		%if(cellfun(@isempty, m{1}) || cellfun(@isempty, w{1}))
-% 		%if(cellfun(@isempty, get(fh,'moments')) || cellfun(@isempty, get(fh, 'winParams')))
-% 			fprintf('ERROR: frame %d has no moment sums/window parameters.\n', k);
-% 			fprintf('csToolProcAll() exiting with %d frames unprocessed\n', N-k);
-% 			break;
-% 		end
-% 	end
-% 	delete(wb);
-	
+	handles = gui_ifaceEnable(handles, 'off');
 	%Show preview of final frame
 	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
-	
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
 
 end		%bProcAll_Callback
