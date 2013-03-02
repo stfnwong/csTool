@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 27-Feb-2013 23:39:53
+% Last Modified by GUIDE v2.5 02-Mar-2013 16:00:21
 
 
 % Begin initialization code - DO NOT EDIT
@@ -70,9 +70,6 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 
 	
     fprintf('Initialising csTool GUI....\n');
-	% TODO: FIX THIS
-	%Current dummy code for testing imrect selector
-	handles.rect.rs = [];
 	
 	%Parse optional arguments (if any)	
 	if(~isempty(varargin))
@@ -272,7 +269,15 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end	
-	[exitflag ihist] = gui_genImHist('fh', handles,frameBuf.getFrameah
+	[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex),'hsv');
+	if(exitflag == -1)
+		return;
+	end
+	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+		                           'ihist'  , ihist);
+	if(exitflag == -1)
+		return;
+	end
 	guidata(hObject, handles);
 
 end 	%bBack_Callback()
@@ -287,6 +292,15 @@ function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
 	end	
 	[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'f');
 	[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
+	if(exitflag == -1)
+		return;
+	end
+	[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex),'hsv');             
+	if(exitflag == -1)
+		return;
+	end
+	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+		                           'ihist'  , ihist);
 	if(exitflag == -1)
 		return;
 	end
@@ -311,6 +325,15 @@ function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end
+	[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex), 'hsv');
+	if(exitflag == -1)
+		return;
+	end
+	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+		                           'ihist'  , ihist);
+	if(exitflag == -1)
+		return;
+	end
 	frameIndex = idx;
 	%Update GUI
 	set(handles.etCurFrame, 'String', num2str(idx));
@@ -318,6 +341,25 @@ function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 		
 end		%bGoto_Callback()
+
+
+%Seems intuitive that if you modify the current frame text that the tool
+%should navigate to that frame
+function etCurFrame_Callback(hObject, eventdata, handles)	%#ok>INUSD,DEFNU>
+
+    global frameIndex;
+
+    idx = str2double(get(hObject, 'String'));
+    %Check bounds
+    if(idx < 1 || idx > handles.frameBuf.getNumFrames())
+        fprintf('ERROR: cannot seek to frame %d, invalid\n', idx);
+    else
+        frameIndex = idx;
+    end
+    
+    guidata(hObject, handles);
+
+end     %etCurFrame_Callback()
 
 % ============================ LOAD ===================================
 
@@ -337,6 +379,13 @@ function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		return;
 	end
 	handles = nh;
+    %Re-check the frame index - this is caused by an incorrect value for
+    %the frameIndex variable being set on startup. Invesigate preferences
+    %files for culprit
+    if(frameIndex > handles.frameBuf.getNumFrames())
+        fprintf('WARNING: frameIndex exceeds buffer size - getting last frame\n');
+        frameIndex = handles.frameBuf.getNumFrames() - 1;
+    end
 	if(handles.debug)
 		[exitflag nh] = gui_showPreview(handles, 'idx', frameIndex, 'debug');
 	else
@@ -370,8 +419,6 @@ function bSegFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		return;
 	end
 	handles = nh;
-%     bpimg = vec2bpimg(get(fh, 'bpVec'));
-%     imshow(handles.fig_bpPreview, bpimg);
 	
 	guidata(hObject, handles);
 
@@ -383,28 +430,23 @@ function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>
 	%Pull values out of range boxes
     sFrame = fix(str2double(get(handles.etLowRange, 'String')));
     eFrame = fix(str2double(get(handles.etHighRange, 'String')));
-    if(eFrame < sFrame)
+	if (eFrame < sFrame)
         fprintf('ERROR: (SegRange) End frame is before start frame\n');
         return;
-    end
-
-    fh = handles.frameBuf.getFrameHandle(sFrame:eFrame);
-	N  = length(fh);
-	wb = waitbar(0, 'Segmenting Frames...', ...
-		            'Name', sprintf('Segmenting frame %d - %d', sFrame, eFrame), ...
-					 'CreateCancelBtn', ...
-					 'setappdata(gcbf, ''canceling'', 1)');
-	for k = 1:N
-		if(getappdata(wb, 'canceling'))
-			fprintf('Cancelled SegRange at frame %d (%d left)\n', k, N-k);
-			break;
-		end
-		waitbar(k/N, wb, sprintf('Segmenting frame (%d/%d)...', k, N));
-        handles.segmenter.segFrame(fh(k));
 	end
-	delete(wb);
+	
+	if(handles.debug)
+		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'seg', 'debug');
+	else
+		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'seg');
+	end
+	if(status == -1)
+		return;
+	end
+
     %Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'fh', fh(N), 'seg');
+	fh = handles.frameBuf.getFrameHandle(eFrame);
+	[status nh] = gui_showPreview(handles, 'fh', fh, 'seg');
 	if(status == -1)
 		return;
 	end
@@ -417,25 +459,18 @@ end 	%bSegRange_Callback()
 
 function bSegAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
-	%Segment every frame in buffer
-	N  = handles.frameBuf.getNumFrames();
-	wb = waitbar(0, 'Segmenting Frames...', ...
-		            'Name', sprintf('Segmenting frame 1 - %d', N), ...
-					 'CreateCancelBtn', ...
-					 'setappdata(gcbf, ''canceling'', 1)');
-	for k = 1:N
-		if(getappdata(wb, 'cancelling'))
-			fprintf('Cancelling SegAll at frame %d (%d left)\n', k, N-k);
-			break;
-		end
-		waitbar(k/N, wb, sprintf('Segmenting frame (%d/%d)...', k, N));
-		fh = handles.frameBuf.getFrameHandle(k);
-		handles.segmenter.segFrame(fh);
+
+	if(handles.debug)
+		status = gui_procLoop(handles, 'seg', 'debug');
+	else
+		status = gui_procLoop(handles, 'seg');
 	end
-	delete(wb);
+	if(status == -1)
+		return;
+	end
 	
 	%Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'fh', fh(N), 'seg');
+	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
 	if(status == -1)
 		return;
 	end
@@ -458,39 +493,17 @@ function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
         return;
 	end
 	
-	%Cant track until after segmentation, so check each bpSum 
-    fh = handles.frameBuf.getFrameHandle(sFrame:eFrame);
-	if(get(fh(1), 'bpSum') == 0)
-		fprintf('ERROR: Start frame contains no backprojected pixels\n');
+	if(handles.debug)
+		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'track', 'debug');
+	else
+		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'track');
+	end
+	if(status == -1)
 		return;
 	end
-	N  = length(fh);
-	wb = waitbar(0, 'Tracking Frames...', ...
-		            'Name', sprintf('Tracking frame %d - %d', sFrame, eFrame), ...
-					 'CreateCancelBtn', ...
-					 'setappdata(gcbf, ''canceling'', 1)');
-	for k = 1:N
-		if(getappdata(wb, 'canceling'))
-			fprintf('Cancelled TrackRange at frame %d (%d left)\n', k, N-k);
-			break;
-		end
-		if(get(fh(k), 'bpSum') == 0)
-			fprintf('ERROR: frame %d has no backprojected pixels.\n', k);
-			fprintf('csToolSegRange() exiting at with %d frames unprocessed\n', N-k);
-			break;
-		end
-		waitbar(k/N, wb, sprintf('Tracking frame (%d/%d)...', k, N));
-        handles.tracker.trackFrame(fh(k));
-		if(get(fh, 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
-			fprintf('ERROR: frame %d has no moment sums/window parameters\n', k);
-			fprintf('csToolTrackRange() exiting with %d frames unprocessed\n', N-k);
-			break;
-		end
-	end
-	delete(wb);
 	
 	%Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'fh', fh(N), 'seg');
+	[status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
 	if(status == -1)
 		return;
 	end
@@ -503,32 +516,21 @@ end		%bTrackRange_Callback()
 function bTrackAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
 	%Track every frame in buffer
-	N = handles.frameBuf.getNumFrames();
-	wb = waitbar(0, 'Tracking Frames...', ...
-		            'Name', sprintf('Tracking frame %d - %d', sFrame, eFrame), ...
-					 'CreateCancelBtn', ...
-					 'setappdata(gcbf, ''canceling'', 1)');	
-	%Track frames, checking for 0 bpSum on each iteration
-	for k = 1:N
-		if(getappdata('canceling'))
-			fprintf('Cancelled TrackAll at frame %d (%d left)\n', k, N-k);
-			break;
-		end
-		waitbar(k/N, wb, sprintf('Segmenting frame (%d/%d)...', k, N));
-		fh = handles.frameBuf.getFrameHandle(k);
-		if(get(fh, 'bpSum') == 0)
-			fprintf('ERROR: Frame %d contains no backprojected pixels\n', k);
-			fprintf('csToolTrackAll() exiting with %d frames unprocessed\n', N-k);
-			break;
-		end
-		handles.tracker.trackFrame(fh);
-		if(get(fh, 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
-			fprintf('ERROR: frame %d has no moment sums/window parameters\n', k);
-			fprintf('csToolTrackAll() exiting with %d frames unprocessed\n', N-k);
-			break;
-		end		
+	if(handles.debug)
+		status = gui_procLoop(handles, 'track', 'debug');
+	else
+		status = gui_procLoop(handles, 'track');
 	end
-	delete(wb);
+	if(status == -1)
+		return;
+	end
+
+	%Show preview of final frame
+	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
+	if(status == -1)
+		return;
+	end
+	handles = nh;
 	
 	guidata(hObject, handles);
 
@@ -547,36 +549,17 @@ function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
         return;
 	end
 	
-	%Cant track until after segmentation, so check each bpSum 
-    fh = handles.frameBuf.getFrameHandle(sFrame:eFrame);
-	N  = length(fh);
-	wb = waitbar(0, 'Processing Frames...', ...
-		            'Name', sprintf('Processing frame %d - %d', sFrame, eFrame), ...
-					 'CreateCancelBtn', ...
-					 'setappdata(gcbf, ''canceling'', 1)');
-	for k = 1:N
-		if(getappdata(wb, 'canceling'))
-			fprintf('Cancelled ProcRange at frame %d (%d left)\n', k, N-k);
-			break;
-		end
-		waitbar(k/N, wb, sprintf('Processing frame (%d/%d)...', k, N));
-		handles.segmenter.segFrame(fh(k));
-		if(get(fh(k), 'bpSum') == 0)
-			fprintf('ERROR: frame %d has no backprojected pixels.\n', k);
-			fprintf('csToolProcRange() exiting with %d frames unprocessed\n', N-k);
-			break;
-		end
-        handles.tracker.trackFrame(fh(k));
-		if(get(fh(k), 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
-			fprintf('ERROR: frame %d has no moment sums/window parameters.\n', k);
-			fprintf('csToolProcRange() exiting with %d frames unprocessed\n', N-k);
-			break;
-		end
+	if(handles.debug)
+		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'proc', 'debug');
+	else
+		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'proc');
 	end
-	delete(wb);
+	if(status == -1)
+		return;
+	end
 	
 	%Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'fh', fh(N), 'seg');
+	[status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
 	if(status == -1)
 		return;
 	end
@@ -589,34 +572,49 @@ end		%bProcRange_Callback()
 function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 	
 	%Segment and then track all frames
-	N  = handles.frameBuf.getNumFrames();
-	wb = waitbar(0, 'Processing Frames...', ...
-		            'Name', sprintf('Processing frame %d - %d', sFrame, eFrame), ...
-					 'CreateCancelBtn', ...
-					 'setappdata(gcbf, ''canceling'', 1)');
-	for k = 1:N
-		if(getappdata(wb, 'canceling'))
-			fprintf('Cancelled ProcRange at frame %d (%d left)\n', k, N-k);
-			break;
-		end
-		waitbar(k/N, wb, sprintf('Processing frame (%d/%d)...', k, N));
-		handles.segmenter.segFrame(fh(k));
-		if(get(fh(k), 'bpSum') == 0)
-			fprintf('ERROR: frame %d has no backprojected pixels.\n', k);
-			fprintf('csToolProcRange() exiting at with %d frames unprocessed\n', N-k);
-			break;
-		end
-        handles.tracker.trackFrame(fh(k));
-		if(get(fh(k), 'moments') == 0 || cellfun(@isempty, get(fh, 'winParams')))
-			fprintf('ERROR: frame %d has no moment sums/window parameters.\n', k);
-			fprintf('csToolProcAll() exiting with %d frames unprocessed\n', N-k);
-			break;
-		end
+	
+	if(handles.debug)
+		status = gui_procLoop(handles, 'proc', 'debug');
+	else
+		status = gui_procLoop(handles, 'proc');
 	end
-	delete(wb);
+	if(status == -1)
+		return;
+	end
+	
+% 	N  = handles.frameBuf.getNumFrames();
+% 	wb = waitbar(0, 'Processing Frames...', ...
+% 		            'Name', sprintf('Processing frame %d - %d', sFrame, eFrame), ...
+% 					 'CreateCancelBtn', ...
+% 					 'setappdata(gcbf, ''canceling'', 1)');
+% 	for k = 1:N
+% 		fh = handles.frameBuf.getFrameHandle(k);
+% 		if(getappdata(wb, 'canceling'))
+% 			fprintf('Cancelled ProcRange at frame %d (%d left)\n', k, N-k);
+% 			break;
+% 		end
+% 		waitbar(k/N, wb, sprintf('Processing frame (%d/%d)...', k, N));
+% 		handles.segmenter.segFrame(fh);
+% 		if(get(fh, 'bpSum') == 0)
+% 			fprintf('ERROR: frame %d has no backprojected pixels.\n', k);
+% 			fprintf('csToolProcRange() exiting at with %d frames unprocessed\n', N-k);
+% 			break;
+% 		end
+%         handles.tracker.trackFrame(fh(k));
+% 		m = get(fh, 'moments');
+% 		w = get(fh, 'winParams');
+% 		if(isempty(m{1}) || isempty(w{1}))
+% 		%if(cellfun(@isempty, m{1}) || cellfun(@isempty, w{1}))
+% 		%if(cellfun(@isempty, get(fh,'moments')) || cellfun(@isempty, get(fh, 'winParams')))
+% 			fprintf('ERROR: frame %d has no moment sums/window parameters.\n', k);
+% 			fprintf('csToolProcAll() exiting with %d frames unprocessed\n', N-k);
+% 			break;
+% 		end
+% 	end
+% 	delete(wb);
 	
 	%Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'fh', fh(N), 'seg');
+	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg')s;
 	if(status == -1)
 		return;
 	end
@@ -738,17 +736,18 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			rData = handles.rData;
 			if(rData.rExist)
 				%Get position and compute axis-space coords, then clear
-				if(isempty(rData.rHandle))
-					fprintf('ERROR: No data in rData.rHandle\n');
-					rData.rExist = 0;
-					handles.rData = rData;
-					guidata(hObject, handles);
-					return;
-				end
+% 				if(~ishandle(rData.rHandle))
+% 					fprintf('ERROR: No data in rData.rHandle\n');
+% 					rData.rExist = 0;
+% 					%Get rid of handle so we dont get multiple rectangles
+% 					delete(rData.rHandle);
+% 					handles.rData = rData;
+% 					guidata(hObject, handles);
+% 					return;
+% 				end
 				rPos    = getPosition(rData.rHandle);
 				%Convert to region
 				nRegion = gui_rPos2rRegion(rPos, handles.fig_framePreview);
-				delete(rData.rHandle)
 				rData.rExist = 0;
 				rData.rPos = rPos;		%Actually, this requires some massaging first...
 				rData.rRegion = nRegion;
@@ -763,6 +762,22 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 					return;
 				end
 				handles = nh;
+				%Set initial winparams for tracking
+                if(handles.debug)
+                    fprintf('Setting initial window region\n');
+                    [status wparam] = handles.tracker.initWindow('region', rData.rRegion);
+                    if(status == -1)
+                        fprintf('ERROR: wparam not correctly set\n');
+                    else
+                        fprintf('Wparam set as [%d %d %d %d %d]\n', ...
+                        wparam(1), wparam(2), wparam(3), wparam(4), wparam(5));
+                    end
+                else
+                    status = handles.tracker.initWindow('region', rData.rRegion);
+                    if(status == -1)
+                        fprintf('ERROR: wparam not correctly set\n');
+                    end
+                end
 				%Update histogram axes
 				[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex), 'hsv');
 				%ihist = [r g b];
@@ -777,6 +792,8 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				if(status == -1)
 					return;
 				end
+                %Everything complete, delete handle
+                delete(rData.rHandle);
 			else
 				%Create new rect
 				if(isempty(rData.rPos))
@@ -819,9 +836,13 @@ function chkVerbose_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 % Hint: get(hObject,'Value') returns toggle state of chkVerbose
 
 	state = get(hObject, 'Value');	
+	if(handles.debug)
+		fprintf('(DEBUG) verbose value : %d\n', state);
+	end
 	handles.segmenter.setVerbose(state);
 	handles.tracker.setVerbose(state);
 	handles.frameBuf.setVerbose(state);
+	handles.vecManager.setVerbose(state);
 
 end     %chkVerbose_Callback()
 
@@ -1007,5 +1028,10 @@ function etFilePath_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 end     %etFilePath_Callback()
 function etGoto_Callback(hObject, eventdata, handles)		%#ok<INUSD,DEFNU>
 end		%etGoto_Callback()
-function etCurFrame_Callback(hObject, eventdata, handles)	%#ok>INUSD,DEFNU>
-end     %etCurFrame_Callback()
+
+
+% --------------------------------------------------------------------
+function menu_debugShowHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
+	fprintf('Current handles struct contents :\n');
+	disp(handles);
+end		%menu_debugShowHandles()

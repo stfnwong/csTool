@@ -276,8 +276,7 @@ classdef csTracker < handle
 		
 			%Forward the variable arguments to initParam, this function just checks
 			%that the param it returns is sensible
-			args   = varargin{1:end};			
-			wparam = initParam(T, args);
+			wparam = initParam(T, varargin);
 			
 			%Check that wparam isn't borked
 			if(numel(wparam) == 0)

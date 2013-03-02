@@ -40,11 +40,11 @@ function [status] = gui_procLoop(handles, varargin)
 	end
 
 	%Format a string for waitbar that represents the operation being performed
-	if(TRACK & SEG)
+	if(TRACK && SEG)
 		fs = 'Processing frame';
-	elseif(TRACK & ~SEG)
+	elseif(TRACK && ~SEG)
 		fs = 'Tracking frame';
-	elseif(~TRACK & SEG)
+	elseif(~TRACK && SEG)
 		fs = 'Segmenting frame';
 	else
 		fprintf('ERROR: None of TRACK or SEG set in gui_procLoop(), exiting\n');
@@ -63,7 +63,7 @@ function [status] = gui_procLoop(handles, varargin)
 
 	%If range variable doesn't exist, assume we want to process all frames
 	if(exist('range', 'var'))
-		if(size(range) ~= [1 2])
+		if(~isequal(size(range), [1 2]))
 			fprintf('ERROR: Size must be 1x2 vector, exiting\n');
 			status = -1;
 			return;
@@ -81,35 +81,35 @@ function [status] = gui_procLoop(handles, varargin)
 
 	N  = length(fh);
 	%Make sure our waitbar has the right text for the operation
-	%if(exist('range', 'var'))
-	%	wb = waitbar(0, sprintf('%ss...', fs), ...
-    %	                'Name', sprintf('%s %d - %d', fs, range(1), range(2)), ...
-    %                    'CreateCancelBtn', ...
-    %                    'setappdata(gcbf, ''canceling'', 1)');
-	%else
-	%	wb = waitbar(0, sprintf('%ss...', fs), ...
-    %                    'Name', sprintf('%s 1 - %d', fs, N), ...
-    %                    'CreateCancelBtn', ...
-    %                    'setappdata(gcbf, ''canceling'', 1');
-	%end
-
-	%Use this until issues with waitbar cancel button are sorted
 	if(exist('range', 'var'))
 		wb = waitbar(0, sprintf('%ss...', fs), ...
-                        'Name', sprintf('%s %d - %d', fs, range(1), range(2)) );
+    	                'Name', sprintf('%s %d - %d', fs, range(1), range(2)), ...
+                        'CreateCancelBtn', ...
+                        'setappdata(handles.csToolFigure, ''canceling'', 1)');
 	else
 		wb = waitbar(0, sprintf('%ss...', fs), ...
-                        'Name', sprintf('%s 1 - %d', fs, N) );
+                        'Name', sprintf('%s 1 - %d', fs, N), ...
+                        'CreateCancelBtn', ...
+                        'setappdata(handles.csToolFigure, ''canceling'', 1');
 	end
+
+	%Use this until issues with waitbar cancel button are sorted
+	%if(exist('range', 'var'))
+	%	wb = waitbar(0, sprintf('%ss...', fs), ...
+    %                    'Name', sprintf('%s %d - %d', fs, range(1), range(2)) );
+	%else
+	%	wb = waitbar(0, sprintf('%ss...', fs), ...
+    %                    'Name', sprintf('%s 1 - %d', fs, N) );
+	%end
 
 	status = 0;
 	%Process frames in loop
 	for k = 1:N
-		%if(getappdata('canceling'))
-		%	fprintf('Cancelled %s at frame %d (%d left)\n', fs, k, N-k);
-		%	status = -1;
-		%	break;
-		%end
+		if(getappdata(handles.csToolFigure, 'canceling'))
+			fprintf('Cancelled %s at frame %d (%d left)\n', fs, k, N-k);
+			status = -1;
+			break;
+		end
 		waitbar(k/N, wb, sprintf('%s (%d/%d)...', fs, k, N));
 		if(SEG)
 			handles.segmenter.segFrame(fh(k));
@@ -123,11 +123,27 @@ function [status] = gui_procLoop(handles, varargin)
 		end
 		if(TRACK)
 			handles.tracker.trackFrame(fh(k));
-			if(handles.tracker.getStatus() == -1)
-				fprintf('ERROR: frame %d generated invalid window parameters\n', k);
-				fprintf('gui_procLoop() exiting with %d frames unprocessed\n', N-k);
-				status = -1;
-				break;
+			if(DEBUG)
+				%Print more detailed error messages in debug mode
+				m = get(fh(k), 'moments');
+				if(isempty(m{1}) || isequal(m{1}, zeros(1,5)))
+					fprintf('ERROR: moments for frame %d are zero\n', k);
+					status = -1;
+					break;
+				end
+				w = get(fh(k), 'winParams');
+				if(isempty(w{1}) || isequal(w{1}, zeros(1,5)))
+					fprintf('ERROR: winParams for frame %d are zero\n', k);
+					status = -1;
+					break;
+				end
+			else
+				if(handles.tracker.getStatus() == -1)
+					fprintf('ERROR: frame %d generated invalid window parameters\n', k);
+					fprintf('gui_procLoop() exiting with %d frames unprocessed\n', N-k);
+					status = -1;
+					break;
+				end
 			end
 		end
 	end

@@ -1,4 +1,4 @@
-function [wparam] = initParam(T, args)
+function [wparam] = initParam(T, varargin)
 % INITPARAM
 % Compute the initial window parameters based on a chosen metric. This function is
 % intended to allow prototyping and testing of automatic tracking from segmentation
@@ -10,23 +10,21 @@ function [wparam] = initParam(T, args)
 % Stefan Wong 2013
 
 	%Parse input arguments
-	if(isempty(args))
+	if(isempty(varargin))
 		fprintf('ERROR: Not enough arguments in csTracker.initParam()\n');
 		wparam = zeros(1,5);
 		return;
 	else
 		%DEBUG:
-		fprintf('(csTracker.initWindow -> initParam()) : args contents:\n');
-		for k = 1:length(args)
-			fprintf('args{%d}', k);
-			disp(args{k});
-			fprintf('\n');
+		fprintf('(csTracker.initWindow -> initParam()) : varargin contents:\n');
+		for k = 1:length(varargin)
+			disp(varargin{k});
 		end
-		for k = 1:length(args)
-			if(ischar(args{k}))
-				if(strncmpi(args{k}, 'region', 6))
-					region = args{k+1};
-					fprintf('just created region var? %d\n', exist('region','var'));
+		for k = 1:length(varargin)
+			if(ischar(varargin{k}))
+				if(strncmpi(varargin{k}, 'region', 6))
+					region = varargin{k+1};
+					fpritnf('just created reg
 				%More to come...
 				end
 			end
@@ -36,8 +34,7 @@ function [wparam] = initParam(T, args)
 	%Check what we have
 	if(exist('region', 'var'))
 		%Set the initial window naively as being the same as the region matrix
-		%if(size(region) ~= [2 2])
-		if(~isequal(size(region), [2 2]))
+		if(size(region) ~= [2 2])
 			if(T.verbose)
 				fprintf('ERROR: region matrix must be 2x2\n');
 			end
