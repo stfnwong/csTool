@@ -94,7 +94,9 @@ function [status nh] = gui_showPreview(handles, varargin)
 	end 
 	%If there is tracking data, overlay this onto segmentation data
 	params = get(fh, 'winParams');
-	if(cellfun(@isempty, params) || params == 0)
+	%If the first element is empty, then the rest will also be empty
+	%(similarly for zero)
+	if(isempty(params{1}) ||isequal(params{1}, zeros(1,length(params{1}))))
 		fprintf('No params set for this frame\n');
 	else
 		gui_plotParams(fh, handles.fig_bpPreview);

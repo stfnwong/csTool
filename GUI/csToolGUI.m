@@ -200,6 +200,15 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
     handles = init_UIElements(handles);
 	%handles = init_restoreFrame(handles);
     fprintf('Bringing up csTool GUI...\n');
+	%Try to load the previous frameIndex - this should be moved into init_UIElements
+	% or another method that loads frame data from previous session
+	path = which(sprintf('%s/svars.mat', DATA_DIR))
+	if(isempty(path))
+		frameIndex = 1;
+	else
+		load(path);
+		frameIndex = svars.index;
+	end
     fprintf('frameIndex is %d\n', frameIndex);
     set(handles.etCurFrame, 'String', num2str(frameIndex));
 	
@@ -675,6 +684,8 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
+%TODO: Alphabetise these
+
 	global frameIndex;
 	global DATA_DIR;
 
@@ -725,6 +736,13 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				fh = handles.frameBuf.getFrameHandle(k);
 				fprintf('fh(%d) filename : %s\n', k, get(fh, 'filename'));
 			end
+		case 'D'
+			%Dump dimensions of current frame
+			fh   = handles.frameBuf.getFrameHandle(frameIndex);
+			dims = get(fh, 'dims');
+			fprintf('Dimension of frame %d : [%d x %d] (file - %s)\n', frameIndex, ...
+				                             dims(1), dims(2), get(fh, 'filename'));
+		
 		% ================ IMREGION SELECTION KEYS ================ %
 		case 'r'
 			rData = handles.rData;
@@ -784,6 +802,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				title(handles.fig_framePreview, get(fh, 'filename'));
 				status = gui_setHistTitle(handles);
 				if(status == -1)
+					fprintf('Title not correctly set\n');
 					return;
 				end
                 %Everything complete, delete handle
@@ -868,7 +887,7 @@ function bSegOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Update handles and UI elements
 	handles.segmenter = csSegmenter(ss);
 	handles.segOpts   = ss;
-	set(handles.segMethodList, 'Value', segOpts.method);
+	set(handles.segMethodList, 'Value', ss.method);
 	guidata(hObject, handles);
 
          end     %bSegOpts_Callback()

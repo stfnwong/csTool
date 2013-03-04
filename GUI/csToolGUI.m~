@@ -424,10 +424,6 @@ end 	%bSegFrame_Callback()
 % --- Executes on button press in bSegRange.
 function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>
 	
-	%Turn off interface during processing
-	ifaceObj = findobj(handles.csToolFigure, 'Enable', 'on');
-	set(ifaceObj, 'Enable', 'off');
-	set(handles.csToolFigure, 'Name', 'Segmenting, please wait...');
 	%Pull values out of range boxes
     sFrame = fix(str2double(get(handles.etLowRange, 'String')));
     eFrame = fix(str2double(get(handles.etHighRange, 'String')));
@@ -435,6 +431,8 @@ function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>
         fprintf('ERROR: (SegRange) End frame is before start frame\n');
         return;
 	end
+	%Turn off interface during processing
+	handles = gui_ifaceEnable(handles, 'off');
 	if(handles.debug)
 		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'seg', 'debug');
 	else
@@ -442,23 +440,22 @@ function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>
 	end
 	if(status == -1)
 		%Turn interface back on
-		set(ifaceObj, 'Enable', 'on');
-		set(handles.csToolFigure, 'Name', handles.csToolFigName);
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
     %Show preview of final frame
 	fh = handles.frameBuf.getFrameHandle(eFrame);
 	[status nh] = gui_showPreview(handles, 'fh', fh, 'seg');
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
 	%Turn interface back on 
-	set(ifaceObj, 'Enable', 'on');
-	set(handles.csToolFigure, 'Name', handles.csToolFigName);
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
-	
-
 	
 end 	%bSegRange_Callback()
 
@@ -534,7 +531,7 @@ end		%bTrackRange_Callback()
 function bTrackAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
 	%Track every frame in buffer
-	handles = gui_ifaceEnable(handles, 'on
+	handles = gui_ifaceEnable(handles, 'off');
 	if(handles.debug)
 		status = gui_procLoop(handles, 'track', 'debug');
 	else
@@ -549,10 +546,12 @@ function bTrackAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	%Show preview of final frame
 	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
-	
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
 
 end		%bTrackAll_Callback()
@@ -569,23 +568,27 @@ function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
         fprintf('ERROR: (TrackRange) End frame is before start frame\n');
         return;
 	end
-	
+	handles = gui_ifaceEnable(handles, 'off');
 	if(handles.debug)
 		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'proc', 'debug');
 	else
 		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'proc');
 	end
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	
 	%Show preview of final frame
 	[status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
-	
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
 
 end		%bProcRange_Callback()
@@ -601,14 +604,16 @@ function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 	if(status == -1)
 		return;
 	end
-	
+	handles = gui_ifaceEnable(handles, 'off');
 	%Show preview of final frame
 	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
 	if(status == -1)
+		handles = gui_ifaceEnable(handles, 'on');
+		guidata(hObject, handles);
 		return;
 	end
 	handles = nh;
-	
+	handles = gui_ifaceEnable(handles, 'on');
 	guidata(hObject, handles);
 
 end		%bProcAll_Callback
@@ -670,6 +675,8 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
+%TODO: Alphabetise these
+
 	global frameIndex;
 	global DATA_DIR;
 
@@ -720,6 +727,12 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				fh = handles.frameBuf.getFrameHandle(k);
 				fprintf('fh(%d) filename : %s\n', k, get(fh, 'filename'));
 			end
+		case 'D'
+			%Dump dimensions of current frame
+			fh   = handles.frameBuf.getFrameHandle(frameIndex);
+			dims = get(fh, 'dims');
+			fprintf('Dimension of frame %d : [%d x %d] (file - %s)\n', frameIndex, ...
+				                             dims(1), dims(2), get(fh, 'filename'));
 		% ================ IMREGION SELECTION KEYS ================ %
 		case 'r'
 			rData = handles.rData;
@@ -833,6 +846,8 @@ function chkVerbose_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	handles.frameBuf.setVerbose(state);
 	handles.vecManager.setVerbose(state);
 
+	guidata(hObject, handles);
+
 end     %chkVerbose_Callback()
 
 % --------------------------------------------------------------------
@@ -861,7 +876,7 @@ function bSegOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Update handles and UI elements
 	handles.segmenter = csSegmenter(ss);
 	handles.segOpts   = ss;
-	set(handles.segMethodList, 'Value', segOpts.method);
+	set(handles.segMethodList, 'Value', ss.method);
 	guidata(hObject, handles);
 
          end     %bSegOpts_Callback()

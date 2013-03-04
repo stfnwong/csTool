@@ -20,6 +20,7 @@ function csToolSaveState(handles, DATA_DIR, frameIndex)
 	ui.lowRange  = get(handles.etLowRange, 'String');
 	ui.filePath  = get(handles.etFilePath, 'String');
 	ui.numFrames = get(handles.etNumFrames, 'String');
+	%ui.curFrame  = get(handles.etCurFrame, 'String');
 	save(sprintf('%s/ui.mat', DATA_DIR), 'ui');
 	%Save frame index
 	svars.index = frameIndex;

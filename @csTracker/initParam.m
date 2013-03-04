@@ -26,8 +26,6 @@ function [wparam] = initParam(T, args)
 			if(ischar(args{k}))
 				if(strncmpi(args{k}, 'region', 6))
 					region = args{k+1};
-					fprintf('just created region var? %d\n', exist('region','var'));
-				%More to come...
 				end
 			end
 		end

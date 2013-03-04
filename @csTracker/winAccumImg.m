@@ -40,7 +40,7 @@ function [moments wparam] = winAccumImg(T, bpimg, wparam, varargin)
 			fprintf('No window parameters supplied, computing from moments...\n');
 		end
 		moments = imgAccum(T, bpimg);
-		wparam  = wparamComp(moments);
+		wparam  = wparamComp(T, moments, 'norm');
 	else
 		%Check wparam
 		if(numel(wparam) == 0)
@@ -63,8 +63,8 @@ function [moments wparam] = winAccumImg(T, bpimg, wparam, varargin)
 		theta = wparam(3);
 		axmaj = wparam(4);
 		axmin = wparam(5);
-		xlim  = [(xc - axmaj) (xc + axmaj)];
-		ylim  = [(yc - axmin) (yc + axmin)];
+		xlim  = fix([(xc - axmaj) (xc + axmaj)]);
+		ylim  = fix([(yc - axmin) (yc + axmin)]);
 		%Clean up edges of bounding region
 		xlim(xlim > dims(2)) = dims(2);
 		xlim(xlim < 1)       = 1;

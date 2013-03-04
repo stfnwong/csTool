@@ -22,7 +22,7 @@ function varargout = csToolSegOpts(varargin)
 
 % Edit the above text to modify the response to help csToolSegOpts
 
-% Last Modified by GUIDE v2.5 22-Feb-2013 23:09:03
+% Last Modified by GUIDE v2.5 05-Mar-2013 00:05:56
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -99,6 +99,7 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
     set(handles.etBlkSz, 'String', num2str(sOpts.blkSz));
     set(handles.etDataSz, 'String', num2str(sOpts.dataSz));
     set(handles.etNBins, 'String', num2str(sOpts.nBins));
+	set(handles.chkVerbose, 'Value', sOpts.verbose);
     %Also set checkbox
     if(sOpts.fpgaMode)
         set(handles.chkFPGA, 'Value', 1);
@@ -138,6 +139,7 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
     end
     segMethod = get(handles.lbSegMethod, 'Value');
     fpgaMode  = get(handles.chkFPGA, 'Value');
+	verbose   = get(handles.chkVerbose, 'Value');
 
     %Do any parameter massaging (ie: converting from cell array), copy mhist
 	%from old parameters, copy mhist
@@ -147,7 +149,7 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
                        'nBins',     nBins, ...
                        'fpgaMode', fpgaMode, ...
                        'method',    segMethod, ...
-                       'verbose',   handles.segopts.verbose, ...
+                       'verbose',   verbose, ...
                        'imRegion',  handles.segopts.imRegion, ...
 					   'mhist',     handles.segopts.mhist);
 
@@ -202,12 +204,11 @@ function lbSegMethod_CreateFcn(hObject, eventdata, handles) %#ok <INUSL>
 %                          EMPTY FUNCTIONS                      %
 %---------------------------------------------------------------%
 
-% --- Executes on selection change in lbSegMethod.
+
 function lbSegMethod_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>
 function chkFPGA_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>
 function etBlkSz_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
 function etDataSz_Callback(hObject, eventdata, handles)     %#ok<INUSD,DEFNU>
 function etNBins_Callback(hObject, eventdata, handles)  %#ok <INUSD,DEFNU>
-
-
+function chkVerbose_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 

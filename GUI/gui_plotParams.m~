@@ -30,7 +30,7 @@ function status = gui_plotParams(fh, axHandle, varargin)
 	%each plot can be split across multiple lines (my vim sessions are 90 columns)
 
 	params = get(fh, 'winParams');
-	if(isempty(params{1}) || isequal(params{1}, zeros(1,5)))
+	if(cellfun(@isempty, params{1}) || isequal(params{1}, zeros(1,5)))
 		fprintf('%s no params set for this frame\n', DSTR);
 		status = -1;
 		return;
@@ -42,10 +42,6 @@ function status = gui_plotParams(fh, axHandle, varargin)
 		thisParam = params{k};
 		%Be paranoid about length
 		if(length(thisParam) < 5)
-			fprintf('Not enough elements in param %d\n', k);
-			status = -1;
-			return;
-		end
 		%Plot centroid
 		ph     = plot(axHandle, thisParam(1), thisParam(2));
 		if(k == length(params))

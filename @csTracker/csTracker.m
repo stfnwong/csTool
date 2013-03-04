@@ -184,8 +184,8 @@ classdef csTracker < handle
 		% T>EPSILON && eps(2) < T.EPSILON)
 
 			%Get initial tracking position
-			if(nargin > 2)
-				wpos = varargin{2};
+			if(~isempty(varargin))
+				wpos = varargin{1};
 			else
 				%wpos = fh.winInit;
 				wpos = T.fParams;
@@ -196,15 +196,19 @@ classdef csTracker < handle
 				tVec     = zeros(2, T.MAX_ITER);
 				fwparam  = cell(1, T.MAX_ITER);
 				fmoments = cell(1, T.MAX_ITER);
-                fprintf('(csTracker) Size bpVec :\n');
-                disp(size(get(fh, 'bpVec')));
+                %fprintf('(csTracker) Size bpVec :\n');
+                %disp(size(get(fh, 'bpVec')));
 				for n = 1:T.MAX_ITER
 					switch T.method
 						case T.MOMENT_WINACCUM
 							%[moments wparam] = winAccum(T, get(fh, 'bpVec'), 'wparam', wpos);
+							%Warn about empty wpos - wtf?!?!
+							if(isempty(wpos))
+								fprintf('WARNING: wpos empty!\n');
+							end
 							%Get bpimg
 							bpimg = vec2bpimg(get(fh,'bpVec'), get(fh,'dims'));
-							[moments wparam] = winAccumImg(T, get(fh, 'bpVec'), wpos);
+							[moments wparam] = winAccumImg(T, bpimg, wpos);
 						case T.MOMENT_IMGACCUM
 							wparam           = [];
 							moments          = imgAccum(T, get(fh, 'bpVec'));
@@ -226,8 +230,7 @@ classdef csTracker < handle
 						break;
 					end
 				end
-				%DEBUG
-				fprintf('Outside tracking loop...\n');
+				%fprintf('Outside tracking loop...\n');
 			else
 				%For now, preallocate twice MAX_ITER for tVec
 				tVec     = zeros(1, T.MAX_ITER * 2);
@@ -273,7 +276,12 @@ classdef csTracker < handle
                 set(fh, 'winParams', fwparam);
                 set(fh, 'moments',   fmoments);
 				%Write internal frame parameters
-				T.fParams = fwparam{end};
+				%T.fParams = fwparam{end};
+				%Dont clobber the fParams property if the parameters are
+				%zero (for now)
+				if(sum(moments) ~= 0)
+					T.fParams = fwparam{n};
+				end
 		end 	%trackFrame()
 
 		function [status varargout] = initWindow(T, varargin)
@@ -302,10 +310,11 @@ classdef csTracker < handle
 				end
 				return;
 			end
+			T.fParams = wparam;
+			status = 0;
 			if(nargout > 1)
 				varargout{1} = wparam;
 			end
-			status = 0;
 
 		end 	%initWindow()
 
@@ -321,7 +330,7 @@ classdef csTracker < handle
 		% ---- winAccum()   : WINDOWED MOMENT ACCUMULATION
 		[moments wparam] = winAccum(T, bpimg, wpos, dims);
 		% ---- wparamComp() : FIND WINDOW PARAMETERS FROM MOMENT SUMS
-		wparam           = wparamComp(T, moments);
+		wparam           = wparamComp(T, moments, varargin);
 		wparam           =  initParam(T, varargin);
 	end 		%csTracker METHODS (Private)
 

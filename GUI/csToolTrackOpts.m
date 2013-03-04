@@ -22,7 +22,7 @@ function varargout = csToolTrackOpts(varargin)
 
 % Edit the above text to modify the response to help csToolTrackOpts
 
-% Last Modified by GUIDE v2.5 22-Feb-2013 22:18:28
+% Last Modified by GUIDE v2.5 05-Mar-2013 01:13:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -85,6 +85,7 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
     set(handles.etMaxIter,     'String', num2str(tOpts.maxIter));
     set(handles.chkRotMatrix,  'Value',  tOpts.rotMatrix);
     set(handles.chkCordic,     'Value',  tOpts.cordicMode);
+	set(handles.chkVerbose,    'Value',  tOpts.verbose);
     set(handles.chkFixedIter,  'Value',  tOpts.fixedIter);
 	
 	handles.output = tOpts;			%default output
@@ -129,6 +130,7 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
     rMat        = get(handles.chkRotMatrix, 'Value');
     cordic      = get(handles.chkCordic, 'Value');
     fixedIter   = get(handles.chkFixedIter, 'Value');
+	verbose     = get(handles.chkVerbose, 'Value');
 
     opts        = struct('method', method, ...
                          'epsilon', epsilon, ...
@@ -137,7 +139,7 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
                          'rotMatrix', rMat, ...
                          'cordicMode', cordic, ...
                          'fixedIter', fixedIter, ...
-                         'verbose', tOpts.verbose, ...
+                         'verbose', verbose, ...
                          'fParams', tOpts.fParams);
 	handles.output  = opts;
 	guidata(hObject, handles);
@@ -156,6 +158,24 @@ function figTrackOpts_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSL,DE
 
 	uiresume(handles.figTrackOpts);
 	delete(handles.figTrackOpts);
+	
+	
+function bPrintParams_Callback(hObject, eventdata, handles)	 %#ok<INUSL,DEFNU>
+
+	%Print frame parameters in console
+	fprintf('Current frame parameters :\n');
+	tOpts  = handles.trackopts;
+	params = tOpts.fParams;
+	if(isempty(params))
+		fprintf('Current no params set (empty)\n');
+	else
+		fprintf('xc    : %d\n', params(1));
+		fprintf('yc    : %d\n', params(2));
+		fprintf('theta : %d\n', params(3));
+		fprintf('axmaj : %d\n', params(4));
+		fprintf('axmin : %d\n', params(5));
+	end
+	
 	
 	
 	
@@ -193,7 +213,7 @@ function etEpsilon_CreateFcn(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
 %                          EMPTY FUNCTIONS                      %
 %---------------------------------------------------------------%
 
-% --- Executes on button press in chkCordic.
+function chkVerbose_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkCordic_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etEpsilon_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etMaxIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -201,6 +221,7 @@ function etThresh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkRotMatrix_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkFixedIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function lbTrackMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
 
 
 

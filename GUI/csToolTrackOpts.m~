@@ -22,7 +22,7 @@ function varargout = csToolTrackOpts(varargin)
 
 % Edit the above text to modify the response to help csToolTrackOpts
 
-% Last Modified by GUIDE v2.5 22-Feb-2013 22:18:28
+% Last Modified by GUIDE v2.5 05-Mar-2013 01:13:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,40 +52,45 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to csToolTrackOpts (see VARARGIN)
 
-    %Get segmenter object
-    if(length(varargin) < 1)
-        error('Expecting handles structure in csToolTrackOpts');
-    else
-        if(~isa(varargin{1}, 'csTracker'))
-            error('Incorrect parameter in csToolTrackOpts (expecting csTracker)');
-        else
-            handles.tracker = varargin{1};
-        end
-        if(~isa(varargin{2}, 'struct'))
-            error('Incorrect parameter in csToolTrackOpts (expecting options structure)');
-        else
-            handles.trackopts = varargin{2};
-        end
-    end
+	handles.debug = 0;
 
-    %init_lbTrackMethod(handles);
-    %init_editTextBoxes(handles);
-	mstr = handles.tracker.methodStr;
+	if(isempty(varargin))
+		fprintf('ERROR: Incorrect input arguments to csToolTrackOpts\n');
+		handles.output = [];
+		close(hObject);
+		return;
+	else
+		if(~isa(varargin{1}, 'struct'))
+			fprintf('ERROR: Expecting trackOpts structure in csToolTrackOpts\n');
+			handles.output = [];
+			close(hObject);
+			return;
+		end
+		handles.trackopts = varargin{1};
+		if(length(varargin) > 1)
+			for k = 2:length(varargin)
+				if(strncmpi(varargin{k}, 'debug', 5))
+					handles.debug = 1;
+				elseif(strncmpi(varargin{k}, 'mstr', 4))
+					mstr = varargin{k+1};
+				end
+			end
+		end
+	end
+	tOpts = handles.trackopts;
     set(handles.lbTrackMethod, 'String', mstr);
     set(handles.lbTrackMethod, 'Value', 1);
-    set(handles.etEpsilon,     'String', num2str(handles.trackopts.epsilon));
-    set(handles.etThresh,      'String', num2str(handles.trackopts.bpThresh));
-    set(handles.etMaxIter,     'String', num2str(handles.trackopts.maxIter));
-    set(handles.chkRotMatrix,  'Value',  handles.trackopts.rotMatrix);
-    set(handles.chkCordic,     'Value',  handles.trackopts.cordicMode);
-    set(handles.chkFixedIter,  'Value',  handles.trackopts.fixedIter);
+    set(handles.etEpsilon,     'String', num2str(tOpts.epsilon));
+    set(handles.etThresh,      'String', num2str(tOpts.bpThresh));
+    set(handles.etMaxIter,     'String', num2str(tOpts.maxIter));
+    set(handles.chkRotMatrix,  'Value',  tOpts.rotMatrix);
+    set(handles.chkCordic,     'Value',  tOpts.cordicMode);
+	set(handles.chkVerbose,    'Value',  tOpts.verbose);
+    set(handles.chkFixedIter,  'Value',  tOpts.fixedIter);
 	
-    % Choose default command line output for csToolTrackOpts
-    handles.output = hObject;
-    % Update handles structure
-    guidata(hObject, handles);
+	handles.output = tOpts;			%default output
 
-    % UIWAIT makes csToolTrackOpts wait for user response (see UIRESUME)
+    guidata(hObject, handles);
     uiwait(handles.figTrackOpts);
 
 
@@ -93,14 +98,7 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
 function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 
     varargout{1} = handles.output;
-	delete(handles.figTrackOpts);
-
-%---------------------------------------------------------------%
-%                      LOCAL INITIALISATION                     %
-%---------------------------------------------------------------%
-
-%function init_lbTrackMethod(handles)
-%function init_editTextBoxes(handles)
+	delete(hObject);
 
 %---------------------------------------------------------------%
 %                    ACCEPT/CANCEL BUTTON                       %
@@ -110,91 +108,99 @@ function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok
 function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
 
     %Collect arguments and init objects
+	tOpts = handles.trackopts;
     
     %trackMethod = get(handles.lbTrackMethod, 'String');
     method      = get(handles.lbTrackMethod, 'Value');
     epsilon     = str2double(get(handles.etEpsilon, 'String'));
-    if(isnan(epsilon) || isempty(epsilon) || isinf(epsilon))
-        error('Incorrect value in epsilon');
-    end
+	if(isnan(epsilon) || isinf(epsilon) || isempty(epsilon))
+		epsilon = 0;
+		set(handles.etEpsilon, 'String', num2str(epsilon));
+	end
     bpThresh    = str2double(get(handles.etThresh, 'String'));
     if(isnan(bpThresh) || isempty(bpThresh) || isinf(bpThresh))
-        error('Incorrect value in Backprojection Threshold');
+        bpThresh = 0;
+		set(handles.etThresh, 'String', num2str(bpThresh));
     end
     maxIter     = str2double(get(handles.etMaxIter, 'String'));
     if(isnan(maxIter) || isempty(maxIter) || isinf(maxIter))
-        error('Incorrect value in max iter');
+        maxIter = 16;
+		set(handles.etMaxIter, 'String', num2str(maxIter));
     end
     rMat        = get(handles.chkRotMatrix, 'Value');
     cordic      = get(handles.chkCordic, 'Value');
     fixedIter   = get(handles.chkFixedIter, 'Value');
+	verbose     = get(handles.chkVerbose, 'Value');
 
     opts        = struct('method', method, ...
                          'epsilon', epsilon, ...
                          'bpThresh', bpThresh, ...
                          'maxIter', maxIter, ...
                          'rotMatrix', rMat, ...
-                         'cordicModic', cordic, ...
+                         'cordicMode', cordic, ...
                          'fixedIter', fixedIter, ...
-                         'verbose', handles.trackopts.verbose, ...
-                         'fParams', handles.trackopts.fParams);
-    
-    handles.tracker = csTracker(opts);
-	handles.output  = struct('tracker', handles.tracker, 'trackOpts', opts);
+                         'verbose', verbose, ...
+                         'fParams', tOpts.fParams);
+	handles.output  = opts;
 	guidata(hObject, handles);
-	figTrackOpts_CloseRequestFcn(hObject, eventdata, handles);
-    %close(handles.figTrackOpts);
-    
-
-
+	uiresume(handles.figTrackOpts);
+	
 % --- Executes on button press in bCancel.
 function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
     %disp(handles);
-    handles.output = struct('tracker', handles.tracker, 'trackOpts', handles.trackOpts);
-	figTrackOpts_CloseRequest
+    %handles.output = handles.trackopts;
+	uiresume(handles.figTrackOpts);
+	%close(hObject);
 
 % --- Executes when user attempts to close figTrackOpts.
 function figTrackOpts_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
-	if(isequal(get(hObject, 'waitstatus'), 'waiting'))
-		uiresume(hObject);
-	else
-		delete(hObject);
-	end
+	uiresume(handles.figTrackOpts);
+	delete(handles.figTrackOpts);
+	
+	
+function bPrintParams_Callback(hObject, eventdata, handles)	 %#ok<INUSL,DEFNU>
+
+	%Print frame parameters in console
+	fprintf('Current frame parameters :\n');
+	tOpts  = handles.trackopts;
+	params = tOpts.fParams;
+	if(i
+	fprintf('xc : %d\n', params(1));
+	fprintf('yc : %d\n', params(2));
+	fprintf('theta : %d\n', params(3));
+	fprintf('axmaj : %d\n', params(4));
+	fprintf('axmin : %d\n', params(5));
+	
+	
+	
 	
 	
 %---------------------------------------------------------------%
 %                        CREATE FUNCTIONS                       %
 %---------------------------------------------------------------%
 
-
 % --- Executes during object creation, after setting all properties.
 function lbTrackMethod_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
 
 % --- Executes during object creation, after setting all properties.
 function etThresh_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
-
 
 % --- Executes during object creation, after setting all properties.
 function etMaxIter_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
-    end
-
+	end
 
 % --- Executes during object creation, after setting all properties.
 function etEpsilon_CreateFcn(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
-
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
@@ -204,23 +210,15 @@ function etEpsilon_CreateFcn(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
 %                          EMPTY FUNCTIONS                      %
 %---------------------------------------------------------------%
 
-% --- Executes on button press in chkCordic.
+function chkVerbose_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkCordic_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
 function etEpsilon_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
 function etMaxIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
 function etThresh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-% --- Executes on button press in chkRotMatrix.
 function chkRotMatrix_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-% --- Executes on button press in chkFixedIter.
 function chkFixedIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-% --- Executes on selection change in lbTrackMethod.
 function lbTrackMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
 
 
 
