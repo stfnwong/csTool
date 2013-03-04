@@ -9,7 +9,7 @@ function wparam = wparamComp(T, moments, varargin)
 
 % Stefan Wong 2012
 	IS_NORM = 0;
-	if(nargin > 2)
+	if(~isempty(varargin))
 		if(strncmpi(varargin{1}, 'norm', 4))
 			IS_NORM = 1;
 		end

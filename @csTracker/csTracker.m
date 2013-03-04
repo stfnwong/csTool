@@ -201,7 +201,10 @@ classdef csTracker < handle
 				for n = 1:T.MAX_ITER
 					switch T.method
 						case T.MOMENT_WINACCUM
-							[moments wparam] = winAccum(T, get(fh, 'bpVec'), 'wparam', wpos);
+							%[moments wparam] = winAccum(T, get(fh, 'bpVec'), 'wparam', wpos);
+							%Get bpimg
+							bpimg = vec2bpimg(get(fh,'bpVec'), get(fh,'dims'));
+							[moments wparam] = winAccumImg(T, get(fh, 'bpVec'), wpos);
 						case T.MOMENT_IMGACCUM
 							wparam           = [];
 							moments          = imgAccum(T, get(fh, 'bpVec'));

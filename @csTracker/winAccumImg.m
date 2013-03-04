@@ -36,7 +36,10 @@ function [moments wparam] = winAccumImg(T, bpimg, wparam, varargin)
 	%Sanity check arguments
 	if(isempty(wparam))
 		%No window parameters supplied - compute new ones
-		moments = imgAccum(T, bpvec);
+		if(T.verbose)
+			fprintf('No window parameters supplied, computing from moments...\n');
+		end
+		moments = imgAccum(T, bpimg);
 		wparam  = wparamComp(moments);
 	else
 		%Check wparam
@@ -54,7 +57,7 @@ function [moments wparam] = winAccumImg(T, bpimg, wparam, varargin)
 
 	if(T.ROT_MATRIX)
 		%Make aliases
-		dims  = size(bpImg);
+		dims  = size(bpimg);
 		xc    = wparam(1);
 		yc    = wparam(2);
 		theta = wparam(3);

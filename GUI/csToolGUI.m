@@ -838,6 +838,8 @@ function chkVerbose_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	handles.frameBuf.setVerbose(state);
 	handles.vecManager.setVerbose(state);
 
+	guidata(hObject, handles);
+
 end     %chkVerbose_Callback()
 
 % --------------------------------------------------------------------
