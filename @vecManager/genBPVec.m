@@ -1,4 +1,4 @@
-function vec = genBPVec(fh, opts)
+function vec = genBPVec(data, opts)
 % GENBPIMGVEC
 % Generate backprojection image test data from bpimg. This method takes the 
 % data in bpImg and transforms it into a format suitable for importing into a
@@ -25,9 +25,17 @@ function vec = genBPVec(fh, opts)
 
 % Stefan Wong 2012
 
-	val     = opts.val;
-	type    = opts.type;
-	data    = vec2bpimg(get(fh, 'bpData'));
+	if(isempty(opts.val))
+		val = 16;
+	else
+		val     = opts.val;
+	end
+	if(isempty(opts.type))
+		type = 'row';
+	else
+		type    = opts.type;
+	end
+	%data    = vec2bpimg(get(fh, 'bpData'));
 	[h w d] = size(data);
 	
 	switch(type)

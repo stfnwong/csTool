@@ -20,6 +20,7 @@ classdef vecManager
 	end 	
 
 	properties (SetAccess = 'private', GetAccess = 'public')
+		autoGen;
 		verbose;
 		fmtStr = {'scalar', '4c', '8c', '16c', '4r', '8r', '16r'};
 	end
@@ -39,6 +40,8 @@ classdef vecManager
 					V.bpvecFmt  = 'scalar';
 					V.errorTol  = 0;
 					V.dataSz    = 256;
+					V.autoGen   = 0;
+					V.verbose   = 0;
 				case 1
 					if(isa(varargin{1}, 'vecManager'))
 						V = varargin{1};
@@ -55,6 +58,8 @@ classdef vecManager
 						V.bpvecFmt  = opts.bpvecFmt;
 						V.errorTol  = opts.errorTol;
 						V.dataSz    = opts.dataSz;
+						V.autoGen   = opts.autoGen;
+						V.verbose   = opts.verbose;
 					end
 				otherwise
 					error('Incorrect constructor arguments');
@@ -73,6 +78,10 @@ classdef vecManager
                           'errorTol',  V.errorTol,  ...
                           'dataSz',    V.dataSz );
 		end		%getOpts()
+
+		function auto = checkAutoGen(V)
+			auto = V.autoGen;
+		end
 
 		% ---- SETTER METHODS ----%
 
@@ -245,12 +254,14 @@ classdef vecManager
 
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					vec  = genHueVec(V, fh(k), opts);
+					data = get(fh, 'bpVec');
+					vec  = genHueVec(V, data, opts);
 					dest = sprintf('%s-frame%02d', V.filename, k);
 					vecDiskWrite(V, vec, 'dest', dest);
 				end
 			else
-				vec = genHueVec(V, fh, opts);
+				data = get(fh, 'bpVec'); 
+				vec  = genHueVec(V, data, opts);
                 vecDiskWrite(V, vec);
 			end
 		end 	%writeHueVec()
@@ -270,12 +281,14 @@ classdef vecManager
 			
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					vec  = genBPVec(V, fh(k), opts);
+					data = vec2bpimg(get(fh(k), 'bpVec'));
+					vec  = genBPVec(V, data, opts);
 					dest = sprintf('%s-frame%02d', V.filename, k);
 					vecDiskWrite(V, vec, 'dest', dest);
 				end
 			else
-				vec = genBPVec(V, fh, opts);
+				data = vec2bpimg(get(fh, 'bpVec'));
+				vec = genBPVec(V, data, opts);
                 vecDiskWrite(V, vec);
 			end
 		end 	%writeBPVec()
@@ -288,11 +301,13 @@ classdef vecManager
 
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					vec  = genTrackingVec(V, fh(k), k);
+					data = get(fh(k), 'bpVec');
+					vec  = genTrackingVec(V, data, k);
 					dest = sprintf('%s-frame%02d', V.filename, k);
 					vecDiskWrite(V, vec, 'dest', dest);
 				end
 			else
+				%data = get(fh, 'bpVec');
 				vec = genTrackingVec(V, fh);
                 vecDiskWrite(V, vec);
 			end

@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 02-Mar-2013 16:00:21
+% Last Modified by GUIDE v2.5 05-Mar-2013 14:58:22
 
 
 % Begin initialization code - DO NOT EDIT
@@ -202,7 +202,7 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
     fprintf('Bringing up csTool GUI...\n');
 	%Try to load the previous frameIndex - this should be moved into init_UIElements
 	% or another method that loads frame data from previous session
-	path = which(sprintf('%s/svars.mat', DATA_DIR))
+	path = which(sprintf('%s/svars.mat', DATA_DIR));
 	if(isempty(path))
 		frameIndex = 1;
 	else
@@ -464,6 +464,11 @@ function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>
 	handles = nh;
 	%Turn interface back on 
 	handles = gui_ifaceEnable(handles, 'on');
+	%Check if we want to auto-generate vector files
+	if(handles.vecManager.checkAutoGen())
+		%Call vecmanager	
+	end
+
 	guidata(hObject, handles);
 	
 end 	%bSegRange_Callback()
@@ -499,9 +504,36 @@ end		%bSegAll_Callback()
 
 % =========================== TRACK ===================================
 
+function bTrackFrame_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
+
+    global frameIndex;
+
+    %Try using procloop with a single frame
+    handles = gui_ifaceEnable(handles, 'off');
+    fh = handles.frameBuf.getFrameHandle(frameIndex);
+    handles.tracker.trackFrame(fh);
+    if(handles.debug)
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'seg', 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'seg');
+    end
+    if(status == -1)
+        %Turn interface back on
+        handles = gui_ifaceEnable(handles, 'on');
+        guidata(hObject, handles);
+        return;
+    end
+    handles = nh;
+    handles = gui_ifaceEnable(handles, 'on');
+
+    guidata(hObject, handles);
+
+end     %bTrackFrame_Callback()
 
 function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
+    global frameIndex;
+    
 	%Track selected frames
 	sFrame = fix(str2double(get(handles.etLowRange, 'String')));
     eFrame = fix(str2double(get(handles.etHighRange, 'String')));
@@ -509,12 +541,52 @@ function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
         fprintf('ERROR: (TrackRange) End frame is before start frame\n');
         return;
 	end
+    %Get tracking window for previous frame
+    if(frameIndex > 1)
+        prevFrame = handles.frameBuf.getFrameHandle(frameIndex - 1);
+		params    = get(prevFrame, 'winParams');
+        %Also need to check that there is actually segmentation data
+        if(isempty(params{1}) || isequal(params{1}, zeros(1,5)))
+            %Need to get initial params anyway
+            %Probably ought to check here that rData exists and it set, etc
+            [status pParam] = handles.tracker.initWindow('region', handles.rData.rRegion);
+            if(status == -1)
+                fprintf('Error setting wparam\n');
+                return;
+            end
+        elseif(get(prevFrame, 'nIters') == 0)
+            [status pParam] = handles.tracker.initWindow('region', handles.rdata.rRegion);
+            if(status == -1)
+                fprintf('Error settings wparam\n');
+                return;
+            end
+        else
+            pParam    = params{get(prevFrame, 'nIters')};
+        end
+    end
 	%Turn off interface
+	range = [sFrame eFrame];		%shorten call
 	handles = gui_ifaceEnable(handles, 'off');
+	%Do the case verilog - style
+	cvar = [handles.debug exist('pParam', 'var')];
+% 	switch cvar
+% 		case isequal(cvar, [0 0])
+% 			status = gui_procLoop(handles, 'range', range);
+% 		case isequal(cvar, [0 1])
+% 			status = gui_procLoop(handles, 'range', 'param', pParam);
+% 		case isequal(cvar, [1 1])
+% 			status = gui_procLoop(handles, 'range', range, 'param', pParam, 'debug');
+% 		case isequal(cvar, [1 0])
+% 			status = gui_procLoop(handles, 'range', range, 'debug');
+% 		otherwise
+% 			%WTF?!?!
+% 			fprintf('Got invalid case in bTrackRange_Callback()\n');
+% 			return;
+% 	end	
 	if(handles.debug)
-		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'track', 'debug');
+		status = gui_procLoop(handles, 'range', range, 'track', 'debug');
 	else
-		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'track');
+		status = gui_procLoop(handles, 'range', range, 'track');
 	end
 	if(status == -1)
 		%Turn interface back on 
@@ -1050,3 +1122,6 @@ function menu_debugShowHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,
 	fprintf('Current handles struct contents :\n');
 	disp(handles);
 end		%menu_debugShowHandles()
+
+
+

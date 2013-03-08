@@ -22,7 +22,7 @@ function varargout = csToolVecOpts(varargin)
 
 % Edit the above text to modify the response to help csToolVecOpts
 
-% Last Modified by GUIDE v2.5 27-Feb-2013 23:47:59
+% Last Modified by GUIDE v2.5 07-Mar-2013 16:29:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -84,6 +84,8 @@ function csToolVecOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<IN
 	set(handles.etDataSz,    'String', num2str(vOpts.dataSz));
 	set(handles.etWfilename, 'String', vOpts.wfilename);
 	set(handles.etRfilename, 'String', vOpts.rfilename);
+    set(handles.chkAutoGen,  'Value',  vOpts.autoGen);
+    set(handles.chkVerbose,  'Value',  vOpts.chkVerbose);
 	set(handles.etDestDir,   'String', vOpts.destDir);
 	%Set the pop-up menu to have the current selection
 	
@@ -121,6 +123,8 @@ function bAccept_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	wfilename = get(handles.etWfilename, 'String');
 	rfilename = get(handles.etRfilename, 'String');
 	destDir   = get(handles.etDestDir,   'String');
+    autoGen   = get(handles.chkAutoGen, 'Value');
+    verbose   = get(handles.chkVerbose, 'Value');
 	
 	opts = struct('wfilename', wfilename, ...
 		          'rfilename', rfilename, ...
@@ -130,6 +134,7 @@ function bAccept_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 				  'bpvecFmt' , bpvecFmt, ...
 				  'errorTol' , errorTol, ...
 				  'dataSz'   , dataSz,   ...
+                  'autoGen'  , autoGen,  ...
 				  'verbose'  , verbose );
 	handles.output = opts;
 	guidata(hObject, handles);
@@ -185,3 +190,7 @@ function etWfilename_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>
 function etDataSz_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>
 function etErrorTol_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>
 function etDestDir_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>
+function chkVerbose_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
+function chkAutoGen_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
+
+

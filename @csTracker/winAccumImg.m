@@ -70,25 +70,39 @@ function [moments wparam] = winAccumImg(T, bpimg, wparam, varargin)
 		xlim(xlim < 1)       = 1;
 		ylim(ylim > dims(1)) = dims(1);
 		ylim(ylim < 1)       = 1;
-		bpRegion             = bpimg(ylim(1):ylim(2), xlim(1):xlim(2));
-		%Get backprojected pixels and create moment sums
-		if(T.BP_THRESH > 0)
-			[idy idx] = find(bpRegion > T.BP_THRESH);
-		else
-			[idy idx] = find(bpRegion > 0);
+		%Give up and use two loops
+		M00 = 0; M10 = 0; M01 = 0; M11 = 0; M20 = 0; M02 = 0;
+		for x = xlim(1):xlim(2)
+			for y = ylim(1):ylim(2)
+				if(bpimg(y,x) > 0)
+					M00 = M00 + 1;
+					M10 = M10 + x;
+					M01 = M01 + y;
+					M11 = M11 + x * y;
+					M20 = M20 + x * x;
+					M02 = M02 + y * y;
+				end
+			end
 		end
-		if(isempty(idx) || isempty(idy))
-			fprintf('%s ERROR: No segmented pixels in bpRegion\n', T.pStr);
-			moments = zeros(1,5);
-			wparam  = zeros(1,5);
-			return;
-		end
-		M00     = length(idx);
-		M10     = sum(idx);
-		M01     = sum(idy);
-		M11     = sum(idx .* idy);
-		M20     = sum(idx .* idx);
-		M02     = sum(idy .* idy);
+		%bpRegion             = bpimg(ylim(1):ylim(2), xlim(1):xlim(2));
+		%%Get backprojected pixels and create moment sums
+		%if(T.BP_THRESH > 0)
+		%	[idy idx] = find(bpRegion > T.BP_THRESH);
+		%else
+		%	[idy idx] = find(bpRegion > 0);
+		%end
+		%if(isempty(idx) || isempty(idy))
+		%	fprintf('%s ERROR: No segmented pixels in bpRegion\n', T.pStr);
+		%	moments = zeros(1,5);
+		%	wparam  = zeros(1,5);
+		%	return;
+		%end
+		%M00     = length(idx);
+		%M10     = sum(idx);
+		%M01     = sum(idy);
+		%M11     = sum(idx .* idy);
+		%M20     = sum(idx .* idx);
+		%M02     = sum(idy .* idy);
 		moments = [M00 M10 M01 M11 M20 M02];
 		wparam  = wparamComp(T, moments);
 		%Clip wparam to image region

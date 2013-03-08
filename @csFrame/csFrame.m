@@ -13,7 +13,7 @@ classdef csFrame < hgsetget
 %               contains a 5 element row vector in the format 
 %                        [xc yc theta axmaj axmin].
 % [moments]   - Cell array containing moment sums for each iteration. Each cell 
-%               contains a 5 element row vector in the format
+%               contains a 6 element row vector in the format
 %                        [zm xm ym xym xxm yym].
 % [nIters]    - Number of tracking iterations performed on this frame
 % [tVec]      - Tracking vector for this frame. The vector is supplied as a 2x2 matrix%               where each column represents a (x,y) coordinate in the image 

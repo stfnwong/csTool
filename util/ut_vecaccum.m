@@ -13,6 +13,7 @@ function moments = ut_vecaccum(bpvec)
 	M11 = sum(bpvec(1,:) .* bpvec(2,:));
 	M20 = sum(bpvec(1,:) .* bpvec(1,:));
 	M02 = sum(bpvec(2,:) .* bpvec(2,:));
+
 	moments = [M00 M10 M01 M11 M20 M02];
 
 end 	%ut_vecaccum

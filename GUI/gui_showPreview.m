@@ -104,4 +104,4 @@ function [status nh] = gui_showPreview(handles, varargin)
 	status = 0;
 	nh     = handles; 
 
-end		%gui_showPreview
+end		%gui_showPreview()
