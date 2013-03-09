@@ -1,4 +1,4 @@
-function [moments wparam] = winAccumImg(T, bpimg, wparam, varargin)
+function [moments nwparam] = winAccumImg(T, bpimg, wparam, varargin)
 % WINACCUMVEC
 % Windowed moment accumulation for camshift tracker. This method performs moment 
 % accumulation only within the area specified by the 'wparam' argument. wparam should 
@@ -84,57 +84,41 @@ function [moments wparam] = winAccumImg(T, bpimg, wparam, varargin)
 				end
 			end
 		end
-		%bpRegion             = bpimg(ylim(1):ylim(2), xlim(1):xlim(2));
-		%%Get backprojected pixels and create moment sums
-		%if(T.BP_THRESH > 0)
-		%	[idy idx] = find(bpRegion > T.BP_THRESH);
-		%else
-		%	[idy idx] = find(bpRegion > 0);
-		%end
-		%if(isempty(idx) || isempty(idy))
-		%	fprintf('%s ERROR: No segmented pixels in bpRegion\n', T.pStr);
-		%	moments = zeros(1,5);
-		%	wparam  = zeros(1,5);
-		%	return;
-		%end
-		%M00     = length(idx);
-		%M10     = sum(idx);
-		%M01     = sum(idy);
-		%M11     = sum(idx .* idy);
-		%M20     = sum(idx .* idx);
-		%M02     = sum(idy .* idy);
-		moments = [M00 M10 M01 M11 M20 M02];
-		wparam  = wparamComp(T, moments);
+		moments  = [M00 M10 M01 M11 M20 M02];
+		nwparam  = wparamComp(T, moments);
+		%DEBUG: Modify window size
+		nwparam(4) = fix(sqrt(M00));
+		nwparam(5) = fix(sqrt(M00));
 		%Clip wparam to image region
-		if(wparam(4) > dims(2))
-			wparam(4) = dims(2);
+		if(nwparam(4) > dims(2))
+			nwparam(4) = dims(2);
 			if(T.verbose)
-				fprintf('%s clipped wparam(4) to %d\n', T.pStr, dims(2));
+				fprintf('%s clipped nwparam(4) to %d\n', T.pStr, dims(2));
 			end
 		end
-		if(wparam(4) < 1)
-			wparam(4) = 1;
+		if(nwparam(4) < 1)
+			nwparam(4) = 1;
 			if(T.verbose)
-				fprintf('%s clipped wparam(4) to 1\n', T.pStr);
+				fprintf('%s clipped nwparam(4) to 1\n', T.pStr);
 			end
 		end
-		if(wparam(5) > dims(1))
-			wparam(5) = dims(1);
+		if(nwparam(5) > dims(1))
+			nwparam(5) = dims(1);
 			if(T.verbose)
-				fprintf('%s clipped wparam(5) to %d\n', T.pStr, dims(1));
+				fprintf('%s clipped nwparam(5) to %d\n', T.pStr, dims(1));
 			end
 		end
-		if(wparam(5) < 1)
-			wparam(5) = 1;
+		if(nwparam(5) < 1)
+			nwparam(5) = 1;
 			if(T.verbose)
-				fprintf('%s clipped wparam(5) to %d\n', T.pStr);
+				fprintf('%s clipped nwparam(5) to %d\n', T.pStr);
 			end
 		end
 
 	else
 		fprintf('Linear Constraints currently not implemented\n');
 		moments = zeros(1,5);
-		wparam  = zeros(1,5);
+		nwparam  = zeros(1,5);
 	end
 
 

@@ -222,6 +222,8 @@ function [status] = gui_procLoop(handles, varargin)
 						return;
 					end
 				end
+				%All parameters checked - run the actual tracker on this
+				%frame
 				handles.tracker.trackFrame(fh(k), pParam{N});
 			end	 
 			if(DEBUG)

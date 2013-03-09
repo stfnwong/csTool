@@ -54,6 +54,6 @@ function wparam = wparamComp(T, moments, varargin)
 		theta = (180/pi) * 0.5 * atan((2*u11)/mu2_diff);
 	end
 	%Format output
-	wparam = [xm ym theta sqrt(axmaj) sqrt(axmin)];
+	wparam = [xm ym theta axmaj axmin];
 
 end 	%wparamComp()

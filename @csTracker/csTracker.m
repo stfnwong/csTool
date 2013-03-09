@@ -190,6 +190,11 @@ classdef csTracker < handle
 				%wpos = fh.winInit;
 				wpos = T.fParams;
 			end	
+			%Warn about empty wpos and quit loop
+			if(isempty(wpos))
+				fprintf('ERROR: Empty window position vector\n');
+				return;
+			end
 
 			if(T.FIXED_ITER)
 				%Allocate memory
@@ -201,11 +206,6 @@ classdef csTracker < handle
 				for n = 1:T.MAX_ITER
 					switch T.method
 						case T.MOMENT_WINACCUM
-							%[moments wparam] = winAccum(T, get(fh, 'bpVec'), 'wparam', wpos);
-							%Warn about empty wpos - wtf?!?!
-							if(isempty(wpos))
-								fprintf('WARNING: wpos empty!\n');
-							end
 							%Get bpimg
 							bpimg = vec2bpimg(get(fh,'bpVec'), get(fh,'dims'));
 							[moments wparam] = winAccumImg(T, bpimg, wpos);
@@ -219,10 +219,10 @@ classdef csTracker < handle
 					end
 					%Write out results
 					tVec(:,n)   = [moments(1) ; moments(2)];
-					fwparam{n}   = wparam;
+					fwparam{n}  = wparam;
 					fmoments{n} = moments;
 					%Get initial window position for next frame
-					wpos        = wparam;		
+					%wpos        = wparam;		
                     %TODO: Place a test here for early convergence?
                     % BAIL if no pixels in window
                     if(sum(moments) == 0)
@@ -230,7 +230,7 @@ classdef csTracker < handle
 						break;
 					end
 				end
-				%fprintf('Outside tracking loop...\n');
+				
 			else
 				%For now, preallocate twice MAX_ITER for tVec
 				tVec     = zeros(1, T.MAX_ITER * 2);
@@ -271,12 +271,14 @@ classdef csTracker < handle
 					end
 				end
 			end
+				%Calculate final window position and size
+				
 				%Write data out to frame handle
                 set(fh, 'tVec',      tVec);
                 set(fh, 'winParams', fwparam);
                 set(fh, 'moments',   fmoments);
 				%Write internal frame parameters
-				%T.fParams = fwparam{end};
+				%T.fParams = fwparam{n};
 				%Dont clobber the fParams property if the parameters are
 				%zero (for now)
 				if(sum(moments) ~= 0)
@@ -326,12 +328,12 @@ classdef csTracker < handle
 
 	methods (Access = 'private')	
 		% ---- imgAccum()   : WHOLE IMAGE MOMENT ACCUMULATION
-		[moments]        = imgAccum(T, bpimg)
+		[moments]        = imgAccum(T, bpimg);
 		% ---- winAccum()   : WINDOWED MOMENT ACCUMULATION
 		[moments wparam] = winAccum(T, bpimg, wpos, dims);
 		% ---- wparamComp() : FIND WINDOW PARAMETERS FROM MOMENT SUMS
 		wparam           = wparamComp(T, moments, varargin);
-		wparam           =  initParam(T, varargin);
+		wparam           = initParam(T, varargin);
 	end 		%csTracker METHODS (Private)
 
 	methods (Static)

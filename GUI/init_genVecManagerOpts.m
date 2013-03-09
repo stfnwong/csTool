@@ -23,7 +23,7 @@ function vecOpts = init_genVecManagerOpts(DATA_DIR, NO_LOAD)
                          'dataSz'  , 256 );
 		return;
 	else
-		fprintf('Loading vecManager options from %s...\n');
+		fprintf('Loading vecManager options from %s...\n', path);
 		load(path);
 		return;
 	end

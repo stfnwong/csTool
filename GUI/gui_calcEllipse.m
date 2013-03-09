@@ -13,10 +13,15 @@ function [X Y] = gui_calcEllipse(x,y,a,b,ang,steps)
 		steps = 36;
 	end
 
-	phi   = -ang * (pi/180);
+	%Some issue in debugging phase with NaN angle - do a check here in case
+	if(isnan(ang))
+		phi = 0;
+	else
+		phi   = -ang * (pi/180);
+	end
 	sp    = sin(phi);
 	cp    = cos(phi);
-	alpha = linspace(0, 360, steps)' .* (pi/180);
+	alpha = linspace(0, 360, steps) .* (pi/180);
 	sa    = sin(alpha);
 	ca    = cos(alpha);
 

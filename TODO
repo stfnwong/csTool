@@ -37,6 +37,10 @@ The output from the disk read process will depend on what kind of vector is gene
 When an HSV vector is generated, we may either get back a column vector of hue values,
 a column vector of backprojection values, or a row vector of backprojection values.
 
+- Seems now like it would be a good idea to have some navigator/browser for the 
+frame parameters, so that debugging (both of csTool itself and of the verilog tests)
+can be made easier.
+
 FUNCTIONAL (GUI):
 
 So after some experimentation, it looks like the GUI doesn't quite work like I 

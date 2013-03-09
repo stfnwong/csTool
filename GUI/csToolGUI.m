@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 05-Mar-2013 14:58:22
+% Last Modified by GUIDE v2.5 10-Mar-2013 01:22:09
 
 
 % Begin initialization code - DO NOT EDIT
@@ -161,7 +161,9 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 
 	%Create structure for handling imregion
 	r = struct('rHandle', [], 'rExist', 0, 'rRegion', [], 'rPos', []);
-	handles.rData = r;
+	p = struct('paramIndex', 1);
+	handles.rData = r;		%region data
+	handles.pData = p;		%param data
 	%Hold default figure name as a property
 	handles.csToolFigName = 'csTool - CAMSHIFT Simulation Tool';
 	
@@ -700,6 +702,82 @@ function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 end		%bProcAll_Callback
 
 % =============================================================== %
+%                       PARAMETER BROWSER                         %
+% =============================================================== %
+
+function bParamPrev_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
+
+	global frameIndex;
+	
+	idx = handles.pData.paramIndex - 1;
+	fh  = handles.frameBuf.getFrameHandle(frameIndex);
+	%check range
+	if(idx < 1)
+		idx = 1;
+	end
+	if(idx > get(fh, 'nIters'))
+		fprintf('Param index out of bounds (overflow), clipped to %d\n', get(fh, 'nIters'));
+	end
+	
+	status = gui_plotParams(fh, handles.fig_bpPreview, 'iter', idx);
+	if(status == -1)
+		return;
+	end
+	%Update frame position string
+	paramString = sprintf('Iter : %d / %d', idx, get(fh, 'nIters'));
+	set(handles.tParamBrowse, 'String', paramString);
+	
+	handles.pData.paramIndex = idx;
+	guidata(hObject, handles);
+
+end
+
+function bParamNext_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
+
+	global frameIndex;	
+	
+	idx = handles.pData.paramIndex + 1;
+	fh  = handles.frameBuf.getFrameHandle(frameIndex);
+	%check range
+	if(idx < 1)
+		idx = 1;
+	end
+	if(idx > get(fh, 'nIters'))
+		fprintf('Param index out of bounds (overflow), clipped to %d\n', get(fh, 'nIters'));
+	end
+	
+	status = gui_plotParams(fh, handles.fig_bpPreview, 'iter', idx);
+	if(status == -1)
+		return;
+	end
+	%Update frame position string
+	paramString = sprintf('Iter : %d / %d', idx, get(fh, 'nIters'));
+	set(handles.tParamBrowse, 'String', paramString);
+
+	handles.pData.paramIndex = idx;
+	guidata(hObject, handles);
+end
+
+function bParamBrowse_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+	%Call the parameter browser
+	global frameIndex;
+	
+	if(handles.debug)
+		[idx status] = csToolParamBrowser('fb', handles.frameBuf, 'idx', frameIndex, 'debug');
+	else
+		[idx status] = csToolParamBrowser('fb', handles.frameBuf, 'idx', frameIndex);
+	end
+	if(status == -1)
+		return;
+	end
+	frameIndex = idx;
+	
+	guidata(hObject, handles);
+
+end
+
+% =============================================================== %
 %                        METHOD SELECTION                         %
 % =============================================================== %
 
@@ -1122,6 +1200,3 @@ function menu_debugShowHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,
 	fprintf('Current handles struct contents :\n');
 	disp(handles);
 end		%menu_debugShowHandles()
-
-
-

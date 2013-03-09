@@ -21,13 +21,21 @@ function status = gui_plotParams(fh, axHandle, varargin)
 	%Set internal constants
 	DSTR = '(gui_plotParams) :';
 	NUM_STEPS = 25;		%lower is faster - can set with 'num' flag
+	PLOT_RECT = true;
 
 	if(~isempty(varargin))
-		if(strncmpi(varargin{1}, 'num', 3))
-			NUM_STEPS = varargin{2};
+		for k = 1:length(varargin)
+			if(ischar(varargin{k}))
+				if(strncmpi(varargin{k}, 'iter', 4))
+					N = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'num', 3))
+					NUM_STEPS = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'el', 2))
+					PLOT_RECT = false;		%plot ellipse instead
+				end
+			end
 		end
 	end
-
 
 	%Plot handles are used throughout this function, mainly so that configuration of
 	%each plot can be split across multiple lines (my vim sessions are 90 columns)
@@ -40,7 +48,9 @@ function status = gui_plotParams(fh, axHandle, varargin)
 	end
 	
 	%Plot centroids
-    N = get(fh, 'nIters');
+	if(~exist('N', 'var'))
+	    N = get(fh, 'nIters');
+	end
 	hold(axHandle, 'on');
 	for k = 1:N
 		thisParam = params{k};
@@ -60,15 +70,23 @@ function status = gui_plotParams(fh, axHandle, varargin)
 		end
 	end
 	
-	%Parametrically plot elliptical confidence region
+	%Parametrically plot confidence region
 	p  = params{N};
-	e  = gui_calcEllipse(p(1), p(2), p(4), p(5), p(3), NUM_STEPS); 	
-    %DEBUG
-    fprintf('e:\n');
-    disp(e);
-	ph = plot(axHandle, e(:,1), e(:,2));
-	set(ph, 'Color', [0 0 1], 'LineStyle', '--');
+	if(PLOT_RECT)
+		%plot as rectangle
+		[l r t b] = gui_calcRect(p(1), p(2), p(4), p(5), p(3), NUM_STEPS);
+		plot(axHandle, l(1,:), l(2,:), 'Color', [0 0 1], 'LineStyle', '--');
+		plot(axHandle, r(1,:), r(2,:), 'Color', [0 0 1], 'LineStyle', '--');
+		plot(axHandle, t(1,:), t(2,:), 'Color', [0 0 1], 'LineStyle', '--');
+		plot(axHandle, b(1,:), b(2,:), 'Color', [0 0 1], 'LineStyle', '--');
+	else
+		%plot as ellipse
+		e  = gui_calcEllipse(p(1), p(2), p(4), p(5), p(3), NUM_STEPS); 	
+		eh = plot(axHandle, e(:,1), e(:,2));
+		set(eh, 'Color', [0 0 1], 'LineStyle', '-');
+	end
 
 	hold(axHandle, 'off');
+	status = 0;
 
 end 	%gui_plotParams()
