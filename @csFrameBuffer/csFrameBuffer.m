@@ -513,6 +513,7 @@ classdef csFrameBuffer
 	methods (Static)
 		% ---- Check memory usage of frame buffer ---- %
 		status = bufMemCheck(nFrames, path, varargin);
+		tVec   = bufGetTraj(FB, varargin);
 		% ---- Display object properties ---- %
 		%fbufDisplay(fb);
 
