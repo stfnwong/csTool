@@ -277,10 +277,6 @@ classdef csTracker < handle
                 set(fh, 'tVec',      tVec);
                 set(fh, 'winParams', fwparam);
                 set(fh, 'moments',   fmoments);
-				%Write internal frame parameters
-				%T.fParams = fwparam{n};
-				%Dont clobber the fParams property if the parameters are
-				%zero (for now)
 				if(sum(moments) ~= 0)
 					T.fParams = fwparam{n};
 				end
@@ -331,6 +327,8 @@ classdef csTracker < handle
 		[moments]        = imgAccum(T, bpimg);
 		% ---- winAccum()   : WINDOWED MOMENT ACCUMULATION
 		[moments wparam] = winAccum(T, bpimg, wpos, dims);
+		[moments wparam] = winAccumImg(T, bpimg, wpos);
+		[moments wparam] = winAccumVec(T, bpvec, wpos);
 		% ---- wparamComp() : FIND WINDOW PARAMETERS FROM MOMENT SUMS
 		wparam           = wparamComp(T, moments, varargin);
 		wparam           = initParam(T, varargin);
