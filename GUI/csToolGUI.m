@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 10-Mar-2013 01:22:09
+% Last Modified by GUIDE v2.5 11-Mar-2013 00:39:02
 
 
 % Begin initialization code - DO NOT EDIT
@@ -534,7 +534,7 @@ end     %bTrackFrame_Callback()
 
 function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
-    global frameIndex;
+    %global frameIndex;
     
 	%Track selected frames
 	sFrame = fix(str2double(get(handles.etLowRange, 'String')));
@@ -544,47 +544,31 @@ function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
         return;
 	end
     %Get tracking window for previous frame
-    if(frameIndex > 1)
-        prevFrame = handles.frameBuf.getFrameHandle(frameIndex - 1);
-		params    = get(prevFrame, 'winParams');
-        %Also need to check that there is actually segmentation data
-        if(isempty(params{1}) || isequal(params{1}, zeros(1,5)))
-            %Need to get initial params anyway
-            %Probably ought to check here that rData exists and it set, etc
-            [status pParam] = handles.tracker.initWindow('region', handles.rData.rRegion);
-            if(status == -1)
-                fprintf('Error setting wparam\n');
-                return;
-            end
-        elseif(get(prevFrame, 'nIters') == 0)
-            [status pParam] = handles.tracker.initWindow('region', handles.rdata.rRegion);
-            if(status == -1)
-                fprintf('Error settings wparam\n');
-                return;
-            end
-        else
-            pParam    = params{get(prevFrame, 'nIters')};
-        end
-    end
+%     if(frameIndex > 1)
+%         prevFrame = handles.frameBuf.getFrameHandle(frameIndex - 1);
+% 		params    = get(prevFrame, 'winParams');
+%         %Also need to check that there is actually segmentation data
+%         if(isempty(params{1}) || isequal(params{1}, zeros(1,5)))
+%             %Need to get initial params anyway
+%             %Probably ought to check here that rData exists and it set, etc
+%             [status pParam] = handles.tracker.initWindow('region', handles.rData.rRegion);
+%             if(status == -1)
+%                 fprintf('Error setting wparam\n');
+%                 return;
+%             end
+%         elseif(get(prevFrame, 'nIters') == 0)
+%             [status pParam] = handles.tracker.initWindow('region', handles.rdata.rRegion);
+%             if(status == -1)
+%                 fprintf('Error settings wparam\n');
+%                 return;
+%             end
+%         else
+%             pParam    = params;
+%         end
+%     end
 	%Turn off interface
 	range = [sFrame eFrame];		%shorten call
 	handles = gui_ifaceEnable(handles, 'off');
-	%Do the case verilog - style
-	cvar = [handles.debug exist('pParam', 'var')];
-% 	switch cvar
-% 		case isequal(cvar, [0 0])
-% 			status = gui_procLoop(handles, 'range', range);
-% 		case isequal(cvar, [0 1])
-% 			status = gui_procLoop(handles, 'range', 'param', pParam);
-% 		case isequal(cvar, [1 1])
-% 			status = gui_procLoop(handles, 'range', range, 'param', pParam, 'debug');
-% 		case isequal(cvar, [1 0])
-% 			status = gui_procLoop(handles, 'range', range, 'debug');
-% 		otherwise
-% 			%WTF?!?!
-% 			fprintf('Got invalid case in bTrackRange_Callback()\n');
-% 			return;
-% 	end	
 	if(handles.debug)
 		status = gui_procLoop(handles, 'range', range, 'track', 'debug');
 	else
@@ -1200,3 +1184,12 @@ function menu_debugShowHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,
 	fprintf('Current handles struct contents :\n');
 	disp(handles);
 end		%menu_debugShowHandles()
+
+
+% --------------------------------------------------------------------
+function menu_enableHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
+
+	handles = gui_ifaceEnable(handles, 'on');
+	guidata(hObject, handles);
+
+end

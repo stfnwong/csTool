@@ -20,42 +20,91 @@ function status = gui_plotParams(fh, axHandle, varargin)
 
 	%Set internal constants
 	DSTR = '(gui_plotParams) :';
+	NUM_STEPS = 25;		%lower is faster - can set with 'num' flag
+	PLOT_RECT = true;
 
 	if(~isempty(varargin))
-		fprintf('Optional features not yet implemented\n');
+		for k = 1:length(varargin)
+			if(ischar(varargin{k}))
+				if(strncmpi(varargin{k}, 'iter', 4))
+					N = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'num', 3))
+					NUM_STEPS = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'el', 2))
+					PLOT_RECT = false;		%plot ellipse instead
+				end
+			end
+		end
 	end
-
 
 	%Plot handles are used throughout this function, mainly so that configuration of
 	%each plot can be split across multiple lines (my vim sessions are 90 columns)
 
 	params = get(fh, 'winParams');
-	if(cellfun(@isempty, params{1}) || isequal(params{1}, zeros(1,5)))
+	if(isempty(params) || isequal(params, zeros(1,5)))
 		fprintf('%s no params set for this frame\n', DSTR);
 		status = -1;
 		return;
 	end
 	
 	%Plot centroids
-	hold(axHandle, 'on');
-	for k = 1:length(params)
-		thisParam = params{k};
-		%Be paranoid about length
-		if(length(thisParam) < 5)
-		%Plot centroid
-		ph     = plot(axHandle, thisParam(1), thisParam(2));
-		if(k == length(params))
-			%Plot final centroid slightly more prominently than others
-			set(ph, 'Color', [1 0 0], 'MarkerSize', 16, 'LineWidth', 4);
-		else
-			set(ph, 'Color', [1 0 0], 'MarkerSize', 12, 'LineWidth', 2);
-		end
+	if(~exist('N', 'var'))
+	    N = get(fh, 'nIters');
 	end
+	hold(axHandle, 'on');
+	
+	moments = get(fh, 'moments');
+	for k = 1:N
+		m = moments{k};
+		% Check length
+		if(length(m) < 6)
+			fprintf('Not enough elements in moments for iter %d\n', k);
+			status = -1;
+			return;
+		end
+		%Plot centroid
+		ph = plot(axHandle, m(2)/m(1), m(3)/m(1));
+		if(k == N)
+			%Plot final centroid slightly larger
+			set(ph, 'Color', [1 0 0]. 'MarkerSize', 16, 'LineWith', 4, 'Marker', 'x');
+		else
+			set(ph, 'Color', [1 0 0], 'Marker
+		
+% 	for k = 1:N
+% 		thisParam = params{k};
+% 		%Be paranoid about length
+% 		if(length(thisParam) < 5)
+% 			fprintf('Not enough elements in param %d\n', k);
+% 			status = -1;
+% 			return;
+% 		end
+% 		%Plot centroid
+% 		ph     = plot(axHandle, thisParam(1), thisParam(2));
+% 		if(k == length(params))
+% 			%Plot final centroid slightly more prominently than others
+% 			set(ph, 'Color', [1 0 0], 'MarkerSize', 16, 'LineWidth', 4, 'Marker','x');
+% 		else
+% 			set(ph, 'Color', [1 0 0], 'MarkerSize', 12, 'LineWidth', 2, 'Marker','x');
+% 		end
+% 	end
+ 	
+	%Parametrically plot confidence region
+	p  = params{N};
+	if(PLOT_RECT)
+		%plot as rectangle
+		[l r t b] = gui_calcRect(p(1), p(2), p(4), p(5), p(3), NUM_STEPS);
+		plot(axHandle, l(1,:), l(2,:), 'Color', [0 0 1], 'LineStyle', '--');
+		plot(axHandle, r(1,:), r(2,:), 'Color', [0 0 1], 'LineStyle', '--');
+		plot(axHandle, t(1,:), t(2,:), 'Color', [0 0 1], 'LineStyle', '--');
+		plot(axHandle, b(1,:), b(2,:), 'Color', [0 0 1], 'LineStyle', '--');
+	else
+		%plot as ellipse
+		e  = gui_calcEllipse(p(1), p(2), p(4), p(5), p(3), NUM_STEPS); 	
+		eh = plot(axHandle, e(:,1), e(:,2));
+		set(eh, 'Color', [0 0 1], 'LineStyle', '-');
+	end
+
 	hold(axHandle, 'off');
-	
-	%Parametrically plot elliptical confidence region
-	p     = params{end};
-	alpha = p(3) * (pi/180);
-	
+	status = 0;
 
 end 	%gui_plotParams()

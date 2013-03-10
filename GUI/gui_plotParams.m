@@ -41,7 +41,7 @@ function status = gui_plotParams(fh, axHandle, varargin)
 	%each plot can be split across multiple lines (my vim sessions are 90 columns)
 
 	params = get(fh, 'winParams');
-	if(isempty(params{1}) || isequal(params{1}, zeros(1,5)))
+	if(isempty(params) || isequal(params, zeros(1,5)))
 		fprintf('%s no params set for this frame\n', DSTR);
 		status = -1;
 		return;
@@ -52,26 +52,28 @@ function status = gui_plotParams(fh, axHandle, varargin)
 	    N = get(fh, 'nIters');
 	end
 	hold(axHandle, 'on');
+	
+	moments = get(fh, 'moments');
 	for k = 1:N
-		thisParam = params{k};
-		%Be paranoid about length
-		if(length(thisParam) < 5)
-			fprintf('Not enough elements in param %d\n', k);
+		m = moments{k};
+		% Check length
+		if(length(m) < 6)
+			fprintf('Not enough elements in moments for iter %d\n', k);
 			status = -1;
 			return;
 		end
 		%Plot centroid
-		ph     = plot(axHandle, thisParam(1), thisParam(2));
-		if(k == length(params))
-			%Plot final centroid slightly more prominently than others
-			set(ph, 'Color', [1 0 0], 'MarkerSize', 16, 'LineWidth', 4, 'Marker','x');
+		ph = plot(axHandle, m(2)/m(1), m(3)/m(1));
+		if(k == N)
+			%Plot final centroid slightly larger
+			set(ph, 'Color', [1 0 0], 'MarkerSize', 16, 'LineWidth', 4, 'Marker', 'x');
 		else
-			set(ph, 'Color', [1 0 0], 'MarkerSize', 12, 'LineWidth', 2, 'Marker','x');
+			set(ph, 'Color', [1 0 0], 'MarkerSize', 12, 'LineWidth', 2, 'Marker', 'x');
 		end
 	end
-	
+ 	
 	%Parametrically plot confidence region
-	p  = params{N};
+	p  = params;
 	if(PLOT_RECT)
 		%plot as rectangle
 		[l r t b] = gui_calcRect(p(1), p(2), p(4), p(5), p(3), NUM_STEPS);

@@ -1,4 +1,4 @@
-function [moments nwparam] = winAccumImg(T, bpimg, wparam, varargin)
+function [moments] = winAccumImg(T, bpimg, wparam, varargin)
 % WINACCUMVEC
 % Windowed moment accumulation for camshift tracker. This method performs moment 
 % accumulation only within the area specified by the 'wparam' argument. wparam should 
@@ -85,40 +85,9 @@ function [moments nwparam] = winAccumImg(T, bpimg, wparam, varargin)
 			end
 		end
 		moments  = [M00 M10 M01 M11 M20 M02];
-		nwparam  = wparamComp(T, moments);
-		%DEBUG: Modify window size
-		nwparam(4) = fix(sqrt(M00));
-		nwparam(5) = fix(sqrt(M00));
-		%Clip wparam to image region
-		if(nwparam(4) > dims(2))
-			nwparam(4) = dims(2);
-			if(T.verbose)
-				fprintf('%s clipped nwparam(4) to %d\n', T.pStr, dims(2));
-			end
-		end
-		if(nwparam(4) < 1)
-			nwparam(4) = 1;
-			if(T.verbose)
-				fprintf('%s clipped nwparam(4) to 1\n', T.pStr);
-			end
-		end
-		if(nwparam(5) > dims(1))
-			nwparam(5) = dims(1);
-			if(T.verbose)
-				fprintf('%s clipped nwparam(5) to %d\n', T.pStr, dims(1));
-			end
-		end
-		if(nwparam(5) < 1)
-			nwparam(5) = 1;
-			if(T.verbose)
-				fprintf('%s clipped nwparam(5) to %d\n', T.pStr);
-			end
-		end
-
 	else
 		fprintf('Linear Constraints currently not implemented\n');
 		moments = zeros(1,5);
-		nwparam  = zeros(1,5);
 	end
 
 

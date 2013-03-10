@@ -67,7 +67,8 @@ classdef csFrame < hgsetget
 						cf.bpSum     = [];
 						cf.rhist     = zeros(1,16, 'uint8');
 						cf.ihist     = [];
-						cf.winParams = cell(1,1);
+						%cf.winParams = cell(1,1);
+						cf.winParams = zeros(1,5);
 						cf.winInit   = zeros(1,5);
 						cf.moments   = cell(1,1);
 						cf.nIters    = 0;
@@ -114,7 +115,8 @@ classdef csFrame < hgsetget
 						cf.bpSum     = [];
 						cf.rhist     = zeros(1,16);
 						cf.ihist     = [];
-						cf.winParams = cell(1,1);
+						%cf.winParams = cell(1,1);
+						cf.winParams = zeros(1,5);
 						cf.winInit   = zeros(1,5);
 						cf.moments   = cell(1,1);
 						cf.nIters    = 0;
@@ -162,11 +164,11 @@ classdef csFrame < hgsetget
 
 		function set.winParams(T, wparams)
 			%Sanity check inputs
-			if(~iscell(wparams))
-				error('Window parameters must be in cell array');
-			end
+			%if(~iscell(wparams))
+			%	error('Window parameters must be in cell array');
+			%end
 			T.winParams = wparams;
-			T.nIters    = length(wparams);
+			%T.nIters    = length(wparams);
 		end 	%setWParams()
 
 		function set.winInit(T, initParams)

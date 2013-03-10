@@ -207,7 +207,7 @@ function [status] = gui_procLoop(handles, varargin)
 					N = get(fh(k-1), 'nIters');
 				end
 				
-				if(isequal(pParam{N}, zeros(1,5)))
+				if(isequal(pParam, zeros(1,5)))
 					if(FORCE)
 						%Forcing this doesn't make that much sense, so just to the 
 						%most sensible thing in context - take the values from rRegion
@@ -224,7 +224,7 @@ function [status] = gui_procLoop(handles, varargin)
 				end
 				%All parameters checked - run the actual tracker on this
 				%frame
-				handles.tracker.trackFrame(fh(k), pParam{N});
+				handles.tracker.trackFrame(fh(k), pParam);
 			end	 
 			if(DEBUG)
 				%Print more detailed error messages in debug mode
@@ -235,7 +235,7 @@ function [status] = gui_procLoop(handles, varargin)
 					break;
 				end
 				w = get(fh(k), 'winParams');
-				if(isempty(w{1}) || isequal(w{1}, zeros(1,5)))
+				if(isempty(w) || isequal(w, zeros(1,5)))
 					fprintf('ERROR: winParams for frame %d are zero\n', k);
 					status = -1;
 					break;

@@ -29,7 +29,7 @@ function [status nh varargout] = init_modelHist(handles, region, idx, varargin)
 	end
 
 	% Sanity check arguments
-	rsz = size(region)
+	rsz = size(region);
 	if(rsz(1) ~= 2 || rsz(2) ~= 2)
 		fprintf('ERROR: region matrix must be 2x2 (%d x %d supplied)\n', rsz(1), rsz(2));
 		status = -1;
