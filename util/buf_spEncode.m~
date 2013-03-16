@@ -76,17 +76,18 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 			end
 		end
 	end
-	eps     = 0;	%adjustment factor
+	
 	[h w d] = size(bpimg);
 	imsz    = h * w;
 	bpsum   = sum(sum(bpimg));
 	spvec   = zeros(2, imsz/4);
 	if(auto)
-		%try to determine parameters automatically	
-		if(bpsum < (imsz/4) + eps)
+		%try to determine parameters automatically
+		
+		if(bpsum < (imsz/4))
 			fac    = 1;
 			thresh = 1;
-		elseif(bpsum < (imsz/2) + eps)
+		elseif(bpsum < (imsz/2))
 			fac    = 2;
 			thresh = 2;
 		else
@@ -97,41 +98,30 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 	end
 	
 	k = 1;		%vector index
-	% NOTE: Would it be worth moving the switch outside the loop? (Could test this in
-	% profiler, although MATLAB may do some optimizations here anyway)
 	for x = 1:w/fac
 		for y = 1:h/fac
 			blk = bpimg(y:y+fac-1, x:x+fac-1);
 			if(sum(sum(blk)) > thresh)
 				switch anchor
 					case 'tl'
-						spvec(:,k) = [x ; y];
+						spvec(:,k) = [x;y];
 					case 'tr'
-						spvec(:,k) = [x ; y+fac-1];
+						spvec(:,k) = [x;y+fac-1];
 					case 'bl'
-						spvec(:,k) = [x+fac-1 ; y];
+						spvec(:,k) = [x+fac-1;y];
 					case 'br'
-						spvec(:,k) = [x+fac-1 ; y+fac-1];
+						spvec(:,k) = [x+fac-1;y+fac-1];
 					otherwise
 						error('Invalid anchor point %s', anchor);
 				end
 				k = k+1;
 				if(k > length(spvec))
-					fprintf('WARNING: k exceeded length of spvec (%d)\n', k);
 					k = length(spvec);
-				end
+					fprintf('WARNING: k exceeded length of sparse vector (%d)', k)
 			end
 		end
 	end
-	%Place options into stat_struct 
-	stat_struct.anchor = anchor;
-	stat_struct.thresh = thresh;
-	stat_struct.fac    = fac;
-	stat_struct.bpsz   = length(spvec);
-	stat_struct.imsz   = [h w];
-	if(nargout > 1)
-		varargout{1}       = stat_struct;
-	end
+	%
 	
 
 

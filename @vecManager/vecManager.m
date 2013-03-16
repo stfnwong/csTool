@@ -151,9 +151,9 @@ classdef vecManager
 		% To some extent, this argument is undermined by the implementation of 
 		% vecDiskWrite()
 		
-		function [type val] = parseFmt(fmt)
+		function [ftype val] = parseFmt(fmt)
 		% PARSEFMT
-		% [type val] = parseFmt(fmt)
+		% [ftype val] = parseFmt(fmt)
 		%
 		% Parse a formatting code for vector generation
 		% Formatting codes are of the form :
@@ -164,25 +164,25 @@ classdef vecManager
 		%  For scalar data, enter an empty or invalid formatting code
 			switch(fmt)
 				case '16c'
-					type = 'col';
+					ftype = 'col';
 					val  = 16;
 				case '8c'
-					type = 'col';
+					ftype = 'col';
 					val  = 8;
 				case '4c'
-					type = 'col';
+					ftype = 'col';
 					val  = 4;
 				case '16r'
-					type = 'row';
+					ftype = 'row';
 					val  = 16;
 				case '8r'
-					type = 'row';
+					ftype = 'row';
 					val  = 8;
 				case '4r'
-					type = 'row';
+					ftype = 'row';
 					val  = 4;
 				otherwise
-					type = 'scalar';
+					ftype = 'scalar';
 					val  = 0;	
 			end
 		end 	%parseFmt()
@@ -194,7 +194,7 @@ classdef vecManager
 			end
 			
 			%Parse optional arguments
-			if(nargin > 2)
+			if(~isempty(varargin))
 				[opts.type opts.val] = parseFmt(V, varargin{1});
 			else
 				opts.type = 'scalar';
@@ -219,7 +219,7 @@ classdef vecManager
 				error('Invalid frame handle fh');
 			end
 
-			if(nargin > 2)
+			if(~isempty(varargin))
 				[opts.type opts.val] = parseFmt(V, varargin{1});
 			else
 				opts.type = 'scalar';
@@ -245,7 +245,7 @@ classdef vecManager
 				error('Invalid frame handle fh');
 			end
 	
-			if(nargin > 2)
+			if(~isempty(varargin))
 				[opts.type opts.val] = parseFmt(V, varargin{1});
 			else
 				opts.type = 'scalar';
@@ -272,7 +272,7 @@ classdef vecManager
 				error('Invalid frame handle fh');
 			end
 		
-			if(nargin > 2)
+			if(~isempty(varargin))
 				[opts.type opts.val] = parseFmt(V, varargin{1});
 			else
 				opts.type = 'scalar';
