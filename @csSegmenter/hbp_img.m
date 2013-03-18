@@ -38,10 +38,17 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 	%Compute ratio histogram and backprojection
 	rhist = mhist ./ imhist;
 	rhist = rhist ./ (max(max(rhist)));
-	rhist = rhist .* T.DATA_SZ;
+	%NOTE: This should be upgraded in the future to handle multi-bit segmentation
+	if(T.FPGA_MODE)
+		rhist = rhist .* T.DATA_SZ;
+	end
 	%clean up garbage values
 	rhist(isnan(rhist)) = 0;
-	rhist(isinf(rhist)) = T.DATA_SZ;
+	if(T.FPGA_MODE)
+		rhist(isinf(rhist)) = T.DATA_SZ;
+	else
+		rhist(isinf(rhist)) = 1;
+	end
 	%rhist(isinf(rhist)) = 1;
 	% TODO: MEX this?
 	for x = 1:img_w

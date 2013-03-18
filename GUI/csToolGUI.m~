@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 09-Mar-2013 19:08:50
+% Last Modified by GUIDE v2.5 19-Mar-2013 01:14:49
 
 
 % Begin initialization code - DO NOT EDIT
@@ -534,7 +534,7 @@ end     %bTrackFrame_Callback()
 
 function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
-    global frameIndex;
+    %global frameIndex;
     
 	%Track selected frames
 	sFrame = fix(str2double(get(handles.etLowRange, 'String')));
@@ -544,47 +544,31 @@ function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
         return;
 	end
     %Get tracking window for previous frame
-    if(frameIndex > 1)
-        prevFrame = handles.frameBuf.getFrameHandle(frameIndex - 1);
-		params    = get(prevFrame, 'winParams');
-        %Also need to check that there is actually segmentation data
-        if(isempty(params{1}) || isequal(params{1}, zeros(1,5)))
-            %Need to get initial params anyway
-            %Probably ought to check here that rData exists and it set, etc
-            [status pParam] = handles.tracker.initWindow('region', handles.rData.rRegion);
-            if(status == -1)
-                fprintf('Error setting wparam\n');
-                return;
-            end
-        elseif(get(prevFrame, 'nIters') == 0)
-            [status pParam] = handles.tracker.initWindow('region', handles.rdata.rRegion);
-            if(status == -1)
-                fprintf('Error settings wparam\n');
-                return;
-            end
-        else
-            pParam    = params{get(prevFrame, 'nIters')};
-        end
-    end
+%     if(frameIndex > 1)
+%         prevFrame = handles.frameBuf.getFrameHandle(frameIndex - 1);
+% 		params    = get(prevFrame, 'winParams');
+%         %Also need to check that there is actually segmentation data
+%         if(isempty(params{1}) || isequal(params{1}, zeros(1,5)))
+%             %Need to get initial params anyway
+%             %Probably ought to check here that rData exists and it set, etc
+%             [status pParam] = handles.tracker.initWindow('region', handles.rData.rRegion);
+%             if(status == -1)
+%                 fprintf('Error setting wparam\n');
+%                 return;
+%             end
+%         elseif(get(prevFrame, 'nIters') == 0)
+%             [status pParam] = handles.tracker.initWindow('region', handles.rdata.rRegion);
+%             if(status == -1)
+%                 fprintf('Error settings wparam\n');
+%                 return;
+%             end
+%         else
+%             pParam    = params;
+%         end
+%     end
 	%Turn off interface
 	range = [sFrame eFrame];		%shorten call
 	handles = gui_ifaceEnable(handles, 'off');
-	%Do the case verilog - style
-	cvar = [handles.debug exist('pParam', 'var')];
-% 	switch cvar
-% 		case isequal(cvar, [0 0])
-% 			status = gui_procLoop(handles, 'range', range);
-% 		case isequal(cvar, [0 1])
-% 			status = gui_procLoop(handles, 'range', 'param', pParam);
-% 		case isequal(cvar, [1 1])
-% 			status = gui_procLoop(handles, 'range', range, 'param', pParam, 'debug');
-% 		case isequal(cvar, [1 0])
-% 			status = gui_procLoop(handles, 'range', range, 'debug');
-% 		otherwise
-% 			%WTF?!?!
-% 			fprintf('Got invalid case in bTrackRange_Callback()\n');
-% 			return;
-% 	end	
 	if(handles.debug)
 		status = gui_procLoop(handles, 'range', range, 'track', 'debug');
 	else
@@ -701,6 +685,21 @@ function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 
 end		%bProcAll_Callback
 
+% =========================== GENERATE ===================================
+
+function bGenerate_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
+	%Call generate gui
+	
+	global frameIndex;
+	
+	status = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex);
+	if(status == -1)
+		return;
+	end
+
+end
+
+
 % =============================================================== %
 %                       PARAMETER BROWSER                         %
 % =============================================================== %
@@ -723,8 +722,15 @@ function bParamPrev_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	if(status == -1)
 		return;
 	end
+	if(get(handles.chkShowTraj, 'Value'));
+		tvec = handles.frameBuf.bufGetTraj();
+		status = gui_plotTraj(handles.fig_bpPreview, tvec, frameIndex);
+		if(status == -1)
+			return;
+		end
+	end
 	%Update frame position string
-	paramString = sprintf('Iters%d / %d', idx, get(fh, 'nIters'));
+	paramString = sprintf('Iter : %d / %d', idx, get(fh, 'nIters'));
 	set(handles.tParamBrowse, 'String', paramString);
 	
 	handles.pData.paramIndex = idx;
@@ -734,8 +740,7 @@ end
 
 function bParamNext_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
-	global frameIndex;
-	
+	global frameIndex;	
 	
 	idx = handles.pData.paramIndex + 1;
 	fh  = handles.frameBuf.getFrameHandle(frameIndex);
@@ -751,6 +756,13 @@ function bParamNext_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	if(status == -1)
 		return;
 	end
+	if(get(handles.chkShowTraj, 'Value'));
+		tvec = handles.frameBuf.bufGetTraj();
+		status = gui_plotTraj(handles.fig_bpPreview, tvec, frameIndex);
+		if(status == -1)
+			return;
+		end
+	end
 	%Update frame position string
 	paramString = sprintf('Iter : %d / %d', idx, get(fh, 'nIters'));
 	set(handles.tParamBrowse, 'String', paramString);
@@ -765,10 +777,16 @@ function bParamBrowse_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	global frameIndex;
 	
 	if(handles.debug)
-		[nh idx status] = csToolParamBrowser();
+		[idx status] = csToolParamBrowser('fb', handles.frameBuf, 'idx', frameIndex, 'debug');
 	else
-		[nh idx status] = csToolParamBrowser();
+		[idx status] = csToolParamBrowser('fb', handles.frameBuf, 'idx', frameIndex);
 	end
+	if(status == -1)
+		return;
+	end
+	frameIndex = idx;
+	
+	guidata(hObject, handles);
 
 end
 
@@ -1124,6 +1142,29 @@ function menu_DebugShow_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
 end     %menu_DebugShow_Callback()
 
 
+function menu_ClearWparam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
+	%Reset all moment and wparam data in frames
+	N  = handles.frameBuf.getNumFrames();
+	fh = handles.frameBuf.getFrameHandle(1:N);
+	fprintf('Clearing moment and wparam data...\n');
+	wb = waitbar(0, sprintf('Clearing param data), ...
+				'Name', sprintf('%s %d - %d', fs, range(1), range(2)), ...
+				'CreateCancelBtn', ...
+				'setappdata(gcbf, ''canceling'', 1)');
+	for k = 1:length(fh)
+		if(getappdata(wb, 'canceling'))
+			fprintf('Cancelled param clear at frame %d (%d left)\n', k, N-k);
+			break;
+		end
+		waitbar(k/N, wb, sprintf('%s (%d/%d)...', fs, k, N));
+		set(fh(k), 'winParams', zeros(1,5));
+		set(fh(k), 'moments', cell(1,1));
+		set(fh(k), 'nIters', 0);
+	end
+	fprintf('...done\n');
+	
+end
+
 % =============================================================== %
 %                       CREATE FUNCTIONS                          %
 % =============================================================== %
@@ -1173,6 +1214,9 @@ end     %etCurFrame_CreateFcn()
 %                       CALLBACK FUNCTIONS                        %
 % =============================================================== %
 
+function chkShowTraj_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
+end		%chkShowTraj_Callback()
 
 function etNumFrames_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 end     %etNumFrames_Callback()
@@ -1184,16 +1228,22 @@ function menu_File_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 end     %menu_File_Callback()
 function menu_FileLoad_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 end     %menu_FileLoad_Callback()
+function menu_Data_Callback(hObject, eventdata, handles)
+end
 function etFilePath_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 end     %etFilePath_Callback()
 function etGoto_Callback(hObject, eventdata, handles)		%#ok<INUSD,DEFNU>
 end		%etGoto_Callback()
 
 
-% --------------------------------------------------------------------
 function menu_debugShowHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	fprintf('Current handles struct contents :\n');
 	disp(handles);
 end		%menu_debugShowHandles()
 
+function menu_enableHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
+	handles = gui_ifaceEnable(handles, 'on');
+	guidata(hObject, handles);
+
+end
 

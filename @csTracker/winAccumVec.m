@@ -1,4 +1,4 @@
-function [moments wparam] = winAccumVec(T, bpvec, wparam, dims, varargin)
+function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 % WINACCUMVEC
 % Windowed moment accumulation for camshift tracker. This method performs moment 
 % accumulation only within the area specified by the 'wparam' argument. wparam should 
@@ -20,7 +20,6 @@ function [moments wparam] = winAccumVec(T, bpvec, wparam, dims, varargin)
 %
 % OUTPUTS:
 % moments - 6 element row vector of moment sums
-% wparam  - 5 element vector of window parameters
 %
 
 % Stefan Wong 2013
@@ -29,22 +28,32 @@ function [moments wparam] = winAccumVec(T, bpvec, wparam, dims, varargin)
 	DEBUG = true;
 	FORCE = false;
 
+	%if(~isempty(varargin))
+	%	if(strncmpi(varargin{1}, 'force', 5))
+	%		FORCE = true;
+	%	end
+	%end
+
 	if(~isempty(varargin))
-		if(strncmpi(varargin{1}, 'force', 5))
-			FORCE = true;
+		for k = 1:length(varargin)
+			if(ischar(varargin{k}))
+				if(strncmpi(varargin{k}, 'force', 5))
+					FORCE  = true;
+				elseif(strncmpi(varargin{k}, 'sp', 2))
+					spstat = varargin{k+1};
+				end
+			end
 		end
 	end
 
 	if(isempty(wparam))
 		%No window parameters supplied, compute new ones
 		moments = imgAccum(T, bpvec);
-		wparam  = wparamComp(moments);
 	else
 		%Check wparam
 		if(numel(wparam) == 0)
 			fprintf('%s no data in wparam\n', T.pStr);
 			moments = zeros(1,5);
-			wparam  = zeros(1,5);
 			return;
 		end
 	end
@@ -84,14 +93,28 @@ function [moments wparam] = winAccumVec(T, bpvec, wparam, dims, varargin)
 		xlim(xlim < 1)       = 1;
 		ylim(ylim > dims(2)) = dims(2);
 		ylim(ylim < 1)       = 1;
-		
-
+		%Initialise moment sums
+		M00 = 0; M10 = 0; M01 = 0; M11 = 0; M20 = 0; M02 = 0;
 		%Find pixels within window region of vector
-
+		for k = 1:length(bpvec)
+			if(bpvec(1,k) >= xlim(1) && bpvec(1,k) <= xlim(2) && ...
+               bpvec(2,k) >= ylim(1) && bpvec(2,k) <= ylim(2))
+				%This pixel is in window
+				M00 = M00 + 1;
+				M10 = M10 + bpvec(1,k);
+				M01 = M01 + bpvec(2,k);
+				M11 = M11 + bpvec(1,k) .* bpvec(2,k);
+				M20 = M20 + bpvec(1,k) .* bpvec(1,k);
+				M02 = M02 + bpvec(2,k) .* bpvec(2,k);
+			end
+		end
+		if(exist('spstat', 'var'))
+			M00 = M00 * spstat.fac;
+		end
+		moments = [M00 M10 M01 M11 M20 M02];
 	else
 		fprintf('Linear Constraint not yet implemented\n');
 		moments = zeros(1,5);
-		wparam  = zeros(1,5);
 		return;
 	end
 

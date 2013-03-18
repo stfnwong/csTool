@@ -138,7 +138,8 @@ function [status] = gui_procLoop(handles, varargin)
 		end
 		fh = handles.frameBuf.getFrameHandle(range(1):range(2));
 	else
-		fh = handles.frameBuf.getFrameHandle(1:end);	
+		N  = handles.frameBuf.getNumFrames();
+		fh = handles.frameBuf.getFrameHandle(1:N);
 	end
 	
 	if(DEBUG)
@@ -198,13 +199,13 @@ function [status] = gui_procLoop(handles, varargin)
 				if(get(fh(k-1), 'nIters') < 1)
 					if(FORCE)
 						fprintf('INFO: nIters < 1, forcing to 1\n');
-						N = 1;
+						M = 1;
 					else
 						fprintf('ERROR: nIters < 1 in frame %s\n', get(fh(k-1), 'filename'));
 						return;
 					end
 				else
-					N = get(fh(k-1), 'nIters');
+					M = get(fh(k-1), 'nIters');
 				end
 				
 				if(isequal(pParam, zeros(1,5)))
@@ -218,7 +219,7 @@ function [status] = gui_procLoop(handles, varargin)
 							return;
 						end
 					else
-						fprintf('param %d of frame %s is zeros\n', N, get(fh(k-1), 'filename'));
+						fprintf('param %d of frame %s is zeros\n', M, get(fh(k-1), 'filename'));
 						return;
 					end
 				end

@@ -40,13 +40,11 @@ function [moments] = winAccumImg(T, bpimg, wparam, varargin)
 			fprintf('No window parameters supplied, computing from moments...\n');
 		end
 		moments = imgAccum(T, bpimg);
-		wparam  = wparamComp(T, moments, 'norm');
 	else
 		%Check wparam
 		if(numel(wparam) == 0)
 			fprintf('%s no data in wparam\n', T.pStr);
 			moments = zeros(1,5);
-			wparam  = zeros(1,5);
 			return;
 		end
 	end

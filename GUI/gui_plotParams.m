@@ -87,7 +87,6 @@ function status = gui_plotParams(fh, axHandle, varargin)
 		eh = plot(axHandle, e(:,1), e(:,2));
 		set(eh, 'Color', [0 0 1], 'LineStyle', '-');
 	end
-
 	hold(axHandle, 'off');
 	status = 0;
 

@@ -26,9 +26,26 @@ function status = msProcLoop(T, fh, trackWindow)
 	tVec     = zeros(2, T.MAX_ITER);
 	fmoments = cell(1, T.MAX_ITER);	
 
-	%NOTE: As of 2/3/13, all accumulator implementations in csTool operate on bpimg
-	% data rather than bpvec data. The conversion for the frame is performed here
-	bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+	% ==== PRE-ALLOCATION STAGE ==== %
+	% Load any data needed in the loop here
+	if(T.method == T.MOMENT_WINACCUM || T.method == T.MOMENT_IMGACCUM)
+		bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+	elseif(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
+		if(get(fh, 'isSparse') == 0)
+			bpimg          = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+			[spvec spstat] = buf_spEncode(bpimg,'auto');
+			%Check spvec
+			if(sum(sum(spvec)) == 0)
+				fprintf('ERROR: spvec has no bpdata\n');
+				status = -1;
+				return;
+			end
+		end
+		dims = get(fh, 'dims');
+	elseif(T.method == T.MOMENT_WINVEC)
+		bpvec = get(fh, 'bpVec'); 
+		dims  = get(fh, 'dims');
+	end
 
 	% ======== MEANSHIFT PROCESSING LOOP ======== %
 	for n = 1:T.MAX_ITER
@@ -41,11 +58,19 @@ function status = msProcLoop(T, fh, trackWindow)
 				fprintf('Not yet implemented\n');
 				status = -1;
 				return;
+			case T.SPARSE_WINDOW
+				moments = winAccumVec(T, spvec, trackWindow, dims, 'sp', spstat);
+			case T.SPARSE_IMG
+				moments = imgAccumVec(T, spvec, 'sp', spstat);
+			case T.MOMENT_WINVEC
+				moments = winAccumVec(T, bpvec, trackWindow, dims);	
 			otherwise
 				fprintf('Not yet implemented\n');
 				status = -1;
 				return;
 		end
+		%DEBUGGING:
+		disp(moments);
 		%Store intermediate results
 		fmoments{n} = moments;
 		tVec(:,n)   = [moments(1) ; moments(2)];
@@ -64,12 +89,17 @@ function status = msProcLoop(T, fh, trackWindow)
 	%Check that we did converge, and if not report
 	%if(abs(tVec(:,n) - tVec(:,n-1)) > T.EPSILON * ones(2,1))
 	cverge =  abs(tVec(:,n) - tVec(:,n-1));
+	%NOTE: For some reason, MATLAB reject the below test with a scalar AND
+	%operator (&&). This does not occur if the same test is run from
+	%command line
 	if(cverge(1) > T.EPSILON & cverge(2) > T.EPSILON)
 		fprintf('WARNING: tVec failed to converge in %d iters\n', T.MAX_ITER);
 	end
 
 	%Compute new window parameters
 	wparam = wparamComp(T, moments);
+	%DEBUG:
+	disp(wparam);
 	%DEBUG: Make window size function of zeroth moment
 	wparam(4) = fix(sqrt(moments(1)));
 	wparam(5) = fix(sqrt(moments(1)));

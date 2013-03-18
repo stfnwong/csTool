@@ -60,17 +60,17 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 	thresh = 2;
 	auto   = 0;
 
-	if(nargin > 1)
-		for k = 1:length(varagin)
+	if(~isempty(varargin))
+		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
 				%Check which argument
-				if(strnmcpi(varargin{k}, 'factor', 6))
+				if(strncmpi(varargin{k}, 'factor', 6))
 					fac = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'anchor', 6))
 					anchor = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'thresh', 6))
 					thresh = varargin{k+1};
-				elseif(strnmcpi(varargin{k}, 'auto', 4))
+				elseif(strncmpi(varargin{k}, 'auto', 4))
 					auto = 1;
 				end
 			end

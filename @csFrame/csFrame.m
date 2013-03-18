@@ -49,6 +49,7 @@ classdef csFrame < hgsetget
 		nIters;		%number of iterations taken to converge
 		tVec;		%tracking vector
 		dims;		%dimensions of image (type : uint16)
+		isSparse;	%Indicates there bpVec data is sparse
 		filename;	%name of original image file
 	end
 	
@@ -74,6 +75,7 @@ classdef csFrame < hgsetget
 						cf.nIters    = 0;
 						cf.tVec      = [];
 						cf.dims      = [];
+						cf.isSparse  = 0;
 						cf.filename  = ' ';
 				case 1
 					%Copy to new object if argument is a csFrame
@@ -91,6 +93,7 @@ classdef csFrame < hgsetget
 						cf.nIters    = opts.nIters;
 						cf.tVec      = opts.tVec;
 						cf.dims      = opts.dims;
+						cf.isSparse  = opts.isSparse;
 						if(ischar(opts.filename))
 							cf.filename  = opts.filename;
 						else
@@ -121,7 +124,8 @@ classdef csFrame < hgsetget
 						cf.moments   = cell(1,1);
 						cf.nIters    = 0;
 						cf.tVec      = [];
-						c.dims       = [];
+						cf.dims      = [];
+						cf.isSparse  = 0;
 						cf.filename  = ' ';
 					end
 				otherwise

@@ -65,11 +65,16 @@ classdef csTracker < handle
 		MOMENT_WINACCUM = 1;
 		MOMENT_IMGACCUM = 2;
 		KERNEL_DENSITY  = 3;
+		SPARSE_WINDOW   = 4;
+		SPARSE_IMG      = 5;
+		MOMENT_WINVEC    = 6;
 		methodStr       = {'Windowed moment accumulation', ...
 			               'Un-windowed moment accumulation', ...
 					       'Kernel Density Estimation', ...
-                           'Sparse moment window'};
-		pStr            = 'csTracker :';
+                           'Sparse moment window', ...
+                           'Sparse moment (no window)', ...
+                           'Windowed moment accum (vectored)'};
+		pStr            = 'csTracker :'; %debugging string prefix
 	end
 
 	methods (Access = 'public')
@@ -240,14 +245,15 @@ classdef csTracker < handle
 
 	methods (Access = 'private')	
 		% ---- imgAccum()   : WHOLE IMAGE MOMENT ACCUMULATION
-		[moments]        = imgAccum(T, bpimg);
+		[moments] = imgAccum(T, bpimg);
+		[moments] = imgAccumVec(T, bpvec, varargin);
 		% ---- winAccum()   : WINDOWED MOMENT ACCUMULATION
-		[moments wparam] = winAccum(T, bpimg, wpos, dims);
-		[moments wparam] = winAccumImg(T, bpimg, wpos);
-		[moments wparam] = winAccumVec(T, bpvec, wpos);
+		[moments] = winAccum(T, bpvec, wparam, dims);
+		[moments] = winAccumImg(T, bpimg, wparam, varargin);
+		[moments] = winAccumVec(T, bpvec, wparam, dims, varargin);
 		% ---- wparamComp() : FIND WINDOW PARAMETERS FROM MOMENT SUMS
-		wparam           = wparamComp(T, moments, varargin);
-		wparam           = initParam(T, varargin);
+		wparam    = wparamComp(T, moments, varargin);
+		wparam    = initParam(T, varargin);
 	end 		%csTracker METHODS (Private)
 
 	methods (Static)

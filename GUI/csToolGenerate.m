@@ -75,19 +75,19 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     end
 
     %Check what we have
-    if(~isfield(handles, frameBuf))
+    if(~isfield(handles, 'frameBuf'))
         fprintf('ERROR: No frameBuf object in csToolGenerate()\n');
         delete(handles.csToolGenerateFig);
         return;
     end
-    if(~isfield(handles, vecManager))
+    if(~isfield(handles, 'vecManager'))
         fprintf('ERROR: No vecManager objcet in csToolGenerate()\n');
         delete(handles.csToolGenerateFig);
         return;
     end
-    if(~isfield(handles, idx))
-        %This is not strictly a fatal error, it just means we have to 
-        %assume the first frame (or some other frame, if we want)
+    if(~isfield(handles, 'idx'))
+        %Since we have been supplied no information about which frame to
+        %view, start at first frame
         fprintf('WARNING: No idx parameter, setting index to 1\n');
         handles.idx = 1;
     end
@@ -171,7 +171,8 @@ function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         handles.idx = handles.idx + 1;
         idx = handles.idx;      %Just to make gui_renderPreview string shorter
         fh  = handles.frameBuf.getFrameHandle(idx);
-        gui_renderPreview(handles.figPreview, fh, handles.previewMode, idx);    else
+        gui_renderPreview(handles.figPreview, fh, handles.previewMode, idx);    
+	else
         handles.idx = N;
     end
     guidata(hObject, handles);
