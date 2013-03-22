@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 14-Mar-2013 22:15:05
+% Last Modified by GUIDE v2.5 19-Mar-2013 11:31:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -48,6 +48,7 @@ end
 function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INSUL>
 
     handles.debug       = 0;
+	handles.status      = 0;
     handles.previewMode = 'img';  %modes are 'img' and 'bp'
     %Parse 'optional' arguments
     if(~isempty(varargin))
@@ -70,6 +71,7 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
         end
     else
         fprintf('ERROR: Not enough arguments in csToolGenerate()\n');
+		handles.status = -1;
         delete(handles.csToolGenerateFig);
         return;
     end
@@ -77,11 +79,13 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     %Check what we have
     if(~isfield(handles, 'frameBuf'))
         fprintf('ERROR: No frameBuf object in csToolGenerate()\n');
+		handles.status = -1;
         delete(handles.csToolGenerateFig);
         return;
     end
     if(~isfield(handles, 'vecManager'))
         fprintf('ERROR: No vecManager objcet in csToolGenerate()\n');
+		handles.status = -1;
         delete(handles.csToolGenerateFig);
         return;
     end
@@ -123,13 +127,14 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     handles.output = hObject;
     % Update handles structure
     guidata(hObject, handles);
-    uiwait(handles.figure1);
+    uiwait(handles.csToolGenerateFig);
 
 
 
 function varargout = csToolGenerate_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> 
 
     varargout{1} = handles.output;
+    %varargout{1} = handles.status;
     delete(handles.csToolGenerateFig);
 
 function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>

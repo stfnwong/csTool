@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 19-Mar-2013 01:28:57
+% Last Modified by GUIDE v2.5 20-Mar-2013 19:32:16
 
 
 % Begin initialization code - DO NOT EDIT
@@ -277,6 +277,9 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         fprintf('Frame index not set (equal 0)\n');
         return;
 	end	
+	%Initialise the param index to the last param
+	fh = handles.frameBuf.getFrameHandle(frameIndex);
+	handles.pData.paramIndex = get(fh, 'nIters');
 	[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'b');
 	[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
 	if(exitflag == -1)
@@ -295,7 +298,7 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 end 	%bBack_Callback()
 
-% --- Executes on button press in bForward.
+
 function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
 	global frameIndex;
 
@@ -303,6 +306,10 @@ function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
         fprintf('Frame index not set (equal 0)\n');
         return;
 	end	
+	%Initialise the param index to the last param
+	fh = handles.frameBuf.getFrameHandle(frameIndex);
+	handles.pData.paramIndex = get(fh, 'nIters');
+
 	[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'f');
 	[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
 	if(exitflag == -1)
@@ -320,6 +327,61 @@ function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 
 end 	%bForward_Callback()	
+
+function bFrameFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    global frameIndex;
+    
+    [exitflag handles] = gui_showPreview(handles, 'idx', 1);
+    if(exitflag == -1)
+        return;
+    end
+    [ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(1),'hsv');             
+	if(exitflag == -1)
+		return;
+	end
+	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+		                           'ihist'  , ihist);
+	if(exitflag == -1)
+		return;
+	end
+    %Dont forget to set frameIndex and param index
+    frameIndex = 1;
+	%Initialise the param index to 1
+	fh = handles.frameBuf.getFrameHandle(frameIndex);
+	handles.pData.paramIndex = get(fh, 'nIters');
+
+	guidata(hObject, handles);
+
+end     %bFrameFirst_Callback()
+
+
+function bFrameLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+    global frameIndex;
+    
+    N = handles.frameBuf.getNumFrames();
+    [exitflag handles] = gui_showPreview(handles, 'idx', N);
+    if(exitflag == -1)
+        return;
+    end
+    [ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(N),'hsv');             
+	if(exitflag == -1)
+		return;
+	end
+	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+		                           'ihist'  , ihist);
+	if(exitflag == -1)
+		return;
+	end
+    %Dont forget to set frameIndex and param index
+    %Initialise the param index to 1
+	fh = handles.frameBuf.getFrameHandle(frameIndex);
+	handles.pData.paramIndex = get(fh, 'nIters');
+
+    frameIndex = N;
+	guidata(hObject, handles);
+
+end     %bFrameLast_Callback()
 
 function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
@@ -1033,7 +1095,10 @@ function menu_FileSave_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	
 end     %menu_FileSave_Callback()
 
-% --- Executes on button press in bSegOpts.
+% =============================================================== %
+%                         CALL SUB-GUIS                           %
+% =============================================================== %
+
 function bSegOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	sOpts = handles.segmenter.getOpts();
@@ -1246,3 +1311,11 @@ function menu_enableHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEF
 	guidata(hObject, handles);
 
 end
+
+
+% =============================================================== %
+%                  SMALL UTILITY FUNCTIONS                        %
+% =============================================================== %
+
+
+
