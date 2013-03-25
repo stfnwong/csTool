@@ -6,12 +6,32 @@ function bpimg = vec2bpimg(vec, varargin)
 % the further spread pixel locations in the vector vec. Pass in a 2 element row vector
 % in the form [w h] to specify the width and height of the output image
 
-	error(nargchk(1,3,nargin, 'struct'));
-	if(nargin > 1)
-		dim = varargin{1};
-		%sz  = size(dim);
-		if(~isvector(dim))
-			error('Dim must be 1x2 vector of [w h]');
+	%error(nargchk(1,3,nargin, 'struct'));
+	%if(nargin > 1)
+	%	dim = varargin{1};
+	%	%sz  = size(dim);
+	%	if(~isvector(dim))
+	%		error('Dim must be 1x2 vector of [w h]');
+	%	end
+	%end
+
+	DISP_WAITBAR = false;
+	FORCE_CHECK  = false;
+
+	if(~isempty(varargin))
+		for k = 1:length(varargin)
+			if(ischar(varargin{k}))
+				if(strncmpi(varargin{k}, 'dims', 4))
+					dim = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'wait', 4) || ...
+                       strncmpi(varargin{k}, 'wb', 2))
+					DISP_WAITBAR = true;
+				elseif(strncmpi(varargin{k}, 'force', 5))
+					%Use this for sparse vectors that haven't had redundant zero
+					%elements trimmed out
+					FORCE_CHECK  = true;
+				en
+			end
 		end
 	end
 
@@ -35,8 +55,25 @@ function bpimg = vec2bpimg(vec, varargin)
 			bpimg(vec(2,k), vec(1,k)) = vec(3,k);
 		end
 	elseif(vsz(1) == 2)
-		for k = 1:length(vec)
-			bpimg(vec(2,k), vec(1,k)) = 1;
+		N = length(vec);
+		if(DISP_WAITBAR)
+			wb = waitbar(0, 'Formatting bpimg', 'Name', 'Creating bpimg');
+		end
+		for k = 1:N
+			if(FORCE_CHECK)
+				%Ignore zero elements
+				if(vec(1,k) ~= 0 && vec(2,k) ~= 0)
+					bpimg(vec(2,k), vec(1,k)) = 1;
+				end
+			else
+				bpimg(vec(2,k), vec(1,k)) = 1;
+			end
+			if(DISP_WAITBAR)
+				waitbar(k/N, wb, sprintf('Creating bpimg (element %d/%d)\n', k, N));
+			end
+		end
+		if(DISP_WAITBAR)
+			delete(wb);
 		end
 	else
 		error('Input vec illegal size (must be 2xN or 3xN)');

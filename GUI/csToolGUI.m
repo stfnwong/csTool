@@ -1221,7 +1221,7 @@ function menu_ClearWparam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU
 			fprintf('Cancelled param clear at frame %d (%d left)\n', k, N-k);
 			break;
 		end
-		waitbar(k/N, wb, sprintf('%s (%d/%d)...', fs, k, N));
+		waitbar(k/N, wb, sprintf('Clearing param data (%d/%d)...', k, N));
 		set(fh(k), 'winParams', zeros(1,5));
 		set(fh(k), 'moments', cell(1,1));
 		set(fh(k), 'nIters', 0);

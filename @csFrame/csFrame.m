@@ -51,6 +51,7 @@ classdef csFrame < hgsetget
 		dims;		%dimensions of image (type : uint16)
 		isSparse;	%Indicates there bpVec data is sparse
 		filename;	%name of original image file
+		method;		%String containing method used to set params
 	end
 	
 	methods

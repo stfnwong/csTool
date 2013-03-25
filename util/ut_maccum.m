@@ -13,6 +13,10 @@ function [moments] = ut_maccum(bpimg, varargin)
 
 % Stefan Wong 2012
 
+	if(~isempty(varargin))
+		fprintf('WARNING: Optional arguments not yet implemented\n');
+	end
+
 	[h w d] = size(bpimg);
 
 	%Initialise moment sums

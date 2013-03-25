@@ -33,7 +33,13 @@ function status = msProcLoop(T, fh, trackWindow)
 	elseif(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
 		if(get(fh, 'isSparse') == 0)
 			bpimg          = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
-			[spvec spstat] = buf_spEncode(bpimg,'auto');
+			[spvec spstat] = buf_spEncode(bpimg, 'auto', 'trim');
+			if(T.verbose)
+				if(spstat.numZeros > 0)
+					fprintf('WARNING: Zeros in spvec\n');
+				end
+			end
+			zmtrue         = length(get(fh, 'bpVec'));
 			%Check spvec
 			if(sum(sum(spvec)) == 0)
 				fprintf('ERROR: spvec has no bpdata\n');
@@ -59,7 +65,7 @@ function status = msProcLoop(T, fh, trackWindow)
 				status = -1;
 				return;
 			case T.SPARSE_WINDOW
-				moments = winAccumVec(T, spvec, trackWindow, dims, 'sp', spstat);
+				moments = winAccumVec(T, spvec, trackWindow, dims, 'sp', spstat, 'zm', zmtrue);
 			case T.SPARSE_IMG
 				moments = imgAccumVec(T, spvec, 'sp', spstat);
 			case T.MOMENT_WINVEC
@@ -101,8 +107,15 @@ function status = msProcLoop(T, fh, trackWindow)
 	%DEBUG:
 	disp(wparam);
 	%DEBUG: Make window size function of zeroth moment
-	wparam(4) = fix(sqrt(moments(1)));
-	wparam(5) = fix(sqrt(moments(1)));
+	%Here we need to check if we have the zmtrue variable, and based the window size
+	%computation off of that if we do
+	if(exist('zmtrue', 'var'))
+		wparam(4) = fix(sqrt(zmtrue));
+		wparam(5) = fix(sqrt(zmtrue));
+	else
+		wparam(4) = fix(sqrt(moments(1)));
+		wparam(5) = fix(sqrt(moments(1)));
+	end
 	%Check wparam
 	dims = get(fh, 'dims');
 	if(wparam(4) > dims(1))
@@ -134,6 +147,7 @@ function status = msProcLoop(T, fh, trackWindow)
 	set(fh, 'winParams', wparam);
 	set(fh, 'moments', fmoments);
 	set(fh, 'nIters', n);
+	set(fh, 'method', T.methodStr{T.method});
 
 	status = 0;
 	

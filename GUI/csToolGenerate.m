@@ -45,10 +45,10 @@ end
 
 
 % --- Executes just before csToolGenerate is made visible.
-function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INSUL>
+function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 
     handles.debug       = 0;
-	handles.status      = 0;
+	%handles.status      = 0;
     handles.previewMode = 'img';  %modes are 'img' and 'bp'
     %Parse 'optional' arguments
     if(~isempty(varargin))
@@ -71,7 +71,7 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
         end
     else
         fprintf('ERROR: Not enough arguments in csToolGenerate()\n');
-		handles.status = -1;
+		handles.output = -1;
         delete(handles.csToolGenerateFig);
         return;
     end
@@ -79,13 +79,13 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     %Check what we have
     if(~isfield(handles, 'frameBuf'))
         fprintf('ERROR: No frameBuf object in csToolGenerate()\n');
-		handles.status = -1;
-        delete(handles.csToolGenerateFig);
+		handles.output = -1;
+        %delete(handles.csToolGenerateFig);
         return;
     end
     if(~isfield(handles, 'vecManager'))
         fprintf('ERROR: No vecManager objcet in csToolGenerate()\n');
-		handles.status = -1;
+		handles.output = -1;
         delete(handles.csToolGenerateFig);
         return;
     end
@@ -94,6 +94,12 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
         %view, start at first frame
         fprintf('WARNING: No idx parameter, setting index to 1\n');
         handles.idx = 1;
+    end
+
+    if(handles.debug)
+        %Show the current values of input parameters
+        fprintf('DEBUG: idx set to    : %d\n', handles.idx);
+        fprintf('DEBUG: frameBuf size : %d\n', handles.frameBuf.getNumFrames());
     end
 
     %Populate GUI elements 
@@ -124,10 +130,12 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     set(handles.figPreview, 'YTick', [], 'YTickLabel', []);
 
     % Choose default command line output for csToolGenerate
-    handles.output = hObject;
+    %handles.output = hObject;
+    handles.output = [];
     % Update handles structure
     guidata(hObject, handles);
-    uiwait(handles.csToolGenerateFig);
+    %uiwait(handles.csToolGenerateFig);
+    uiwait(hObject);
 
 
 
@@ -138,7 +146,7 @@ function varargout = csToolGenerate_OutputFcn(hObject, eventdata, handles) %#ok<
     delete(handles.csToolGenerateFig);
 
 function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
-    %handles.output = status;
+    handles.output = 0;
     uiresume(handles.csToolGenerateFig);
 
 function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -167,6 +175,7 @@ function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
 
     guidata(hObject, handles);
+    uiresume(handles.csToolGenerateFig);
         
 
 function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -181,6 +190,7 @@ function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         handles.idx = N;
     end
     guidata(hObject, handles);
+    uiresume(handles.csToolGenerateFig);
 
 
 function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -194,6 +204,7 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         handles.idx = 1;
     end
     guidata(hObject, handles);
+    uiresume(handles.csToolGenerateFig);
 
 function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     
@@ -238,7 +249,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
 
     guidata(hObject, handles);
-
+    uiresume(handles.csToolGenerateFig);
 
     
 % =============================================================== %
@@ -267,6 +278,7 @@ function gui_renderPreview(axHandle, fh, mode, idx)
             title(axHandles, str);
         end
     end
+
 
 
 function pmVecSz_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>

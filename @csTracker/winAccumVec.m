@@ -41,6 +41,8 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 					FORCE  = true;
 				elseif(strncmpi(varargin{k}, 'sp', 2))
 					spstat = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'zm', 2))
+					zmtrue = varargin{k+1};
 				end
 			end
 		end
@@ -108,9 +110,12 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 				M02 = M02 + bpvec(2,k) .* bpvec(2,k);
 			end
 		end
-		if(exist('spstat', 'var'))
-			M00 = M00 * spstat.fac;
+		if(exist('zmtrue'. 'var'))
+			M00 = zmtrue;
 		end
+		%if(exist('spstat', 'var'))
+		%	M00 = M00 * spstat.fac;
+		%end
 		moments = [M00 M10 M01 M11 M20 M02];
 	else
 		fprintf('Linear Constraint not yet implemented\n');

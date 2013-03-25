@@ -39,6 +39,11 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 %
 % 'auto'           - Automatically determine the scaling factor and buffer
 %                    size
+% 'trim'           - Automatically resize the vector to be the correct
+%                    length. Note that this is slower and is not
+%                    reccomended if encoding is to be done in a loop. If
+%                    trim is not used, be sure to check for zero values in
+%                    the resulting vector.
 % 
 %
 % OUTPUTS:
@@ -60,11 +65,14 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 	thresh = 2;
 	auto   = 0;
 
+    TRIM = false;
+
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
 				%Check which argument
-				if(strncmpi(varargin{k}, 'factor', 6))
+				if(strncmpi(varargin{k}, 'factor', 6) || ...
+                   strncmpi(varargin{k}, 'fac', 3))
 					fac = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'anchor', 6))
 					anchor = varargin{k+1};
@@ -72,6 +80,8 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 					thresh = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'auto', 4))
 					auto = 1;
+                elseif(strncmpi(varargin{k}, 'trim', 4))
+                    TRIM = true;
 				end
 			end
 		end
@@ -96,11 +106,15 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 		anchor = 'tl';
 	end
 	
-	k = 1;		%vector index
+	k        = 1;		%vector index
+    numZeros = 0;
+    zeroLog  = zeros(1, length(spvec));
 	% NOTE: Would it be worth moving the switch outside the loop? (Could test this in
 	% profiler, although MATLAB may do some optimizations here anyway)
-	for x = 1:w/fac
-		for y = 1:h/fac
+	%for x = 1:w/fac
+	%	for y = 1:h/fac
+    for x = 1:fac:w
+        for y = 1:fac:h
 			blk = bpimg(y:y+fac-1, x:x+fac-1);
 			if(sum(sum(blk)) > thresh)
 				switch anchor
@@ -115,20 +129,29 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 					otherwise
 						error('Invalid anchor point %s', anchor);
 				end
-				k = k+1;
+    			k = k + 1;
 				if(k > length(spvec))
 					fprintf('WARNING: k exceeded length of spvec (%d)\n', k);
 					k = length(spvec);
 				end
 			end
-		end
-	end
+        end
+    end
+
+    if(TRIM)
+        [idy idx] = find(spvec == 0, 1, 'first');   %#ok
+        spvec = spvec(:,1:idx-1);
+    end
+            
 	%Place options into stat_struct 
-	stat_struct.anchor = anchor;
-	stat_struct.thresh = thresh;
-	stat_struct.fac    = fac;
-	stat_struct.bpsz   = length(spvec);
-	stat_struct.imsz   = [h w];
+	stat_struct.anchor   = anchor;
+	stat_struct.thresh   = thresh;
+	stat_struct.fac      = fac;
+	stat_struct.bpsz     = length(spvec);
+	stat_struct.imsz     = [h w];
+    stat_struct.zeroLog  = zeroLog;
+    stat_struct.numZeros = numZeros;
+    
 	if(nargout > 1)
 		varargout{1}       = stat_struct;
 	end

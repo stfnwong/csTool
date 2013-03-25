@@ -1,5 +1,24 @@
 VARIOUS DESIGN NOTES FOR CSTOOL
 
+Unit testing harness for sparse tracker:
+
+This is to my mind one of the most important components in the system. I need to 
+create a testing harness to get rid of bugs and demonstrate that this kind of system
+is viable. 
+The problem lies mainly in sizing the window. There are two options, one of which 
+(precomputing the size from the segmentation operation) seems the winner for ease
+of operation.
+
+1) Try and scale the window as a factor of the remaining pixels.
+This system has problems because we can't know for certain how many pixels are missing
+ and so the window is likely to end up being to small. 
+
+2) Scale the window based on knowing the correct zeroth moment.
+This requires us to know the correct zeroth moment. In the FPGA, the easiest way to
+do this is to have an accumulator in the segmentation pipeline that adds up the number
+of segmented pixels as they exit the pipe. This value is then used for sizing the 
+window. The sparse zeroth moment still needs to be computed from the sparse data 
+in a seperate accumulator. 
 
 Pre-Caching buffer:
 
