@@ -1,22 +1,32 @@
 function bpimg = vec2bpimg(vec, varargin)
 % VEC2BPIMG
+% bpimg = vec2bpimg(vec, [...OPTIONS...])
 %
 % Convert vector representation of backprojection into a backprojection image. If no
 % size is specified, the backprojection image is made only large enought to encompass
 % the further spread pixel locations in the vector vec. Pass in a 2 element row vector
 % in the form [w h] to specify the width and height of the output image
-
-	%error(nargchk(1,3,nargin, 'struct'));
-	%if(nargin > 1)
-	%	dim = varargin{1};
-	%	%sz  = size(dim);
-	%	if(~isvector(dim))
-	%		error('Dim must be 1x2 vector of [w h]');
-	%	end
-	%end
+% 
+% OUTPUTS:
+% bpimg       - Recovered backprojection image. If no dims parameter is specified, 
+% vec2bpimg attempts to guess the size of the original image by examining the extreme
+% values in the vector, and reconstructing the image to fit those. 
+%
+% ARGUMENTS:
+% vec         - Backprojection vector to re-assemble
+% (OPTIONAL ARUGMENTS)
+% dims, [w h] - True image dimensions. Supplying these will cause vec2bpimg to produce
+%               the strictly correct output image;
+% wait/wb     - Display a waitbar during processing.
+% force       - Force the routine to check for zero values during reconstruction. This
+%               option is useful when a sparse vector has not been created with the 
+%               'trim' flag, and may have trailing zeros. Trim (in buf_spEncode) 
+%               requires a call to find(), and may be slower in a loop.
 
 	DISP_WAITBAR = false;
 	FORCE_CHECK  = false;
+
+	error(nargchk(1,5,nargin, 'struct'));
 
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
@@ -30,7 +40,7 @@ function bpimg = vec2bpimg(vec, varargin)
 					%Use this for sparse vectors that haven't had redundant zero
 					%elements trimmed out
 					FORCE_CHECK  = true;
-				en
+				end
 			end
 		end
 	end

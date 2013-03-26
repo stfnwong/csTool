@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 20-Mar-2013 19:32:16
+% Last Modified by GUIDE v2.5 26-Mar-2013 19:48:16
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1316,6 +1316,3 @@ end
 % =============================================================== %
 %                  SMALL UTILITY FUNCTIONS                        %
 % =============================================================== %
-
-
-

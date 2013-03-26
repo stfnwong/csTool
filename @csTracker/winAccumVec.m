@@ -110,7 +110,7 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 				M02 = M02 + bpvec(2,k) .* bpvec(2,k);
 			end
 		end
-		if(exist('zmtrue'. 'var'))
+		if(exist('zmtrue', 'var'))
 			M00 = zmtrue;
 		end
 		%if(exist('spstat', 'var'))

@@ -44,6 +44,12 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 %                    reccomended if encoding is to be done in a loop. If
 %                    trim is not used, be sure to check for zero values in
 %                    the resulting vector.
+% 'rtvec'/'rt'     - If the target is small enough (ie: the length of the
+%                    backprojection vector is smaller than the implied
+%                    buffer size available, and would therfore fit into the
+%                    buffer without requiring any pixels to be removed)
+%                    compute the bpvec transform and return that instead.
+%                    This may be faster in a loop
 % 
 %
 % OUTPUTS:
@@ -66,6 +72,7 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 	auto   = 0;
 
     TRIM = false;
+    RTVEC = false;      %Return vector if num pixels is small enough
 
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
@@ -82,11 +89,23 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 					auto = 1;
                 elseif(strncmpi(varargin{k}, 'trim', 4))
                     TRIM = true;
+                elseif(strncmpi(varargin{k}, 'rt', 2))
+                    RTVEC = true;
+                elseif(strncmpi(varargin{k}, 'eps', 3))
+                    eps   = varargin{k+1};
 				end
 			end
 		end
 	end
-	eps     = 0;	%adjustment factor
+	
+    if(~exist('eps', 'var'))
+        eps = 0;
+    end
+    %NOTE ON USING EPS
+    % The point of the eps variable here is to allow some amount of leeway
+    % in the window size that causes the vector to be sparse. For example,
+    % it may be preferable to make the transition size slightly larger or
+    % (more often) slightly smaller. By default
 	[h w d] = size(bpimg);
 	imsz    = h * w;
 	bpsum   = sum(sum(bpimg));
@@ -94,8 +113,23 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 	if(auto)
 		%try to determine parameters automatically	
 		if(bpsum < (imsz/4) + eps)
-			fac    = 1;
-			thresh = 1;
+            if(RTVEC)
+                spvec = bpimg2vec(bpimg);
+                if(nargout > 1)
+                	stat_struct.anchor   = 'tl';
+                    stat_struct.thresh   = 1;
+                    stat_struct.fac      = 1;
+                    stat_struct.bpsz     = length(spvec);
+                    stat_struct.imsz     = [h w];
+                    stat_struct.zeroLog  = 0;
+                    stat_struct.numZeros = 0;
+                    varargout{1}         = stat_struct;
+                end
+                return;
+            else
+            	fac    = 1;
+                thresh = 1;
+            end
 		elseif(bpsum < (imsz/2) + eps)
 			fac    = 2;
 			thresh = 2;

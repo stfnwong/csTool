@@ -32,12 +32,15 @@ function status = msProcLoop(T, fh, trackWindow)
 		bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
 	elseif(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
 		if(get(fh, 'isSparse') == 0)
-			bpimg          = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
-			[spvec spstat] = buf_spEncode(bpimg, 'auto', 'trim');
+			bpimg          = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
+			[spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim');
 			if(T.verbose)
 				if(spstat.numZeros > 0)
 					fprintf('WARNING: Zeros in spvec\n');
 				end
+                if(spstat.fac > 1)
+                    fprintf('fac: %d (frame %s)\n', spstat.fac, get(fh, 'filename'));
+                end
 			end
 			zmtrue         = length(get(fh, 'bpVec'));
 			%Check spvec
