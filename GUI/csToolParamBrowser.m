@@ -81,8 +81,6 @@ function csToolParamBrowser_OpeningFcn(hObject, eventdata, handles, varargin)	%#
     set(handles.etParamData, 'Max', 10);
     set(handles.etParamData, 'HorizontalAlignment', 'left');
     set(handles.etParamData, 'FontSize', 9);
-    set(handles.tCurrentFrame, 'String', sprintf('Frame : %s', get(fh, 'filename')));
-    set(handles.tCurrentParam, 'String', sprintf('Param : %d', handles.param));
 
     %Setup axes
     set(handles.figPreview, 'XTick', [], 'XTickLabel', []);
@@ -110,7 +108,7 @@ function varargout = csToolParamBrowser_OutputFcn(hObject, eventdata, handles) %
             varargout{1} = handles.idx;
             varargout{2} = handles.status;
     end
-	delete(handles.csToolParamBrowser);
+	%delete(handles.csToolParamBrowser);
 
 
 function bPrevFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
@@ -131,7 +129,11 @@ function bPrevFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
     end
     str = cstParam_FmtParamString(handles);
     set(handles.etParamData, 'String', str);
-    set(handles.tCurrentFrame, 'String', sprintf('Frame: %s', get(fh, 'filename')));
+    [exitflag fname] = fname_parse(get(fh, 'filename'));
+    if(exitflag == -1)
+        return;
+    end
+    set(handles.figPreview, 'Title', fname, 'Interpreter', 'None');
 	guidata(hObject, handles);
 	
 
@@ -148,14 +150,18 @@ function bNextFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		idx = handles.frameBuf.getNumFrames();
 	end
 	handles.idx = idx;
-    fh = handles.frameBuf.getFrameHandle(handles.idx);
+    %fh = handles.frameBuf.getFrameHandle(handles.idx);
     status = cstParam_ShowPreview(handles);
     if(status == -1)
         return;
     end
     str = cstParam_FmtParamString(handles);
     set(handles.etParamData, 'String', str);
-    set(handles.tCurrentFrame, 'String', sprintf('Frame: %s', get(fh, 'filename')));
+    [exitflag fname] = fname_parse(get(fh, 'filename'));
+    if(exitflag == -1)
+        return;
+    end
+    set(handles.figPreview, 'Title', fname, 'Interpreter', 'None');
 	guidata(hObject,handles);
 
 	uiresume(handles.csToolParamBrowser);
@@ -228,7 +234,7 @@ function bNextParam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 function bDone_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
 	uiresume(handles.csToolParamBrowser);
-	%delete(handles.csToolParamBrowser);
+	delete(handles.csToolParamBrowser);
 
 
 function csToolParamBrowser_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
@@ -259,12 +265,13 @@ function str = cstParam_FmtParamString(handles)
 
     %Title string
     st = sprintf('Frame : %s (%d/%d)', get(fh, 'filename'), handles.idx, N);
+    sp = sprintf('Param : (%d/%d)', handles.param, get(fh, 'nIters'));
     s1 = sprintf('xc : %.1f, yc : %.1f', xc ,yc);
     s2 = sprintf('theta : %.1f', theta);
     s3 = sprintf('axmaj : %.1f', axmaj);
     s4 = sprintf('axmin : %.1f', axmin);
 
-    str = {st, ' ', s1, s2, s3, s4};
+    str = {st, sp, ' ', s1, s2, s3, s4};
 
     %uiresume(handles.csToolParamBrowser);
 

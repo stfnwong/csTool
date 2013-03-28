@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 28-Mar-2013 13:16:21
+% Last Modified by GUIDE v2.5 28-Mar-2013 13:32:58
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -138,7 +138,7 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     %[str num ext path exitflag] = fname_parse(get(fh, 'filename'));	%#ok
 	%set(handles.etReadFile, 'String', sprintf('%s_vecdata.dat', str));
 	%set(handles.etWriteFile, 'String', sprintf('%s_testdata.dat', str));
-    set(handles.etReadFile, 'String', handles.vecManager.getRfilename());
+    %set(handles.etReadFile, 'String', handles.vecManager.getRfilename());
     set(handles.etWriteFile, 'String', handles.vecManager.getWfilename());
 
     %Show preview of input frame
@@ -155,16 +155,17 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
 
 
 
-function varargout = csToolGenerate_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> 
+function varargout = csToolGenerate_OutputFcn(hObject, eventdata, handles) %#ok<INUSD> 
 
     varargout{1} = 0;
     %varargout{1} = handles.output;
     %varargout{1} = handles.status;
-    delete(handles.csToolGenerateFig);
+    %delete(handles.csToolGenerateFig);
 
 function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     handles.output = 0;
     uiresume(handles.csToolGenerateFig);
+    delete(handles.csToolGenerateFig);
 
 function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Swap preview mode
@@ -267,6 +268,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
     guidata(hObject, handles);
     uiresume(handles.csToolGenerateFig);
+    delete(handles.csToolGenerateFig);
 
 function chkUseFrameFilename_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Modify the value of rfilename and wfilename when this is checked 
@@ -278,7 +280,7 @@ function chkUseFrameFilename_Callback(hObject, eventdata, handles) %#ok<INUSL,DE
         fh    = handles.frameBuf.getFrameHandle(handles.idx);
         fname = sprintf('%s-vec.dat', get(fh, 'filename'));
     else
-        fname = handle.vecManager.getWfilename();
+        fname = handles.vecManager.getWfilename();
     end
     set(handles.etWriteFile, 'String', fname);
 
@@ -298,7 +300,11 @@ function gui_renderPreview(axHandle, fh, mode, idx)
             img = img(:,:,1:3);
         end
         imshow(img, 'Parent', axHandle);
-        title(axHandle, sprintf('Frame %d (%s)', idx, get(fh, 'filename')));
+        [exitflag fname] = fname_parse(get(fh, 'filename'));
+        if(exitflag == -1)
+            return;
+        end
+        title(axHandle, sprintf('Frame %d (%s)', idx, fname), 'Interpreter', 'None');
     else
         %Check that there is backprojection data for this frame
         if(get(fh, 'bpSum') == 0 || isempty(get(fh, 'bpVec')))
@@ -307,7 +313,11 @@ function gui_renderPreview(axHandle, fh, mode, idx)
         else
             bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
             imshow(bpimg, 'Parent', axHandle);
-            str = sprintf('Frame %d (backprojection) (%s)\n', idx, get(fh, 'filename'));
+            [exitflag fname] = fname_parse(get(fh, 'filename'));
+            if(exitflag == -1)
+                return;
+            end
+            str = sprintf('Frame %d (backprojection) (%s)\n', idx, fname);
             title(axHandle, str);
         end
     end
@@ -344,3 +354,13 @@ function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etReadFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etWriteFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkRGB_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
+
+% --- Executes when user attempts to close csToolGenerateFig.
+function csToolGenerateFig_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to csToolGenerateFig (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+delete(hObject);

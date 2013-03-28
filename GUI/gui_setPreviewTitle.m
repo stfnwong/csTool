@@ -9,7 +9,8 @@ function gui_setPreviewTitle(fTitle, fHandle)
 	if(isempty(fTitle))
 		t = title(fHandle, 'No segmentation data for this frame');
 	else
-		[str num ext p f] = fname_parse(fTitle, 'n');	%#ok
+		%[str num ext p f] = fname_parse(fTitle, 'n');	%#ok
+		[exitflag str num ext p] = fname_parse(fTitle, 'n'); %#ok
 		t = title(fHandle, sprintf('%s_%03d.%s', str, num, ext));
 	end
 	set(t, 'Interpreter', 'None');

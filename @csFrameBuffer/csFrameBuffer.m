@@ -293,9 +293,11 @@ classdef csFrameBuffer
 				error('Filename must be string');
 			end
 			if(FB.verbose)
-				[str num ext path exitflag] = fname_parse(fname, 'd')
+				%[str num ext path exitflag] = fname_parse(fname, 'd')
+				[exitflag str num ext path] = fname_parse(fname, 'd');
 			else
-				[str num ext path exitflag] = fname_parse(fname)
+				%[str num ext path exitflag] = fname_parse(fname)
+				[exitflag str num ext path] = fname_parse(fname);
 			end
 			if(exitflag == -1)
 				%Check what fields we do have

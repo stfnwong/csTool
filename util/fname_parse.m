@@ -1,4 +1,4 @@
-function [str num ext path exitflag] = fname_parse(fstring, varargin)
+function [exitflag str varargout] = fname_parse(fstring, varargin)
 % FNAME_PARSE
 %
 % Attempt to convert filename into string_number format.
@@ -28,6 +28,10 @@ function [str num ext path exitflag] = fname_parse(fstring, varargin)
 %
 
 % Stefan Wong 2013
+
+% OLD FUNCTION LAYOUT
+%function [str num ext path exitflag] = fname_parse(fstring, varargin)
+
 	
 	DEBUG  = 0;		%dont print debug messages
 	STRING = 1;		%return num value as a string 
@@ -92,6 +96,12 @@ function [str num ext path exitflag] = fname_parse(fstring, varargin)
 	%if(fslsh == 0)
 	path     = fstring(1:fslsh);
 	exitflag = 0;
+
+	%TODO: Make so that str and exitflag are required, and others are optional
+	outvars = {num, ext, path};
+	for k = 1:nargout-2
+		varargout{k} = outvars{k};
+	end
 	
 	if(DEBUG)
 		fprintf('DEBUG: num(string) = %s\n', fstring(usIdx:extIdx-1));

@@ -312,7 +312,7 @@ classdef vecManager
 				for k = 1:length(fh)
 					data = get(fh, 'bpVec');
 					vec  = genHueVec(V, data, opts);
-					if(exist('fname', 'var')
+					if(exist('fname', 'var'))
 						dest = sprintf('%s-frame%02d', fname, k);
 					else
 						dest = sprintf('%s-frame%02d', V.filename, k);
@@ -333,7 +333,7 @@ classdef vecManager
 			end
 
 			if(~isempty(varargin))
-				for k = 1:length(varargin))
+				for k = 1:length(varargin)
 					if(ischar(varargin{k}))
 						if(strncmpi(varargin{k}, 'fmt', 3))
 							fmt = varargin{k+1};
@@ -369,7 +369,7 @@ classdef vecManager
 			end
 		end 	%writeBPVec()
 
-		function writeTrackingVec(V, fh)
+		function writeTrackingVec(V, fh, varargin)
 			%sanity check
 			if(~isa(fh, 'csFrame'))
 				error('Invalid frame handle fh');
