@@ -28,6 +28,8 @@ function [status varargout] = gui_printParams(fh, varargin)
 	end
 
 	if(exist('iter', 'var'))
+        %TODO: This needs to be updated to reflect the fact that wparam is
+        %no longer a cell array in this version of csTool
 		%Just perform this operation for a single iteration
 		wparams  = get(fh, 'winParams');
 		thisParam = wparams{iter};

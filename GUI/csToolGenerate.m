@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 19-Mar-2013 11:31:09
+% Last Modified by GUIDE v2.5 28-Mar-2013 13:16:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -48,8 +48,8 @@ end
 function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 
     handles.debug       = 0;
-	%handles.status      = 0;
-    handles.previewMode = 'img';  %modes are 'img' and 'bp'
+	handles.status      = 0;
+    handles.previewMode = 'bp';  %modes are 'img' and 'bp'
     %Parse 'optional' arguments
     if(~isempty(varargin))
         for k = 1:length(varargin)
@@ -63,7 +63,7 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
             else
                 %These are the mandatory arguments
                 if(isa(varargin{k}, 'csFrameBuffer'))
-                    handles.frameuBuf  = varargin{k};
+                    handles.frameBuf  = varargin{k};
                 elseif(isa(varargin{k}, 'vecManager'))
                     handles.vecManager = varargin{k};
                 end
@@ -105,8 +105,11 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     %Populate GUI elements 
     fmtStr = {'16', '8', '4', '2', 'scalar'};
     orStr  = {'row', 'col'};
-    set(handles.pmVecSz,String, fmtStr);
-    set(handles.pmVecOr.String, orStr);
+    set(handles.pmVecSz, 'String', fmtStr);
+    set(handles.pmVecOr, 'String', orStr);
+    %Make default selection 2c
+    set(handles.pmVecSz, 'Value', 4);
+    set(handles.pmVecOr, 'Value', 2);
 
     %Check that there are frames in the frame buffer
     if(handles.frameBuf.getNumFrames() < 1)
@@ -123,25 +126,39 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     if(dims(3) > 3)
         img = img(:,:,1:3);
     end
-    imshow(handles.figPreview, img);
-    title(handles.figPreview, sprintf('Frame %d (%s)', idx, get(fh, 'filename')));
+    imshow(img, 'Parent', handles.figPreview);
+    title(handles.figPreview, sprintf('Frame %d (%s)', handles.idx, get(fh, 'filename')));
     %Clear tickmarks from axes
     set(handles.figPreview, 'XTick', [], 'XTickLabel', []);
     set(handles.figPreview, 'YTick', [], 'YTickLabel', []);
 
+    %Place current filnames on GUI
+    %TODO: Have a checkbox that toggles between using the filename with _vecdata.dat 
+    %appended, or using the filename in vecManager.rfilename, vecManager.filename
+    %[str num ext path exitflag] = fname_parse(get(fh, 'filename'));	%#ok
+	%set(handles.etReadFile, 'String', sprintf('%s_vecdata.dat', str));
+	%set(handles.etWriteFile, 'String', sprintf('%s_testdata.dat', str));
+    set(handles.etReadFile, 'String', handles.vecManager.getRfilename());
+    set(handles.etWriteFile, 'String', handles.vecManager.getWfilename());
+
+    %Show preview of input frame
+    fh = handles.frameBuf.getFrameHandle(handles.idx);
+    gui_renderPreview(handles.figPreview, fh, handles.previewMode, handles.idx);
+
     % Choose default command line output for csToolGenerate
     %handles.output = hObject;
-    handles.output = [];
+    handles.output = 0;
     % Update handles structure
     guidata(hObject, handles);
-    %uiwait(handles.csToolGenerateFig);
-    uiwait(hObject);
+    uiwait(handles.csToolGenerateFig);
+    %uiwait(hObject);
 
 
 
 function varargout = csToolGenerate_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> 
 
-    varargout{1} = handles.output;
+    varargout{1} = 0;
+    %varargout{1} = handles.output;
     %varargout{1} = handles.status;
     delete(handles.csToolGenerateFig);
 
@@ -158,17 +175,17 @@ function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         if(dims(3) > 3)
             img = img(:,:,1:3);
         end
-        imshow(handles.figPreview, img);
+        imshow(img, 'Parent', handles.figPreview);
         title(handles.figPreview, sprintf('Frame %d (%s)', handles.idx, get(fh, 'filename')));
     else
         %Check that there is backprojection data for this frame
-        fh   = handles.frameBuf.getFrameHandles(handles.idx);
+        fh   = handles.frameBuf.getFrameHandle(handles.idx);
         if(get(fh, 'bpSum') == 0 || isempty(get(fh, 'bpVec')))
             fprintf('ERROR: No bpData in frame %d\n', handles.idx);
             return;
         else
-            bpimg = bpvec2img(get(fh, 'bpVec'), get(fh, 'dims'));
-            imshow(handles.figPreview, bpimg);
+            bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+            imshow(bpimg, 'Parent', handles.figPreview);
             str = sprintf('Frame %d (backprojection) (%s)\n', handles.idx, get(fh, 'filename'));
             title(handles.figPreview, str);
         end
@@ -227,30 +244,46 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         if(handles.debug)
             fprintf('Generating RGB Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeRGBVec(fh, fmt);
+        handles.vecManager.writeRGBVec(fh, 'fmt', fmt);
     end
     if(get(handles.chkHue, 'Value'))
         if(handles.debug)
             fprintf('Generating Hue Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager,writeHueVec(fh, fmt);
+        handles.vecManager,writeHueVec(fh, 'fmt', fmt);
     end
     if(get(handles.chkHSV, 'Value'))
         if(handles.debug)
             fprintf('Generating HSV Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeHSVVec(fh, fmt);
+        handles.vecManager.writeHSVVec(fh, 'fmt', fmt);
     end
     if(get(handles.chkBP, 'Value'))
         if(handles.debug)
             fprintf('Generating BPVec (%s) for frame %s\n', fmt, get(fh, 'filename'))
         end
-        handles.vecManager.writeBPVec(fh, fmt);
+        handles.vecManager.writeBPVec(fh, 'fmt', fmt);
     end
 
     guidata(hObject, handles);
     uiresume(handles.csToolGenerateFig);
 
+function chkUseFrameFilename_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    %Modify the value of rfilename and wfilename when this is checked 
+
+    chk = get(handles.chkUseFrameFilename, 'Value');
+
+    if(chk)
+        %Convert output filename to match frame filename
+        fh    = handles.frameBuf.getFrameHandle(handles.idx);
+        fname = sprintf('%s-vec.dat', get(fh, 'filename'));
+    else
+        fname = handle.vecManager.getWfilename();
+    end
+    set(handles.etWriteFile, 'String', fname);
+
+    guidata(hObject, handles);
+    uiresume(handles.csToolGenerateFig);
     
 % =============================================================== %
 %                          RENDER PREVIEW                         %
@@ -264,7 +297,7 @@ function gui_renderPreview(axHandle, fh, mode, idx)
         if(dims(3) > 3)
             img = img(:,:,1:3);
         end
-        imshow(axHandle, img);
+        imshow(img, 'Parent', axHandle);
         title(axHandle, sprintf('Frame %d (%s)', idx, get(fh, 'filename')));
     else
         %Check that there is backprojection data for this frame
@@ -272,12 +305,14 @@ function gui_renderPreview(axHandle, fh, mode, idx)
             fprintf('ERROR: No bpData in frame %d\n', idx);
             return;
         else
-            bpimg = bpvec2img(get(fh, 'bpVec'), get(fh, 'dims'));
-            imshow(axHandle, bpimg);
+            bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+            imshow(bpimg, 'Parent', axHandle);
             str = sprintf('Frame %d (backprojection) (%s)\n', idx, get(fh, 'filename'));
-            title(axHandles, str);
+            title(axHandle, str);
         end
     end
+
+
 
 
 

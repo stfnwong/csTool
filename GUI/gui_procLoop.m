@@ -182,6 +182,13 @@ function [status] = gui_procLoop(handles, varargin)
 			break;
 		end
 		if(TRACK)
+            %Check that there is backprojection data in this frame
+            if(numel(get(fh(k), 'bpVec')) == 0 || sum(sum(get(fh(k), 'bpVec'))) == 0)
+                fprintf('No backprojection data in frame %s, exiting...\n', get(fh(k), 'filename'));
+                delete(wb);
+                status = -1;
+                return;
+            end
 			%Get frame parameters from previous frame
 			if(k == 1)
 				%If we didn't specify an initial parameter, gui_procLoop will have 

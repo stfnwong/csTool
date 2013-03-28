@@ -22,7 +22,7 @@ function varargout = csToolParamBrowser(varargin)
 
 % Edit the above text to modify the response to help csToolParamBrowser
 
-% Last Modified by GUIDE v2.5 09-Mar-2013 20:58:35
+% Last Modified by GUIDE v2.5 27-Mar-2013 23:04:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -76,6 +76,23 @@ function csToolParamBrowser_OpeningFcn(hObject, eventdata, handles, varargin)	%#
 	end
 	handles.param = 1;		%This could also be read from GUI I suppose...
 
+    %Set GUI elements 
+    fh = handles.frameBuf.getFrameHandle(handles.idx);
+    set(handles.etParamData, 'Max', 10);
+    set(handles.etParamData, 'HorizontalAlignment', 'left');
+    set(handles.etParamData, 'FontSize', 9);
+    set(handles.tCurrentFrame, 'String', sprintf('Frame : %s', get(fh, 'filename')));
+    set(handles.tCurrentParam, 'String', sprintf('Param : %d', handles.param));
+
+    %Setup axes
+    set(handles.figPreview, 'XTick', [], 'XTickLabel', []);
+    set(handles.figPreview, 'YTick', [], 'YTickLabel', []);
+    %Place initial preview in figure
+    cstParam_ShowPreview(handles);
+    %status = cstParam_ShowPreview(handles)
+    str = cstParam_FmtParamString(handles);
+    set(handles.etParamData, 'String', str);
+
 	handles.output = hObject;
 	guidata(hObject, handles);
 
@@ -85,8 +102,14 @@ function csToolParamBrowser_OpeningFcn(hObject, eventdata, handles, varargin)	%#
 % --- Outputs from this function are returned to the command line.
 function varargout = csToolParamBrowser_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 
-	varargout{1} = handles.idx;
-	varargout{2} = handles.status;
+    %Do this just to keep MATLAB as silent as possible
+    switch nargout
+        case 1
+            varargout{1} = handles.idx;
+        case 2
+            varargout{1} = handles.idx;
+            varargout{2} = handles.status;
+    end
 	delete(handles.csToolParamBrowser);
 
 
@@ -101,6 +124,14 @@ function bPrevFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		idx = handles.frameBuf.getNumFrames();
 	end
 	handles.idx = idx;
+    fh = handles.frameBuf.getFrameHandle(handles.idx);
+    status = cstParam_ShowPreview(handles);
+    if(status == -1)
+        return;
+    end
+    str = cstParam_FmtParamString(handles);
+    set(handles.etParamData, 'String', str);
+    set(handles.tCurrentFrame, 'String', sprintf('Frame: %s', get(fh, 'filename')));
 	guidata(hObject, handles);
 	
 
@@ -117,6 +148,14 @@ function bNextFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		idx = handles.frameBuf.getNumFrames();
 	end
 	handles.idx = idx;
+    fh = handles.frameBuf.getFrameHandle(handles.idx);
+    status = cstParam_ShowPreview(handles);
+    if(status == -1)
+        return;
+    end
+    str = cstParam_FmtParamString(handles);
+    set(handles.etParamData, 'String', str);
+    set(handles.tCurrentFrame, 'String', sprintf('Frame: %s', get(fh, 'filename')));
 	guidata(hObject,handles);
 
 	uiresume(handles.csToolParamBrowser);
@@ -141,11 +180,13 @@ function bPrevParam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	if(pidx > N)
 		pidx = N;
 	end
-	[status pstr] = gui_printParams(fh, 'iter', pidx, 'sup');
-	if(status == -1)
-		return;
-	end
-	set(handles.tParamText, 'String', pstr);
+	%[status pstr] = gui_printParams(fh, 'iter', pidx, 'sup');
+	%if(status == -1)
+	%	return;
+	%end
+	%set(handles.tParamText, 'String', pstr);
+    str = cstParam_FmtParamString(handles);
+    set(handles.etParamData, 'String', str);
 	handles.param = pidx;
 	guidata(hObject, handles);
 	
@@ -172,11 +213,13 @@ function bNextParam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	if(pidx > N)
 		pidx = N;
 	end
-	[status pstr] = gui_printParams(fh, 'iter', pidx, 'sup');
-	if(status == -1)
-		return;
-	end
-	set(handles.tParamText, 'String', pstr);
+	%[status pstr] = gui_printParams(fh, 'iter', pidx, 'sup');
+	%if(status == -1)
+	%	return;
+	%end
+	%set(handles.tParamText, 'String', pstr);
+    str = cstParam_FmtParamString(handles);
+    set(handles.etParamData, 'String', str);
 	handles.param = pidx;
 	guidata(hObject, handles);
 	
@@ -185,7 +228,7 @@ function bNextParam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 function bDone_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
 	uiresume(handles.csToolParamBrowser);
-	delete(handles.csToolParamBrowser);
+	%delete(handles.csToolParamBrowser);
 
 
 function csToolParamBrowser_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
@@ -193,6 +236,62 @@ function csToolParamBrowser_CloseRequestFcn(hObject, eventdata, handles)	%#ok<IN
 	uiresume(handles.csToolParamBrowser);
 	delete(hObject);
 
+function str = cstParam_FmtParamString(handles)   
+    %Format string containing parameter data.
+    fh = handles.frameBuf.getFrameHandle(handles.idx);
+    N  = handles.frameBuf.getNumFrames();
+    
+    %get data to appear in string
+    moments = get(fh, 'moments');
+    wparam  = get(fh, 'winParams');
+    m       = moments{handles.param};
+    if(length(m) == 6)
+        xc = m(2)/m(1);
+        yc = m(3)/m(1);
+    else
+        %Normalised
+        xc = m(1);
+        yc = m(2);
+    end
+    theta   = wparam(3);
+    axmaj   = wparam(4);
+    axmin   = wparam(5);
+
+    %Title string
+    st = sprintf('Frame : %s (%d/%d)', get(fh, 'filename'), handles.idx, N);
+    s1 = sprintf('xc : %.1f, yc : %.1f', xc ,yc);
+    s2 = sprintf('theta : %.1f', theta);
+    s3 = sprintf('axmaj : %.1f', axmaj);
+    s4 = sprintf('axmin : %.1f', axmin);
+
+    str = {st, ' ', s1, s2, s3, s4};
+
+    %uiresume(handles.csToolParamBrowser);
+
+function status = cstParam_ShowPreview(handles)
+
+    fh = handles.frameBuf.getFrameHandle(handles.idx);
+    bpvec = get(fh, 'bpVec');
+    bpdims = get(fh, 'dims');
+    bpimg  = vec2bpimg(bpvec, bpdims);
+    if(isempty(bpimg) || numel(bpimg) == 0)
+        fprintf('ERROR: Incorrect bpvec conversion in cstParam_ShowPreview()\n');
+        status = -1;
+        return;
+    end
+    status = gui_plotParams(fh, handles.figPreview, 'num', handles.param);
+    if(status == -1)
+        fprintf('Formatting issue in gui_plotParams()\n');
+        return;
+    end
+    imshow(bpimg, 'parent', handles.figPreview);
+    status = 0;
+    
 
 
+function etParamData_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>
 
+function etParamData_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end

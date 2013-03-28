@@ -14,6 +14,7 @@ function [status nh] = gui_showPreview(handles, varargin)
 	%Set internal constants
 	DEBUG = 0;
 	DSTR  = 'DEBUG (gui_showPreview) :';
+	PLOT_TRAJ = false;
 
 	if(isempty(varargin))
 		fprintf('ERROR: Not enough input arguments in gui_showPreview()\n');
@@ -29,6 +30,10 @@ function [status nh] = gui_showPreview(handles, varargin)
 					fh = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'seg', 3))
 					seg = 1;
+                elseif(strncmpi(varargin{k}, 'param', 5))
+                    param = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'traj', 4))
+					PLOT_TRAJ = true;
 				elseif(strncmpi(varargin{k}, 'debug', 5))
 					DEBUG = 1;
 				end
@@ -91,16 +96,31 @@ function [status nh] = gui_showPreview(handles, varargin)
 			return;
 		end
 		imshow(bpimg, 'parent', handles.fig_bpPreview);
-	end 
-	%If there is tracking data, overlay this onto segmentation data
-	disp(get(fh));
-	params = get(fh, 'winParams');
-	%If the first element is empty, then the rest will also be empty
-	%(similarly for zero)
-	if(isempty(params) ||isequal(params, zeros(1,length(params))))
-		fprintf('No params set for this frame\n');
+	end
+
+	if(PLOT_TRAJ)
+		%Plot a certain amount of frames before and after the current one 
 	else
-		gui_plotParams(fh, handles.fig_bpPreview);
+		%If there is tracking data, overlay this onto segmentation data and place 
+		%window parameter data onto gui
+		%disp(get(fh));
+		params = get(fh, 'winParams');
+		%If the first element is empty, then the rest will also be empty
+		%(similarly for zero)
+		if(isempty(params) ||isequal(params, zeros(1,length(params))))
+			fprintf('No params set for this frame\n');
+			set(handles.etParam, 'String', 'No window parameters set for this frame');
+		else
+			gui_plotParams(fh, handles.fig_bpPreview);
+			if(exist('param', 'var'))
+				[str status] = gui_setWinParams(handles.frameBuf, idx, 'p', param);
+			else
+				[str status] = gui_setWinParams(handles.frameBuf, idx);
+			end
+			if(status == 0)
+				set(handles.etParam, 'String', str);
+			end
+		end
 	end
 	status = 0;
 	nh     = handles; 

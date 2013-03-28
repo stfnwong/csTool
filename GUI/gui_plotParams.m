@@ -68,7 +68,7 @@ function status = gui_plotParams(fh, axHandle, varargin)
 			%Plot final centroid slightly larger
 			set(ph, 'Color', [1 0 0], 'MarkerSize', 16, 'LineWidth', 4, 'Marker', 'x');
 		else
-			set(ph, 'Color', [1 0 0], 'MarkerSize', 12, 'LineWidth', 2, 'Marker', 'x');
+			set(ph, 'Color', [0 1 0], 'MarkerSize', 12, 'LineWidth', 2, 'Marker', 'x');
 		end
 	end
  	

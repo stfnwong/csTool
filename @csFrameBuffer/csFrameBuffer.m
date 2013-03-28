@@ -181,7 +181,7 @@ classdef csFrameBuffer
 		%
 			if(length(N) > 1)
 				if(N(end) > F.nFrames)
-					error('N out of bounds (N=%d, bufsize=%d)', N, F.nFrames);
+					error('N out of bounds (N=%d, bufsize=%d)', N(end), F.nFrames);
 				end
 				for k = length(N):-1:1
 					fh(k) = F.frameBuf(N(k));

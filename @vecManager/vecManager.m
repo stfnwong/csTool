@@ -76,8 +76,18 @@ classdef vecManager
                           'vfParams',  V.vfParams,  ...
                           'bpvecFmt',  V.bpvecFmt,  ...
                           'errorTol',  V.errorTol,  ...
+                          'autoGen',   V.autoGen,   ...
+                          'chkVerbose', V.verbose,  ...
                           'dataSz',    V.dataSz );
 		end		%getOpts()
+
+		function wfilename = getWfilename(V)
+			wfilename = V.wfilename;
+		end
+
+		function rfilename = getRfilename(V)
+			rfilename = V.rfilename;
+		end
 
 		function auto = checkAutoGen(V)
 			auto = V.autoGen;
@@ -195,7 +205,20 @@ classdef vecManager
 			
 			%Parse optional arguments
 			if(~isempty(varargin))
-				[opts.type opts.val] = parseFmt(V, varargin{1});
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'fmt', 3))
+							fmt = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'file', 4))
+							fname = varargin{k+1};
+						end
+					end
+				end
+			end
+			
+			% Check what we have
+			if(exist('fmt', 'var'))
+				[opts.type opts.val] = parseFmt(V, fmt);
 			else
 				opts.type = 'scalar';
 				opts.val  = 0;
@@ -204,7 +227,11 @@ classdef vecManager
 			if(length(fh) > 1)
 				for k = 1:length(fh)
 					vec  = genRGBVec(V, fh(k), opts);
-					dest = sprintf('%s-frame%02d', V.filename, k);
+					if(exist('fname', 'var'))
+						dest = sprintf('%s-frame%03d', fname, k);
+					else
+						dest = sprintf('%s-frame%02d', V.filename, k);
+					end
 					vecDiskWrite(V, vec, 'dest', dest);
 				end	
 			else
@@ -219,8 +246,21 @@ classdef vecManager
 				error('Invalid frame handle fh');
 			end
 
+			%Parse optional arguments 
 			if(~isempty(varargin))
-				[opts.type opts.val] = parseFmt(V, varargin{1});
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'fmt', 3))
+							fmt = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'file', 4))
+							fname = varargin{k+1};
+						end
+					end
+				end
+			end
+
+			if(exist('fmt','var'))
+				[opts.type opts.val] = parseFmt(V, fmt);
 			else
 				opts.type = 'scalar';
 				opts.val  = 0;
@@ -229,7 +269,11 @@ classdef vecManager
 			if(length(fh) > 1)	
 				for k = 1:length(fh)
 					vec  = genHSVVec(V, fh(k), opts);
-					dest = sprintf('%s-frame%02d', V.filename, k);
+					if(exist('fname', 'var'))
+						dest = sprintf('%s-frame%03d', fname, k);
+					else
+						dest = sprintf('%s-frame%03d', V.filename, k);
+					end
 					vecDiskWrite(V, vec, 'dest', dest); 
 				end
 			else
@@ -244,9 +288,21 @@ classdef vecManager
 			if(~isa(fh, 'csFrame'))
 				error('Invalid frame handle fh');
 			end
-	
+
 			if(~isempty(varargin))
-				[opts.type opts.val] = parseFmt(V, varargin{1});
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'fmt', 3))
+							fmt = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'file', 4))
+							fname = varargin{k+1};
+						end
+					end
+				end
+			end
+	
+			if(exist('fmt', 'var'))
+				[opts.type opts.val] = parseFmt(V, fmt);
 			else
 				opts.type = 'scalar';
 				opts.val  = 0;
@@ -256,7 +312,11 @@ classdef vecManager
 				for k = 1:length(fh)
 					data = get(fh, 'bpVec');
 					vec  = genHueVec(V, data, opts);
-					dest = sprintf('%s-frame%02d', V.filename, k);
+					if(exist('fname', 'var')
+						dest = sprintf('%s-frame%02d', fname, k);
+					else
+						dest = sprintf('%s-frame%02d', V.filename, k);
+					end
 					vecDiskWrite(V, vec, 'dest', dest);
 				end
 			else
@@ -271,9 +331,21 @@ classdef vecManager
 			if(~isa(fh, 'csFrame'))
 				error('Invalid frame handle fh');
 			end
-		
+
 			if(~isempty(varargin))
-				[opts.type opts.val] = parseFmt(V, varargin{1});
+				for k = 1:length(varargin))
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'fmt', 3))
+							fmt = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'file', 4))
+							fname = varargin{k+1};
+						end
+					end
+				end
+			end
+		
+			if(exist('fmt', 'var'))
+				[opts.type opts.val] = parseFmt(V, fmt);
 			else
 				opts.type = 'scalar';
 				opts.val  = 0;
@@ -283,7 +355,11 @@ classdef vecManager
 				for k = 1:length(fh)
 					data = vec2bpimg(get(fh(k), 'bpVec'));
 					vec  = genBPVec(V, data, opts);
-					dest = sprintf('%s-frame%02d', V.filename, k);
+					if(exist('fname', 'var'))
+						dest = sprintf('%s-frame%02d', fname, k);
+					else
+						dest = sprintf('%s-frame%02d', V.filename, k);
+					end
 					vecDiskWrite(V, vec, 'dest', dest);
 				end
 			else
@@ -299,11 +375,25 @@ classdef vecManager
 				error('Invalid frame handle fh');
 			end
 
+			if(~isempty(varargin))
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'file', 4))
+							fname = varargin{k+1};
+						end
+					end
+				end
+			end
+
 			if(length(fh) > 1)
 				for k = 1:length(fh)
 					data = get(fh(k), 'bpVec');
 					vec  = genTrackingVec(V, data, k);
-					dest = sprintf('%s-frame%02d', V.filename, k);
+					if(exist('fname', 'var'))
+						dest = sprintf('%s-frame%02d', fname, k);
+					else
+						dest = sprintf('%s-frame%02d', V.filename, k);
+					end
 					vecDiskWrite(V, vec, 'dest', dest);
 				end
 			else

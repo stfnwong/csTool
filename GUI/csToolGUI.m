@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 26-Mar-2013 19:48:16
+% Last Modified by GUIDE v2.5 28-Mar-2013 13:18:40
 
 
 % Begin initialization code - DO NOT EDIT
@@ -190,16 +190,22 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	%Model histogram
 	cla(handles.fig_mhistPreview);
 	title(handles.fig_mhistPreview, 'Model Histogram');
-	xlabel(handles.fig_mhistPreview, 'Bin');
+	%xlabel(handles.fig_mhistPreview, 'Bin');
+    xlabel(handles.fig_mhistPreview, []);
 	ylabel(handles.fig_mhistPreview, 'Value');
 	%Image histogram
 	cla(handles.fig_ihistPreview);
 	title(handles.fig_ihistPreview, 'Image Histogram');
-	xlabel(handles.fig_ihistPreview, 'Bin');
+	%xlabel(handles.fig_ihistPreview, 'Bin');
+    xlabel(handles.fig_ihistPreview, []);
 	ylabel(handles.fig_ihistPreview, 'Value');
 
 	%Setup buttons, listboxes, etc
     handles = init_UIElements(handles);
+    %Setup window parameter text
+    set(handles.etParam, 'Max', 6);
+    set(handles.etParam, 'FontSize', 8);
+    set(handles.etParam, 'HorizontalAlignment', 'left');
 	%handles = init_restoreFrame(handles);
     fprintf('Bringing up csTool GUI...\n');
 	%Try to load the previous frameIndex - this should be moved into init_UIElements
@@ -349,7 +355,7 @@ function bFrameFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Initialise the param index to 1
 	fh = handles.frameBuf.getFrameHandle(frameIndex);
 	handles.pData.paramIndex = get(fh, 'nIters');
-
+    set(handles.etCurFrame, 'String', num2str(frameIndex));
 	guidata(hObject, handles);
 
 end     %bFrameFirst_Callback()
@@ -377,7 +383,7 @@ function bFrameLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Initialise the param index to 1
 	fh = handles.frameBuf.getFrameHandle(frameIndex);
 	handles.pData.paramIndex = get(fh, 'nIters');
-
+    set(handles.etCurFrame, 'String', num2str(frameIndex));
     frameIndex = N;
 	guidata(hObject, handles);
 
@@ -770,20 +776,26 @@ function bParamPrev_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
 	global frameIndex;
 	
-	idx = handles.pData.paramIndex - 1;
+	pidx = handles.pData.paramIndex - 1;
 	fh  = handles.frameBuf.getFrameHandle(frameIndex);
 	%check range
-	if(idx < 1)
-		idx = 1;
+	if(pidx < 1)
+		pidx = 1;
 	end
-	if(idx > get(fh, 'nIters'))
+	if(pidx > get(fh, 'nIters'))
 		fprintf('Param index out of bounds (overflow), clipped to %d\n', get(fh, 'nIters'));
 	end
-	
-	status = gui_plotParams(fh, handles.fig_bpPreview, 'iter', idx);
-	if(status == -1)
-		return;
-	end
+
+    [status nh] = gui_showPreview(handles, 'fh', fh, 'idx', frameIndex, 'param', pidx);
+    if(status == -1)
+        return;
+    end
+    handles = nh;
+
+	%status = gui_plotParams(fh, handles.fig_bpPreview, 'iter', idx);
+	%if(status == -1)
+	%	return;
+	%end
 	if(get(handles.chkShowTraj, 'Value'));
 		tvec = handles.frameBuf.bufGetTraj();
 		status = gui_plotTraj(handles.fig_bpPreview, tvec, frameIndex);
@@ -792,10 +804,10 @@ function bParamPrev_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		end
 	end
 	%Update frame position string
-	paramString = sprintf('Iter : %d / %d', idx, get(fh, 'nIters'));
-	set(handles.tParamBrowse, 'String', paramString);
+	%paramString = sprintf('Iter : %d / %d', idx, get(fh, 'nIters'));
+	%set(handles.etParam, 'String', paramString);
 	
-	handles.pData.paramIndex = idx;
+	handles.pData.paramIndex = pidx;
 	guidata(hObject, handles);
 
 end
@@ -804,20 +816,29 @@ function bParamNext_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
 	global frameIndex;	
 	
-	idx = handles.pData.paramIndex + 1;
+	pidx = handles.pData.paramIndex + 1;
 	fh  = handles.frameBuf.getFrameHandle(frameIndex);
+    if(handles.debug)
+        fprintf('pData.paramIndex : %d\n', pidx);
+    end
 	%check range
-	if(idx < 1)
-		idx = 1;
+	if(pidx > get(fh, 'nIters'))
+		pidx = get(fh, 'nIters');
 	end
-	if(idx > get(fh, 'nIters'))
+	if(pidx > get(fh, 'nIters'))
 		fprintf('Param index out of bounds (overflow), clipped to %d\n', get(fh, 'nIters'));
 	end
+
+    [status nh] = gui_showPreview(handles, 'fh', fh, 'idx', frameIndex, 'param', pidx);
+    if(status == -1)
+        return;
+    end
+    handles = nh;
 	
-	status = gui_plotParams(fh, handles.fig_bpPreview, 'iter', idx);
-	if(status == -1)
-		return;
-	end
+	%status = gui_plotParams(fh, handles.fig_bpPreview, 'iter', pidx);
+	%if(status == -1)
+	%	return;
+	%end
 	if(get(handles.chkShowTraj, 'Value'));
 		tvec = handles.frameBuf.bufGetTraj();
 		status = gui_plotTraj(handles.fig_bpPreview, tvec, frameIndex);
@@ -826,10 +847,10 @@ function bParamNext_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		end
 	end
 	%Update frame position string
-	paramString = sprintf('Iter : %d / %d', idx, get(fh, 'nIters'));
-	set(handles.tParamBrowse, 'String', paramString);
+	%paramString = sprintf('Iter : %d / %d', idx, get(fh, 'nIters'));
+	%set(handles.etParam, 'String', paramString);
 
-	handles.pData.paramIndex = idx;
+	handles.pData.paramIndex = pidx;
 	guidata(hObject, handles);
 end
 
@@ -1316,3 +1337,11 @@ end
 % =============================================================== %
 %                  SMALL UTILITY FUNCTIONS                        %
 % =============================================================== %
+
+
+% --- Executes on button press in bVerify.
+function bVerify_Callback(hObject, eventdata, handles)
+% hObject    handle to bVerify (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+end     %bVerify_Callback()
