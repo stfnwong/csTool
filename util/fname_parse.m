@@ -81,7 +81,11 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 		path     = fstring(1:fslsh+1);
 		num      = 0;
 		ext      = fstring(extIdx(end)+1:end);
-		exitflag = -1;
+		exitflag = -1;		
+		outvars  = {num ext path};
+		for k = 1:nargout-2
+			varargout{k} = outvars{k};
+		end
 		return;
 	end
 	if(DEBUG)

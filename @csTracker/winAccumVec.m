@@ -39,10 +39,6 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 			if(ischar(varargin{k}))
 				if(strncmpi(varargin{k}, 'force', 5))
 					FORCE  = true;
-				elseif(strncmpi(varargin{k}, 'sp', 2))
-					spstat = varargin{k+1};
-				elseif(strncmpi(varargin{k}, 'zm', 2))
-					zmtrue = varargin{k+1};
 				end
 			end
 		end
@@ -109,9 +105,6 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 				M20 = M20 + bpvec(1,k) .* bpvec(1,k);
 				M02 = M02 + bpvec(2,k) .* bpvec(2,k);
 			end
-		end
-		if(exist('zmtrue', 'var'))
-			M00 = zmtrue;
 		end
 		%if(exist('spstat', 'var'))
 		%	M00 = M00 * spstat.fac;

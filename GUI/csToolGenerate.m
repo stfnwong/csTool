@@ -170,15 +170,6 @@ function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Swap preview mode
     if(strncmpi(handles.previewMode, 'img', 3))
-        fh   = handles.frameBuf.getFrameHandle(handles.idx);
-        img  = imread(get(fh, 'filename'), 'TIFF');
-        dims = size(img);
-        if(dims(3) > 3)
-            img = img(:,:,1:3);
-        end
-        imshow(img, 'Parent', handles.figPreview);
-        title(handles.figPreview, sprintf('Frame %d (%s)', handles.idx, get(fh, 'filename')));
-    else
         %Check that there is backprojection data for this frame
         fh   = handles.frameBuf.getFrameHandle(handles.idx);
         if(get(fh, 'bpSum') == 0 || isempty(get(fh, 'bpVec')))
@@ -189,7 +180,19 @@ function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
             imshow(bpimg, 'Parent', handles.figPreview);
             str = sprintf('Frame %d (backprojection) (%s)\n', handles.idx, get(fh, 'filename'));
             title(handles.figPreview, str);
+            handles.previewMode = 'img';
         end
+        
+    else
+        fh   = handles.frameBuf.getFrameHandle(handles.idx);
+        img  = imread(get(fh, 'filename'), 'TIFF');
+        dims = size(img);
+        if(dims(3) > 3)
+            img = img(:,:,1:3);
+        end
+        imshow(img, 'Parent', handles.figPreview);
+        title(handles.figPreview, sprintf('Frame %d (%s)', handles.idx, get(fh, 'filename')));
+        handles.previewMode = 'bp';
     end
 
     guidata(hObject, handles);
@@ -300,11 +303,11 @@ function gui_renderPreview(axHandle, fh, mode, idx)
             img = img(:,:,1:3);
         end
         imshow(img, 'Parent', axHandle);
-        [exitflag fname] = fname_parse(get(fh, 'filename'));
+        [exitflag fname num] = fname_parse(get(fh, 'filename'));
         if(exitflag == -1)
             return;
         end
-        title(axHandle, sprintf('Frame %d (%s)', idx, fname), 'Interpreter', 'None');
+        title(axHandle, sprintf('Frame %d (%s_%d)', idx, fname, num), 'Interpreter', 'None');
     else
         %Check that there is backprojection data for this frame
         if(get(fh, 'bpSum') == 0 || isempty(get(fh, 'bpVec')))
@@ -313,12 +316,12 @@ function gui_renderPreview(axHandle, fh, mode, idx)
         else
             bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
             imshow(bpimg, 'Parent', axHandle);
-            [exitflag fname] = fname_parse(get(fh, 'filename'));
+            [exitflag fname num] = fname_parse(get(fh, 'filename'));
             if(exitflag == -1)
                 return;
             end
-            str = sprintf('Frame %d (backprojection) (%s)\n', idx, fname);
-            title(axHandle, str);
+            str = sprintf('Frame %d (backprojection) (%s_%d)\n', idx, fname, num);
+            title(axHandle, str, 'Interpreter', 'None');
         end
     end
 

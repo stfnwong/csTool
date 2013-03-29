@@ -129,11 +129,12 @@ function bPrevFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
     end
     str = cstParam_FmtParamString(handles);
     set(handles.etParamData, 'String', str);
-    [exitflag fname] = fname_parse(get(fh, 'filename'));
+    [exitflag fname num] = fname_parse(get(fh, 'filename'));
     if(exitflag == -1)
         return;
     end
-    set(handles.figPreview, 'Title', fname, 'Interpreter', 'None');
+    %set(handles.figPreview, 'Title', fname, 'Interpreter', 'None');
+    title(handles.figPreview, sprintf('%s_%d', fname, num), 'Interpreter', 'None');
 	guidata(hObject, handles);
 	
 
@@ -150,18 +151,19 @@ function bNextFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		idx = handles.frameBuf.getNumFrames();
 	end
 	handles.idx = idx;
-    %fh = handles.frameBuf.getFrameHandle(handles.idx);
+    fh = handles.frameBuf.getFrameHandle(handles.idx);
     status = cstParam_ShowPreview(handles);
     if(status == -1)
         return;
     end
     str = cstParam_FmtParamString(handles);
     set(handles.etParamData, 'String', str);
-    [exitflag fname] = fname_parse(get(fh, 'filename'));
+    [exitflag fname num] = fname_parse(get(fh, 'filename'));
     if(exitflag == -1)
         return;
     end
-    set(handles.figPreview, 'Title', fname, 'Interpreter', 'None');
+    %set(handles.figPreview, 'Title', fname, 'Interpreter', 'None');
+    title(handles.figPreview, sprintf('%s_%d', fname, num), 'Interpreter', 'None');
 	guidata(hObject,handles);
 
 	uiresume(handles.csToolParamBrowser);

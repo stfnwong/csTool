@@ -112,13 +112,15 @@ function status = msProcLoop(T, fh, trackWindow)
 	%DEBUG: Make window size function of zeroth moment
 	%Here we need to check if we have the zmtrue variable, and based the window size
 	%computation off of that if we do
-	if(exist('zmtrue', 'var'))
-		wparam(4) = fix(sqrt(zmtrue));
-		wparam(5) = fix(sqrt(zmtrue));
-	else
-		wparam(4) = fix(sqrt(moments(1)));
-		wparam(5) = fix(sqrt(moments(1)));
-	end
+	%if(exist('zmtrue', 'var'))
+	%	wparam(4) = fix(sqrt(zmtrue));
+	%	wparam(5) = fix(sqrt(zmtrue));
+	%else
+	%	wparam(4) = fix(sqrt(moments(1)));
+	%	wparam(5) = fix(sqrt(moments(1)));
+	%end
+    wparam(4) = fix(sqrt(moments(1)));
+    wparam(5) = fix(sqrt(moments(1)));
 	%Check wparam
 	dims = get(fh, 'dims');
 	if(wparam(4) > dims(1))
