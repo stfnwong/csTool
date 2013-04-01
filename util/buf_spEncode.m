@@ -50,6 +50,12 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 %                    buffer without requiring any pixels to be removed)
 %                    compute the bpvec transform and return that instead.
 %                    This may be faster in a loop
+% bufsz, [sz]      - Set the buffer size to be 1/sz the size required to store
+%                    the entire image. Legal values for this operation are 32, 16, 8,
+%                    4,2 (default: 4). Setting a larger value here forces the encoding
+%                    routine to be more aggressive at removing pixels in the target. 
+%                    Note that the spatial resolution of the tracker will be reduced 
+%                    by an amount equal to the factor specified here
 % 
 %
 % OUTPUTS:
@@ -74,6 +80,8 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
     TRIM = false;
     RTVEC = false;      %Return vector if num pixels is small enough
 
+	VALID_SPFAC = [32 16 8 4 2];
+
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
@@ -93,10 +101,29 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
                     RTVEC = true;
                 elseif(strncmpi(varargin{k}, 'eps', 3))
                     eps   = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'buf', 3) || ...
+                       strncmpi(varargin{k}, 'sz',  2))
+					bufsz = varargin{k+1};
 				end
 			end
 		end
 	end
+
+	if(exist('bufsz', 'var'))
+		SZ = find(VALID_SPFAC == bufsz);
+		if(isempty(SZ))
+			fprintf('Invalid size %d, using default (4)\n', bufsz);
+			SZ = 4;	%turns out (coincidentally) that the index for 4 is also 4
+		end
+	else
+		SZ = 4;
+	end
+	%Genrate factors and thresholds for scaling test
+	%NOTE: Rather than actually solve the 'last frame' bug, I've just made the index
+	%here one element larger than it needs to be, hence the +1
+	SP_FACTORS = 2.^(0:(length(VALID_SPFAC(SZ:end)) + 1));
+    SP_THRESH  = (VALID_SPFAC(SZ:end).^2) ./ 2;
+	%SP_THRESH  = 2.^(0:(length(VALID_SPFAC(SZ:end)) + 1));
 	
     if(~exist('eps', 'var'))
         eps = 0;
@@ -111,33 +138,63 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 	bpsum   = sum(sum(bpimg));
 	spvec   = zeros(2, imsz/4);
 	if(auto)
-		%try to determine parameters automatically	
-		if(bpsum < (imsz/4) + eps)
-            if(RTVEC)
-                spvec = bpimg2vec(bpimg);
-                if(nargout > 1)
-                	stat_struct.anchor   = 'tl';
-                    stat_struct.thresh   = 1;
-                    stat_struct.fac      = 1;
-                    stat_struct.bpsz     = length(spvec);
-                    stat_struct.imsz     = [h w];
-                    stat_struct.zeroLog  = 0;
-                    stat_struct.numZeros = 0;
-                    varargout{1}         = stat_struct;
-                end
-                return;
-            else
-            	fac    = 1;
-                thresh = 1;
-            end
-		elseif(bpsum < (imsz/2) + eps)
-			fac    = 2;
-			thresh = 2;
-		else
-			fac    = 4;
-			thresh = 8;
+		%try to determine parameters automatically
+		for k = SZ:length(VALID_SPFAC)
+			if(bpsum < (imsz/VALID_SPFAC(k)) + eps)
+				if(k == SZ && RTVEC)
+					spvec = bpimg2vec(bpimg);
+					if(nargout > 1)
+						stat_struct.anchor   = 'tl';
+						stat_struct.thresh   = 1;
+						stat_struct.fac      = 1;
+						stat_struct.bpsz     = length(spvec);
+						stat_struct.imsz     = [h w];
+						stat_struct.zerLog   = 0;
+						stat_struct.numZeros = 0;
+						varargout{1}         = stat_struct;
+					end
+					return;
+				else
+                    if(k > length(SP_FACTORS))
+                        %This hack is stupid - but im tired. fix it
+                        %properly!
+                        fac    = SP_FACTORS(end);
+                        thresh = SP_THRESH(end);
+                    else
+                        fac    = SP_FACTORS(k);
+                        thresh = SP_THRESH(k);
+                    end
+                    
+					
+				end
+			end 	
 		end
-		anchor = 'tl';
+		%if(bpsum < (imsz/4) + eps)
+        %    if(RTVEC)
+        %        spvec = bpimg2vec(bpimg);
+        %        if(nargout > 1)
+        %        	 stat_struct.anchor   = 'tl';
+        %            stat_struct.thresh   = 1;
+        %            stat_struct.fac      = 1;
+        %            stat_struct.bpsz     = length(spvec);
+        %            stat_struct.imsz     = [h w];
+        %            stat_struct.zeroLog  = 0;
+        %            stat_struct.numZeros = 0;
+        %            varargout{1}         = stat_struct;
+        %        end
+        %        return;
+        %    else
+        %    	fac    = 1;
+        %        thresh = 1;
+        %    end
+		%elseif(bpsum < (imsz/2) + eps)
+		%	fac    = 2;
+		%	thresh = 2;
+		%else
+		%	fac    = 4;
+		%	thresh = 8;
+		%end
+		%anchor = 'tl';
 	end
 	
 	k        = 1;		%vector index
@@ -149,6 +206,7 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 	%	for y = 1:h/fac
     for x = 1:fac:w
         for y = 1:fac:h
+            %Need to do bounds check here for block size
 			blk = bpimg(y:y+fac-1, x:x+fac-1);
 			if(sum(sum(blk)) > thresh)
 				switch anchor

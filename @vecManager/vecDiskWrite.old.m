@@ -43,26 +43,11 @@ function vecDiskWrite(V, data, varargin)
 			fprintf(rfp, '@0 ');
 			fprintf(gfp, '@0 ');
 			fprintf(bfp, '@0 ');
-			%Do vectors seperately to show waitbar
-			wb = waitbar(0, sprintf('Writing R Vector (0/%d)', length(red), ...
-                            'Name', 'Writing R Vector');
 			for k = 1:length(red);
 				fprintf(rfp, '%2X ', red(k));
-				waitbar(k/length(red), wb, sprintf('Writing R Vector (%d/%d)', k, length(red));
-			end
-			wb = waitbar(0, sprintf('Writing G Vector (0/%d)', length(grn), ...
-                            'Name', 'Writing G Vector');
-			for k = 1:length(grn)
 				fprintf(gfp, '%2X ', grn(k));
-				waitbar(k/length(grn), wb, sprintf('Writing G Vector (%d/%d)', k, length(grn));
-			end
-			wb = waitbar(0, sprintf('Writing B Vector (0/%d)', length(blu), ...
-                            'Name', 'Writing B Vector');
-			for k = 1:length(blu)
 				fprintf(bfp, '%2X ', blu(k));
-				waitbar(k/length(blu), wb, sprintf('Writing B Vector (%d/%d)', k, length(blu));
 			end	
-			delete(wb);
 			fclose(rfp);
 			fclose(gfp);
 			fclose(bfp);
@@ -84,21 +69,14 @@ function vecDiskWrite(V, data, varargin)
 					fprintf(fp(k), '@0 ');
 				end
 				%Write out vector
-				total = sz(2)*sz(2);
-				n     = 1;
-				wb = waitbar(0, sprintf('Writing row vectors...'), ...
-                                'Name', 'Writing row vector...');
 				for x = 1:sz(2)
 					for y = 1:sz(1)
 						elem = data{y,x};
 						for k = 1:length(elem)
 							fprintf(fp(k), '%2X ', elem(k));
 						end
-						waitbar(n/total, wb, sprintf('Writing row vec (%d/%d)', n, total));
-						n = n + 1;
 					end
 				end
-				delete(wb);
 				for k = 1:sz(1)
 					fclose(fp(k));
 				end
@@ -118,19 +96,14 @@ function vecDiskWrite(V, data, varargin)
 					fprintf(fp(k), '@0 ');
 				end
 				%Write out vector
-				total = sz(2) * sz(1);
-				n     = 1;
 				for x = 1:sz(2)
 					for y = 1:sz(1)
 						elem = data{y,x};
 						for k = 1:length(elem)
 							fprintf(fp(k), '%2X ', elem(k));
 						end
-						waitbar(n/total, wb, sprintf('Writing col vec (%d/%d)', k, total);
-						n = n + 1;
 					end
 				end
-				delete(wb);
 				for k = 1:sz(2)
 					fclose(fp(k));
 				end

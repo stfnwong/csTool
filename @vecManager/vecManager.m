@@ -161,42 +161,6 @@ classdef vecManager
 		% To some extent, this argument is undermined by the implementation of 
 		% vecDiskWrite()
 		
-		function [ftype val] = parseFmt(fmt)
-		% PARSEFMT
-		% [ftype val] = parseFmt(fmt)
-		%
-		% Parse a formatting code for vector generation
-		% Formatting codes are of the form :
-		%
-		% '16c', '8c', '4c' for column vectors
-		% '16r', '8r', '4r' for row vectors
-		%
-		%  For scalar data, enter an empty or invalid formatting code
-			switch(fmt)
-				case '16c'
-					ftype = 'col';
-					val  = 16;
-				case '8c'
-					ftype = 'col';
-					val  = 8;
-				case '4c'
-					ftype = 'col';
-					val  = 4;
-				case '16r'
-					ftype = 'row';
-					val  = 16;
-				case '8r'
-					ftype = 'row';
-					val  = 8;
-				case '4r'
-					ftype = 'row';
-					val  = 4;
-				otherwise
-					ftype = 'scalar';
-					val  = 0;	
-			end
-		end 	%parseFmt()
-
 		function writeRGBVec(V, fh, varargin)
 			%sanity check
 			if(~isa(fh, 'csFrame'))
@@ -218,7 +182,7 @@ classdef vecManager
 			
 			% Check what we have
 			if(exist('fmt', 'var'))
-				[opts.type opts.val] = parseFmt(V, fmt);
+				[opts.type opts.val] = parseFmt(fmt);
 			else
 				opts.type = 'scalar';
 				opts.val  = 0;
@@ -260,7 +224,7 @@ classdef vecManager
 			end
 
 			if(exist('fmt','var'))
-				[opts.type opts.val] = parseFmt(V, fmt);
+				[opts.type opts.val] = parseFmt(fmt);
 			else
 				opts.type = 'scalar';
 				opts.val  = 0;
@@ -302,7 +266,7 @@ classdef vecManager
 			end
 	
 			if(exist('fmt', 'var'))
-				[opts.type opts.val] = parseFmt(V, fmt);
+				[opts.type opts.val] = parseFmt(fmt);
 			else
 				opts.type = 'scalar';
 				opts.val  = 0;
@@ -345,7 +309,7 @@ classdef vecManager
 			end
 		
 			if(exist('fmt', 'var'))
-				[opts.type opts.val] = parseFmt(V, fmt);
+				[opts.type opts.val] = parseFmt(fmt);
 			else
 				opts.type = 'scalar';
 				opts.val  = 0;
@@ -406,6 +370,8 @@ classdef vecManager
 	end 		%vecManager METHODS (Public)
 
 	methods (Access = 'private')
+		% Prase Format
+		[ftype val] = parseFmt(fmt);
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
 		         vecDiskWrite(V, data, varargin);			%commit data to disk

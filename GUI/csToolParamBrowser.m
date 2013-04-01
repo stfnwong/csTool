@@ -77,8 +77,8 @@ function csToolParamBrowser_OpeningFcn(hObject, eventdata, handles, varargin)	%#
 	handles.param = 1;		%This could also be read from GUI I suppose...
 
     %Set GUI elements 
-    fh = handles.frameBuf.getFrameHandle(handles.idx);
-    set(handles.etParamData, 'Max', 10);
+    %fh = handles.frameBuf.getFrameHandle(handles.idx);
+    set(handles.etParamData, 'Max', 12);
     set(handles.etParamData, 'HorizontalAlignment', 'left');
     set(handles.etParamData, 'FontSize', 9);
 
@@ -268,12 +268,17 @@ function str = cstParam_FmtParamString(handles)
     %Title string
     st = sprintf('Frame : %s (%d/%d)', get(fh, 'filename'), handles.idx, N);
     sp = sprintf('Param : (%d/%d)', handles.param, get(fh, 'nIters'));
+    if(get(fh, 'isSparse'))
+        sd = sprintf('Sparse : yes\nFactor : %d', get(fh, 'sparseFac'));
+    else
+        sd = sprintf('Sparse : no');
+    end
     s1 = sprintf('xc : %.1f, yc : %.1f', xc ,yc);
     s2 = sprintf('theta : %.1f', theta);
     s3 = sprintf('axmaj : %.1f', axmaj);
     s4 = sprintf('axmin : %.1f', axmin);
 
-    str = {st, sp, ' ', s1, s2, s3, s4};
+    str = {st, sp, ' ', sd, ' ', s1, s2, s3, s4};
 
     %uiresume(handles.csToolParamBrowser);
 

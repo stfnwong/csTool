@@ -22,7 +22,7 @@ function varargout = csToolTrackOpts(varargin)
 
 % Edit the above text to modify the response to help csToolTrackOpts
 
-% Last Modified by GUIDE v2.5 05-Mar-2013 01:13:34
+% Last Modified by GUIDE v2.5 30-Mar-2013 17:44:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,6 +83,7 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
     set(handles.etEpsilon,     'String', num2str(tOpts.epsilon));
     set(handles.etThresh,      'String', num2str(tOpts.bpThresh));
     set(handles.etMaxIter,     'String', num2str(tOpts.maxIter));
+    set(handles.etSparseFac,   'String', num2str(tOpts.sparseFac));
     set(handles.chkRotMatrix,  'Value',  tOpts.rotMatrix);
     set(handles.chkCordic,     'Value',  tOpts.cordicMode);
 	set(handles.chkVerbose,    'Value',  tOpts.verbose);
@@ -127,10 +128,13 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
         maxIter = 16;
 		set(handles.etMaxIter, 'String', num2str(maxIter));
     end
+    sparseFac   = str2double(get(handles.etSparseFac, 'String'));
+    %Check values - legal values are 32, 16, 8, 4, 2, 1
     rMat        = get(handles.chkRotMatrix, 'Value');
     cordic      = get(handles.chkCordic, 'Value');
     fixedIter   = get(handles.chkFixedIter, 'Value');
 	verbose     = get(handles.chkVerbose, 'Value');
+    
 
     opts        = struct('method', method, ...
                          'epsilon', epsilon, ...
@@ -140,7 +144,8 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
                          'cordicMode', cordic, ...
                          'fixedIter', fixedIter, ...
                          'verbose', verbose, ...
-                         'fParams', tOpts.fParams);
+                         'fParams', tOpts.fParams, ...
+                         'sparseFac', sparseFac);
 	handles.output  = opts;
 	guidata(hObject, handles);
 	uiresume(handles.figTrackOpts);
@@ -184,26 +189,26 @@ function bPrintParams_Callback(hObject, eventdata, handles)	 %#ok<INUSL,DEFNU>
 %                        CREATE FUNCTIONS                       %
 %---------------------------------------------------------------%
 
-% --- Executes during object creation, after setting all properties.
 function lbTrackMethod_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
 
-% --- Executes during object creation, after setting all properties.
 function etThresh_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
 
-% --- Executes during object creation, after setting all properties.
 function etMaxIter_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
 	end
 
-% --- Executes during object creation, after setting all properties.
 function etEpsilon_CreateFcn(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+function etSparseFac_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
@@ -221,7 +226,4 @@ function etThresh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkRotMatrix_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkFixedIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function lbTrackMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-
-
-
+function etSparseFac_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>

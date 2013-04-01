@@ -28,8 +28,8 @@ function [status nh] = gui_showPreview(handles, varargin)
 					idx = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'fh', 2))
 					fh = varargin{k+1};
-				elseif(strncmpi(varargin{k}, 'seg', 3))
-					seg = 1;
+				%elseif(strncmpi(varargin{k}, 'seg', 3))
+				%	seg = 1;
                 elseif(strncmpi(varargin{k}, 'param', 5))
                     param = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'traj', 4))
@@ -87,7 +87,16 @@ function [status nh] = gui_showPreview(handles, varargin)
 	if(get(fh, 'bpSum') ~= 0)
 		bpvec  = get(fh, 'bpVec');
 		bpdims = get(fh, 'dims');
-		bpimg  = vec2bpimg(bpvec, bpdims);
+        bpimg  = vec2bpimg(bpvec, bpdims);
+        if(get(handles.chkShowSparse, 'Value'))
+            %Check if this is a sparse vector, and show as such in preview
+            if(get(fh, 'isSparse'))
+                [spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', get(fh, 'sparseFac'));
+                if(spstat.numZeros == 0)
+                    bpimg = vec2bpimg(spvec, bpdims);
+                end
+            end
+		end
 		%Be sure that the data returned correctly
 		if(isempty(bpimg) || numel(bpimg) == 0)
 			fprintf('ERROR: Incorrect bpvec conversion in gui_showPreview()..\n');
@@ -100,6 +109,8 @@ function [status nh] = gui_showPreview(handles, varargin)
 
 	if(PLOT_TRAJ)
 		%Plot a certain amount of frames before and after the current one 
+        tVec = gui_getTraj(handles.frameBuf, 'trim');
+        gui_plotTraj(handles.fig_framePreview, tVec, frameIndex);
 	else
 		%If there is tracking data, overlay this onto segmentation data and place 
 		%window parameter data onto gui
@@ -112,6 +123,13 @@ function [status nh] = gui_showPreview(handles, varargin)
 			set(handles.etParam, 'String', 'No window parameters set for this frame');
 		else
 			gui_plotParams(fh, handles.fig_bpPreview);
+            %DEBUG: Got to this point in one tracking loop where idx wasn't
+            %defined - do a check here over a few runs to get an idea how
+            %common this might be
+            if(~exist('idx', 'var'))
+                fprintf('WARNING: No idx parameter in gui_showPreview()!!!\n');
+                idx = 1;
+            end
 			if(exist('param', 'var'))
 				[str status] = gui_setWinParams(handles.frameBuf, idx, 'p', param);
 			else

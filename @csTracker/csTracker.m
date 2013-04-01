@@ -58,6 +58,8 @@ classdef csTracker < handle
 		FIXED_ITER;
 		EPSILON;
 		MAX_ITER;
+		%Sparse vector options
+		SPARSE_FAC;
 	end
 
 	% METHOD ENUM
@@ -95,6 +97,7 @@ classdef csTracker < handle
 					T.FIXED_ITER  = 1;
 					T.MAX_ITER    = 8;
 					T.EPSILON     = 0;
+					T.SPARSE_FAC  = 4;
 				case 1
 					if(isa(varargin{1}, 'csTracker'))
 						T = varargin{1};
@@ -112,6 +115,7 @@ classdef csTracker < handle
 						T.FIXED_ITER  = opts.fixedIter;
 						T.MAX_ITER    = opts.maxIter;
 						T.EPSILON     = opts.epsilon;
+						T.SPARSE_FAC  = opts.sparseFac;
 					end
 				otherwise
 					error('Incorrect input arguments');
@@ -134,7 +138,8 @@ classdef csTracker < handle
                           'bpThresh'  , T.BP_THRESH,   ...
                           'fixedIter' , T.FIXED_ITER,  ...
                           'maxIter'   , T.MAX_ITER,    ...
-                          'epsilon'   , T.EPSILON );
+                          'epsilon'   , T.EPSILON,     ...
+                          'sparseFac' , T.SPARSE_FAC);
 		end 	%getOpts()
 
 		% ------------------------ %
@@ -245,15 +250,20 @@ classdef csTracker < handle
 
 	methods (Access = 'private')	
 		% ---- imgAccum()   : WHOLE IMAGE MOMENT ACCUMULATION
-		[moments] = imgAccum(T, bpimg);
-		[moments] = imgAccumVec(T, bpvec, varargin);
+		[moments]         = imgAccum(T, bpimg);
+		[moments]         = imgAccumVec(T, bpvec, varargin);
 		% ---- winAccum()   : WINDOWED MOMENT ACCUMULATION
-		[moments] = winAccum(T, bpvec, wparam, dims);
-		[moments] = winAccumImg(T, bpimg, wparam, varargin);
-		[moments] = winAccumVec(T, bpvec, wparam, dims, varargin);
+		[moments]         = winAccum(T, bpvec, wparam, dims);
+		[moments]         = winAccumImg(T, bpimg, wparam, varargin);
+		[moments]         = winAccumVec(T, bpvec, wparam, dims, varargin);
 		% ---- wparamComp() : FIND WINDOW PARAMETERS FROM MOMENT SUMS
-		wparam    = wparamComp(T, moments, varargin);
-		wparam    = initParam(T, varargin);
+		wparam            = wparamComp(T, moments, varargin);
+		wparam            = initParam(T, varargin);
+		% ---- SPARSE VECTOR ENCODE AND DECODE 
+		%[spvec varargout] = buf_spEncode(bpimg, varargin);
+		%[bpvec varargout] = buf_spDecode(spvec, varargin);
+		% --- PROCESSING LOOP ----
+		%status            = msProcLoop(T, fh, trackWindow);
 	end 		%csTracker METHODS (Private)
 
 	methods (Static)

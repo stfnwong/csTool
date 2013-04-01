@@ -16,11 +16,11 @@ function status = msProcLoop(T, fh, trackWindow)
 % Stefan Wong 2013
 
 	%Do a quick sanity check on trackWindow
-	if(isempty(trackWindow))
-		fprintf('ERROR: empty trackWindow in csTracker.msProcLoop()\n');
-		status = -1;
-		return;
-	end
+	%if(isempty(trackWindow))
+	%	fprintf('ERROR: empty trackWindow in csTracker.msProcLoop()\n');
+	%	status = -1;
+	%	return;
+	%end
 
 	%Allocate memory to store all intermediate results
 	tVec     = zeros(2, T.MAX_ITER);
@@ -33,7 +33,7 @@ function status = msProcLoop(T, fh, trackWindow)
 	elseif(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
 		if(get(fh, 'isSparse') == 0)
 			bpimg          = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
-			[spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim');
+			[spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', T.SPARSE_FAC);
 			if(T.verbose)
 				if(spstat.numZeros > 0)
 					fprintf('WARNING: Zeros in spvec\n');
@@ -86,7 +86,7 @@ function status = msProcLoop(T, fh, trackWindow)
 		if(~T.FIXED_ITER && n > 1)
 			%If we converge early, quit the loop
 			cverge = abs(tVec(:,n) - tVec(:,n-1));
-			if(cverge(1) > T.EPSILON && cverge(2) < T.EPSILON)
+			if(cverge(1) < T.EPSILON && cverge(2) < T.EPSILON)
 				if(T.verbose)
 					fprintf('Converged on loop %d\n', n);
 				end
@@ -109,18 +109,13 @@ function status = msProcLoop(T, fh, trackWindow)
 	wparam = wparamComp(T, moments);
 	%DEBUG:
 	disp(wparam);
-	%DEBUG: Make window size function of zeroth moment
-	%Here we need to check if we have the zmtrue variable, and based the window size
-	%computation off of that if we do
-	%if(exist('zmtrue', 'var'))
-	%	wparam(4) = fix(sqrt(zmtrue));
-	%	wparam(5) = fix(sqrt(zmtrue));
-	%else
-	%	wparam(4) = fix(sqrt(moments(1)));
-	%	wparam(5) = fix(sqrt(moments(1)));
-	%end
-    wparam(4) = fix(sqrt(moments(1)));
-    wparam(5) = fix(sqrt(moments(1)));
+	if(exist('spstat', 'var'))
+		wparam(4) = fix(sqrt(moments(1)) * spstat.fac);
+		wparam(5) = fix(sqrt(moments(1)) * spstat.fac);
+	else
+    	wparam(4) = fix(sqrt(moments(1)));
+	    wparam(5) = fix(sqrt(moments(1)));
+	end
 	%Check wparam
 	dims = get(fh, 'dims');
 	if(wparam(4) > dims(1))
@@ -153,6 +148,20 @@ function status = msProcLoop(T, fh, trackWindow)
 	set(fh, 'moments', fmoments);
 	set(fh, 'nIters', n);
 	set(fh, 'method', T.methodStr{T.method});
+	%Set sparse parameter
+    if(exist('spstat', 'var'))
+		if(spstat.fac > 1)
+			set(fh ,'isSparse', 1);
+            set(fh, 'sparseFac', spstat.fac);
+		else
+			set(fh ,'isSparse', 0);
+		end
+	else
+        %Set here in case the frame was previously tracked as sparse and is
+        %now tracked as windowed accumulation, etc
+        set(fh, 'isSparse', 0);
+        set(fh, 'sparseFac', 0);
+    end
 
 	status = 0;
 	

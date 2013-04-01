@@ -19,6 +19,7 @@ classdef csFrame < hgsetget
 % [tVec]      - Tracking vector for this frame. The vector is supplied as a 2x2 matrix%               where each column represents a (x,y) coordinate in the image 
 %                        [(x1;y1) , (x2;y2)]
 % [filename]  - Path to file where img was read
+% [isSparse]  - Indicates that this frame was tracked as a sparse vector
 %
 % METHODS:
 %
@@ -50,6 +51,7 @@ classdef csFrame < hgsetget
 		tVec;		%tracking vector
 		dims;		%dimensions of image (type : uint16)
 		isSparse;	%Indicates there bpVec data is sparse
+        sparseFac;  %Scaling factor used for this frame if it was sparse
 		filename;	%name of original image file
 		method;		%String containing method used to set params
 	end
@@ -77,6 +79,7 @@ classdef csFrame < hgsetget
 						cf.tVec      = [];
 						cf.dims      = [];
 						cf.isSparse  = 0;
+						cf.sparseFac = 0;
 						cf.filename  = ' ';
 				case 1
 					%Copy to new object if argument is a csFrame
@@ -95,6 +98,7 @@ classdef csFrame < hgsetget
 						cf.tVec      = opts.tVec;
 						cf.dims      = opts.dims;
 						cf.isSparse  = opts.isSparse;
+						cf.sparseFac = opts.sparseFac;
 						if(ischar(opts.filename))
 							cf.filename  = opts.filename;
 						else
@@ -127,6 +131,7 @@ classdef csFrame < hgsetget
 						cf.tVec      = [];
 						cf.dims      = [];
 						cf.isSparse  = 0;
+						cf.sparseFac = 0;
 						cf.filename  = ' ';
 					end
 				otherwise

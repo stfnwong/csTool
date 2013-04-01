@@ -210,6 +210,12 @@ function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	else
         handles.idx = N;
     end
+    %Update output filename if UseFrameFilename checked
+    if(get(handles.chkUseFrameFilename, 'Value'))
+        fh = handles.frameBuf.getFrameHandles(idx);
+        fname = get(fh, 'filename');
+        set(handles.etWriteFile, 'String', fname);
+    end
     guidata(hObject, handles);
     uiresume(handles.csToolGenerateFig);
 
@@ -223,6 +229,12 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         gui_renderPreview(handles.figPreview, fh, handles.previewMode, idx);
     else
         handles.idx = 1;
+    end
+    %Update output filename if UseFrameFilename checked
+    if(get(handles.chkUseFrameFilename, 'Value'))
+        fh = handles.frameBuf.getFrameHandles(idx);
+        fname = get(fh, 'filename');
+        set(handles.etWriteFile, 'String', fname);
     end
     guidata(hObject, handles);
     uiresume(handles.csToolGenerateFig);
@@ -238,9 +250,9 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     ftype = get(handles.pmVecOr, 'Value');
     val   = get(handles.pmVecSz, 'Value');
     if(strncmpi(ftype, 'row', 3))
-        fmt = strcat(val, 'r');
+        fmt = strcat(num2str(val), 'r');
     else
-        fmt = strcat(val, 'c');
+        fmt = strcat(num2str(val), 'c');
     end
     fh    = handles.frameBuf.getFrameHandle(handles.idx);
     
@@ -254,7 +266,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         if(handles.debug)
             fprintf('Generating Hue Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager,writeHueVec(fh, 'fmt', fmt);
+        handles.vecManager.writeHueVec(fh, 'fmt', fmt);
     end
     if(get(handles.chkHSV, 'Value'))
         if(handles.debug)

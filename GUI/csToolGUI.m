@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 28-Mar-2013 13:18:40
+% Last Modified by GUIDE v2.5 31-Mar-2013 02:41:23
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1345,3 +1345,9 @@ function bVerify_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 end     %bVerify_Callback()
+
+
+% --- Executes on button press in chkShowSparse.
+function chkShowSparse_Callback(hObject, eventdata, handles)
+
+end     %chkShowSparse_Callback()
