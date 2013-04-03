@@ -18,7 +18,10 @@ function [ftype val] = parseFmt(fmt)
 			val  = 8;
 		case '4c'
 			ftype = 'col';
-			val  = 4;
+			val = 4;
+		case '2c'
+			ftpye = 'col';
+			val  = 2;
 		case '16r'
 			ftype = 'row';
 			val  = 16;
@@ -28,6 +31,9 @@ function [ftype val] = parseFmt(fmt)
 		case '4r'
 			ftype = 'row';
 			val  = 4;
+		case '2r'
+			ftype = 'row';
+			val = 2;
 		otherwise
 			ftype = 'scalar';
 			val  = 0;	

@@ -1,145 +1,111 @@
-function vecDiskWrite(V, data, varargin)
-% VECDISKWRITE
-% stat = vecDiskWrite(V, data, varargin)
+function status = vecDiskWrite(V, data, varargin)
+% VECDISKWRITE (Version 2)
+% status = vecDiskWrite(V, data, [...OPTIONS...])
 %
-% Commit test vector to disk. This function takes the test data specified in data,
-% and writes it to a location on disk specified in V.WLoc. This can be optionally 
-% overridden by passing in the argument 'dest' followed by string containing the 
-% destination address.
-% NOTE:
-% The destination address should not contain the file extension, as this will be 
-% appended in the method. This is so vectors can be suffixed with row numbers, color
-% channels, or other appropriate markers.
+% Commit test vector data to disk. This function examines stream data stored in the 
+% cell array 'data' and writes a file to disk for each stream. Each stream is assumed
+% to be in one of the elements of the cell array. 
+%
+% ARGUMENTS:
+% V                  - vecManager object
+% data               - Cell array containing data streams
+% (OPTIONAL ARUGMENTS)
+% 'fname', filenames - Pass the string 'filename' followed by a cell array containing
+%                      the names for each of the data streams. Each element is taken
+%                      to be the name for the corresponding stream, i.e: filename{1} 
+%                      is taken to be the name for data{1}, and so on
+%
 
-% Stefan Wong 2012
+% Stefan Wong 2013
 
-	if(nargin > 2)
-		if(strncmpi(varargin{1}, 'dest', 4))
-			if(~ischar(varargin{2}))
-				error('Destination must be string');
+	DEBUG = false;
+	if(~isempty(varargin))
+		for k = 1:length(varargin)
+			if(ischar(varargin{k}))
+				if(strncmpi(varargin{k}, 'fname', 5))
+					filename = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'num', 3))
+					numFmt = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'debug', 5))
+					DEBUG = true;
+				end
 			end
-			dest = varargin{2};
 		end
 	end
 
-	if(iscell(data))
-		sz = size(data)
-		if(sz(1) == 3)
-			%RGB/HSV vec
-			%if(~exist('dest', var))
-			if(isempty('dest', 'var'))
-				dest = V.wfilename;
-			end
-			rfp = fopen(sprintf('%s-red.dat', dest), 'w');
-			gfp = fopen(sprintf('%s-grn.dat', dest), 'w');
-			bfp = fopen(sprintf('%s-blu.dat', dest), 'w');
-			red = data{1,1};
-			grn = data{2,1};
-			blu = data{3,1};
-			if(V.verbose)
-				fprintf('Writing data to file...\b');
-			end
-			%write out vectors
-			fprintf(rfp, '@0 ');
-			fprintf(gfp, '@0 ');
-			fprintf(bfp, '@0 ');
-			%Do vectors seperately to show waitbar
-			wb = waitbar(0, sprintf('Writing R Vector (0/%d)', length(red), ...
-                            'Name', 'Writing R Vector');
-			for k = 1:length(red);
-				fprintf(rfp, '%2X ', red(k));
-				waitbar(k/length(red), wb, sprintf('Writing R Vector (%d/%d)', k, length(red));
-			end
-			wb = waitbar(0, sprintf('Writing G Vector (0/%d)', length(grn), ...
-                            'Name', 'Writing G Vector');
-			for k = 1:length(grn)
-				fprintf(gfp, '%2X ', grn(k));
-				waitbar(k/length(grn), wb, sprintf('Writing G Vector (%d/%d)', k, length(grn));
-			end
-			wb = waitbar(0, sprintf('Writing B Vector (0/%d)', length(blu), ...
-                            'Name', 'Writing B Vector');
-			for k = 1:length(blu)
-				fprintf(bfp, '%2X ', blu(k));
-				waitbar(k/length(blu), wb, sprintf('Writing B Vector (%d/%d)', k, length(blu));
-			end	
-			delete(wb);
-			fclose(rfp);
-			fclose(gfp);
-			fclose(bfp);
-		else
+	%Check what we have
+	if(~iscell(data))
+		fprintf('ERROR: Data must be cell array\n');
+		status = -1;
+		return;
+	end
 
-			if(sz(1) < sz(2))
-				%row vec 
-				%TODO: rows come into the system in 'raster' form, so need to
-				%order data in similar fashion
-				for k = sz(1):-1:1
-					fp(k) = fopen(sprintf('%s-row%02.dat', dest), 'w');
-				end	
-				%pull vector from cell array, write each element to new file pointer
-				if(V.verbose)
-					fprintf('Writing row vector data...\n');
-				end
-				%Place start address marker for modelsim
-				for k = 1:sz(1)
-					fprintf(fp(k), '@0 ');
-				end
-				%Write out vector
-				total = sz(2)*sz(2);
-				n     = 1;
-				wb = waitbar(0, sprintf('Writing row vectors...'), ...
-                                'Name', 'Writing row vector...');
-				for x = 1:sz(2)
-					for y = 1:sz(1)
-						elem = data{y,x};
-						for k = 1:length(elem)
-							fprintf(fp(k), '%2X ', elem(k));
-						end
-						waitbar(n/total, wb, sprintf('Writing row vec (%d/%d)', n, total));
-						n = n + 1;
-					end
-				end
-				delete(wb);
-				for k = 1:sz(1)
-					fclose(fp(k));
-				end
-				if(V.verbose)
-					fprintf('... done\n');
-				end
-			else
-				%col vec
-				for k = sz(2):-1:1
-					fp(k) = fopen(sprintf('%s-col%02d.dat', dest), 'w');
-				end
-				if(V.verbose)
-					fprintf('Write column vector data...\n');
-				end
-				%Write start address for modelsim
-				for k = 1:sz(2)
-					fprintf(fp(k), '@0 ');
-				end
-				%Write out vector
-				total = sz(2) * sz(1);
-				n     = 1;
-				for x = 1:sz(2)
-					for y = 1:sz(1)
-						elem = data{y,x};
-						for k = 1:length(elem)
-							fprintf(fp(k), '%2X ', elem(k));
-						end
-						waitbar(n/total, wb, sprintf('Writing col vec (%d/%d)', k, total);
-						n = n + 1;
-					end
-				end
-				delete(wb);
-				for k = 1:sz(2)
-					fclose(fp(k));
-				end
-				if(V.verbose)
-					fprintf('... done\n');
-				end
-			end	
-				
+	if(~exist('filename', 'var')) 
+		for k = length(data):-1:1
+			filename{k} = sprintf('vecstream_%02d.dat', k);
 		end
-	end	
+	else
+		if(~iscell(filename))
+			fprintf('ERROR: filename must be cell array, using default\n');
+			for k = length(data):-1:1
+				filename{k} = sprintf('vecstream_%02d.dat', k);
+			end
+		end
+	end
+	
+	if(~exist('numFmt', 'var'))
+		numFmt = 'hex';
+	else
+		if(~ischar(numFmt))
+			fprintf('ERROR: numFmt must be char, using default (hex)\n');
+			numFmt = 'hex';
+		end
+	end
+
+	%Open file pointers
+	for k = length(data):-1:1
+		fp(k) = fopen(filename{k}, 'w');
+		if(DEBUG)
+			fprintf('Opening file %s...\n',filename{k});
+		end
+	end
+
+	%Write data to disk	
+	for k = 1:length(data)
+		vec = data{k};
+		wb  = waitbar(0, sprintf('Writing %s (0/%d)', filename{k}, length(vec)), ...
+                         'Name', sprintf('Writing %s', filename{k}), ...
+                          'Interpreter', 'None');
+		%Write address for modelsim
+		fprintf(fp(k), '@0 ');
+		for n = 1:length(vec)
+			switch numFmt
+				case 'hex'
+					fprintf(fp(k), '%02X ', vec(n));
+				case 'dec'
+					fprintf(fp(k), '%02d ', vec(n));
+				otherwise 
+					fprintf('Not a supported number format, quitting...\n');
+					for m = 1:length(data)
+						fclose(fp(m));
+					end
+					status = -1;
+					return;
+			end
+			waitbar(n/length(vec), wb, sprintf('Writing %s (%d/%d)', ...
+                                       filename{k}, n, length(vec)));
+		end
+        delete(wb);
+	end
+	%delete(wb);
+	for k = 1:length(data)
+		fclose(fp(k));
+		if(DEBUG)
+			fprintf('Closing file %s...\n', filename{k});
+		end
+	end
+
+	status = 0;
+
 
 end 	%vecDiskWrite()

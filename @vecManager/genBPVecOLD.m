@@ -1,4 +1,4 @@
-function vec = genBPVec(V, fh, opts)
+function vec = genBPVec(data, opts)
 % GENBPIMGVEC
 % Generate backprojection image test data from bpimg. This method takes the 
 % data in bpImg and transforms it into a format suitable for importing into a
@@ -25,34 +25,18 @@ function vec = genBPVec(V, fh, opts)
 
 % Stefan Wong 2012
 
-	fmt  = opts.fmt;
-	type = opts.type;
-	data = vec2bpimg(get(fh, 'bpData'));
-
-	switch(fmt)
-		case '16c'
-			type = 'col';
-			val  = 16;
-		case '8c' 
-			type = 'col';
-			val  = 8;
-		case '4c'
-			type = 'col';
-			val  = 4;
-		case '16r' 
-			type = 'row';
-			val  = 16;
-		case '8r'
-			type = 'row';
-			val  = 8;
-		case '4r'
-			type = 'row';
-			val  = 4;
-		case 'scalar'
-			type = 'scalar';
-		otherwise
-			error('Invalid formatting code');
+	if(isempty(opts.val))
+		val = 16;
+	else
+		val     = opts.val;
 	end
+	if(isempty(opts.type))
+		type = 'row';
+	else
+		type    = opts.type;
+	end
+	%data    = vec2bpimg(get(fh, 'bpData'));
+	[h w d] = size(data);
 	
 	switch(type)
 		case 'row'
@@ -60,24 +44,31 @@ function vec = genBPVec(V, fh, opts)
 			vec  = cell(h, rdim);
 			for y = 1:h
 				for x = 1:rdim
-					vec{y,x} = data(y, x:x+val)
+					vec{y,x} = data(y, x:x+val);
 				end
 			end
 		case 'col'
 			cdim = h/val;
-			vec  = cell(rdim, w);
+			vec  = cell(cdim, w);
 			for x = 1:w
 				for y = 1:cdim;
 					vec{y,x} = data(y:y+val, x);
 				end
 			end
 		case 'scalar'
-			vec = data;
+			%unroll data
+			vec = zeros(1, h*w);
+			k   = 1;
+			for x = 1:w
+				for y = 1:h
+					vec(k) = data(y,x);
+					k = k+1;
+				end
+			end
 		otherwise
 			%probably never get here, but just in case
-			error('Invalid direction');
-	end
-		
+			error('Invalid direction (SOMEHOW?!?!)');
+	end	
 
 end 	%genBpImgVec() 
 

@@ -212,8 +212,10 @@ function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     %Update output filename if UseFrameFilename checked
     if(get(handles.chkUseFrameFilename, 'Value'))
-        fh = handles.frameBuf.getFrameHandles(idx);
-        fname = get(fh, 'filename');
+        fh = handles.frameBuf.getFrameHandle(idx);
+        [ef str num] = fname_parse(get(fh, 'filename'));
+        fname = sprintf('%s%02d', str, num);
+        %fname = get(fh, 'filename');
         set(handles.etWriteFile, 'String', fname);
     end
     guidata(hObject, handles);
@@ -232,8 +234,10 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     %Update output filename if UseFrameFilename checked
     if(get(handles.chkUseFrameFilename, 'Value'))
-        fh = handles.frameBuf.getFrameHandles(idx);
-        fname = get(fh, 'filename');
+        fh = handles.frameBuf.getFrameHandle(idx);
+        [ef str num] = fname_parse(get(fh, 'filename'));
+        fname = sprintf('%s%02d', str, num);
+        %fname = get(fh, 'filename');
         set(handles.etWriteFile, 'String', fname);
     end
     guidata(hObject, handles);
@@ -248,7 +252,9 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %command line vecManager would accept out of the drop-down box
     %arguments
     ftype = get(handles.pmVecOr, 'Value');
-    val   = get(handles.pmVecSz, 'Value');
+	vstr  = get(handles.pmVecSz, 'String');
+    %val   = vstr(get(handles.pmVecSz, 'Value'));
+    val   = vstr{get(handles.pmVecSz, 'Value')};
     if(strncmpi(ftype, 'row', 3))
         fmt = strcat(num2str(val), 'r');
     else

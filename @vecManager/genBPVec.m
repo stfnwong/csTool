@@ -1,15 +1,22 @@
-function vec = genBPVec(data, opts)
-% GENBPIMGVEC
-% Generate backprojection image test data from bpimg. This method takes the 
-% data in bpImg and transforms it into a format suitable for importing into a
-% testbench for module verification. The data in bpimg is expected to be a 
-% matrix of dimension H x W, where H and W are the height and width of the 
-% backprojection image respectively (if a vector is used during testing, call
-% bpvec2img() on it first). Formatting arguments can be optionally specified.
+function [vec varargout] = genBPVec(fh, vtype, val)
+% GENBPVEC
+% vec = genBPVec(fh, vtype, val)
+% Generate backprojection vector in either row or column format with variable vector
+% size. This function takes the backprojection data stored in the frame handle fh
+% and generates a set of backprojection vectors suitable for use with CSoC Verilog 
+% testbenches. The style of vector can be specified by passing a vecManager format 
+% string (i.e: '16c', '8r', etc). 
+%
+% The output vec is a cell array, each element of which is a linearized stream for 
+% the corresponding element of the input vector (i.e: vec{3} is all instances of the
+% third element of each vector). This is done so that the Verilog testbenches can read
+% the data for the vectors as a series of linearised streams, which simplifies the 
+% test architecture. The size of the output cell array is automatically determined by 
+% the formatting string fmt.
 %
 % ARGUMENTS:
-% V - vecManager object
-% bpImg - Backprojection image to generate test data from 
+% fh - Frame handle to generate backprojection data for
+% fmt - Formatting string
 %
 % FORMATTING ARGUMENTS
 % Pass the string 'fmt' followed by a string containing one of the following 
@@ -22,53 +29,95 @@ function vec = genBPVec(data, opts)
 % If no format code is specified, genBpImgVec() uses the character code found
 % in V.bpvecFmt
 %
+% OUTPUTS
+% vec - Cell array containing formatted data to be written to disk
 
-% Stefan Wong 2012
+% Stefan Wong 2013
 
-	if(isempty(opts.val))
-		val = 16;
-	else
-		val     = opts.val;
-	end
-	if(isempty(opts.type))
-		type = 'row';
-	else
-		type    = opts.type;
-	end
-	%data    = vec2bpimg(get(fh, 'bpData'));
-	[h w d] = size(data);
+	%Get data for vector
+	bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+	[img_h img_w] = size(bpimg);		%should be 1 channel, so don't need extra d
 	
-	switch(type)
+	switch(vtype)
 		case 'row'
-			rdim = w/val; 
-			vec  = cell(h, rdim);
-			for y = 1:h
-				for x = 1:rdim
-					vec{y,x} = data(y, x:x+val);
+			
+			%Data enters the system serially, so row vectors need to be pulled out 
+			%along the row dimension of the image
+			rdim = img_w / val;
+			vec  = cell(1, rdim);
+			t    = rdim * img_h;
+			wb   = waitbar(0, sprintf('Generating column vector (0/%d)', t), ...
+                              'Name', 'Generating column vector');
+			p    = 1;		%Progress counter
+			%Extract row vectors
+			for n = 1:rdim
+				row = zeros(1, img_h * (img_w/rdim));
+				for y = 1:img_h
+					row(y:*+(img_h/rdim)) = bpimg(y, n:rdim:img_w);
+					waitbar(p/t, wb, sprintf('Generating column vector (%d/%d)', ...
+                                     p, t);
+					p = p+1;
 				end
+				vec{n} = row;
 			end
+			delete(wb);
+			if(nargout > 1)
+				varargout{1} = 0;
+			end			
 		case 'col'
-			cdim = h/val;
-			vec  = cell(cdim, w);
-			for x = 1:w
-				for y = 1:cdim;
-					vec{y,x} = data(y:y+val, x);
+			%Because data enters serially, we can just pull the whole row out, and 
+			%then move down the image by N rows, where N is the size of the vector.
+			cdim = img_h / val;
+			vec  = cell(1, cdim);
+			t    = cdim * img_h;
+			wb   = waitbar(0, sprintf('Generating row vector (0/%d)', t), ...
+                              'Name', 'Generating row vector');
+			p     = 1;	%Progress counter
+			%Extract column vectors
+			for n = 1:cdim
+				col = zeros(1, img_w * (img_h/cdim));
+				for y = n:cdim:img_h
+					col(y:y*img_w) = bpimg(y, n:img_w);
+					waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
+                                     p, t);
+					p = p + 1;
 				end
+				vec{n} = col;
+			end
+			delete(wb);
+			if(nargout > 1)
+				varargout{1} = 0;
 			end
 		case 'scalar'
-			%unroll data
-			vec = zeros(1, h*w);
-			k   = 1;
-			for x = 1:w
-				for y = 1:h
-					vec(k) = data(y,x);
-					k = k+1;
+			%Linearise data into raster
+			data = zeros(1, img_w*img_h);
+			wb   = waitbar(0, sprintf('Generating raster vector (0/%d)', t), ...
+                              'Name', 'Generating raster vector');
+			t    = img_w * img_h;
+			p    = 1;		%Progress counter
+			%Extract raster data
+			for y = 1:img_h
+				for x = 1:img_w
+					data(y,x) = bpimg(y,x);
+					waitbar(p/t, wb, sprintf('Generating raster vector (%d/%d)', ...
+                                     p, t);
+					p = p + 1;
 				end
 			end
+			vec = data;
+			delete(wb);
+			if(nargout > 1)
+				varargout{1} = 0;
+			end
 		otherwise
-			%probably never get here, but just in case
-			error('Invalid direction (SOMEHOW?!?!)');
-	end	
+			fprintf('ERROR: (%s) not a valid orientation\n', orientation);
+			if(nargout > 1)
+				varargout{1} = -1;
+			end
+			return;
+	end
 
-end 	%genBpImgVec() 
+	
 
+
+end 	%genBPVec()

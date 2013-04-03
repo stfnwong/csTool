@@ -77,7 +77,7 @@ classdef vecManager
                           'bpvecFmt',  V.bpvecFmt,  ...
                           'errorTol',  V.errorTol,  ...
                           'autoGen',   V.autoGen,   ...
-                          'chkVerbose', V.verbose,  ...
+                          'chkVerbose',V.verbose,  ...
                           'dataSz',    V.dataSz );
 		end		%getOpts()
 
@@ -161,6 +161,50 @@ classdef vecManager
 		% To some extent, this argument is undermined by the implementation of 
 		% vecDiskWrite()
 		
+		function [ftype val] = parseFmt(V, fmt)
+		% PARSEFMT
+		% [ftype val] = parseFmt(fmt)
+		%
+		% Parse a formatting code for vector generation
+		% Formatting codes are of the form :
+		%
+		% '16c', '8c', '4c' for column vectors
+		% '16r', '8r', '4r' for row vectors
+		%
+		%  For scalar data, enter an empty or invalid formatting code
+			switch(fmt)
+				case '16c'
+					ftype = 'col';
+					val  = 16;
+				case '8c'
+					ftype = 'col';
+					val  = 8;
+				case '4c'
+					ftype = 'col';
+					val = 4;
+				case '2c'
+					ftype = 'col';
+					val  = 2;
+				case '16r'
+					ftype = 'row';
+					val  = 16;
+				case '8r'
+					ftype = 'row';
+					val  = 8;
+				case '4r'
+					ftype = 'row';
+					val  = 4;
+				case '2r'
+					ftype = 'row';
+					val = 2;
+				otherwise
+					ftype = 'scalar';
+					val  = 0;	
+			end
+
+		end 	%parseFmt()
+
+		% -------- WRITERGBVEC() ------- %
 		function writeRGBVec(V, fh, varargin)
 			%sanity check
 			if(~isa(fh, 'csFrame'))
@@ -182,7 +226,7 @@ classdef vecManager
 			
 			% Check what we have
 			if(exist('fmt', 'var'))
-				[opts.type opts.val] = parseFmt(fmt);
+				[opts.type opts.val] = parseFmt(V,fmt);
 			else
 				opts.type = 'scalar';
 				opts.val  = 0;
@@ -191,19 +235,25 @@ classdef vecManager
 			if(length(fh) > 1)
 				for k = 1:length(fh)
 					vec  = genRGBVec(V, fh(k), opts);
-					if(exist('fname', 'var'))
-						dest = sprintf('%s-frame%03d', fname, k);
-					else
-						dest = sprintf('%s-frame%02d', V.filename, k);
+					if(~exist('fname', 'var'))
+						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n');
+						fname = sprintf('%s%02d', str, num);
 					end
-					vecDiskWrite(V, vec, 'dest', dest);
+					vecname{1} = sprintf('%s.dat', fname);
+					vecDiskWrite(V, vec, 'fname', vecname);
 				end	
 			else
 				vec = genRGBVec(V, fh, opts);
-                vecDiskWrite(V, vec);
+				if(~exist('fname', 'var'))
+					[ef str num] = fname_parse(get(fh, 'filename'), 'n');
+					fname = sprintf('%s%02d', str, num);
+				end
+				vecname{1} = sprintf('%s.dat', fname);
+                vecDiskWrite(V, vec, 'fname', vecname);
 			end
 		end 	%writeRGBVec()
 
+		% -------- WRITEHSVVEC() ------- %
 		function writeHSVVec(V, fh, varargin)
 			%sanity check
 			if(~isa(fh, 'csFrame'))
@@ -223,26 +273,35 @@ classdef vecManager
 				end
 			end
 
-			if(exist('fmt','var'))
-				[opts.type opts.val] = parseFmt(fmt);
-			else
-				opts.type = 'scalar';
-				opts.val  = 0;
-			end
+			%if(exist('fmt','var'))
+			%	[vtype val] = parseFmt(V,fmt);
+			%else
+			%	vtype = 'scalar';
+			%	val   = 0;
+			%end
 		
 			if(length(fh) > 1)	
 				for k = 1:length(fh)
-					vec  = genHSVVec(V, fh(k), opts);
-					if(exist('fname', 'var'))
-						dest = sprintf('%s-frame%03d', fname, k);
-					else
-						dest = sprintf('%s-frame%03d', V.filename, k);
+					vec  = genHSVVec(fh(k));
+					if(~exist('fname', 'var'))
+						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n');
+						fname = sprintf('%s%02d', str, num);
 					end
-					vecDiskWrite(V, vec, 'dest', dest); 
+					vecnames{1} = sprintf('%s-hue-frame%02d.dat', fname, k);
+					vecnames{2} = sprintf('%s-sat-frame%02d.dat', fname, k);
+					vecnames{3} = sprintf('%s-val-frame%02d.dat', fname, k);
+					vecDiskWrite(V, vec, 'fname', vecnames);
 				end
 			else
-				vec = genHSVVec(V, fh, opts);
-                vecDiskWrite(V, vec);
+				vec = genHSVVec(fh);
+				if(~exist('fname', 'var'))
+					[ef str num] = fname_parse(get(fh, 'filename'), 'n');
+					fname = sprintf('%s%02d', str, num);
+				end
+				vecname{1} = sprintf('%s-hue.dat', fname);
+				vecname{2} = sprintf('%s-sat.dat', fname);
+				vecname{3} = sprintf('%s-val.dat', fname);
+                vecDiskWrite(V, vec, 'fname', vecname);
 			end
 					
 		end 	%writeHSVVec()
@@ -266,30 +325,40 @@ classdef vecManager
 			end
 	
 			if(exist('fmt', 'var'))
-				[opts.type opts.val] = parseFmt(fmt);
+				[vtype val] = parseFmt(V,fmt);
 			else
-				opts.type = 'scalar';
-				opts.val  = 0;
+				vtype = 'scalar';
+				val   = 0;
 			end
 
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					data = get(fh, 'bpVec');
-					vec  = genHueVec(V, data, opts);
-					if(exist('fname', 'var'))
-						dest = sprintf('%s-frame%02d', fname, k);
-					else
-						dest = sprintf('%s-frame%02d', V.filename, k);
+					vec = genHueVec(fh(k), vtype, val);
+					if(~exist('fname', 'var'))
+						%Format a string based on filename of original frame
+						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n');
+						fname = sprintf('%s%02d', str, num);
 					end
-					vecDiskWrite(V, vec, 'dest', dest);
+					for n = length(vec):-1:1
+						vecnames{n} = sprintf('%s-vec%02.dat', fname, n);
+					end
+					vecDiskWrite(V, vec, 'fname', vecnames);
 				end
 			else
-				data = get(fh, 'bpVec'); 
-				vec  = genHueVec(V, data, opts);
-                vecDiskWrite(V, vec);
+				vec  = genHueVec(V, fh, vtype, val);
+				if(~exist('fname', 'var'))
+					%Format a string from original filename
+					[ef str num] = fname_parse(get(fh, 'filename'), 'n');
+					fname = sprintf('%s%02d', str, num);
+				end
+				for n = length(vec):-1:1
+					vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
+				end
+                vecDiskWrite(V, vec, 'fname', vecnames);
 			end
 		end 	%writeHueVec()
-
+		
+		% -------- WRITEBPVEC() ------- %
 		function writeBPVec(V, fh, varargin)
 			%sanity check
 			if(~isa(fh, 'csFrame'))
@@ -309,27 +378,34 @@ classdef vecManager
 			end
 		
 			if(exist('fmt', 'var'))
-				[opts.type opts.val] = parseFmt(fmt);
+				[vtype val] = parseFmt(V,fmt);
 			else
-				opts.type = 'scalar';
-				opts.val  = 0;
+				vtype = 'scalar';
+				val   = 0;
 			end	
 			
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					data = vec2bpimg(get(fh(k), 'bpVec'));
-					vec  = genBPVec(V, data, opts);
-					if(exist('fname', 'var'))
-						dest = sprintf('%s-frame%02d', fname, k);
-					else
-						dest = sprintf('%s-frame%02d', V.filename, k);
+					vec  = genBPVec(fh(k), vtype, val);
+					if(~exist('fname', 'var'))
+						[ef str num] = fname_parse(get(fh(k), 'filename'));
+						fname = sprintf('%s%02d', str, num);
 					end
-					vecDiskWrite(V, vec, 'dest', dest);
+					for n = length(vec):-1:1
+						vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
+					end					
+					vecDiskWrite(V, vec, 'fname', vecnames);
 				end
 			else
-				data = vec2bpimg(get(fh, 'bpVec'));
-				vec = genBPVec(V, data, opts);
-                vecDiskWrite(V, vec);
+				vec = genBPVec(fh, vtype, val);
+				if(~exist('fname', 'var'))
+					[ef str num] = fname_parse(get(fh, 'filename'), 'n');
+					fname = sprintf('%s%02d', str, num);
+				end
+				for n = length(vec):-1:1
+					vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
+				end
+                vecDiskWrite(V, vec, 'fname', vecnames);
 			end
 		end 	%writeBPVec()
 
@@ -370,16 +446,17 @@ classdef vecManager
 	end 		%vecManager METHODS (Public)
 
 	methods (Access = 'private')
-		% Prase Format
-		[ftype val] = parseFmt(fmt);
+		% Parse Format
+		%[ftype val] = parseFmt(V,fmt);
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
 		         vecDiskWrite(V, data, varargin);			%commit data to disk
 		vec    = vecDiskRead(V, file, varargin);
 		vec    = genTrackingVec(fh);
-		vec    = genBPVec(fh, fmt, varargin);
-        vec    = genHueVec(fh, opts);
-        vec    = genHSVVec(fh, opts);
+		[vec varargout] = genBPVec(fh, vtype, val);
+        [vec varargout] = genHueVec(fh, vtype, val, varargin);
+        vec    = genHSVVec(fh, varargin);
+		vec    = genRGBVec(fh, varargin);
 		vec    = genBpImgData(V, bpImg, varargin);
 		vec    = genBpVecData(V, bpVec, varargin);
 		% ----- TEST VECTOR VERIFICATION ---- %
