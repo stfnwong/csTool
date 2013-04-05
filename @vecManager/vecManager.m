@@ -306,6 +306,7 @@ classdef vecManager
 					
 		end 	%writeHSVVec()
 
+		% -------- WRITEHUEVEC() ------- %
 		function writeHueVec(V, fh, varargin)
 			%sanity check
 			if(~isa(fh, 'csFrame'))
@@ -333,7 +334,8 @@ classdef vecManager
 
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					vec = genHueVec(fh(k), vtype, val);
+					%DEBUG: Test with 256 scale factor
+					vec = genHueVec(fh(k), vtype, val, 'scale', 256);
 					if(~exist('fname', 'var'))
 						%Format a string based on filename of original frame
 						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n');
@@ -345,7 +347,8 @@ classdef vecManager
 					vecDiskWrite(V, vec, 'fname', vecnames);
 				end
 			else
-				vec  = genHueVec(V, fh, vtype, val);
+				%DEBUG: Test with 256 scale factor
+				vec  = genHueVec(V, fh, vtype, val, 'scale', 256);
 				if(~exist('fname', 'var'))
 					%Format a string from original filename
 					[ef str num] = fname_parse(get(fh, 'filename'), 'n');

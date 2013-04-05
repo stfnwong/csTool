@@ -45,6 +45,11 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin)
 		end
 	end
 
+	%TODO: Investigate this change:
+	%if(~exist('scale', 'var'))
+	%	S_FAC = V.HUE_SCALE_FAC;
+	%end
+
 	%Check optional arguments
 	if(exist('scale', 'var'))
 		if(ischar(scale))
@@ -60,7 +65,8 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin)
 	hsv_img = rgb2hsv(imread(get(fh, 'filename'), 'TIFF'));
 	hue_img = hsv_img(:,:,1);
 	if(exist('S_FAC', 'var'))
-		hue_img = hue_img .* S_FAC;
+		%hue_img = hue_img .* S_FAC;
+        hue_img = fix(hue_img .* S_FAC);
 	end 
 	[img_h img_w] = size(hue_img);
 	

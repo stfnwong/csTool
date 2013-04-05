@@ -212,9 +212,13 @@ function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     %Update output filename if UseFrameFilename checked
     if(get(handles.chkUseFrameFilename, 'Value'))
-        fh = handles.frameBuf.getFrameHandle(idx);
+        fh = handles.frameBuf.getFrameHandle(handles.idx);
         [ef str num] = fname_parse(get(fh, 'filename'));
-        fname = sprintf('%s%02d', str, num);
+        if(ef == -1)
+            fprintf('ERROR: Couldnt parse filename (%s)\n', get(fh, 'filename'));
+            return;
+        end
+        fname = sprintf('data/vectors/%s%02d', str, num);
         %fname = get(fh, 'filename');
         set(handles.etWriteFile, 'String', fname);
     end
@@ -234,9 +238,13 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     %Update output filename if UseFrameFilename checked
     if(get(handles.chkUseFrameFilename, 'Value'))
-        fh = handles.frameBuf.getFrameHandle(idx);
+        fh = handles.frameBuf.getFrameHandle(handles.idx);
         [ef str num] = fname_parse(get(fh, 'filename'));
-        fname = sprintf('%s%02d', str, num);
+        if(ef == -1)
+            fprintf('ERROR: Couldnt parse filename (%s)\n', get(fh, 'filename'));
+            return;
+        end
+        fname = sprintf('data/vectors/%s%02d', str, num);
         %fname = get(fh, 'filename');
         set(handles.etWriteFile, 'String', fname);
     end
@@ -261,30 +269,31 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         fmt = strcat(num2str(val), 'c');
     end
     fh    = handles.frameBuf.getFrameHandle(handles.idx);
+    fname = get(handles.etWriteFile, 'String');
     
     if(get(handles.chkRGB, 'Value'))
         if(handles.debug)
             fprintf('Generating RGB Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeRGBVec(fh, 'fmt', fmt);
+        handles.vecManager.writeRGBVec(fh, 'fmt', fmt, 'fname', fname);
     end
     if(get(handles.chkHue, 'Value'))
         if(handles.debug)
             fprintf('Generating Hue Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeHueVec(fh, 'fmt', fmt);
+        handles.vecManager.writeHueVec(fh, 'fmt', fmt, 'fname', fname);
     end
     if(get(handles.chkHSV, 'Value'))
         if(handles.debug)
             fprintf('Generating HSV Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeHSVVec(fh, 'fmt', fmt);
+        handles.vecManager.writeHSVVec(fh, 'fmt', fmt, 'fname', fname);
     end
     if(get(handles.chkBP, 'Value'))
         if(handles.debug)
             fprintf('Generating BPVec (%s) for frame %s\n', fmt, get(fh, 'filename'))
         end
-        handles.vecManager.writeBPVec(fh, 'fmt', fmt);
+        handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'fname', fname);
     end
 
     guidata(hObject, handles);

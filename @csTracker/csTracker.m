@@ -60,16 +60,22 @@ classdef csTracker < handle
 		MAX_ITER;
 		%Sparse vector options
 		SPARSE_FAC;
+		%Window sizing methods
+		WSIZE_METHOD;
 	end
 
 	% METHOD ENUM
 	properties (Constant = true, GetAccess = 'public')
+		%Tracking method constants
 		MOMENT_WINACCUM = 1;
 		MOMENT_IMGACCUM = 2;
 		KERNEL_DENSITY  = 3;
 		SPARSE_WINDOW   = 4;
 		SPARSE_IMG      = 5;
-		MOMENT_WINVEC    = 6;
+		MOMENT_WINVEC   = 6;
+		%Window size method constants
+		ZERO_MOMENT     = 1;
+		EIGENVEC        = 2;
 		methodStr       = {'Windowed moment accumulation', ...
 			               'Un-windowed moment accumulation', ...
 					       'Kernel Density Estimation', ...
@@ -88,16 +94,17 @@ classdef csTracker < handle
 			switch nargin
 				case 0
 					%Default setup
-					T.method      = 1;
-					T.verbose     = 0;
-					T.fParams     = [];
-					T.ROT_MATRIX  = 0;
-					T.CORDIC_MODE = 0;
-					T.BP_THRESH   = 0;
-					T.FIXED_ITER  = 1;
-					T.MAX_ITER    = 8;
-					T.EPSILON     = 0;
-					T.SPARSE_FAC  = 4;
+					T.method       = 1;
+					T.verbose      = 0;
+					T.fParams      = [];
+					T.ROT_MATRIX   = 0;
+					T.CORDIC_MODE  = 0;
+					T.BP_THRESH    = 0;
+					T.FIXED_ITER   = 1;
+					T.MAX_ITER     = 8;
+					T.EPSILON      = 0;
+					T.SPARSE_FAC   = 4;
+					T.WSIZE_METHOD = 1;
 				case 1
 					if(isa(varargin{1}, 'csTracker'))
 						T = varargin{1};
@@ -106,16 +113,17 @@ classdef csTracker < handle
 							error('Expecting options structure');
 						end
 						opts = varargin{1};
-						T.method      = opts.method;
-						T.verbose     = opts.verbose;
-						T.fParams     = opts.fParams;
-						T.ROT_MATRIX  = opts.rotMatrix;
-						T.CORDIC_MODE = opts.cordicMode;
-						T.BP_THRESH   = opts.bpThresh;
-						T.FIXED_ITER  = opts.fixedIter;
-						T.MAX_ITER    = opts.maxIter;
-						T.EPSILON     = opts.epsilon;
-						T.SPARSE_FAC  = opts.sparseFac;
+						T.method       = opts.method;
+						T.verbose      = opts.verbose;
+						T.fParams      = opts.fParams;
+						T.ROT_MATRIX   = opts.rotMatrix;
+						T.CORDIC_MODE  = opts.cordicMode;
+						T.BP_THRESH    = opts.bpThresh;
+						T.FIXED_ITER   = opts.fixedIter;
+						T.MAX_ITER     = opts.maxIter;
+						T.EPSILON      = opts.epsilon;
+						T.SPARSE_FAC   = opts.sparseFac;
+						T.WSIZE_METHOD = opts.wsizeMethod;
 					end
 				otherwise
 					error('Incorrect input arguments');
@@ -130,16 +138,17 @@ classdef csTracker < handle
 		% ---- getOpts() : GET AN OPTIONS STRUCTURE (for csToolGUI)
 		function opts = getOpts(T)	
 
-			opts = struct('method'    , T.method,     ...
-                          'verbose'   , T.verbose,    ...
-                          'rotMatrix' , T.ROT_MATRIX,  ...
-                          'fParams'   , T.fParams,    ...
-                          'cordicMode', T.CORDIC_MODE, ...
-                          'bpThresh'  , T.BP_THRESH,   ...
-                          'fixedIter' , T.FIXED_ITER,  ...
-                          'maxIter'   , T.MAX_ITER,    ...
-                          'epsilon'   , T.EPSILON,     ...
-                          'sparseFac' , T.SPARSE_FAC);
+			opts = struct('method'    ,  T.method,     ...
+                          'verbose'   ,  T.verbose,    ...
+                          'rotMatrix' ,  T.ROT_MATRIX,  ...
+                          'fParams'   ,  T.fParams,    ...
+                          'cordicMode',  T.CORDIC_MODE, ...
+                          'bpThresh'  ,  T.BP_THRESH,   ...
+                          'fixedIter' ,  T.FIXED_ITER,  ...
+                          'maxIter'   ,  T.MAX_ITER,    ...
+                          'epsilon'   ,  T.EPSILON,     ...
+                          'sparseFac' ,  T.SPARSE_FAC,  ...
+                          'wsizeMethod'. T.WSIZE_METHOD);
 		end 	%getOpts()
 
 		% ------------------------ %
