@@ -109,6 +109,7 @@ function status = msProcLoop(T, fh, trackWindow)
 	wparam = wparamComp(T, moments);
 	%DEBUG:
 	disp(wparam);
+
 	%if(exist('spstat', 'var'))
 	%	wparam(4) = fix(sqrt(moments(1)) * spstat.fac);
 	%	wparam(5) = fix(sqrt(moments(1)) * spstat.fac);
@@ -116,6 +117,7 @@ function status = msProcLoop(T, fh, trackWindow)
     %	wparam(4) = fix(sqrt(moments(1)));
 	%    wparam(5) = fix(sqrt(moments(1)));
 	%end
+	
 	%TODO: Implement a window sizing routine like this
 	switch(T.WSIZE_METHOD)
 		case T.ZERO_MOMENT
