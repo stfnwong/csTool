@@ -88,6 +88,9 @@ function [status nh] = gui_showPreview(handles, varargin)
 		bpvec  = get(fh, 'bpVec');
 		bpdims = get(fh, 'dims');
         bpimg  = vec2bpimg(bpvec, bpdims);
+		if(DEBUG)
+			fprintf('%s [%d %d]\n', DSTR, bpdims(1) bpdims(2));
+		end
         if(get(handles.chkShowSparse, 'Value'))
             %Check if this is a sparse vector, and show as such in preview
             if(get(fh, 'isSparse'))

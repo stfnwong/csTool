@@ -57,6 +57,10 @@ function status = msProcLoop(T, fh, trackWindow)
 	end
 
 	% ======== MEANSHIFT PROCESSING LOOP ======== %
+	ctemp = [trackWindow(1) trackWindow(2)];
+	if(T.verbose)
+		fprintf('Set temp centroid as [%d %d]\n', ctemp(1), ctemp(2));
+	end
 	for n = 1:T.MAX_ITER
 		switch T.method
 			case T.MOMENT_WINACCUM	
@@ -79,7 +83,10 @@ function status = msProcLoop(T, fh, trackWindow)
 				return;
 		end
 		%DEBUGGING:
-		disp(moments);
+		if(T.verbose)
+            fprintf('Moments (loop %2d) : ', n);
+            disp(moments);
+        end
 		%Store intermediate results
 		fmoments{n} = moments;
 		tVec(:,n)   = [moments(1) ; moments(2)];
@@ -93,6 +100,54 @@ function status = msProcLoop(T, fh, trackWindow)
 				break;
 			end
 		end	
+		%Continously resize?
+		if(T.WSIZE_CONT)
+			%Save previous centroid
+			%cTemp = [trackWindow(1) trackWindow(2)];
+			trackWindow = wparamComp(T, moments);
+			switch(T.WSIZE_METHOD)
+				case T.ZERO_MOMENT
+					if(exist('spstat', 'var'))
+						trackWindow(4) = fix(sqrt(moments(1)) * spstat.fac);
+						trackWindow(5) = fix(sqrt(moments(1)) * spstat.fac);
+					else
+						trackWindow(4) = fix(sqrt(moments(1)));
+						trackWindow(5) = fix(sqrt(moments(1)));
+					end
+					
+				case T.EIGENVEC
+					%Make window size based on semi-major/semi-minor axes of ellipse
+					%Enfore minimum window size
+					%NOTE: Attempting half the semi axis length
+					trackWindow(4) = trackWindow(4) / 2;
+					trackWindow(5) = trackWindow(5) / 2;
+				otherwise
+					fprintf('ERROR: No such window size method, using zero moment...\n');
+					trackWindow(4) = fix(sqrt(moments(1)));
+					trackWindow(5) = fix(sqrt(moments(1)));
+			end
+			%Enforce minimum window size (2x2)
+			if(trackWindow(4) < 2 || isnan(trackWindow(4)))
+				trackWindow(4) = 2;
+			end
+			if(trackWindow(5) < 2 || isnan(trackWindow(5)))
+				trackWindow(5) = 2;
+			end
+			%If xc, yc are zero, NaN, or Inf, use previous values so that window 
+			%remains in place. We also check if both the centroid locations
+			%are at one, as this is a common error condition. In the case
+			%the the value is actually one, there should be a smooth
+			%transition from the previous frame into this one (as that
+			%assumption is build into the tracker) and so recovering the
+			%previous frame will still give an acceptable result)
+			if(isnan(trackWindow(1)) || isnan(trackWindow(2)) || ...
+               isinf(trackWindow(1)) || isinf(trackWindow(2)) || ...
+               trackWindow(1) == 0   || trackWindow(2) == 0   || ...
+               (trackWindow(1) == 1  && trackWindow(2) == 1))
+				trackWindow(1) = ctemp(1);
+				trackWindow(2) = ctemp(2);
+			end
+		end
 	end
 
 	%Check that we did converge, and if not report
@@ -107,18 +162,10 @@ function status = msProcLoop(T, fh, trackWindow)
 
 	%Compute new window parameters
 	wparam = wparamComp(T, moments);
-	%DEBUG:
-	disp(wparam);
+	%DEBUG: - Get rid of NaNs by force
+	wparam(isnan(wparam)) = 1;
 
-	%if(exist('spstat', 'var'))
-	%	wparam(4) = fix(sqrt(moments(1)) * spstat.fac);
-	%	wparam(5) = fix(sqrt(moments(1)) * spstat.fac);
-	%else
-    %	wparam(4) = fix(sqrt(moments(1)));
-	%    wparam(5) = fix(sqrt(moments(1)));
-	%end
-	
-	%TODO: Implement a window sizing routine like this
+	% ==== WINDOW SIZING ROUTINE ==== %	
 	switch(T.WSIZE_METHOD)
 		case T.ZERO_MOMENT
 			if(exist('spstat', 'var'))
@@ -130,10 +177,20 @@ function status = msProcLoop(T, fh, trackWindow)
 			end
 		case T.EIGENVEC
 			%Make window size based on semi-major/semi-minor axes of ellipse
+			%NOTE: Trying half the semi-axis size
+			wparam(4) = wparam(4) / 2;
+			wparam(5) = wparam(5) / 2;
 		otherwise
 			fprintf('ERROR: No such window size method, using zero moment...\n');
 			wparam(4) = fix(sqrt(moments(1)));
 			wparam(5) = fix(sqrt(moments(1)));
+	end
+	%Enforce minimum windw size contraint (2x2 minimum)
+	if(wparam(4) < 2 || isnan(wparam(4)))
+		wparam(4) = 2;
+	end
+	if(wparam(5) < 2 || isnan(wparam(5)))
+		wparam(5) = 2;
 	end
 	%Check wparam
 	dims = get(fh, 'dims');
@@ -160,6 +217,18 @@ function status = msProcLoop(T, fh, trackWindow)
 		if(T.verbose)
 			fprintf('%s clipped wparam(5) to 1 (%s)\n', T.pStr, get(fh, 'filename'));
 		end
+	end
+	%If by this point there are zero, NaN, or infinities in the centroid, then use
+	%values from previous loop (so that window shrinks but stays in place)
+	
+	if(isnan(wparam(1)) || isnan(wparam(2)) || wparam(1) == 0 || wparam(2) == 0 || ...
+       (wparam(1) == 1 && wparam(2) == 1))
+		wparam(1) = ctemp(1);
+		wparam(2) = ctemp(2);
+	end	
+	if(T.verbose)
+		fprintf('wparam for %s\n', get(fh, 'filename'));
+		disp(wparam);
 	end
 	%Write data out to frame handle
 	set(fh, 'tVec', tVec);

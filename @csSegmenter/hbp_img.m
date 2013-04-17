@@ -31,8 +31,11 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 
 	for x = 1:img_w
 		for y = 1:img_h
-			idx         = find(bins > img(y,x), 1, 'first');
-			imhist(idx) = imhist(idx) + 1; 
+			%Save some time by discarding 0 values, since 0 undefined in HSV space
+			if(img(y,x) ~= 0)
+				idx         = find(bins > img(y,x), 1, 'first');
+				imhist(idx) = imhist(idx) + 1; 
+			end
 		end
 	end
 	%Compute ratio histogram and backprojection
@@ -53,8 +56,11 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 	% TODO: MEX this?
 	for x = 1:img_w
 		for y = 1:img_h
-			idx        = find(bins > img(y,x), 1, 'first');
-			bpimg(y,x) = rhist(idx);
+			%Reference against original pixel to get rid of zeros
+			if(img(y,x) ~= 0)
+				idx        = find(bins > img(y,x), 1, 'first');
+				bpimg(y,x) = rhist(idx);
+			end
 		end
 	end
 	bpdata = bpimg2vec(bpimg);	

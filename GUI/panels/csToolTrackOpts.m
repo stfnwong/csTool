@@ -22,7 +22,7 @@ function varargout = csToolTrackOpts(varargin)
 
 % Edit the above text to modify the response to help csToolTrackOpts
 
-% Last Modified by GUIDE v2.5 05-Apr-2013 03:34:54
+% Last Modified by GUIDE v2.5 17-Apr-2013 21:42:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -90,6 +90,10 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
     set(handles.chkFixedIter,  'Value',  tOpts.fixedIter);
 	%Set window size methods
 	set(handles.pmWinMethod,   'String', {'Zero Moment', 'Eigenvector length'});
+    set(handles.pmRMeth,       'String', {'Resize Each Iteration', 'Resize Once Per Frame'});
+    %Choose the method currently selected in csTracker object
+    set(handles.pmWinMethod,   'Value', tOpts.wsizeMethod);
+    set(handles.pmRMeth,       'Value', tOpts.wsizeCont);
 	handles.output = tOpts;			%default output
 
     guidata(hObject, handles);
@@ -136,7 +140,7 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
     fixedIter   = get(handles.chkFixedIter, 'Value');
 	verbose     = get(handles.chkVerbose, 'Value');
 	wsizeMethod = get(handles.pmWinMethod, 'Value');
-    
+    wsizeCont   = get(handles.pmRMeth, 'Value');
 
     opts        = struct('method', method, ...
                          'epsilon', epsilon, ...
@@ -148,7 +152,8 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
                          'verbose', verbose, ...
                          'fParams', tOpts.fParams, ...
                          'sparseFac', sparseFac, ...
-                         'wsizeMethod', wsizeMethod);
+                         'wsizeMethod', wsizeMethod, ...
+                         'wsizeCont', wsizeCont);
 	handles.output  = opts;
 	guidata(hObject, handles);
 	uiresume(handles.figTrackOpts);
@@ -215,6 +220,14 @@ function etSparseFac_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+function pmRMeth_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+function pmWinMethod_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
 
 
 %---------------------------------------------------------------%
@@ -230,26 +243,8 @@ function chkRotMatrix_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkFixedIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function lbTrackMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etSparseFac_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmWinMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmRMeth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 
-% --- Executes on selection change in pmWinMethod.
-function pmWinMethod_Callback(hObject, eventdata, handles)
-% hObject    handle to pmWinMethod (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns pmWinMethod contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from pmWinMethod
-
-
-% --- Executes during object creation, after setting all properties.
-function pmWinMethod_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to pmWinMethod (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end

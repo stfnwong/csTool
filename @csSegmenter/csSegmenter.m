@@ -224,6 +224,10 @@ classdef csSegmenter < handle
 				otherwise
 					error('Invalid segmentation method in T.method');
 			end
+			if(T.verbose)
+				fprintf('Ratio hist for frame %s : ', get(fh, 'filename'))
+				disp(rhist);
+			end
        		%Write frame data
 			bpsum = sum(sum(bpvec));
             set(fh, 'bpSum', bpsum);

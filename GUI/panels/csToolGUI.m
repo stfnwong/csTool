@@ -160,7 +160,7 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	end
 
 	%Create structure for handling imregion
-	r = struct('rHandle', [], 'rExist', 0, 'rRegion', [], 'rPos', []);
+	r = struct('rHandle', [], 'rExist', 0, 'rRegion', [], 'rPos', [], 'rFrame', []);
 	p = struct('paramIndex', 1);
 	handles.rData = r;		%region data
 	handles.pData = p;		%param data
@@ -454,8 +454,13 @@ function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		frameIndex = 1;
 	end
 	filename = get(handles.etFilePath, 'String');
-	nFrames  = str2double(get(handles.etNumFrames, 'String'));
-	[exitflag nh] = gui_loadFrames(filename, nFrames, handles);
+	%Test for 'all' switch
+	if(strncmpi(get(handles.etNumFrames, 'String'), 'all', 3))
+		[exitflag nh] = gui_loadFrames(handles, filename, 'all');
+	else	
+		nFrame  = str2double(get(handles.etNumFrames, 'String'));
+		[exitflag nh] = gui_loadFrames(handles, filename, nFrame);
+	end
 	if(exitflag == -1)
 		return;
 	end
@@ -696,18 +701,37 @@ end		%bTrackAll_Callback()
 
 function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 
+	global frameIndex;
+
 	%Segment and then track selected frames
 	sFrame = fix(str2double(get(handles.etLowRange, 'String')));
     eFrame = fix(str2double(get(handles.etHighRange, 'String')));
+	R      = [sFrame eFrame];
 	if(eFrame < sFrame)
         fprintf('ERROR: (TrackRange) End frame is before start frame\n');
         return;
 	end
 	handles = gui_ifaceEnable(handles, 'off');
 	if(handles.debug)
-		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'proc', 'debug');
+		if(handles.rData.rFrame ~= sFrame)
+			[ef wparam] = handles.tracker.initWindow('region', handles.rData.rRegion);
+			if(ef == -1)
+				return;
+			end
+			status = gui_procLoop(handles, 'range', R, 'param', wparam, 'proc', 'debug');
+		else
+			status = gui_procLoop(handles, 'range', R, proc', 'debug');	
+		end
 	else
-		status = gui_procLoop(handles, 'range', [sFrame eFrame], 'proc');
+		if(handles.rData.rFrame ~= sFrame)
+			[ef wparam] = handles.tracker.initWindow('region', handles.rData.rRegion);
+			if(ef == -1)
+				return;
+			end
+			status = gui_procLoop(handles, 'range', R, 'param', wparam, 'proc');
+		else
+			status = gui_procLoop(handles, 'range', R, 'proc');
+		end
 	end
 	if(status == -1)
 		handles = gui_ifaceEnable(handles, 'on');
@@ -941,14 +965,14 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			if(frameIndex == 0)
 				frameIndex = 1;
 			end
-			filename = get(handles.etFilePath, 'String');
-			nFrames  = str2double(get(handles.etNumFrames, 'String'));
-			[exitflag nh] = gui_loadFrames(filename, nFrames, handles);
-			if(exitflag == -1)
-				return;
+            filename = get(handles.etFilePath, 'String');
+			%Test for 'all' switch
+			if(strncmpi(get(handles.etNumFrames, 'String'), 'all', 3))
+				[exitflag nh] = gui_loadFrames(handles, filename, 'all');
+			else	
+				nFrame  = str2double(get(handles.etNumFrames, 'String'));
+				[exitflag nh] = gui_loadFrames(handles, filename, nFrame);
 			end
-			handles = nh;
-			[exitflag nh] = gui_showPreview(handles, 'idx', frameIndex);
 			if(exitflag == -1)
 				return;
 			end
@@ -1008,6 +1032,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				nRegion = gui_rPos2rRegion(rPos, handles.fig_framePreview);
 				rData.rExist = 0;
 				rData.rPos = rPos;		%Actually, this requires some massaging first...
+				rData.rFrame = str2double(get(handles.etCurFrame, 'String'));
 				rData.rRegion = nRegion;
 				if(handles.debug)
 					fprintf('Current rData :\n');

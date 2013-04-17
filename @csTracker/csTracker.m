@@ -62,6 +62,8 @@ classdef csTracker < handle
 		SPARSE_FAC;
 		%Window sizing methods
 		WSIZE_METHOD;
+		WSIZE_CONT;		%Continously resize window (on each iteration) if true.
+						%Default is false (resize at final iteration)
 	end
 
 	% METHOD ENUM
@@ -82,6 +84,7 @@ classdef csTracker < handle
                            'Sparse moment window', ...
                            'Sparse moment (no window)', ...
                            'Windowed moment accum (vectored)'};
+        contStr         = {'Continous', 'Once per frame'};
 		pStr            = 'csTracker :'; %debugging string prefix
 	end
 
@@ -105,6 +108,7 @@ classdef csTracker < handle
 					T.EPSILON      = 0;
 					T.SPARSE_FAC   = 4;
 					T.WSIZE_METHOD = 1;
+					T.WSIZE_CONT   = 0;		%continously re-size the tracking window
 				case 1
 					if(isa(varargin{1}, 'csTracker'))
 						T = varargin{1};
@@ -124,6 +128,7 @@ classdef csTracker < handle
 						T.EPSILON      = opts.epsilon;
 						T.SPARSE_FAC   = opts.sparseFac;
 						T.WSIZE_METHOD = opts.wsizeMethod;
+						T.WSIZE_CONT   = opts.wsizeCont;
 					end
 				otherwise
 					error('Incorrect input arguments');
@@ -148,7 +153,8 @@ classdef csTracker < handle
                           'maxIter'   ,  T.MAX_ITER,    ...
                           'epsilon'   ,  T.EPSILON,     ...
                           'sparseFac' ,  T.SPARSE_FAC,  ...
-                          'wsizeMethod', T.WSIZE_METHOD);
+                          'wsizeMethod', T.WSIZE_METHOD, ...
+                          'wsizeCont',   T.WSIZE_CONT);
 		end 	%getOpts()
 
 		% ------------------------ %

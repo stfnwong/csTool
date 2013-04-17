@@ -42,21 +42,21 @@ function [bpimg rhist] = ut_hbp(img, mhist)
 			%Find bin that pixel (y,x) falls into
 			v = img(y,x);
 			k = 1;
-			while(k < length(bins))
-				if(v < bins(k))
-					imhist(k) = imhist(k) + 1;
-					k = length(bins) + 1;
-				else
-					k = k + 1;
-				end
-			end
+            while(k < length(bins))
+                if(v < bins(k))
+                    imhist(k) = imhist(k) + 1;
+                    k = length(bins) + 1;
+                else
+                    k = k + 1;
+                end
+            end
 		end
 	end
 	
 	%Find ratio histogram 
 	rhist = mhist ./ imhist;
 	%Scale iup	
-	rhist = fix(SZ.*rhist);
+	rhist = fix(256.*rhist);
 	
 	%Produce backprojection image
 	for x = 1:w
@@ -64,14 +64,19 @@ function [bpimg rhist] = ut_hbp(img, mhist)
 			%Replace pixel with indexed value in rhist
 			v = img(y,x);
 			k = 1;
-			while(k < length(bins))
-				if(v < bins(k))
-					bpimg(y,x) = rhist(k);
-					k = length(bins) + 1;
-				else
-					k = k + 1;
-				end
-			end
+            %Zero values are undefined in HSV space, so just block them out
+            %here so they dont influence the histogram (ie: dont increase
+            %the length of the bpvec)
+            if(v ~= 0)
+                while(k < length(bins))
+                    if(v < bins(k))
+                        bpimg(y,x) = rhist(k);
+                        k = length(bins) + 1;
+                    else
+                        k = k + 1;
+                    end
+                end
+            end
 		end	
 	end
 	

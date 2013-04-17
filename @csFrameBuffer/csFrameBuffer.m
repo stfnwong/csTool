@@ -89,6 +89,7 @@ classdef csFrameBuffer
 					fb.path      = ' ';
 					fb.ext       = 'tif';
 					fb.fNum      = 1;
+					fb.fName     = '';
 					fb.verbose   = 0;
 				case 1
 					%Object copy case
@@ -167,6 +168,7 @@ classdef csFrameBuffer
                           'path',     F.path,     ...
                           'ext',      F.ext,      ...
                           'fNum',     F.fNum,     ...
+                          'fName',    F.fName,    ...
                           'verbose',  F.verbose );
 		end 	%getOpts();
 
@@ -366,7 +368,7 @@ classdef csFrameBuffer
 		%         PROCESSING FUNCTIONS       %
 		% -----------------------------------%
 		
-		function [FB status] = loadFrameData(FB, varargin)
+		function [FB status varargout] = loadFrameData(FB, varargin)
 		% LOADFRAMEDATA
 		%
 		% [FB status] = loadFrameData(FB, ...[options]... )
@@ -375,6 +377,7 @@ classdef csFrameBuffer
 		% override the path, pass the string 'path' followed by the path name. To
 		% override fNum, pass 'num' followed by number of frames to read.
 		
+			ALL = false;
 			%If varargin is a string, take this as being a path to data and 
 			%use in place of FB.path
 			if(nargin > 1)
@@ -384,6 +387,10 @@ classdef csFrameBuffer
 							fpath = varargin{k+1};
 						elseif(strncmpi(varargin{k}, 'num', 3))
 							fnum  = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'all', 3))
+							ALL = true;
+						elseif(strncmpi(varargin{k}, 'fname', 5))
+							fullName = varargin{k+1};
 						end
 					end
 				end
@@ -404,12 +411,12 @@ classdef csFrameBuffer
 			%Check parameters are sensible
 			if(isempty(fpath) || ~ischar(fpath))
 				fprintf('Path not correctly set, exiting...\n');
-				status = 0;
+				status = -1;
 				return;
 			end
 			if(isempty(FB.ext) || ~ischar(FB.ext))
 				fprintf('Extension not correctly set, exiting...\n');
-				status = 0;
+				status = -1;
 				return;
 			end
 
@@ -419,14 +426,42 @@ classdef csFrameBuffer
 				fprintf('fnum : %d\n', fnum);
 				fprintf('ext  : %s\n', FB.ext);
 			end
-			%Load data into buffer
-			for k = 1:FB.nFrames
-				fn   = sprintf('%s%s_%03d.%s', fpath, FB.fName, fnum, FB.ext); 
-                set(FB.frameBuf(k), 'filename', fn);
-				if(FB.verbose)
-					fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);
+			%If we want to load all frames in buffer, check how many there are and 
+			%place this figure into FB.nFrames
+			if(ALL)
+				n  = 1;
+				fn = sprintf('%s%s_%03d.%s', fpath, FB.fName, n, FB.ext); 
+				while(isequal(exist(fn, 'file'), 2))
+					set(FB.frameBuf(k), 'filename', fn);
+					if(FB.verbose)
+						fprintf('Read frame %3d in sequence\n', n);
+					end
+					n  = n+1;
+					fn = sprintf('%s%s_%03d.%s', fpath, FB.fName, n, FB.ext);
 				end
-				fnum = fnum + 1;
+				if(n == 1)
+					fprintf('ERROR: Start file does not exist (%s)\n', fn);
+					status = -1;
+					return;
+				end
+				if(FB.verbose)
+					fprintf('Read %d frmaes from %s\n', n, fpath);
+				end
+				%Also report the number of frames read, if required
+				if(nargout > 2)
+					varargout{1} = n;
+				end
+				FB.nFrames = n;
+			else
+				%Load data into buffer
+				for k = 1:FB.nFrames
+					fn   = sprintf('%s%s_%03d.%s', fpath, FB.fName, fnum, FB.ext); 
+					set(FB.frameBuf(k), 'filename', fn);
+					if(FB.verbose)
+						fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);
+					end
+					fnum = fnum + 1;
+			end
 			end
 			if(FB.verbose)
 				fprintf('\n File read complete\n');
@@ -434,7 +469,7 @@ classdef csFrameBuffer
 			end
 			%write back data
 			FB.fNum = fnum;
-            status = 1;
+            status = 0;
 			return;
 
 		end 	%loadFrameData()
