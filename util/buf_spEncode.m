@@ -155,20 +155,32 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 					end
 					return;
 				else
-                    if(k > length(SP_FACTORS))
+                    fprintf('k : %d\n', k);
+                    if(k > numel(SP_FACTORS))
                         %This hack is stupid - but im tired. fix it
                         %properly!
                         fac    = SP_FACTORS(end);
                         thresh = SP_THRESH(end);
                     else
                         fac    = SP_FACTORS(k);
-                        thresh = SP_THRESH(k);
+                        thresh = SP_THRESH(k); %<- STILL ISSUE HERE!!!!
                     end
-                    
-					
+            		break;        	
 				end
 			end 	
 		end
+		
+		%NOTE: I think to the greatest extent possible, we want to avoid using an 
+		%if/else ladder here, as it makes it difficult to change the range of sparse
+		%factors available (need to move largest to top, reorder remainder, etc)
+		
+		%if(bpsum < (imsz/32) + eps)
+
+		%elseif(bpsum < (imsz/16) + eps)
+
+
+		%elseif(bpsum < (imsz/8) + eps)
+
 		%if(bpsum < (imsz/4) + eps)
         %    if(RTVEC)
         %        spvec = bpimg2vec(bpimg);

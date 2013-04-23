@@ -105,6 +105,9 @@ function varargout = csToolParamBrowser_OutputFcn(hObject, eventdata, handles) %
         case 1
             varargout{1} = handles.idx;
         case 2
+            if(handles.debug)
+                fprintf('csToolParamBrowser got nargout %d\n', nargout);
+            end
             varargout{1} = handles.idx;
             varargout{2} = handles.status;
     end
@@ -273,12 +276,15 @@ function str = cstParam_FmtParamString(handles)
     else
         sd = sprintf('Sparse : no');
     end
+    dims = get(fh, 'dims');
+    ss = sprintf('Frame reports dims [%dx%d]', dims(1), dims(2));
+	sn = sprintf('Iterations in frame ; %d', get(fh, 'nIters'));
     s1 = sprintf('xc : %.1f, yc : %.1f', xc ,yc);
     s2 = sprintf('theta : %.1f', theta);
     s3 = sprintf('axmaj : %.1f', axmaj);
     s4 = sprintf('axmin : %.1f', axmin);
 
-    str = {st, sp, ' ', sd, ' ', s1, s2, s3, s4};
+    str = {st, sp, ' ', sd, ss, sn, ' ', s1, s2, s3, s4};
 
     %uiresume(handles.csToolParamBrowser);
 

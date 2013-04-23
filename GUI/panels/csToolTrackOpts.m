@@ -79,7 +79,7 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
 	end
 	tOpts = handles.trackopts;
     set(handles.lbTrackMethod, 'String', mstr);
-    set(handles.lbTrackMethod, 'Value', 1);
+    set(handles.lbTrackMethod, 'Value',  tOpts.method);
     set(handles.etEpsilon,     'String', num2str(tOpts.epsilon));
     set(handles.etThresh,      'String', num2str(tOpts.bpThresh));
     set(handles.etMaxIter,     'String', num2str(tOpts.maxIter));
@@ -89,11 +89,42 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
 	set(handles.chkVerbose,    'Value',  tOpts.verbose);
     set(handles.chkFixedIter,  'Value',  tOpts.fixedIter);
 	%Set window size methods
-	set(handles.pmWinMethod,   'String', {'Zero Moment', 'Eigenvector length'});
-    set(handles.pmRMeth,       'String', {'Resize Each Iteration', 'Resize Once Per Frame'});
+	wMeth = {'Zero Moment', 'Eigenvector length'};
+	rMeth = {'Resize each iter', 'Resize each frame'};
+	set(handles.pmWinMethod,   'String', wMeth);
+    set(handles.pmRMeth,       'String', rMeth);
     %Choose the method currently selected in csTracker object
-    set(handles.pmWinMethod,   'Value', tOpts.wsizeMethod);
-    set(handles.pmRMeth,       'Value', tOpts.wsizeCont);
+    %This check is a shortcut to avoid the problem of zero values creeping into the
+    %GUI. In actual fact, this is probably result of some old prefs stored on the 
+    %disk, but ill leave it here for now in case some similar situation comes up in 
+    %the future
+
+	%SOME PROBLEM HERE?!?!!?
+	if(handles.debug)
+		fprintf('tOpts.wsizeMethod : %d\n', tOpts.wsizeMethod);
+		fprintf('tOpts.wsizeCont   : %d\n', tOpts.wsizeCont);
+		%Also warn
+		if(tOpts.wsizeMethod < 1)
+			fprintf('WARNING: tOpts.wsizeMethod will be set to  default (1)\n');
+		end
+		if(tOpts.wsizeCont < 1)
+			fprintf('WARNING: tOpts.wsizeCont will be set to default (1)\n');
+		end
+	end
+    if(tOpts.wsizeMethod < 1 || tOpts.wsizeMethod > length(wMeth))
+		fprintf('WARNING: tOpts.wsizeMethod was 0, possibly some old preferences \n');
+		fprintf('stored in $CSTOOL/data/settings - run csToolClearPrefs() to remove\n');
+		set(handles.pmWinMethod, 'Value', 1);
+	else
+	    set(handles.pmWinMethod,   'Value', tOpts.wsizeMethod);
+	end
+	if(tOpts.wsizeCont < 1 || tOpts.wsizeCont > length(rMeth))
+		fprintf('WARNING: tOpts.wsizeCont was 0, possibly some old preferences \n');
+		fprintf('stored in $CSTOOL/data/settings - run csToolClearPrefs() to remove\n');
+		set(handles.pmRMeth, 'Value', 1);
+	else
+	    set(handles.pmRMeth,       'Value', tOpts.wsizeCont);
+	end
 	handles.output = tOpts;			%default output
 
     guidata(hObject, handles);

@@ -158,6 +158,11 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
                        'verbose',   verbose, ...
                        'imRegion',  handles.segopts.imRegion, ...
 					   'mhist',     handles.segopts.mhist);
+	if(handles.debug)
+		%Show opts in console
+		fprintf('Curent options structure: \n');
+		disp(opts);
+	end
 
     %handles.segmenter = csSegmenter(opts);
 	handles.output    = opts;

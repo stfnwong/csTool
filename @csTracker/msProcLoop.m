@@ -90,6 +90,9 @@ function status = msProcLoop(T, fh, trackWindow)
 		%Store intermediate results
 		fmoments{n} = moments;
 		tVec(:,n)   = [moments(1) ; moments(2)];
+		% ========================================================================= %
+		% CONVERGENCE TEST: Test here to see if we should exit the loop
+		% ========================================================================= %
 		if(~T.FIXED_ITER && n > 1)
 			%If we converge early, quit the loop
 			cverge = abs(tVec(:,n) - tVec(:,n-1));
@@ -100,6 +103,8 @@ function status = msProcLoop(T, fh, trackWindow)
 				break;
 			end
 		end	
+		% ========================================================================= %
+
 		%Continously resize?
 		if(T.WSIZE_CONT)
 			%Save previous centroid
@@ -119,8 +124,12 @@ function status = msProcLoop(T, fh, trackWindow)
 					%Make window size based on semi-major/semi-minor axes of ellipse
 					%Enfore minimum window size
 					%NOTE: Attempting half the semi axis length
+					trackWindow(4) = trackWindow(4);
+					trackWindow(5) = trackWindow(5);
+				case T.HALF_EIGENVEC
 					trackWindow(4) = trackWindow(4) / 2;
 					trackWindow(5) = trackWindow(5) / 2;
+
 				otherwise
 					fprintf('ERROR: No such window size method, using zero moment...\n');
 					trackWindow(4) = fix(sqrt(moments(1)));
@@ -176,6 +185,8 @@ function status = msProcLoop(T, fh, trackWindow)
 				wparam(5) = fix(sqrt(moments(1)));
 			end
 		case T.EIGENVEC
+			%Value are already correct in wparamComp
+		case T.HALF_EIGENVEC
 			%Make window size based on semi-major/semi-minor axes of ellipse
 			%NOTE: Trying half the semi-axis size
 			wparam(4) = wparam(4) / 2;

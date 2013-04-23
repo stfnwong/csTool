@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 31-Mar-2013 02:41:23
+% Last Modified by GUIDE v2.5 23-Apr-2013 12:12:56
 
 
 % Begin initialization code - DO NOT EDIT
@@ -287,7 +287,11 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	fh = handles.frameBuf.getFrameHandle(frameIndex);
 	handles.pData.paramIndex = get(fh, 'nIters');
 	[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'b');
-	[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
+    if(handles.debug)
+        [exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex, 'debug');
+    else
+        [exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
+    end
 	if(exitflag == -1)
 		return;
 	end	
@@ -317,7 +321,11 @@ function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
 	handles.pData.paramIndex = get(fh, 'nIters');
 
 	[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'f');
-	[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
+    if(handles.debug)
+        [exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex, 'debug');
+    else
+        [exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
+    end
 	if(exitflag == -1)
 		return;
 	end
@@ -337,7 +345,11 @@ end 	%bForward_Callback()
 function bFrameFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     global frameIndex;
     
-    [exitflag handles] = gui_showPreview(handles, 'idx', 1);
+    if(handles.debug)
+        [exitflag handles] = gui_showPreview(handles, 'idx', 1, 'debug');
+    else
+        [exitflag handles] = gui_showPreview(handles, 'idx', 1);
+    end
     if(exitflag == -1)
         return;
     end
@@ -366,7 +378,11 @@ function bFrameLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     global frameIndex;
     
     N = handles.frameBuf.getNumFrames();
-    [exitflag handles] = gui_showPreview(handles, 'idx', N);
+    if(handles.debug)
+        [exitflag handles] = gui_showPreview(handles, 'idx', N, 'debug');
+    else
+        [exitflag handles] = gui_showPreview(handles, 'idx', N);
+    end
     if(exitflag == -1)
         return;
     end
@@ -402,7 +418,11 @@ function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		return;
 	end
 	
-	[exitflag handles] = gui_showPreview(handles, 'idx', idx);
+    if(handles.debug)
+        [exitflag handles] = gui_showPreview(handles, 'idx', idx, 'debug');
+    else
+        [exitflag handles] = gui_showPreview(handles, 'idx', idx);
+    end
 	if(exitflag == -1)
 		return;
 	end
@@ -495,7 +515,11 @@ function bSegFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	fh = handles.frameBuf.getFrameHandle(frameIndex);
 
     handles.segmenter.segFrame(fh);
-	[status nh] = gui_showPreview(handles, 'fh', fh, 'seg', 'debug');
+    if(handles.debug)
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'seg', 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'seg');
+    end
 	if(status == -1)
 		return;
 	end
@@ -530,7 +554,11 @@ function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>
 	end
     %Show preview of final frame
 	fh = handles.frameBuf.getFrameHandle(eFrame);
-	[status nh] = gui_showPreview(handles, 'fh', fh, 'seg');
+    if(handles.debug)
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'seg', 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'seg');
+    end
 	if(status == -1)
 		handles = gui_ifaceEnable(handles, 'on');
 		guidata(hObject, handles);
@@ -564,7 +592,11 @@ function bSegAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		return;
 	end	
 	%Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
+    if(handles.debug)
+        [status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg', 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
+    end
 	if(status == -1)
 		handles = gui_ifaceEnable(handles, 'on');
 		guidata(hObject, handles);
@@ -655,7 +687,11 @@ function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	end
 	
 	%Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
+    if(handles.debug)
+        [status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg', 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
+    end
 	if(status == -1)
 		%Turn interface back on 
 		handles = gui_ifaceEnable(handles, 'on');
@@ -684,7 +720,11 @@ function bTrackAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	end
 
 	%Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
+    if(handles.debug)
+        [status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg', 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
+    end
 	if(status == -1)
 		handles = gui_ifaceEnable(handles, 'on');
 		guidata(hObject, handles);
@@ -740,7 +780,11 @@ function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	end
 	
 	%Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
+    if(handles.debug)
+        [status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg', 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
+    end
 	if(status == -1)
 		handles = gui_ifaceEnable(handles, 'on');
 		guidata(hObject, handles);
@@ -765,7 +809,11 @@ function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>
 	end
 	handles = gui_ifaceEnable(handles, 'off');
 	%Show preview of final frame
-	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
+    if(handles.debug)
+    	[status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg', 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'idx', handles.frameBuf.getNumFrames(), 'seg');
+    end
 	if(status == -1)
 		handles = gui_ifaceEnable(handles, 'on');
 		guidata(hObject, handles);
@@ -810,7 +858,11 @@ function bParamPrev_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		fprintf('Param index out of bounds (overflow), clipped to %d\n', get(fh, 'nIters'));
 	end
 
-    [status nh] = gui_showPreview(handles, 'fh', fh, 'idx', frameIndex, 'param', pidx);
+    if(handles.debug)
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'idx', frameIndex, 'param', pidx, 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'idx', frameIndex, 'param', pidx);
+    end
     if(status == -1)
         return;
     end
@@ -853,7 +905,11 @@ function bParamNext_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 		fprintf('Param index out of bounds (overflow), clipped to %d\n', get(fh, 'nIters'));
 	end
 
-    [status nh] = gui_showPreview(handles, 'fh', fh, 'idx', frameIndex, 'param', pidx);
+    if(handles.debug)
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'idx', frameIndex, 'param', pidx, 'debug');
+    else
+        [status nh] = gui_showPreview(handles, 'fh', fh, 'idx', frameIndex, 'param', pidx);
+    end
     if(status == -1)
         return;
     end
@@ -989,14 +1045,22 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 		case 'f'
 			%Seek frame forward
 			[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'f');
-			[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
+            if(handles.debug)
+                [exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex, 'debug');
+            else
+                [exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
+            end
 			if(exitflag == -1)
 				return;
 			end
 		case 'b'
 			%Seek frame backward
 			[frameIndex handles] = gui_stepPreview(frameIndex, handles, 'b');
-			[exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
+            if(handles.debug)
+                [exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex, 'debug');
+            else
+                [exitflag handles]   = gui_showPreview(handles, 'idx', frameIndex);
+            end
 			if(exitflag == -1)
 				return;
 			end
@@ -1365,14 +1429,89 @@ end
 
 
 % --- Executes on button press in bVerify.
-function bVerify_Callback(hObject, eventdata, handles)
-% hObject    handle to bVerify (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+function bVerify_Callback(hObject, eventdata, handles) %ok <INUSD,DEFNU>
+    %TODO: Call the verify panel
 end     %bVerify_Callback()
 
 
 % --- Executes on button press in chkShowSparse.
-function chkShowSparse_Callback(hObject, eventdata, handles)
-
+function chkShowSparse_Callback(hObject, eventdata, handles) %ok <INUSD,DEFNU>
 end     %chkShowSparse_Callback()
+
+
+% --------------------------------------------------------------------
+function menu_Tracking_Callback(hObject, eventdata, handles) %ok <INUSL,DEFNU>
+end     %menu_Tracking_Callback()
+
+% --------------------------------------------------------------------
+function menu_DumpTraj_Callback(hObject, eventdata, handles) %ok <INUSL,DEFNU>
+    %Dump trajectory to file
+    %NOTE: At this time, the trajectory is dumped for the range given in
+    %the main panel. This menu can (and should) bring up a new panel that
+    %gives finer control over the required trajectory
+
+    sFrame = fix(str2double(get(handles.etLowRange, 'String')));
+    eFrame = fix(str2double(get(handles.etHighRange, 'String')));
+    R      = [sFrame eFrame];
+
+    if(eFrame < sFrame)
+        fprintf('ERROR: (TrackRange) End frame is before start frame\n');
+        return;
+    end
+    if(eFrame > handles.frameBuf.getNumFrames())
+        fprintf('ERROR: end frame exceeds buffer size\n');
+        return;
+    end
+    handles = gui_ifaceEnable(handles, 'off');
+    wb = waitbar(0, 'Dumping Trajectory...');
+    
+    traj = zeros(2, length(R));
+    for k = sFrame:eFrame
+        fh        = handles.frameBuf.getFrameHandle(k);
+        wparam    = get(fh, 'winParams');
+        %Load into traj matrix
+        traj(1,k) = wparam(1);
+        traj(2,k) = wparam(2);
+        waitbar(k/length(R), wb, sprintf('Grabbing frame %d of %d...', k, length(R)));
+    end
+    delete(wb);
+    %Write results to file
+    %NOTE: For now, the file is hardcoded. This should be another option
+    %added to a panel for this feature
+
+    fp = fopen('data/traj.dat', 'w');
+    fprintf('Writing data to file...\n');
+    wb = waitbar(0, 'Writing trajectory file...');
+    for k = 1:length(traj)
+        fprintf(fp, '%f, %f\n', traj(1,k), traj(2,k));
+        waitbar(k/length(traj), wb, sprintf('Writing vector %d of %d...', k, length(traj)));
+    end
+    fclose(fp);
+    delete(wb);
+
+    handles = gui_ifaceEnable(handles, 'on');
+
+    guidata(hObject, handles);      %Might not need to save this anyway...
+    
+    
+end     %menu_DumpTraj_Callback()
+
+% --------------------------------------------------------------------
+function menu_trackOptions_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
+	%Update trackOpts with latest struct
+	tOpts = handles.tracker.getOpts();
+	mstr  = handles.tracker.methodStr;
+	if(handles.debug)
+		ts = csToolTrackOpts(tOpts, 'mstr', mstr, 'debug');
+	else
+		ts = csToolTrackOpts(tOpts, 'mstr', mstr);
+	end
+	if(~isa(ts, 'struct'))
+		%fprintf('ERROR: csToolSegOpts returned non-struct output\n');
+		return;
+	end
+	handles.tracker  = csTracker(ts);
+	handles.tracOpts = ts;
+	set(handles.trackMethodList, 'Value', ts.method);
+	guidata(hObject, handles);
+end     %menu_trackOptions_Callback(0

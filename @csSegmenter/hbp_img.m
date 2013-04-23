@@ -20,7 +20,11 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 
 	%Get image parameters and set up histogram bins
 	[img_h img_w d] = size(img);
-	bpimg           = zeros(img_h, img_w, 'uint8');
+	if(T.FPGA_MODE)
+		bpimg       = zeros(img_h, img_w, 'uint8');
+	else
+		bpimg       = zeros(img_h, img_w);
+	end
     imhist          = zeros(1,T.N_BINS);
 	%if(T.FPGA_MODE)
 	%	bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
@@ -52,7 +56,6 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 	else
 		rhist(isinf(rhist)) = 1;
 	end
-	%rhist(isinf(rhist)) = 1;
 	% TODO: MEX this?
 	for x = 1:img_w
 		for y = 1:img_h

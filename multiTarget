@@ -1,0 +1,31 @@
+For tracking multiple targets:
+- Each csFrame needs to be modified to take a cell array of window params
+- Or perhaps even a cell array of structs, one for each target
+- We need to add the prediction window for each target, and overlay this on the
+GUI (I think green triangle at center, with green bounding box)
+
+- A mode to browse segmentation for one target only (to verify that the correct pixels
+are being discarded)
+
+- A way to associate one set of initial params with a target. The most straightforward
+way is to have the r keycombo become (r && 1), (r && 2), etc....
+HOWEVER - It would be easier (and avoid mistakes and so on) if the second keypress was
+just r, and it automaticaly ended the routine for the current region. Not only that,
+it should just take care of situations where before (r && 1) is set, (r && 2) is 
+pressed and so on.
+
+
+- We also need to predict the target location for the scaling buffer, so that we can
+discard pixels that are not part of the target for that tracking module .
+(In this setup, each segmentation pipeline will have its own scaling buffer system
+that ignores pixels outside the predicted window)
+
+
+==================================================================================
+FOR THE PREDICTION STEP
+==================================================================================
+csTool should have a settable parameter that allows the number of frame params 
+buffered for prediction to be set. 
+We could simply accept that the first few frames will be rubbish, or we could 
+try and derive more information from the intermediate iterations (pre-convergence 
+iterations)

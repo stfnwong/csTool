@@ -78,12 +78,18 @@ classdef csTracker < handle
 		%Window size method constants
 		ZERO_MOMENT     = 1;
 		EIGENVEC        = 2;
+		HALF_EIGENVEC   = 3;
+		%Continously size window = 1, Size at end of frame = 2
+		%This is done to avoid 0 index problems in the GUI
 		methodStr       = {'Windowed moment accumulation', ...
 			               'Un-windowed moment accumulation', ...
 					       'Kernel Density Estimation', ...
                            'Sparse moment window', ...
                            'Sparse moment (no window)', ...
                            'Windowed moment accum (vectored)'};
+		wMethodStr      = {'Zero Moment', ...
+                           'Eigenvector length', ...
+                           'Half of eigenvector length'};
         contStr         = {'Continous', 'Once per frame'};
 		pStr            = 'csTracker :'; %debugging string prefix
 	end
@@ -108,7 +114,7 @@ classdef csTracker < handle
 					T.EPSILON      = 0;
 					T.SPARSE_FAC   = 4;
 					T.WSIZE_METHOD = 1;
-					T.WSIZE_CONT   = 0;		%continously re-size the tracking window
+					T.WSIZE_CONT   = 1;		%continously re-size the tracking window
 				case 1
 					if(isa(varargin{1}, 'csTracker'))
 						T = varargin{1};

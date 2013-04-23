@@ -260,6 +260,8 @@ function [status] = gui_procLoop(handles, varargin)
 	end
 	delete(wb);
 
+	%Service any pending jobs here (such as prediction reporting, etc)
+
                            
 
 end 	%gui_procLoop()

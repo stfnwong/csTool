@@ -59,6 +59,10 @@ classdef csSegmenter < handle
                          'Block-Wise HBP', ...
                          'Row-Wise HBP'
                         };
+		modeStr       = {'Normal mode', ...
+                         'FPGA Mode (binary)', ...
+                         'FPGA Mode (2-bit)', ...
+                         'FPGA Mode (4-bit)'};
 	end
 
 	methods (Access = 'public');
@@ -209,8 +213,14 @@ classdef csSegmenter < handle
 				sz   = size(im);
 				dims = [sz(2) sz(1)];
 				set(fh, 'dims', dims);
+				if(T.verbose)
+					fprintf('Set dims as [%dx%d]\n', dims(1), dims(2));
+				end
 			else
 				dims = get(fh, 'dims');
+				if(T.verbose)
+					fprintf('Read dims as [%dx%d]\n', dims(1), dims(2));
+				end
 			end
 			switch T.method
 				case T.HIST_BP_IMG

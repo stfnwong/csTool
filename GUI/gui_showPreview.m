@@ -77,7 +77,7 @@ function [status nh] = gui_showPreview(handles, varargin)
 		fprintf('WARNING: Truncating dims in gui_showPreview()\n');
 		img = img(:,:,1:3);
 	end
-	set(fh, 'dims', [dims(2) dims(1)]);
+	%set(fh, 'dims', [dims(2) dims(1)]);
 	imshow(img, 'parent', handles.fig_framePreview);
 	gui_setPreviewTitle(get(fh, 'filename'), handles.fig_framePreview);
 
@@ -89,7 +89,9 @@ function [status nh] = gui_showPreview(handles, varargin)
 		bpdims = get(fh, 'dims');
         bpimg  = vec2bpimg(bpvec, bpdims);
 		if(DEBUG)
-			fprintf('%s [%d %d]\n', DSTR, bpdims(1) bpdims(2));
+			sz = size(bpimg);
+			%fprintf('%s frame reports dims as [%d %d]\n', DSTR, bpdims(1), bpdims(2));
+			%fprintf('%s size from bpimg       [%d %d]\n', DSTR, sz(2), sz(1));
 		end
         if(get(handles.chkShowSparse, 'Value'))
             %Check if this is a sparse vector, and show as such in preview

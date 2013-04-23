@@ -25,6 +25,7 @@ function bpimg = vec2bpimg(vec, varargin)
 
 	DISP_WAITBAR = false;
 	FORCE_CHECK  = false;
+	DEBUG        = false;
 
 	error(nargchk(1,5,nargin, 'struct'));
 
@@ -40,6 +41,8 @@ function bpimg = vec2bpimg(vec, varargin)
 					%Use this for sparse vectors that haven't had redundant zero
 					%elements trimmed out
 					FORCE_CHECK  = true;
+				elseif(strncmpi(varargin{k}, 'debug', 5))
+					DEBUG = true;
 				end
 			end
 		end
@@ -47,6 +50,9 @@ function bpimg = vec2bpimg(vec, varargin)
 
 	if(exist('dim','var'))
 		bpimg = zeros(dim(2), dim(1));
+		if(DEBUG)
+			fprintf('DEBUG: vec2bpimg got dims %d x %d\n', dims(2), dims(1));
+		end
 	else
 		if(numel(vec) == 0)
 			fprintf('ERROR: argument vec contains no elements\n');

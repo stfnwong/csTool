@@ -45,3 +45,24 @@ Ideally, the classes should all be usable from the MATLAB prompt without requiri
 GUI. This way, batch processing can be performed in a script without spending time
 drawing any results. This means that the csFrameBrowser class should still be 
 finished at some point, even though it isn't needed for the GUI version of csTool.
+
+
+
+
+ADDITIONS:
+SEGMENTATION:
+- Tiered FPGA mode. This would give us a mode using doubles (classic histogram 
+backprojection), a mode using binary projection, 2-bit projection, 3-bit projection, 
+etc)
+
+- Variable minimum window size. Sizes larger than 16 are probably not worth having,
+but 0, 2, 4, 8, and 16 could be useful
+
+HOW TO BUILD MULTI-TARGET TRACKING INTO CSTOOL?!?!?!?
+
+
+
+
+
+
+INCLUDE FEATURE TO MEASURE PREDICTION PEFORMANCE
