@@ -80,8 +80,6 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
     TRIM = false;
     RTVEC = false;      %Return vector if num pixels is small enough
 
-	VALID_SPFAC = [32 16 8 4 2];
-
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
@@ -109,24 +107,27 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 		end
 	end
 
+	SP_BUFSZ = [64 32 16 8 4 2 1];
+
 	if(exist('bufsz', 'var'))
-		SZ = find(VALID_SPFAC == bufsz);
-		if(isempty(SZ))
+		valid_sz = find(SP_BUFSZ == bufsz, 1);
+		if(isempty(valid_sz))
 			fprintf('Invalid size %d, using default (4)\n', bufsz);
 			SZ = 4;	%turns out (coincidentally) that the index for 4 is also 4
-		end
+		else
+            SZ = bufsz;
+        end
 	else
 		SZ = 4;
 	end
 	%Genrate factors and thresholds for scaling test
-	%NOTE: Rather than actually solve the 'last frame' bug, I've just made the index
-	%here one element larger than it needs to be, hence the +1
-	SP_FACTORS = 2.^(0:(length(VALID_SPFAC(SZ:end)) + 1));
-    SP_THRESH  = (VALID_SPFAC(SZ:end).^2) ./ 2;
-	%SP_THRESH  = 2.^(0:(length(VALID_SPFAC(SZ:end)) + 1));
+    SP_FACTORS = 2.^(length(SP_BUFSZ):-1:0);
+    SP_THRESH  = 2.^(length(SP_BUFSZ):-1:0) ./ 2;
+    %SP_THRESH  = (SP_BUFSZ(SZ:end).^2) ./ 2;
+	%SP_THRESH  = 2.^(0:(length(SP_BUFSZ(SZ:end)) + 1));
 	
-    if(~exist('eps', 'var'))
-        eps = 0;
+    if(~exist('buf_eps', 'var'))
+        buf_eps = 0;
     end
     %NOTE ON USING EPS
     % The point of the eps variable here is to allow some amount of leeway
@@ -136,78 +137,112 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 	[h w d] = size(bpimg);
 	imsz    = h * w;
 	bpsum   = sum(sum(bpimg));
-	spvec   = zeros(2, imsz/4);
-	if(auto)
-		%try to determine parameters automatically
-		for k = SZ:length(VALID_SPFAC)
-			if(bpsum < (imsz/VALID_SPFAC(k)) + eps)
-				if(k == SZ && RTVEC)
-					spvec = bpimg2vec(bpimg);
-					if(nargout > 1)
-						stat_struct.anchor   = 'tl';
-						stat_struct.thresh   = 1;
-						stat_struct.fac      = 1;
-						stat_struct.bpsz     = length(spvec);
-						stat_struct.imsz     = [h w];
-						stat_struct.zerLog   = 0;
-						stat_struct.numZeros = 0;
-						varargout{1}         = stat_struct;
-					end
-					return;
-				else
-                    fprintf('k : %d\n', k);
-                    if(k > numel(SP_FACTORS))
-                        %This hack is stupid - but im tired. fix it
-                        %properly!
-                        fac    = SP_FACTORS(end);
-                        thresh = SP_THRESH(end);
-                    else
-                        fac    = SP_FACTORS(k);
-                        thresh = SP_THRESH(k); %<- STILL ISSUE HERE!!!!
-                    end
-            		break;        	
-				end
-			end 	
-		end
-		
-		%NOTE: I think to the greatest extent possible, we want to avoid using an 
-		%if/else ladder here, as it makes it difficult to change the range of sparse
-		%factors available (need to move largest to top, reorder remainder, etc)
-		
-		%if(bpsum < (imsz/32) + eps)
 
-		%elseif(bpsum < (imsz/16) + eps)
-
-
-		%elseif(bpsum < (imsz/8) + eps)
-
-		%if(bpsum < (imsz/4) + eps)
-        %    if(RTVEC)
-        %        spvec = bpimg2vec(bpimg);
-        %        if(nargout > 1)
-        %        	 stat_struct.anchor   = 'tl';
-        %            stat_struct.thresh   = 1;
-        %            stat_struct.fac      = 1;
-        %            stat_struct.bpsz     = length(spvec);
-        %            stat_struct.imsz     = [h w];
-        %            stat_struct.zeroLog  = 0;
-        %            stat_struct.numZeros = 0;
-        %            varargout{1}         = stat_struct;
-        %        end
-        %        return;
-        %    else
-        %    	fac    = 1;
-        %        thresh = 1;
-        %    end
-		%elseif(bpsum < (imsz/2) + eps)
-		%	fac    = 2;
-		%	thresh = 2;
-		%else
-		%	fac    = 4;
-		%	thresh = 8;
-		%end
-		%anchor = 'tl';
+	if(TRIM)
+		spvec = zeros(2, imsz);	%excess gets cut off anyway
 	end
+
+	% =============================================================================
+	% AUTOMATICALLY DETERMINE PARAMETERS:
+	% =============================================================================
+	% The buffer sizes are sorted from left to right in descending order. We can think
+	% of these values as being a scaling factor of 1/N (so for example, selecting 32 
+	% is really selecting a buffer that is 1/32 the size of the image. Since the 
+	% buffer size can be set from the csToolTrackOpts panel, we first find the index
+	% of the buffer size, and then test the image size with increasingly larger buf
+	% sizes (so 1/16, 1/8, etc...), until the image is larger than the buffer size.
+	% We can then determine the factor to scale by observing how many elements to the
+	% right we are from the sparse size, and reducing the image size by 2 to the power
+	% of that amount.
+	%
+	% EXAMPLE SCALING
+	% Say the buffer size is set at 32 (meaning that the total memory available is 
+	% 1/32 of that required to store the entire image), and that the backprojection 
+	% image contains more than 1/16 available pixels, but less than 1/8. 
+	% We set the initial index to whatever the 1/32 position is, and work our way to 
+	% the right-hand side of the BUFSZ array.
+	%
+	% (1st call) -> if(bpsum < imsz/BUFSZ(k))	%BUFSZ(k) = 32, test fails
+	% (2nd call) -> if(bpsum < imsz/BUFSZ(k+1))	%BUFSZ(k+1) = 16, test fails
+	% (3rd call) -> if(bpsum < imsz/BUFSZ(k+2)) %BUFSZ(k+2) = 8, test succeeds
+	% 
+	% Now we set the scaling factor to be 4, since we moved 2 places to the right in 
+	% the BUFSZ array (2^2). This will rescale vector to fit in buffer. The larger the
+	% target, the more aggresively the image needs to be rescaled. In software, the
+	% more aggressive the scaling factor the long the encoding process will take. In 
+	% hardware, I expect the amount of time to roughly the same 
+	%3
+	% Note that in actual practise, the FPGA needs to do the scaling automatically, so
+	% while forcing a particular size may be useful for investigation, its the auto
+	% scaling that needs to work in the chip to be useful.
+	if(auto)
+		sIdx = find(SP_BUFSZ == SZ);
+		%value should be correct by this point, but check anyway
+		if(isempty(sIdx))
+			fprintf('ERROR: Invalid index %d, exiting...\n', sIdx);
+			%Generate defaults
+			spvec = [];
+			if(nargout > 1)
+				varargout{1} = [];
+			end
+			return;
+		end
+
+		for k = sIdx:length(SP_BUFSZ)
+			if(bpsum < imsz/SP_BUFSZ(k) + buf_eps)
+				%Vector fits into specified buffer
+				if(k == SZ)		%Already small enough to fit
+					if(RTVEC)	%Return original vector
+						spvec = bpimg2vec(bpimg);
+						if(nargout > 1)		%format some stats for sp_stat
+							stat_struct.anchor   = 'tl';
+							stat_struct.thresh   = 1;
+							stat_struct.fac      = 1;
+							stat_struct.bpsz     = length(spvec);
+							stat_struct.imsz     = [h w];
+							stat_struct.zerLog   = 0;
+							stat_struct.numZeros = 0;
+							varargout{1} = stat_struct;
+						end
+						return;
+					end
+					fac = 1;
+					thresh = 1;
+				else
+					fac    = SP_FACTORS(k);
+					thresh = SP_THRESH(k);
+				end
+			end
+		end
+
+		%If we get to here and haven't set any fac or thresh variables, something 
+		%went wrong
+		if(~exist('fac', 'var') || ~exist('thresh', 'var'))
+			%Print appropriate message
+			if(~exist('fac', 'var'))
+				fprintf('ERROR: Unable to set fac in buf_spEncode()\n');
+			end
+			if(~exist('thresh', 'var'))
+				fprintf('ERROR: Unable to set thresh in buf_spEncode()\n');
+			end
+			if(RTVEC)
+				spvec = bpimg2vec(bpimg);
+				if(nargout > 1)		%give back bpvec info
+                    stat_struct.thresh   = 1;
+                    stat_struct.fac      = 1;
+                    stat_struct.bpsz     = length(spvec);
+                    stat_struct.imsz     = [h w];
+                    stat_struct.zerLog   = 0;
+                    stat_struct.numZeros = 0;
+                    varargout{1} = stat_struct;
+				end
+				return;
+			end
+			%if(nargout > 1)	%Give dummy info in spstat
+			%	varargout{1} = [];
+			%end
+		end	
+	end	
 	
 	k        = 1;		%vector index
     numZeros = 0;
@@ -219,7 +254,18 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
     for x = 1:fac:w
         for y = 1:fac:h
             %Need to do bounds check here for block size
-			blk = bpimg(y:y+fac-1, x:x+fac-1);
+            if((x + fac - 1) > w)
+                xrng = x:w;
+            else
+                xrng = x:x+fac-1;
+            end
+            if((y + fac - 1) > h)
+                yrng = y:h;
+            else
+                yrng = y:y+fac-1;
+            end
+            blk = bpimg(yrng, xrng);
+			%blk = bpimg(y:y+fac-1, x:x+fac-1);
 			if(sum(sum(blk)) > thresh)
 				switch anchor
 					case 'tl'

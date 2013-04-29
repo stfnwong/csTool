@@ -75,8 +75,10 @@ function [status] = gui_procLoop(handles, varargin)
 					status = -1;
 					return;
 				end
-				p         = get(pFrame, 'winParams');
-				initParam = p{get(pFrame, 'nIters')};
+                initParam  = get(pFrame, 'winParams');
+				%p         = get(pFrame, 'winParams');
+				%initParam = p{get(pFrame, 'nIters')};
+                
 			end	
 		else
 			rData = handles.rData;
@@ -209,6 +211,8 @@ function [status] = gui_procLoop(handles, varargin)
 						M = 1;
 					else
 						fprintf('ERROR: nIters < 1 in frame %s\n', get(fh(k-1), 'filename'));
+						status = -1;
+						delete(wb);
 						return;
 					end
 				else
@@ -223,16 +227,26 @@ function [status] = gui_procLoop(handles, varargin)
 						[status pParam] = handles.tracker.initWindow('region', handles.rData.rRegion);
 						if(status == -1)
 							fprintf('Even with force, no dice for wparam\n');
+							delete(wb);
 							return;
 						end
 					else
 						fprintf('param %d of frame %s is zeros\n', M, get(fh(k-1), 'filename'));
+						delete(wb);
 						return;
 					end
 				end
 				%All parameters checked - run the actual tracker on this
 				%frame
-				handles.tracker.trackFrame(fh(k), pParam);
+				trFlag = handles.tracker.trackFrame(fh(k), pParam);
+				if(trFlag == -2)
+					%This error code indicates that we will quit the loop early,
+					%returning control to the GUI
+					fprintf('ERROR: Tracking returned status code -2\n');
+					status == -1;
+					delete(wb);
+					return;
+				end
 			end	 
 			if(DEBUG)
 				%Print more detailed error messages in debug mode

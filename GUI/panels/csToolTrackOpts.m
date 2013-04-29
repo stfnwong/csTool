@@ -22,7 +22,7 @@ function varargout = csToolTrackOpts(varargin)
 
 % Edit the above text to modify the response to help csToolTrackOpts
 
-% Last Modified by GUIDE v2.5 17-Apr-2013 21:42:13
+% Last Modified by GUIDE v2.5 28-Apr-2013 12:39:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,16 +83,34 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
     set(handles.etEpsilon,     'String', num2str(tOpts.epsilon));
     set(handles.etThresh,      'String', num2str(tOpts.bpThresh));
     set(handles.etMaxIter,     'String', num2str(tOpts.maxIter));
-    set(handles.etSparseFac,   'String', num2str(tOpts.sparseFac));
+    %set(handles.etSparseFac,   'String', num2str(tOpts.sparseFac));
     set(handles.chkRotMatrix,  'Value',  tOpts.rotMatrix);
     set(handles.chkCordic,     'Value',  tOpts.cordicMode);
 	set(handles.chkVerbose,    'Value',  tOpts.verbose);
     set(handles.chkFixedIter,  'Value',  tOpts.fixedIter);
 	%Set window size methods
-	wMeth = {'Zero Moment', 'Eigenvector length'};
-	rMeth = {'Resize each iter', 'Resize each frame'};
+	wMeth   = {'Zero Moment', 'Eigenvector length'};
+	rMeth   = {'Resize each iter', 'Resize each frame'};
+    spFac   = {'1', '2', '4', '8', '16', '32', '64'};
+    set(handles.pmSparseFac,   'String', spFac);
+    predAmt = {'No Prediction', '1', '2', '4', '8', '16'};
 	set(handles.pmWinMethod,   'String', wMeth);
     set(handles.pmRMeth,       'String', rMeth);
+    set(handles.pmPredWin',    'String', predAmt);
+    %Set the current prediction window size 
+    pmIdx = find(str2double(predAmt) == tOpts.predWindow, 1, 'first');
+    if(isempty(pmIdx))
+        set(handles.pmPredWin, 'Value', 1);
+    else
+        set(handles.pmPredWin, 'Value', pmIdx);
+    end
+    spIdx = find(fix(str2double(spFac)) == tOpts.sparseFac, 1, 'first');
+    if(isempty(spIdx))
+        fprintf('ERROR: Unable to set sparse fac, defaulting to 1\n');
+        set(handles.pmSparseFac, 'Value', 1);
+    else
+        set(handles.pmSparseFac, 'Value', spIdx);
+    end
     %Choose the method currently selected in csTracker object
     %This check is a shortcut to avoid the problem of zero values creeping into the
     %GUI. In actual fact, this is probably result of some old prefs stored on the 
@@ -164,7 +182,15 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
         maxIter = 16;
 		set(handles.etMaxIter, 'String', num2str(maxIter));
     end
-    sparseFac   = str2double(get(handles.etSparseFac, 'String'));
+    predIdx     = get(handles.pmPredWin, 'Value');
+    if(predIdx > 1)
+        predWindow  = str2double(get(handles.pmPredWin, predIdx));
+    else
+        predWindow  = 0;
+    end
+    %sparseFac   = str2double(get(handles.etSparseFac, 'String'));
+    spStr       = get(handles.pmSparseFac, 'String');
+    sparseFac   = str2double(spStr{get(handles.pmSparseFac, 'Value')});
     %Check values - legal values are 32, 16, 8, 4, 2, 1
     rMat        = get(handles.chkRotMatrix, 'Value');
     cordic      = get(handles.chkCordic, 'Value');
@@ -172,6 +198,7 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
 	verbose     = get(handles.chkVerbose, 'Value');
 	wsizeMethod = get(handles.pmWinMethod, 'Value');
     wsizeCont   = get(handles.pmRMeth, 'Value');
+    forceTrack  = get(handles.chkForceTrack, 'Value');
 
     opts        = struct('method', method, ...
                          'epsilon', epsilon, ...
@@ -184,7 +211,9 @@ function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>
                          'fParams', tOpts.fParams, ...
                          'sparseFac', sparseFac, ...
                          'wsizeMethod', wsizeMethod, ...
-                         'wsizeCont', wsizeCont);
+                         'wsizeCont', wsizeCont, ...
+                         'forceTrack', forceTrack, ...
+                         'predWindow', predWindow);
 	handles.output  = opts;
 	guidata(hObject, handles);
 	uiresume(handles.figTrackOpts);
@@ -259,6 +288,14 @@ function pmWinMethod_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+function pmSparseFac_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+function pmPredWin_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
 
 
 %---------------------------------------------------------------%
@@ -276,6 +313,6 @@ function lbTrackMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etSparseFac_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmWinMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmRMeth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
-
-
+function chkForceTrack_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmSparseFac_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmPredWin_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>

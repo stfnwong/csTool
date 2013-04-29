@@ -54,6 +54,7 @@ classdef csTracker < handle
 		ROT_MATRIX;
 		CORDIC_MODE;
 		BP_THRESH;
+		predWindow;
 		%Convergence criteria for mean shift
 		FIXED_ITER;
 		EPSILON;
@@ -64,6 +65,7 @@ classdef csTracker < handle
 		WSIZE_METHOD;
 		WSIZE_CONT;		%Continously resize window (on each iteration) if true.
 						%Default is false (resize at final iteration)
+		FORCE_TRACK;	%Continue tracking next frame even in case of fatal error
 	end
 
 	% METHOD ENUM
@@ -109,12 +111,14 @@ classdef csTracker < handle
 					T.ROT_MATRIX   = 0;
 					T.CORDIC_MODE  = 0;
 					T.BP_THRESH    = 0;
+                    T.predWindow   = 0;
 					T.FIXED_ITER   = 1;
 					T.MAX_ITER     = 8;
 					T.EPSILON      = 0;
 					T.SPARSE_FAC   = 4;
 					T.WSIZE_METHOD = 1;
 					T.WSIZE_CONT   = 1;		%continously re-size the tracking window
+					T.FORCE_TRACK  = 0;
 				case 1
 					if(isa(varargin{1}, 'csTracker'))
 						T = varargin{1};
@@ -129,12 +133,14 @@ classdef csTracker < handle
 						T.ROT_MATRIX   = opts.rotMatrix;
 						T.CORDIC_MODE  = opts.cordicMode;
 						T.BP_THRESH    = opts.bpThresh;
+                        T.predWindow   = opts.predWindow;
 						T.FIXED_ITER   = opts.fixedIter;
 						T.MAX_ITER     = opts.maxIter;
 						T.EPSILON      = opts.epsilon;
 						T.SPARSE_FAC   = opts.sparseFac;
 						T.WSIZE_METHOD = opts.wsizeMethod;
 						T.WSIZE_CONT   = opts.wsizeCont;
+						T.FORCE_TRACK  = opts.forceTrack;
 					end
 				otherwise
 					error('Incorrect input arguments');
@@ -155,12 +161,14 @@ classdef csTracker < handle
                           'fParams'   ,  T.fParams,    ...
                           'cordicMode',  T.CORDIC_MODE, ...
                           'bpThresh'  ,  T.BP_THRESH,   ...
+                          'predWindow',  T.predWindow, ...
                           'fixedIter' ,  T.FIXED_ITER,  ...
                           'maxIter'   ,  T.MAX_ITER,    ...
                           'epsilon'   ,  T.EPSILON,     ...
                           'sparseFac' ,  T.SPARSE_FAC,  ...
                           'wsizeMethod', T.WSIZE_METHOD, ...
-                          'wsizeCont',   T.WSIZE_CONT);
+                          'wsizeCont',   T.WSIZE_CONT, ...
+                          'forceTrack',  T.FORCE_TRACK);
 		end 	%getOpts()
 
 		% ------------------------ %
@@ -194,7 +202,7 @@ classdef csTracker < handle
 		end
 
 		% ---- trackFrame() : PERFORM TRACKING ON FRAME
-		function trackFrame(T, fh, varargin)
+		function status = trackFrame(T, fh, varargin)
 		% TRACKFRAME
 		% Peform tracking computation on the frame handle contained in fh.
 		%
@@ -222,9 +230,14 @@ classdef csTracker < handle
 				return;
 			end
 
-			status = msProcLoop(T, fh, wpos);
-			if(status == -1)
+			plFlag = msProcLoop(T, fh, wpos);
+			if(plFlag == -1)
 				fprintf('WARNING: problem tracking frame %s\n', get(fh, 'filename'));
+			end	
+			if(~T.FORCE_TRACK && plFlag == -1)
+				status = -2;
+			else
+				status = 0;
 			end
 			
 		end 	%trackFrame()

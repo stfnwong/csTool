@@ -1246,7 +1246,11 @@ function bTrackOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		return;
 	end
 	handles.tracker  = csTracker(ts);
-	handles.tracOpts = ts;
+	handles.trackOpts = ts;
+    if(handles.debug)
+        fprintf('DEBUG: trackOpts - \n');
+        disp(handles.trackOpts);
+    end
 	set(handles.trackMethodList, 'Value', ts.method);
 	guidata(hObject, handles);
 	
@@ -1429,22 +1433,20 @@ end
 
 
 % --- Executes on button press in bVerify.
-function bVerify_Callback(hObject, eventdata, handles) %ok <INUSD,DEFNU>
+function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
     %TODO: Call the verify panel
 end     %bVerify_Callback()
 
-
 % --- Executes on button press in chkShowSparse.
-function chkShowSparse_Callback(hObject, eventdata, handles) %ok <INUSD,DEFNU>
+function chkShowSparse_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
 end     %chkShowSparse_Callback()
 
-
 % --------------------------------------------------------------------
-function menu_Tracking_Callback(hObject, eventdata, handles) %ok <INUSL,DEFNU>
+function menu_Tracking_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
 end     %menu_Tracking_Callback()
 
 % --------------------------------------------------------------------
-function menu_DumpTraj_Callback(hObject, eventdata, handles) %ok <INUSL,DEFNU>
+function menu_DumpTraj_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
     %Dump trajectory to file
     %NOTE: At this time, the trajectory is dumped for the range given in
     %the main panel. This menu can (and should) bring up a new panel that
@@ -1482,10 +1484,24 @@ function menu_DumpTraj_Callback(hObject, eventdata, handles) %ok <INUSL,DEFNU>
     fp = fopen('data/traj.dat', 'w');
     fprintf('Writing data to file...\n');
     wb = waitbar(0, 'Writing trajectory file...');
+
+    %First row is traj(1,:)
     for k = 1:length(traj)
-        fprintf(fp, '%f, %f\n', traj(1,k), traj(2,k));
-        waitbar(k/length(traj), wb, sprintf('Writing vector %d of %d...', k, length(traj)));
+        fprintf(fp, '%f ', traj(1,k));
+        waitbar(k/2*length(traj), wb, sprintf('Writing vector %d of %d...', k, 2*length(traj)));
     end
+    fprintf(fp, '\n');
+    %Second row is traj(2,:)
+    for k = 1:length(traj)
+        fprintf(fp, '%f ', traj(2,k));
+        waitbar(k+length(traj)/2*length(traj), wb, sprintf('Writing vector %d of %d...', ...
+                                                   k, 2*length(traj)));
+    end
+
+    %for k = 1:length(traj)
+    %    fprintf(fp, '%f, %f\n', traj(1,k), traj(2,k));
+    %    waitbar(k/length(traj), wb, sprintf('Writing vector %d of %d...', k, length(traj)));
+    %end
     fclose(fp);
     delete(wb);
 

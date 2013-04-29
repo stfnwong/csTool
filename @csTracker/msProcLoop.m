@@ -31,9 +31,13 @@ function status = msProcLoop(T, fh, trackWindow)
 	if(T.method == T.MOMENT_WINACCUM || T.method == T.MOMENT_IMGACCUM)
 		bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
 	elseif(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
-		if(get(fh, 'isSparse') == 0)
+		%if(get(fh, 'isSparse') == 0)
 			bpimg          = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
 			[spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', T.SPARSE_FAC);
+            if(isempty(spstat))
+                status = -1;
+                return;
+            end
 			if(T.verbose)
 				if(spstat.numZeros > 0)
 					fprintf('WARNING: Zeros in spvec\n');
@@ -41,6 +45,7 @@ function status = msProcLoop(T, fh, trackWindow)
                 if(spstat.fac > 1)
                     fprintf('fac: %d (frame %s)\n', spstat.fac, get(fh, 'filename'));
                 end
+                fprintf('spvec has %d elements\n', spstat.bpsz);
 			end
 			zmtrue         = length(get(fh, 'bpVec'));
 			%Check spvec
@@ -49,7 +54,7 @@ function status = msProcLoop(T, fh, trackWindow)
 				status = -1;
 				return;
 			end
-		end
+		%end
 		dims = get(fh, 'dims');
 	elseif(T.method == T.MOMENT_WINVEC)
 		bpvec = get(fh, 'bpVec'); 
@@ -72,6 +77,14 @@ function status = msProcLoop(T, fh, trackWindow)
 				status = -1;
 				return;
 			case T.SPARSE_WINDOW
+                %A BUG IS HERE
+                %To avoid crashing csTool, perform a more graceful exit if
+                %we dont have spvec by this point
+                if(~exist('spvec', 'var'))
+                    fprintf('ERROR: spvec panic!\n');
+                    status = -1;
+                    return;
+                end
 				moments = winAccumVec(T, spvec, trackWindow, dims, 'sp', spstat, 'zm', zmtrue);
 			case T.SPARSE_IMG
 				moments = imgAccumVec(T, spvec, 'sp', spstat);
