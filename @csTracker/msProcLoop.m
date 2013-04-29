@@ -131,8 +131,7 @@ function status = msProcLoop(T, fh, trackWindow)
 					else
 						trackWindow(4) = fix(sqrt(moments(1)));
 						trackWindow(5) = fix(sqrt(moments(1)));
-					end
-					
+					end	
 				case T.EIGENVEC
 					%Make window size based on semi-major/semi-minor axes of ellipse
 					%Enfore minimum window size
