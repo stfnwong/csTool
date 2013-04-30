@@ -6,7 +6,7 @@ function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)
 %
 % ARGUMENTS:
 % imsz - Size of input image in [h w] form.
-% vdim - Vector dimension ('x' or 'y')
+% vdim - Vector dimension. Can be either ('h'/'w'), ('x'/'y'), or ('row'/'col')
 % vlen - Length of vector.
 % N    - Number of pipelines (targets) in system
 % sfac - Scaling factor. Set to 1 to estimate for non-scaling buffer
@@ -42,7 +42,7 @@ function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)
 		pd = 32;
 	end
 
-	if(strncmpi(vdim, 'y', 1))
+	if(strncmpi(vdim, 'y', 1) || strncmpi(vdim, 'h', 1) || strncmpi(vdim, 'col', 3))
 		%Column orientation
 		dv = imsz(1);			%vector dimension is height
 		ds = imsz(2);			%scalar dimension is width
@@ -51,11 +51,13 @@ function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)
 		if(sfac > 1)
 			%Need to account for overhead in buffer
 			vbuf     = (1/sfac) * (((dv/vlen)+1) * ds);
-			adr      = ((dv+1)/vlen) * (dv/vlen)
+			adr      = ((dv+1)/vlen) * (dv/vlen);
 			sbuf     = (dv/vlen) * ds;
-			tracking = N * (vbuf + adr + sbuf);
+			%Need 2 buffers so next frame can be buffered as current frame is read
+			tracking = 2 * N * (vbuf + adr + sbuf);
 		else
-			tracking = N * ((dv/vlen) * ds * vlen);
+			%Need 2 buffers so next frame can be buffered as current frame is read
+			tracking = 2 * N * ((dv/vlen) * ds * vlen);
 		end
 		nbits = common + seg + tracking;
 		if(nargout > 1)
@@ -68,7 +70,7 @@ function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)
 			ramstat.tracking.total = tracking;
 			varargout{1}           = ramstat;
 		end
-	else
+	elseif(strncmpi(vdim, 'x', 1) || strncmpi(vdim, 'w', 1) || strncmpi(vdim,'row',3))
 		%Row orientation
 		dv = imsz(2);			%vector dimension is width
 		ds = imsz(1);			%scalar dimension is width
@@ -76,12 +78,14 @@ function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)
 			stage    = sfac * ds;
 			vbuf     = (1/sfac) * (((dv/vlen) + 1) * ds);
 			adr      = ((dv+1) / vlen) * (dv/vlen);
-			sbuf     = (dv/len) * ds;
-			tracking = N * (stage + vbuf + adr + sbuf);
+			sbuf     = (dv/vlen) * ds;
+			%Need 2 buffers so next frame can be buffered as current frame is read
+			tracking = 2 * N * (stage + vbuf + adr + sbuf);
 		else
-			tracking = N * ((dv/vlen) * ds * vlen);
+			%Need 2 buffers so next frame can be buffered as current frame is read
+			tracking = 2 * N * ((dv/vlen) * ds * vlen);
 		end
-		nbits = tracking
+		nbits = tracking;
 		if(nargout > 1)
 			ramstat.common         = 0;
 			ramstat.seg            = 0;
@@ -93,7 +97,13 @@ function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)
 			ramstat.tracking.total = tracking;
 			varargout{1}           = ramstat;
 		end
-	end	
+	else
+		fprintf('Invalid vector dimension %s\n', vdim);
+		nbits = -1;
+		if(nargout > 1)
+			varargout{1} = -1;
+		end
+	end
 
 	
 

@@ -22,7 +22,7 @@ function varargout = csToolSegOpts(varargin)
 
 % Edit the above text to modify the response to help csToolSegOpts
 
-% Last Modified by GUIDE v2.5 05-Mar-2013 00:05:56
+% Last Modified by GUIDE v2.5 30-Apr-2013 21:48:37
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -222,4 +222,3 @@ function etBlkSz_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
 function etDataSz_Callback(hObject, eventdata, handles)     %#ok<INUSD,DEFNU>
 function etNBins_Callback(hObject, eventdata, handles)  %#ok <INUSD,DEFNU>
 function chkVerbose_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-

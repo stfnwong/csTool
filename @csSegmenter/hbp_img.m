@@ -66,6 +66,10 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 			end
 		end
 	end
-	bpdata = bpimg2vec(bpimg);	
+	if(T.FPGA_MODE)
+		bpdata = bpimg2vec(bpimg);	
+	else
+		bpdata = bpimg2vec(bpimg, 'bpval');
+	end
 
 end 		%hbp_img()

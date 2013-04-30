@@ -93,17 +93,35 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 		ylim(ylim < 1)       = 1;
 		%Initialise moment sums
 		M00 = 0; M10 = 0; M01 = 0; M11 = 0; M20 = 0; M02 = 0;
-		%Find pixels within window region of vector
-		for k = 1:length(bpvec)
-			if(bpvec(1,k) >= xlim(1) && bpvec(1,k) <= xlim(2) && ...
-               bpvec(2,k) >= ylim(1) && bpvec(2,k) <= ylim(2))
-				%This pixel is in window
-				M00 = M00 + 1;
-				M10 = M10 + bpvec(1,k);
-				M01 = M01 + bpvec(2,k);
-				M11 = M11 + bpvec(1,k) .* bpvec(2,k);
-				M20 = M20 + bpvec(1,k) .* bpvec(1,k);
-				M02 = M02 + bpvec(2,k) .* bpvec(2,k);
+		%Check bpvec type for bpval data
+		bpdim = size(bpvec)
+		if(bpdim(1) == 3)
+			%Use bpval instead of 1
+			for k = 1:length(bpvec)
+				if(bpvec(1,k) >= xlim(1) && bpvec(1,k) <= xlim(2) && ...
+                   bpvec(2,k) >= ylim(1) && bpvec(2,k) <= ylim(2))
+					%Pixel is in window
+					M00 = M00 + bpvec(3,k);
+					M10 = M10 + bpvec(1,k)  * bpvec(3,k);
+					M01 = M01 + bpvec(2,k)  * bpvec(3,k);
+					M11 = M11 + (bpvec(1,k) .* bpvec(2,k)) * bpvec(3,k);
+					M20 = M20 + (bpvec(1,k) .* bpvec(1,k)) * bpvec(3,k);
+					M02 = M02 + (bpvec(2,k) .* bpvec(2,k)) * bpvec(3,k);
+				end
+			end
+		else
+			%Find pixels within window region of vector
+			for k = 1:length(bpvec)
+				if(bpvec(1,k) >= xlim(1) && bpvec(1,k) <= xlim(2) && ...
+				   bpvec(2,k) >= ylim(1) && bpvec(2,k) <= ylim(2))
+					%This pixel is in window
+					M00 = M00 + 1;
+					M10 = M10 + bpvec(1,k);
+					M01 = M01 + bpvec(2,k);
+					M11 = M11 + bpvec(1,k) .* bpvec(2,k);
+					M20 = M20 + bpvec(1,k) .* bpvec(1,k);
+					M02 = M02 + bpvec(2,k) .* bpvec(2,k);
+				end
 			end
 		end
 		%if(exist('spstat', 'var'))
