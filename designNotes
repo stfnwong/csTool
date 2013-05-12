@@ -66,3 +66,25 @@ HOW TO BUILD MULTI-TARGET TRACKING INTO CSTOOL?!?!?!?
 
 
 INCLUDE FEATURE TO MEASURE PREDICTION PEFORMANCE
+
+
+
+
+
+
+===============================================================================
+TRAJECTORY
+Need to add a panel that can compare several trajectories against each other (from 
+different tracking algorithms). There should be some buffer that can hold an array of
+co-ordinate pairs from seperate tracking instances (or perhaps they could be written 
+to/read from disk) so that the tracking performance can be compared side-by-side.
+
+In addition to this, the param browser needs to show the centroids and parameters 
+properly, rather than just the backprojection image.
+
+(Trajectory in main window should be plotted over the preview image, not the 
+backprojection image)
+
+
+
+===============================================================================

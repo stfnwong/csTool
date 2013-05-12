@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 28-Mar-2013 13:32:58
+% Last Modified by GUIDE v2.5 02-May-2013 17:58:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -387,10 +387,21 @@ function chkRGB_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 
 % --- Executes when user attempts to close csToolGenerateFig.
-function csToolGenerateFig_CloseRequestFcn(hObject, eventdata, handles)
+function csToolGenerateFig_CloseRequestFcn(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
 % hObject    handle to csToolGenerateFig (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: delete(hObject) closes the figure
 delete(hObject);
+
+
+% --- Executes on button press in bUIgetfile.
+function bUIgetfile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+    %Take filename and path from uigetfile, and place into etWriteFile
+    %String field
+    [fname path] = uiputfile('*.dat', 'Save Vector As...');
+    set(handles.etWriteFile, 'String', sprintf('%s%s', path, fname));
+    guidata(hObject, handles);
+

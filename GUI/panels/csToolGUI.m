@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 23-Apr-2013 12:12:56
+% Last Modified by GUIDE v2.5 02-May-2013 17:44:18
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1531,3 +1531,25 @@ function menu_trackOptions_Callback(hObject, eventdata, handles) %#ok <INUSL,DEF
 	set(handles.trackMethodList, 'Value', ts.method);
 	guidata(hObject, handles);
 end     %menu_trackOptions_Callback(0
+
+
+% --- Executes on button press in bUIgetfile.
+function bUIgetfile_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
+% hObject    handle to bUIgetfile (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over bUIgetfile.
+end     %bUIgetfile_Callback()
+
+function bUIgetfile_ButtonDownFcn(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
+    
+%Take result from file browse and place into etFilePath
+    [fname path] = uigetfile('*.tif', 'Select image file...');
+    set(handles.etFilePath, 'String', sprintf('%s%s', path, fname));
+
+    guidata(hObject, handles);
+
+end     %bUIgetfile_ButtonDownFcn(

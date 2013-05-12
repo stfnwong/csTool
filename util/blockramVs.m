@@ -19,6 +19,7 @@ function [varargout] = blockramVs(imsz, vlen, sfac, range, varargin)
 % Stefan Wong 2013
 
 	PLOT = false;
+	NVS  = false;		%naive vs scaling mode
 
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
@@ -27,6 +28,8 @@ function [varargout] = blockramVs(imsz, vlen, sfac, range, varargin)
 					ah = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'plot', 4))
 					PLOT = true;
+				elseif(strncmpi(varargin{k}, 'nvs', 3))
+					NVS = true;
 				end
 			end
 		end

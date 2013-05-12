@@ -39,20 +39,31 @@ function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)
 		bpp = 8;
 	end
 	if(~exist('pd', 'var'))
-		pd = 32;
+		pd = 34;
 	end
 
+	% ======== COLUMN ORIENTATION ========= %
 	if(strncmpi(vdim, 'y', 1) || strncmpi(vdim, 'h', 1) || strncmpi(vdim, 'col', 3))
-		%Column orientation
 		dv = imsz(1);			%vector dimension is height
 		ds = imsz(2);			%scalar dimension is width
-		common = vlen * ds * bpp;
-		seg    = N * (vlen * pd * bpp);
+		common = vlen * ds * bpp;		%memory required for column buffer
+		seg    = N * (vlen * pd * bpp);	%memory required for each bp pipeline
 		if(sfac > 1)
 			%Need to account for overhead in buffer
 			vbuf     = (1/sfac) * (((dv/vlen)+1) * ds);
 			adr      = ((dv+1)/vlen) * (dv/vlen);
-			sbuf     = (dv/vlen) * ds;
+			if(sfac > vlen)
+				%nr is number of extra rows required
+				if(sfac <= 2*vlen)
+					nr = 1;
+				else
+					nr = 2^(nextpow2(sfac/vlen));
+				end
+				stgbuf = (nr * vlen * img_w) + (vlen * sfac);
+				sbuf   = (dv/vlen) * ds + stgbuf;
+			else
+				sbuf     = (dv/vlen) * ds;
+			end
 			%Need 2 buffers so next frame can be buffered as current frame is read
 			tracking = 2 * N * (vbuf + adr + sbuf);
 		else
@@ -70,17 +81,32 @@ function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)
 			ramstat.tracking.total = tracking;
 			varargout{1}           = ramstat;
 		end
+	% ======== ROW ORIENTATION ======== %
 	elseif(strncmpi(vdim, 'x', 1) || strncmpi(vdim, 'w', 1) || strncmpi(vdim,'row',3))
-		%Row orientation
 		dv = imsz(2);			%vector dimension is width
 		ds = imsz(1);			%scalar dimension is width
 		if(sfac > 1)
 			stage    = sfac * ds;
 			vbuf     = (1/sfac) * (((dv/vlen) + 1) * ds);
 			adr      = ((dv+1) / vlen) * (dv/vlen);
-			sbuf     = (dv/vlen) * ds;
+			if(sfac > vlen)
+				%Number of extra rows required
+				if(sfac <= 2*vlen)
+					nr = 1;
+				else
+					nr = 2^(nextpow2(sfac/vlen));
+				end
+				%In row form, we need to wait for all the data to be available, which
+				%is problematic because our vectors are oriented along the length of
+				%the pipeline. This means we need to buffer up twice as many vectors
+				%every time we want compress the sparse factor.
+				stgbuf = 2 * (nr * vlen * img_w);
+				sbuf   = (dv/vlen) * ds + stgbuf;
+			else
+				sbuf     = (dv/vlen) * ds;
+			end
 			%Need 2 buffers so next frame can be buffered as current frame is read
-			tracking = 2 * N * (stage + vbuf + adr + sbuf);
+			tracking = N*(2*(vbuf + adr + sbuf) + stage);
 		else
 			%Need 2 buffers so next frame can be buffered as current frame is read
 			tracking = 2 * N * ((dv/vlen) * ds * vlen);

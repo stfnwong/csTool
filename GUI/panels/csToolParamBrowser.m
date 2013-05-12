@@ -277,6 +277,7 @@ function str = cstParam_FmtParamString(handles)
         sd = sprintf('Sparse : no');
     end
     dims = get(fh, 'dims');
+	%TODO: The string naming convention used here needs an update...
     ss = sprintf('Frame reports dims [%dx%d]', dims(1), dims(2));
 	sn = sprintf('Iterations in frame ; %d', get(fh, 'nIters'));
     s1 = sprintf('xc : %.1f, yc : %.1f', xc ,yc);

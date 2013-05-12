@@ -22,7 +22,7 @@ function varargout = csToolTrackOpts(varargin)
 
 % Edit the above text to modify the response to help csToolTrackOpts
 
-% Last Modified by GUIDE v2.5 28-Apr-2013 12:39:34
+% Last Modified by GUIDE v2.5 04-May-2013 00:23:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -316,3 +316,8 @@ function pmRMeth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function chkForceTrack_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmSparseFac_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmPredWin_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmAnchorPoint_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmAnchorPoint_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
