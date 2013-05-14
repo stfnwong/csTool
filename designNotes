@@ -88,3 +88,14 @@ backprojection image)
 
 
 ===============================================================================
+
+Some more TODOs for csTool:
+- Change the gui_plotParams() function to display the intermediate iterations properly when used in the csToolParamBrowser panel
+- In the param browser, when the next/prev param buttons are pressed, the preview should be re-drawn with the currently highlighted parameter drawn more prominent than the others. The tracking window should also be shown. Add a checkbox for the 'show as sparse' option as well.
+
+- Create trajectory buffer and trajectory browser. The trajectory browser needs at least 2 figure axes
+	1) Show the trajectories themselves. This is just the squiggly line itself 
+	superimposed on the backprojection image. They could have markers at each point 
+	with the character '1', '2', ..etc to indicate which tracking run they belong to.
+	2) An error window. This unrolls the stream into a straight line and plots the 
+	pixel error at each frame (as a stem plot, for example). 
