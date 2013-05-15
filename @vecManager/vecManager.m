@@ -161,7 +161,7 @@ classdef vecManager
 		% To some extent, this argument is undermined by the implementation of 
 		% vecDiskWrite()
 		
-		function [ftype val] = parseFmt(V, fmt)
+		function [ftype val] = parseFmt(V, fmt) %#ok
 		% PARSEFMT
 		% [ftype val] = parseFmt(fmt)
 		%
@@ -236,16 +236,16 @@ classdef vecManager
 				for k = 1:length(fh)
 					vec  = genRGBVec(V, fh(k), opts);
 					if(~exist('fname', 'var'))
-						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n');
+						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
 						fname = sprintf('%s%02d', str, num);
 					end
-					vecname{1} = sprintf('%s.dat', fname);
+					vecname = {sprintf('%s.dat', fname)};
 					vecDiskWrite(V, vec, 'fname', vecname);
 				end	
 			else
 				vec = genRGBVec(V, fh, opts);
 				if(~exist('fname', 'var'))
-					[ef str num] = fname_parse(get(fh, 'filename'), 'n');
+					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
 					fname = sprintf('%s%02d', str, num);
 				end
 				vecname{1} = sprintf('%s.dat', fname);
@@ -284,9 +284,10 @@ classdef vecManager
 				for k = 1:length(fh)
 					vec  = genHSVVec(fh(k));
 					if(~exist('fname', 'var'))
-						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n');
+						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
 						fname = sprintf('%s%02d', str, num);
 					end
+                    vecnames    = cell(1,3);
 					vecnames{1} = sprintf('%s-hue-frame%02d.dat', fname, k);
 					vecnames{2} = sprintf('%s-sat-frame%02d.dat', fname, k);
 					vecnames{3} = sprintf('%s-val-frame%02d.dat', fname, k);
@@ -295,9 +296,10 @@ classdef vecManager
 			else
 				vec = genHSVVec(fh);
 				if(~exist('fname', 'var'))
-					[ef str num] = fname_parse(get(fh, 'filename'), 'n');
+					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
 					fname = sprintf('%s%02d', str, num);
 				end
+                vecname    = cell(1,3); %NOTE: M-Lint didn't complain about this line
 				vecname{1} = sprintf('%s-hue.dat', fname);
 				vecname{2} = sprintf('%s-sat.dat', fname);
 				vecname{3} = sprintf('%s-val.dat', fname);
@@ -338,7 +340,7 @@ classdef vecManager
 					vec = genHueVec(fh(k), vtype, val, 'scale', 256);
 					if(~exist('fname', 'var'))
 						%Format a string based on filename of original frame
-						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n');
+						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
 						fname = sprintf('%s%02d', str, num);
 					end
 					for n = length(vec):-1:1
@@ -351,7 +353,7 @@ classdef vecManager
 				vec  = genHueVec(V, fh, vtype, val, 'scale', 256);
 				if(~exist('fname', 'var'))
 					%Format a string from original filename
-					[ef str num] = fname_parse(get(fh, 'filename'), 'n');
+					[ef str num] = fname_parse(get(fh, 'filename'), 'n');  %#ok
 					fname = sprintf('%s%02d', str, num);
 				end
 				for n = length(vec):-1:1
@@ -391,7 +393,7 @@ classdef vecManager
 				for k = 1:length(fh)
 					vec  = genBPVec(fh(k), vtype, val);
 					if(~exist('fname', 'var'))
-						[ef str num] = fname_parse(get(fh(k), 'filename'));
+						[ef str num] = fname_parse(get(fh(k), 'filename')); %#ok
 						fname = sprintf('%s%02d', str, num);
 					end
 					for n = length(vec):-1:1
@@ -402,7 +404,7 @@ classdef vecManager
 			else
 				vec = genBPVec(fh, vtype, val);
 				if(~exist('fname', 'var'))
-					[ef str num] = fname_parse(get(fh, 'filename'), 'n');
+					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
 					fname = sprintf('%s%02d', str, num);
 				end
 				for n = length(vec):-1:1
