@@ -256,6 +256,9 @@ function str = cstParam_FmtParamString(handles)
     moments = get(fh, 'moments');
     wparam  = get(fh, 'winParams');
     m       = moments{handles.param};
+    if(numel(m) == 0)
+        fprintf('WARNING: No elements in moment param for frame %s\n', get(fh, 'filename'));
+    end
     if(length(m) == 6)
         xc = m(2)/m(1);
         yc = m(3)/m(1);

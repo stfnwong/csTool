@@ -89,5 +89,5 @@ function status = gui_plotParams(fh, axHandle, varargin)
 	end
 	hold(axHandle, 'off');
 	status = 0;
-
+	
 end 	%gui_plotParams()

@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 02-May-2013 17:44:18
+% Last Modified by GUIDE v2.5 15-May-2013 23:44:57
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1557,3 +1557,27 @@ function bUIgetfile_ButtonDownFcn(hObject, eventdata, handles) %#ok <INUSL,DEFNU
     guidata(hObject, handles);
 
 end     %bUIgetfile_ButtonDownFcn(
+
+
+% --------------------------------------------------------------------
+function menu_SaveFigures_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    %Save the currently displayed figures in the main window to disk
+
+    fnamePreview = 'data/figure_preview.tif';
+    fnameBpimg   = 'data/bp_img_preview.tif';
+    saveas(handles.fig_framePreview, fnamePreview, 'tif');
+    saveas(handles.fig_bpPreview, fnameBpimg, 'tif');
+
+end     %menu_SaveFigures_Callback()
+
+
+% --------------------------------------------------------------------
+function menu_launchFigure_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    %Show the frame preview and backprojection preview in seperate
+    %(full-size) figures
+
+    figure('Name', 'Frame Preview');
+    %take existing contents of fig_framePreview and place in figure
+    figure('Name', 'Backprojection Preview');
+    %take existing contents of fig_bpPreview and place in figure
+end     %menu_launchFigure_Callback()

@@ -263,6 +263,53 @@ classdef csFrameBuffer
 			end
 
 		end 	%showFilename
+
+		% -------- GETTRAJ -------- %
+		function traj = getTraj(F, varargin)
+		% GETTRAJ
+		% Get the trajectory for the frames in the specified range. If the no range is
+		% specified, get the trajectory for all frames in the buffer
+
+			if(~isempty(varargin))
+				range = varargin{1};
+			end
+
+			%Bounds check range, or create if it doesn't exist
+			if(~exist('range', 'var'))
+				range = [1 F.nFrames];
+			else
+				if(length(range) == 1)
+					if(range > F.nFrames)
+						fprintf('range exceeds bounds, truncating...\n');
+						range = [1 F.nFrames];
+					elseif(range < 1)
+						fprintf('ERROR: Must be positive integer\n');
+						traj = [];
+						return;
+					end
+				else
+					if(range(2) > F.nFrames)
+						fprintf('range exceeds bounds, truncating...\n');
+						range = [1 F.nFrames];
+					elseif(range(2) < 1)
+						fprintf('ERROR: Must be positive integer\n');
+						traj = [];
+						return;
+					end
+				end
+			end
+
+			traj = zeros(2, length(range(1):range(2)));
+			n    = 1;
+			for k = range(1):range(2)
+				fh = F.frameBuf(k);
+				wp = get(fh, 'winParams');
+				%traj(1,n) = wp(1);
+				%traj(2,n) = wp(2);
+				traj(:,n) = [wp(1) ; wp(2)];
+			end
+
+		end 	%getTraj()
 		
 		% ---------------------------------- %
 		% -------- SETTER FUNCTIONS -------- %

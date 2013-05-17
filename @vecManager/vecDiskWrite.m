@@ -61,6 +61,9 @@ function status = vecDiskWrite(V, data, varargin)
 			numFmt = 'hex';
 		end
 	end
+	if(DEBUG)
+		fprintf('Number format set to %s\n', numFmt);
+	end
 
 	%Open file pointers
 	for k = length(data):-1:1
