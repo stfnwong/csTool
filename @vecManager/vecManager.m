@@ -14,6 +14,8 @@ classdef vecManager
 		vecdata;
 		vfParams;		%verification parameters structure
 		bpvecFmt;		%character code for backprojection vector format
+		% TRAJECTORY PARAMETERS
+		trajBuf;
 		% DATA PARAMETERS
 		errorTol;		%integer error tolerance in data (ie: +/- errorTol)
 		dataSz;			%size of data word in FPGA
@@ -38,6 +40,7 @@ classdef vecManager
  					V.vecdata   = [];
 					V.vfParams  = [];
 					V.bpvecFmt  = 'scalar';
+					V.trajBuf   = cell(1,1);
 					V.errorTol  = 0;
 					V.dataSz    = 256;
 					V.autoGen   = 0;
@@ -56,6 +59,7 @@ classdef vecManager
 						V.vecdata   = opts.vecdata;
 						V.vfParams  = opts.vfParams;
 						V.bpvecFmt  = opts.bpvecFmt;
+						V.trajBuf   = opts.trajBuf;
 						V.errorTol  = opts.errorTol;
 						V.dataSz    = opts.dataSz;
 						V.autoGen   = opts.autoGen;
@@ -75,6 +79,7 @@ classdef vecManager
                           'vecdata',   V.vecdata,   ...
                           'vfParams',  V.vfParams,  ...
                           'bpvecFmt',  V.bpvecFmt,  ...
+                          'trajBuf',   V.trajBuf, ...
                           'errorTol',  V.errorTol,  ...
                           'autoGen',   V.autoGen,   ...
                           'chkVerbose',V.verbose,  ...
@@ -127,6 +132,68 @@ classdef vecManager
 			V.destDir = dir;
 			VM = V;
 		end 	%setDestDir()
+
+		% ---- METHODS FOR TRAJECTORY BUFFER ---- %
+		function Vout = setTrajBufSize(V, N, varargin)
+		% SETTRAJBUFSIZE
+		% Set the size of the trajectory buffer (how many trajectory slots are
+		% available). Pass the string 'keep' to try and keep the buffer contents.
+		% If the new buffer size is smaller than the old buffer, keep will attempt
+		% to save as many elements as possible, discarding elements that spill over 
+		% the buffer end.
+		
+			if(N < 1)
+				fprintf('Size must be positive integer\n');
+				Vout = V;
+				return;
+			end
+
+			if(~isempty(varargin))
+				if(strncmpi(varargin(1}, 'keep', 4)))
+					%Try and keep the old buffer contents
+					temp = cell(1, length(V.trajBuf));
+					for k = 1:length(V.trajBuf)
+						temp{k} = V.trajBuf{k};
+					end
+					V.trajBuf = cell(1,N);
+					if(N < length(temp))
+						fprintf('WARNING: New buffer is smaller than old, some contents will not be retained\n');
+					end
+					for k = 1:N
+						V.trajBuf{k} = temp{k};
+					end
+				end
+			else
+				V.trajBuf = cell(1,N);
+			end
+			Vout = V;
+		end 	%setTrajBufSize()
+
+		% ---- Write new data into trajectory buffer ---- %
+		function Vout = writeTrajBuf(V, idx, data)
+		% WRITETRAJBUF
+		% Write a new array into the trajectory buffer at index idx
+			if(idx < 1 || idx > length(V.trajBuf))
+				fprintf('ERROR: idx (%d) out of bounds, must be [1 - %d]\n', idx, length(V.trajBuf));
+				Vout = V;
+				return;
+			end
+
+			V.trajBuf{idx} = data;
+			Vout = V;
+		end 	%writeTrajBuf()
+
+		% ---- Read data out of trajectory buffer at index idx ---- %
+		function data = readTrajBuf(V, idx)
+		% READTRAJBUF
+		% Read data out of trajectory buffer from index idx
+			if(idx < 1 || idx > length(V.trajBuf))
+				fprintf('ERROR: idx (%d) out of bounds, must be [1 - %d]\n', idx, length(V.trajBuf));
+				Vout = V;
+				return;
+			end
+			data = V.trajBuf{idx};
+		end 	%readTrajBuf()
 
 		% ---- PROCESSING METHODS ---- %
 		% These methods provide one level of indirection to the methods in files.
