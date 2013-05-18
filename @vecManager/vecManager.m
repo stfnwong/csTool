@@ -16,6 +16,7 @@ classdef vecManager
 		bpvecFmt;		%character code for backprojection vector format
 		% TRAJECTORY PARAMETERS
 		trajBuf;
+		trajLabel;		%labels for GUI
 		% DATA PARAMETERS
 		errorTol;		%integer error tolerance in data (ie: +/- errorTol)
 		dataSz;			%size of data word in FPGA
@@ -41,6 +42,7 @@ classdef vecManager
 					V.vfParams  = [];
 					V.bpvecFmt  = 'scalar';
 					V.trajBuf   = cell(1,1);
+					V.trajLabel = cell(1,1);
 					V.errorTol  = 0;
 					V.dataSz    = 256;
 					V.autoGen   = 0;
@@ -60,6 +62,7 @@ classdef vecManager
 						V.vfParams  = opts.vfParams;
 						V.bpvecFmt  = opts.bpvecFmt;
 						V.trajBuf   = opts.trajBuf;
+						V.trajLabel = opts.trajLabel;
 						V.errorTol  = opts.errorTol;
 						V.dataSz    = opts.dataSz;
 						V.autoGen   = opts.autoGen;
@@ -80,6 +83,7 @@ classdef vecManager
                           'vfParams',  V.vfParams,  ...
                           'bpvecFmt',  V.bpvecFmt,  ...
                           'trajBuf',   V.trajBuf, ...
+                          'trajLabel', V.trajLabel, ...
                           'errorTol',  V.errorTol,  ...
                           'autoGen',   V.autoGen,   ...
                           'chkVerbose',V.verbose,  ...
@@ -151,26 +155,30 @@ classdef vecManager
 			if(~isempty(varargin))
 				if(strncmpi(varargin(1}, 'keep', 4)))
 					%Try and keep the old buffer contents
-					temp = cell(1, length(V.trajBuf));
+					temp = cell(2, length(V.trajBuf));
 					for k = 1:length(V.trajBuf)
-						temp{k} = V.trajBuf{k};
+						temp{1,k} = V.trajBuf{k};
+						temp{2,k} = V.trajLabel{k};
 					end
-					V.trajBuf = cell(1,N);
+					V.trajBuf   = cell(1,N);
+					V.trajLabel = cell(1,N);
 					if(N < length(temp))
 						fprintf('WARNING: New buffer is smaller than old, some contents will not be retained\n');
 					end
 					for k = 1:N
-						V.trajBuf{k} = temp{k};
+						V.trajBuf{k}   = temp{1,k};
+						V.trajLabel{k} = temp{2,k};
 					end
 				end
 			else
-				V.trajBuf = cell(1,N);
+				V.trajBuf   = cell(1,N);
+				V.trajLabel = cell(1,N);
 			end
 			Vout = V;
 		end 	%setTrajBufSize()
 
 		% ---- Write new data into trajectory buffer ---- %
-		function Vout = writeTrajBuf(V, idx, data)
+		function Vout = writeTrajBuf(V, idx, data, varargin)
 		% WRITETRAJBUF
 		% Write a new array into the trajectory buffer at index idx
 			if(idx < 1 || idx > length(V.trajBuf))
@@ -178,11 +186,38 @@ classdef vecManager
 				Vout = V;
 				return;
 			end
+			if(~isempty(varargin))
+				if(strncmpi(varargin{1}, 'label', 5))
+					if(~ischar(varargin{2}))
+						fprintf('Label must be string\n');
+					else
+						V.trajLabel{idx} = varargin{2};
+					end
+				end
+			end
 
 			V.trajBuf{idx} = data;
 			Vout = V;
+
 		end 	%writeTrajBuf()
 
+		% ---- Write only the label to the trajLabel buffer ---- %
+		function Vout = writeTrajBufLabel(V, idx, label)
+		% WRITETRAJBUFLABEL
+		% Write just the label without the data
+			if(idx < 1 || idx > length(V.trajLabel))
+				fprintf('ERROR: idx (%d) out of bounds, must be [1 - %d]\n', idx, length(V.trajLabel));
+				Vout = V;
+				return;
+			end
+			if(~ischar(label))
+				fprintf('ERROR: Label must be string\n');
+				Vout = V;
+				return;
+			end
+			V.trajLabel{idx} = label;
+			
+		end 	%writeTrajBufLabel()
 		% ---- Read data out of trajectory buffer at index idx ---- %
 		function data = readTrajBuf(V, idx)
 		% READTRAJBUF

@@ -99,3 +99,9 @@ Some more TODOs for csTool:
 	with the character '1', '2', ..etc to indicate which tracking run they belong to.
 	2) An error window. This unrolls the stream into a straight line and plots the 
 	pixel error at each frame (as a stem plot, for example). 
+
+
+ROBERT COLLINS MEANSHIFT TARGET LOCALISATION
+(Online Selection of Discriminative Tracking Features)
+
+- In the csTracker class, this needs to be implemented both as is, and with a sparse/scaling vector (since the FPGA implementation will presumably contain a scaling buffer rather than a 1-bit buffer)

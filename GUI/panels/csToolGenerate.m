@@ -84,7 +84,7 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
         return;
     end
     if(~isfield(handles, 'vecManager'))
-        fprintf('ERROR: No vecManager objcet in csToolGenerate()\n');
+        fprintf('ERROR: No vecManager object in csToolGenerate()\n');
 		handles.output = -1;
         delete(handles.csToolGenerateFig);
         return;
