@@ -23,6 +23,14 @@ function vecOpts = init_genVecManagerOpts(DATA_DIR, NO_LOAD)
                          'verbose'  ,  1, ...
                          'errorTol',   0, ...
                          'dataSz'  , 256 );
+        % HACK HACK HACK HACK HACK
+        % Since we seem to have trouble setting the filename here in the
+        % script, test to make sure that the wfilename and rfilename
+        % properties are the correct size
+        s = size(vecOpts);
+        if(s(2) > 1)
+            vecOpts = vecOpts(1);
+        end
 		return;
 	else
 		fprintf('Loading vecManager options from %s...\n', path);

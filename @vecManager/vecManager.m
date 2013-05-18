@@ -153,7 +153,7 @@ classdef vecManager
 			end
 
 			if(~isempty(varargin))
-				if(strncmpi(varargin(1}, 'keep', 4)))
+				if(strncmpi(varargin{1}, 'keep', 4))
 					%Try and keep the old buffer contents
 					temp = cell(2, length(V.trajBuf));
 					for k = 1:length(V.trajBuf)
