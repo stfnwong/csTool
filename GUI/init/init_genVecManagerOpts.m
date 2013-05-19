@@ -11,8 +11,8 @@ function vecOpts = init_genVecManagerOpts(DATA_DIR, NO_LOAD)
 	path = which(sprintf('%s/vecOpts.mat', DATA_DIR));
 	if(isempty(path) || NO_LOAD)
 		fprintf('No vecManager options found - using defaults...\n');
-        tbuf    = cell(1,3);
-        tlab    = cell(1,3);
+        tbuf    = cell(1,8);
+        tlab    = cell(1,8);
 		vecOpts = struct('wfilename', 'wfile.dat', ...
                          'rfilename', 'rfile.dat', ...
                          'destDir',   'data/vectors', ...

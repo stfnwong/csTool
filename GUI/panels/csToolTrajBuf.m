@@ -22,7 +22,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 19-May-2013 16:29:49
+% Last Modified by GUIDE v2.5 19-May-2013 23:31:03
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -50,6 +50,7 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin)
 	% Choose default command line output for csToolTrajBuf
 	handles.debug     = false;
 	handles.trajBuf   = [];		%temporary buffer to hold extracted trajectory
+	handles.compBuf   = [];
 	handles.renderBuf = cell(1,1);
 	handles.errBuf    = [];
 	handles.fbIdx     = 1;
@@ -85,6 +86,9 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin)
 	idxLabel = vmanOpts.trajLabel;
 	set(handles.pmBufIdx, 'String', idxLabel);
 	set(handles.pmBufIdx, 'Value', 1);
+	%Initially, set the compare buffer to the same index
+	set(handles.pmCompIdx, 'String', idxLabel);
+	set(handles.pmCompIdx, 'Value', 1);
 	set(handles.etTrajLabel, 'String', idxLabel{1}); 	
 	% Make the default range the entire buffer
 	set(handles.etRangeLow,  'String', '1');
@@ -132,7 +136,7 @@ function gui_renderPreview(axHandle, fh, idx)
 	if(ef == -1)
 		return;
 	end
-	title(axHandle, sprintf('frame %d (%s_%d)', idx, fname, num);
+	title(axHandle, sprintf('frame %d (%s_%d)', idx, fname, num));
 
 function gui_renderErrorPlot(axHandle, traj, idx, varargin);
 	% Render the error plot of the provided trajectories. traj must be cell array
@@ -212,7 +216,7 @@ function gui_renderTraj(axHandle, traj, idx)
 					return;
 				end
 				hold(axHandle, 'on');
-				ph = plot(axHandle, t(1,:), t(2,:), 'x');
+				ph = plot(axHandle, t(1,:), t(2,:), 'x-');
 				set(ph, 'Color', [0 1 0], 'MarkerSize', 10, 'LineWidth', 2);
 				%Plot the current index differently
 				ih = plot(axHandle, t(1,idx), t(2,idx));
@@ -243,6 +247,22 @@ function gui_renderText(pErr, pTraj)
 function gui_updateTrajlist(hObject, eventdata, handles)
 	% Update the trajectory listbox whenver labels are changed or the buffer 
 	% is resized
+
+function gui_updatePreview(axHandle, fh, idx, traja, trajb)
+	%Pass all 3 axes handles here to save having really long lines at the caller
+	if(length(axHandle) < 3)
+		fprintf('ERROR: Pass in all axes handles in the following order\n');
+		fprintf('axHandle(1) : fig_trajPreview\n');
+		fprintf('axHandle(2) : fig_trajErrorX\n');
+		fprintf('axHandle(3) : fig_trajErrorY\n');
+	end
+	%Update the fig_trajPreview axes
+	gui_renderPreview(axHandle(1), fh, idx);
+	gui_renderTraj(axHandle(1), traja, idx);
+	gui_renderTraj(axHandle(1), trajb, idx);
+	%Update the error plots
+	t  = {traja, trajb};
+	gui_renderErrorPlot([axHandle(1) axHandle(2)], t, idx);
 	
 
 % -------- CALLBACK FUNCTIONS -------- %
@@ -253,7 +273,11 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(handles.fbIdx < N)
 		handles.fbIdx = handles.fbIdx + 1;
 		fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
-		gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
+		%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
+		ah = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+		ta = handles.trajBuf;
+		tb = handles.compBuf;
+		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb);
 	else
 		handles.fbIdx = N;
 	end
@@ -264,7 +288,11 @@ function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(handles.fbIdx > 1)
 		handles.fbIdx = handles.fbIdx - 1;
 		fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
-		gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
+		%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
+		ah = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+		ta = handles.trajBuf;
+		tb = handles.compBuf;
+		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb);
 	else
 		handles.fbIdx = 1;
 	end
@@ -287,9 +315,14 @@ function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 
 function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
-	% Read data out of buffer at current index and place on preview axes.
+	% Reading data out of the vecManager trajectory buffer causes the csToolTrajBuf 
+	% local tracjectory buffer to be overwritten with its contents
 	traj = handles.vecManager.readTrajBuf(handles.fbIdx);
+	handles.trajBuf = traj;
+	%Also update the gui
+	%gui_updatePreview()
 	
+	guidata(hObject, handles);
 
 function bTrajExtract_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Extract current trajectory from frame buffer
@@ -308,15 +341,52 @@ function bSetLabel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	label = get(handles.etTrajLabel, 'String');
 	idx   = get(handles.pmBufIdx, 'Value');
 	handles.vecManager = handles.vecManager.writeTrajBufLabel(idx, label);	
-
+	if(handles.debug)
+		fprintf('Wrote label [%s] to index (%d)\n', label, idx);
+	end
 	guidata(hObject, handles);
 
+function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+	% Plot the two selected trajectories in the preview axes and modify GUI
+	% properties as needed to display trajectory information
+	
+	%Get trajectory A
+	taidx = get(handles.pmBufIdx, 'Value');
+	traja = handles.vecManager.readTrajBuf(taidx);
+	%Get trajectory B
+	if(get(handles.chkCompCur, 'Value'))
+		%Extract the current trajectory from frame buffer and store in next empty 
+		%index in vecManager
+		lr    = str2double(get(etRangeLow, 'String'));
+		hr    = str2double(get(etRangeHigh, 'String'));
+		trajb = handles.frameBuf.getTraj([lr hr]);
+	else
+		%Use the trajectory selected in comp menu
+		tbidx = get(handles.pmCompIdx, 'Value');
+		trajb = handles.vecManager.readTrajBuf(tbidx);
+	end
+
+	%Pre compute error terms and render
+	fh             = handles.frameBuf.getFrameHandle(handles.fbIdx);
+	handles.errBuf = abs(traja - trajb);
+	gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
+	gui_renderTraj(handles.fig_trajPreview, traja, handles.fbIdx);
+	gui_renderTraj(handles.fig_trajPreview, trajb, handles.fbIdx);
+	%Save current selection to trajectory buffer
+	handles.trajBuf = traja;
+	handles.compBuf = trajb;
+		
+	guidata(hObject, handles);
 
 % ---- UNUSED CALLBACKS ---- %
 function etTrajLabel_Callback(hObject, eventdata, handles)%#ok<INUSD, DEFNU>
 function etRangeLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etRangeHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmBufIdx_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function bDone_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function pmCompIdx_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
+
 
 % -------- CREATE FUNCTIONS ------- %
 function etTrajLabel_CreateFcn(hObject, eventdata, handles)
@@ -339,9 +409,16 @@ function etRangeHigh_CreateFcn(hObject, eventdata, handles)
         set(hObject,'BackgroundColor','white');
     end
 
+function pmCompIdx_CreateFcn(hObject, eventdata, handles)
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 
-% --- Executes on button press in bDone.
-function bDone_Callback(hObject, eventdata, handles)
-% hObject    handle to bDone (see GCBO)
+
+% --- Executes on button press in chkCompCur.
+function chkCompCur_Callback(hObject, eventdata, handles)
+% hObject    handle to chkCompCur (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chkCompCur

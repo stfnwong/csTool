@@ -43,6 +43,7 @@ classdef csSegmenter < handle
 		DATA_SZ;
 		BLK_SZ;
 		FPGA_MODE;
+		BP_THRESH;		%if the bin value is less than this value, zero out pixel
 		GEN_BP_VEC;
 		%global settings
 		mGenVec;			%Methods generate vectors
@@ -98,6 +99,7 @@ classdef csSegmenter < handle
 					S.BLK_SZ     = 16;
 					S.N_BINS     = 16;
 					S.FPGA_MODE  = 0;
+					S.BP_THRESH  = 0;
 					%S.GEN_BP_VEC = 0;
 					%Default internals
 					S.method     = 1;
@@ -116,6 +118,7 @@ classdef csSegmenter < handle
 						S.DATA_SZ    = opts.dataSz;
 						S.BLK_SZ     = opts.blkSz;
 						S.FPGA_MODE  = opts.fpgaMode;
+						S.BP_THRESH  = opts.bpThresh;
 						%S.GEN_BP_VEC = opts.gen_bpvec;
 						S.N_BINS     = opts.nBins;
 						S.method     = opts.method;
@@ -155,6 +158,7 @@ classdef csSegmenter < handle
                           'blkSz'   , S.BLK_SZ,    ...
                           'nBins'   , S.N_BINS,    ...
                           'fpgaMode', S.FPGA_MODE, ...
+                          'bpThresh', S.BP_THRESH, ...
                           'method'  , S.method,   ...
                           'mhist'   , S.mhist,    ...
                           'imRegion', S.imRegion, ...

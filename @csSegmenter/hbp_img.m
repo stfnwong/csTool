@@ -62,7 +62,9 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 			%Reference against original pixel to get rid of zeros
 			if(img(y,x) ~= 0)
 				idx        = find(bins > img(y,x), 1, 'first');
-				bpimg(y,x) = rhist(idx);
+				if(rhist(idx) > T.BP_THRESH)
+					bpimg(y,x) = rhist(idx);
+				end
 			end
 		end
 	end

@@ -22,7 +22,7 @@ function varargout = csToolSegOpts(varargin)
 
 % Edit the above text to modify the response to help csToolSegOpts
 
-% Last Modified by GUIDE v2.5 30-Apr-2013 21:48:37
+% Last Modified by GUIDE v2.5 19-May-2013 21:04:44
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -99,6 +99,7 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
     set(handles.etBlkSz, 'String', num2str(sOpts.blkSz));
     set(handles.etDataSz, 'String', num2str(sOpts.dataSz));
     set(handles.etNBins, 'String', num2str(sOpts.nBins));
+    set(handles.etBPTHRESH, 'String', num2str(sOpts.bpThresh));
     %This if/else construction is an attempt to suppress the 'checkbonx
     %control requires a scalar value' warning
     if(sOpts.verbose)
@@ -143,6 +144,7 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
     if(isnan(dataSz) || isempty(dataSz) || isinf(dataSz))
         error('Incorrect value in data size');
     end
+    bpThresh  = str2double(get(handles.etBPTHRESH, 'String'));
     segMethod = get(handles.lbSegMethod, 'Value');
     fpgaMode  = get(handles.chkFPGA, 'Value');
 	verbose   = get(handles.chkVerbose, 'Value');
@@ -153,7 +155,8 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
 	opts      = struct('blkSz',     blkSz, ...
                        'dataSz',    dataSz, ...
                        'nBins',     nBins, ...
-                       'fpgaMode', fpgaMode, ...
+                       'fpgaMode',  fpgaMode, ...
+                       'bpThresh',  bpThresh, ...
                        'method',    segMethod, ...
                        'verbose',   verbose, ...
                        'imRegion',  handles.segopts.imRegion, ...
@@ -222,3 +225,26 @@ function etBlkSz_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
 function etDataSz_Callback(hObject, eventdata, handles)     %#ok<INUSD,DEFNU>
 function etNBins_Callback(hObject, eventdata, handles)  %#ok <INUSD,DEFNU>
 function chkVerbose_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
+
+
+function etBPTHRESH_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+% hObject    handle to etBPTHRESH (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of etBPTHRESH as text
+%        str2double(get(hObject,'String')) returns contents of etBPTHRESH as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function etBPTHRESH_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+% hObject    handle to etBPTHRESH (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
