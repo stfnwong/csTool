@@ -22,7 +22,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 18-May-2013 00:59:38
+% Last Modified by GUIDE v2.5 19-May-2013 16:29:49
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -51,6 +51,7 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin)
 	handles.debug     = false;
 	handles.trajBuf   = [];		%temporary buffer to hold extracted trajectory
 	handles.renderBuf = cell(1,1);
+	handles.errBuf    = [];
 	handles.fbIdx     = 1;
     %Parse optional arguments
     if(~isempty(varargin))
@@ -133,11 +134,22 @@ function gui_renderPreview(axHandle, fh, idx)
 	end
 	title(axHandle, sprintf('frame %d (%s_%d)', idx, fname, num);
 
-function gui_renderErrorPlot(axHandle, traj, idx);
+function gui_renderErrorPlot(axHandle, traj, idx, varargin);
 	% Render the error plot of the provided trajectories. traj must be cell array
 	% We need two axes handles, one to plot errors in x, one to plot errors in y
 	if(length(axHandle) < 2)
 		fprintf('ERROR: Need an axes handle for each axis in error plot\n');
+		return;
+	end
+
+	if(~isempty(varargin))
+		if(strncmpi(varargin{1}, 'label', 5))
+			label = varargin{2};
+		end
+	end
+
+	if(length(axHandle) < length(traj))
+		fprintf('ERROR: More trajectories than axes handle, exiting...\n');
 		return;
 	end
 	
@@ -146,37 +158,28 @@ function gui_renderErrorPlot(axHandle, traj, idx);
 			%Not enough data for errorplot (should this support > 2?)
 			fprintf('traj must contain at at least 2 trajectories\n');
 		else
-			%Bounds check idx
+			%Bounds check idx, axHandle
 			t = trak{1};
 			if(idx < 1 || idx > length(t))
 				fprintf('ERROR: idx out of range, exiting...\n');
 				return;
-			end
-			for k = 1:length(traj)
+			end	
+			for k = 1:length(axHandle)
 				% Take each trajectory out of cell array, and plot x and y on 
 				% seperate axis handles. To hightlight currently selected index, 
 				% create a NaN array and place in the correct position the value 
 				% from the trajectory array, then modify the properties of this single
 				% element stem
-				hold(axHandle(1), 'on');
-				t       = traj{k};
-				% x-axis
-				shx     = stem(axHandle(1), 1:length(t), t(1,:));
-				set(shx, 'Color',[0 0 1],'MarkerFaceColor',[0 1 0],'MarkerSize', 2);
-				px      = NaN * zeros(1,length(t));
-				px(idx) = t(1,idx);
-				shxp    = stem(axHandle(1), 1:length(px), px);
-				set(shxp, 'Color',[0 0 1],'MarkerFaceColor',[1 0 0],'MarkerSize', 10);
-				hold(axHandle(1), 'off');
-				% y-axis
-				hold(axHandle(2), 'on');
-				shy     = stem(axHandle(2), 1:length(t), t(2,:));
-				set(shy,'Color',[0 0 1],'MarkerFaceColor',[0 1 0],'MarkerSize',2);
-				py      = NaN * zeros(1, length(t));
-				py(idx) = t(2,idx);
-				shyp    = stem(axHandle(2), 1:length(py), py);
-				set(shyp, 'Color',[0 0 1],'MarkerFaceColor',[1 0 0],'MarkerSize',10);
-				hold(axHandle(2), 'off');
+				hold(axHandle(k), 'on');
+				t      = traj{k};
+				sh     = stem(axHandle(k), 1:length(t), t(k,:));
+				p      = NaN * zeros(1, length(t));
+				p(idx) = t(k,idx);
+				shp    = stem(axHandle(k), 1:length(p), p);
+				set(sh, 'Color',[0 0 1], 'MarkerFaceColor',[0 1 0], 'MarkerSize', 2);
+				set(shp,'Color',[0 0 1], 'MarkerFaceColor',[1 0 0], 'MarkerSize',10);
+				hold(axHandle(k), 'off');
+			end
 		end
 	else
 		fprintf('traj must be cell, and contain at least 2 trajectories\n');
@@ -185,20 +188,36 @@ function gui_renderErrorPlot(axHandle, traj, idx);
 	guidata(hObject, handles);
 
 
-function gui_renderTraj(axHandle, traj)
+function gui_renderTraj(axHandle, traj, idx)
 	%Place the trajectory on the specified axes handle
 	hold(axHandle, 'on');
 	if(iscell(traj))
 		if(length(traj) < 2)
 			%Still only one trajectory
 			t  = traj{1};
-			ph = plot(t(1,:), t(2,:), 'x');
-			set(ph, 'Color', [1 0 0], 'MarkerSize', 14, 'LineWidth', 2);
+			if(idx < 1 || idx > length(t))
+				fprintf('ERROR: idx out of bounds\n');
+				return;
+			end
+			ph = plot(axHandle, t(1,:), t(2,:), 'x');
+			set(ph, 'Color', [0 1 0], 'MarkerSize', 10, 'LineWidth', 2);
+			%Plot the current index differently
+			ih = plot(axHandle, t(1,idx), t(2,idx));
+			set(ih, 'Color', [1 0 0], 'MarkerSize', 14, 'LineWidth', 4);
 		else	
 			for k = 1:length(traj)
 				t  = traj{k};
+				if(idx < 1 || idx > length(t))
+					fprintf('ERROR: idx out of bounds\n');
+					return;
+				end
+				hold(axHandle, 'on');
 				ph = plot(axHandle, t(1,:), t(2,:), 'x');
-				set(ph, 'Color', [1 0 0], 'MarkerSize', 14, 'LineWidth', 2);
+				set(ph, 'Color', [0 1 0], 'MarkerSize', 10, 'LineWidth', 2);
+				%Plot the current index differently
+				ih = plot(axHandle, t(1,idx), t(2,idx));
+				set(ih, 'Color', [1 0 0], 'MarkerSize', 14, 'LineWidth', 4);
+				hold(axHandle, 'off');
 			end
 		end
 	else
@@ -206,6 +225,24 @@ function gui_renderTraj(axHandle, traj)
 		plot(axHandle, traj(1,:), traj(2,:), 'x', 'Color', [1 0 0], 'MarkerSize', 14, 'LineWidth', 2);
 	end
 	hold(axHandle, 'off');
+
+% Use this method to pre-compute the error value for use in a textbox	
+function errBuf = gui_precompError(traj1, traj2, varargin)
+	%Sanity check
+	if(length(traj1) ~= length(traj2))
+		fprintf('ERROR: trajectory lengths must be equal\b');
+		errBuf = [];
+		return;
+	end
+
+	errBuf = abs(traj1 - traj2);
+
+function gui_renderText(pErr, pTraj)
+	% Update the textbox with trajectory information
+
+function gui_updateTrajlist(hObject, eventdata, handles)
+	% Update the trajectory listbox whenver labels are changed or the buffer 
+	% is resized
 	
 
 % -------- CALLBACK FUNCTIONS -------- %
@@ -250,7 +287,9 @@ function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 
 function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
-	% Read data out of buffer at current index and place on preview axes
+	% Read data out of buffer at current index and place on preview axes.
+	traj = handles.vecManager.readTrajBuf(handles.fbIdx);
+	
 
 function bTrajExtract_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Extract current trajectory from frame buffer
@@ -299,3 +338,10 @@ function etRangeHigh_CreateFcn(hObject, eventdata, handles)
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+
+
+% --- Executes on button press in bDone.
+function bDone_Callback(hObject, eventdata, handles)
+% hObject    handle to bDone (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

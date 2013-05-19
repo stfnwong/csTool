@@ -85,7 +85,10 @@ properly, rather than just the backprojection image.
 (Trajectory in main window should be plotted over the preview image, not the 
 backprojection image)
 
-
+Comparison use:
+ - Get current trajectory
+ - Store into buffer
+ - Compare one buffer index with another (this plots both and highlights currently selected frame)
 
 ===============================================================================
 
