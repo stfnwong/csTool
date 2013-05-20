@@ -321,9 +321,9 @@ function chkUseFrameFilename_Callback(hObject, eventdata, handles) %#ok<INUSL,DE
 %                          RENDER PREVIEW                         %
 % =============================================================== %
 
-function gui_renderPreview(axHandle, fh, mode, idx)
+function gui_renderPreview(axHandle, fh, prevMode, idx)
 
-    if(strncmpi(mode, 'img', 3))
+    if(strncmpi(prevMode, 'img', 3))
         img  = imread(get(fh, 'filename'), 'TIFF');
         dims = size(img);
         if(dims(3) > 3)

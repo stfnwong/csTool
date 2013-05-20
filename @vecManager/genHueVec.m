@@ -1,4 +1,4 @@
-function [vec varargout] = genHueVec(V, fh, vtype, val, varargin)
+function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok
 % GENHUEVEC
 % vec = genHueVec(fh, vtype, val)
 % Generate hue vector for the frame handle fh.
@@ -28,10 +28,14 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin)
 % - 'scalar'          : Single pixel per element 
 % 
 % OUTPUTS
-% vec - Cell array containing formatted data to be written to disk
-%
+% vec    - Cell array containing formatted data to be written to disk
+% status - (Optional) -1 if unsuccessful, 0 otherwise
+% dims   - (Optional) dimensions of hue_img (appears in nargout{2})
 
 % Stefan Wong 2013
+
+%CHANGES: MLINT warning about V argument was suppressed, so that this
+%function is identified as part of vecManager class
 
 	%SCALE_HUE = false;
 	
@@ -137,10 +141,19 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin)
 			%Extract raster data
 			for y = 1:img_h
 				for x = 1:img_w
-					data(y,x) = hue_img(y,x);
+					data(p) = hue_img(y,x);
 					waitbar(p/t, wb, sprintf('Generating raster vector (%d/%d)', ...
                                      p, t));
 					p = p + 1;
+                    if(p > length(data)+1)      %DEBUG: see what happens with +1
+                        fprintf('ERROR: Pointer exceeds data\n');
+                        delete(wb);
+                        vec = [];
+						if(nargout > 1)
+							varargout{1} = -1;
+						end
+                        return;
+                    end
 				end
 			end
 			vec = data;
@@ -154,6 +167,11 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin)
 				varargout{1} = -1;
 			end
 			return;
+	end
+
+	%Check if we want to send dims back to caller
+	if(nargout > 2)
+		varargout{2} = [img_w img_h];
 	end
 
 end 	%genHueVec()

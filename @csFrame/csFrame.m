@@ -233,7 +233,8 @@ classdef csFrame < hgsetget
 			else
 				fprintf('dims  : Not set\n');
 			end
-			params = cf.winParams{end}; 
+			%params = cf.winParams{end}; 
+            params = cf.winParams;
             wsz    = size(params);
 			if(wsz(2) > 1)
 				fprintf('TRACKING WINDOW PARAMETERS:\n');

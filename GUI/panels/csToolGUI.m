@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 15-May-2013 23:44:57
+% Last Modified by GUIDE v2.5 20-May-2013 00:21:24
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1542,21 +1542,24 @@ function bUIgetfile_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
 % hObject    handle to bUIgetfile (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-
-% --- If Enable == 'on', executes on mouse press in 5 pixel border.
-% --- Otherwise, executes on mouse press in 5 pixel border or over bUIgetfile.
-end     %bUIgetfile_Callback()
-
-function bUIgetfile_ButtonDownFcn(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
-    
-%Take result from file browse and place into etFilePath
     [fname path] = uigetfile('*.tif', 'Select image file...');
     set(handles.etFilePath, 'String', sprintf('%s%s', path, fname));
 
     guidata(hObject, handles);
 
-end     %bUIgetfile_ButtonDownFcn(
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over bUIgetfile.
+end     %bUIgetfile_Callback()
+
+% function bUIgetfile_ButtonDownFcn(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
+%     
+% Take result from file browse and place into etFilePath
+%     [fname path] = uigetfile('*.tif', 'Select image file...');
+%     set(handles.etFilePath, 'String', sprintf('%s%s', path, fname));
+% 
+%     guidata(hObject, handles);
+% 
+% end     %bUIgetfile_ButtonDownFcn()
 
 
 % --------------------------------------------------------------------
@@ -1581,3 +1584,26 @@ function menu_launchFigure_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFN
     figure('Name', 'Backprojection Preview');
     %take existing contents of fig_bpPreview and place in figure
 end     %menu_launchFigure_Callback()
+
+
+% --------------------------------------------------------------------
+function menu_trajBuf_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
+    %Launch the trajectory browser (csToolTrajBuf)
+
+    if(handles.debug)
+        tbstruct = csToolTrajBuf(handles.frameBuf, handles.vecManager, 'debug');
+    else
+        tbstruct = csToolTrajBuf(handles.frameBuf, handles.vecManager);
+    end
+    %Check structure fields
+    if(~isfield('vecManager', tbstruct))
+        fprintf('ERROR: No vecManager in return struct from csToolTrajBuf()\n');
+        return;
+    end
+    if(~isfield('frameBuf', tbstruct))
+        fprintf('ERROR: No csFrameBuffer is return struct from csToolTrajBuf()\n');
+        return;
+    end
+    
+    guidata(hObject, handles);
+end 

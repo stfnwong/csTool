@@ -19,7 +19,7 @@ function status = verifyBPVec(V, fh, vec, varargin)
 % Stefan Wong 2012
 
 
-	type   = 'col';
+	vtype   = 'col';
 	sparse = 0;
 	%Parse optional arguments
 	if(nargin > 3)
@@ -29,7 +29,7 @@ function status = verifyBPVec(V, fh, vec, varargin)
 					if(~ischar(varargin{k+1}))
 						error('Type must be string (row or col');
 					else
-						type = varargin{k+1};
+						vtype = varargin{k+1};
 					end
 				elseif(strncmpi(varargin{k}, 'sparse', 6))
 					fac    = varargin{k+1};

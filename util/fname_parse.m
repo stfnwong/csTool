@@ -88,6 +88,10 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 		end
 		return;
 	end
+    %Take the last underscore character in string if there's more than one
+    if(length(usIdx) > 1)
+        usIdx = usIdx(end);
+    end
 	if(DEBUG)
 		fprintf('DEBUG:usIdx = %d\n', usIdx);
 	end

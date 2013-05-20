@@ -41,8 +41,8 @@ classdef vecManager
  					V.vecdata   = [];
 					V.vfParams  = [];
 					V.bpvecFmt  = 'scalar';
-					V.trajBuf   = cell(1,1);
-					V.trajLabel = cell(1,1);
+					V.trajBuf   = cell(1,8);
+					V.trajLabel = cell(1,8);
 					V.errorTol  = 0;
 					V.dataSz    = 256;
 					V.autoGen   = 0;
@@ -61,8 +61,13 @@ classdef vecManager
 						V.vecdata   = opts.vecdata;
 						V.vfParams  = opts.vfParams;
 						V.bpvecFmt  = opts.bpvecFmt;
-						V.trajBuf   = opts.trajBuf;
-						V.trajLabel = opts.trajLabel;
+						%V.trajBuf   = opts.trajBuf;
+						%V.trajLabel = opts.trajLabel;
+						if(isfield(opts, 'bufSize'))
+							V.trajBuf = cell(1,opts.bufSize);
+						else
+							V.trajBuf = cell(1,8);
+						end
 						V.errorTol  = opts.errorTol;
 						V.dataSz    = opts.dataSz;
 						V.autoGen   = opts.autoGen;
@@ -82,8 +87,8 @@ classdef vecManager
                           'vecdata',   V.vecdata,   ...
                           'vfParams',  V.vfParams,  ...
                           'bpvecFmt',  V.bpvecFmt,  ...
-                          'trajBuf',   V.trajBuf, ...
-                          'trajLabel', V.trajLabel, ...
+                          'trajBuf',   {V.trajBuf}, ...
+                          'trajLabel', {V.trajLabel}, ...
                           'errorTol',  V.errorTol,  ...
                           'autoGen',   V.autoGen,   ...
                           'chkVerbose',V.verbose,  ...
@@ -97,6 +102,10 @@ classdef vecManager
 		function rfilename = getRfilename(V)
 			rfilename = V.rfilename;
 		end
+		
+		function sz = getTrajBufSize(V)
+			sz = length(V.trajBuf);
+		end 	
 
 		function auto = checkAutoGen(V)
 			auto = V.autoGen;
@@ -216,6 +225,7 @@ classdef vecManager
 				return;
 			end
 			V.trajLabel{idx} = label;
+            Vout = V;
 			
 		end 	%writeTrajBufLabel()
 		% ---- Read data out of trajectory buffer at index idx ---- %
@@ -224,7 +234,7 @@ classdef vecManager
 		% Read data out of trajectory buffer from index idx
 			if(idx < 1 || idx > length(V.trajBuf))
 				fprintf('ERROR: idx (%d) out of bounds, must be [1 - %d]\n', idx, length(V.trajBuf));
-				Vout = V;
+				data = [];
 				return;
 			end
 			data = V.trajBuf{idx};
@@ -440,6 +450,10 @@ classdef vecManager
 				for k = 1:length(fh)
 					%DEBUG: Test with 256 scale factor
 					vec = genHueVec(fh(k), vtype, val, 'scale', 256);
+                    if(isempty(vec))
+                        fprintf('ERROR: genHueVec failed to generate well formed vector\n');
+                        return;
+                    end
 					if(~exist('fname', 'var'))
 						%Format a string based on filename of original frame
 						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
@@ -448,11 +462,19 @@ classdef vecManager
 					for n = length(vec):-1:1
 						vecnames{n} = sprintf('%s-vec%02.dat', fname, n);
 					end
-					vecDiskWrite(V, vec, 'fname', vecnames);
+                    if(iscell(vec))
+                        vecDiskWrite(V, vec, 'fname', vecnames);
+                    else
+                        vecDiskWrite(V, {vec}, 'fname', vecnames);
+                    end
 				end
 			else
 				%DEBUG: Test with 256 scale factor
 				vec  = genHueVec(V, fh, vtype, val, 'scale', 256);
+                if(isempty(vec))
+                    fprintf('ERROR: genHueVec failed to generate well formed vector\n');
+                    return;
+                end
 				if(~exist('fname', 'var'))
 					%Format a string from original filename
 					[ef str num] = fname_parse(get(fh, 'filename'), 'n');  %#ok
@@ -461,7 +483,11 @@ classdef vecManager
 				for n = length(vec):-1:1
 					vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
 				end
-                vecDiskWrite(V, vec, 'fname', vecnames);
+                if(iscell(vec))
+                    vecDiskWrite(V, vec, 'fname', vecnames);
+                else
+                    vecDiskWrite(V, {vec}, 'fname', vecnames);
+                end
 			end
 		end 	%writeHueVec()
 		
