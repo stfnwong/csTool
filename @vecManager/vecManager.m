@@ -64,9 +64,11 @@ classdef vecManager
 						%V.trajBuf   = opts.trajBuf;
 						%V.trajLabel = opts.trajLabel;
 						if(isfield(opts, 'bufSize'))
-							V.trajBuf = cell(1,opts.bufSize);
+							V.trajBuf   = cell(1,opts.bufSize);
+							V.trajLabel = cell(1, opts.bufSize);
 						else
-							V.trajBuf = cell(1,8);
+							V.trajBuf   = cell(1,8);
+							V.trajLabel = cell(1,8);
 						end
 						V.errorTol  = opts.errorTol;
 						V.dataSz    = opts.dataSz;
@@ -147,7 +149,7 @@ classdef vecManager
 		end 	%readTrajBuf()
 
 		% ---- Read labels out of trajectory buffer ---- %
-		function label = readTrajBufLabel(V, idx)
+		function label = getTrajBufLabel(V, idx)
 		% READTRAJBUFLABEL
 		% Read label out of label buffer from index idx. idx can be a scalar to
 		% address a single index, a vector to address particular indicies, or a range
@@ -302,6 +304,46 @@ classdef vecManager
             Vout = V;
 			
 		end 	%writeTrajBufLabel()
+	
+		function Vout = clearTrajBuf(V, idx)
+		% CLEARTRAJBUF
+		% Clear the trajectory buffer contents at index idx. idx can be either a 
+		% scalar to delete a single element, a vector to delete multiple elements,
+		% or a range to delete all elements between [rl rh]. Pass the string 'all'
+		% as the argument to idx to clear all elements of the buffer. Cleared 
+		% elements of the buffer are set to the empty string. The corresponding 
+		% label is also cleared
+
+			if(strncmpi(idx, 'all', 3))	
+				for k = 1:length(V.trajBuf)
+					V.trajBuf{k}   = [];
+					V.trajLabel{k} = [];
+				end
+			elseif(isscalar(idx))
+				if(idx < 1 || idx > length(V.trajBuf))
+					fprintf('ERROR: idx (%d) out of range, must be [1 - %d]\n', idx, length(V.trajBuf))
+					Vout = V;
+					return;
+				end
+				V.trajBuf{idx}   = [];
+				V.trajLabel{idx} = [];
+			else
+				if(length(idx) > 2)
+					for k = 1:length(idx)
+						V.trajBuf{idx(k)}   = [];
+						V.trajLabel{idx(k)} = [];		
+					end
+				else
+					for k = idx(1):idx(2)
+						V.trajBuf{k}   = [];
+						V.trajLabel{k} = [];
+					end
+				end
+			end
+			Vout = V;
+
+		end 	%clearTrajBuf()
+			
 
 
 		% ---- PROCESSING METHODS ---- %
