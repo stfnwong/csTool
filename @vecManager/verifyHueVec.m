@@ -18,7 +18,7 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 % status - -1 if unsuccessful, 0 otherwise
 % 
 % OPTIONAL OUTPUTS
-%
+% vec    - Return the error vector to the caller
 %
 
 % Stefan Wong 2013
@@ -71,18 +71,70 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 
 	%Perform verification step
 	switch(vtype)
+		% Data stream coming out of testbenches should be a series of scalar pixel 
+		% values. The vector will be split across multiple files, and pointer will
+		% advance each stream (ie: each vector element) simultaneously. 
 		case 'row'
+			[refVec status dims] = genHueVec(V, fh, vtype, val, 'scale' S_FAC);
+			if(status == -1)
+				fprintf('ERROR: genHueVec() produced badly-formed vector\n');
+				if(nargout > 1)
+					varargout{1} = -1;
+				end
+				vec = [];
+				return;
+			end
+			%dims should have format [w h]
+			rdim = dims(1) / val;
+			vec  = cell(1,rdim);
+
+
 		case 'col'
+			[refVec status dims] = genHueVec(V, fh, vtype, val, 'scale', S_FAC);
+			if(status == -1)
+				fprintf('ERROR: genHueVec() produced badly-formed vector\n');
+				if(nargout > 1)
+					varargout{1} = -1;
+				end
+				vec = [];
+				return;
+			end
+			cdim   = dims(2) / val;
+			vec    = cell(1,cdim);
+			errVec = cell(1,cdim);		%trim this array at the end of operation 
+			for k = 1:cdim
+				%Extract current cell from reference array and compare to elements 
+				%of the test array 
+			end
+
 		case 'scalar'
 			%Generate a hue vector to compare against
-			[refVec status dims] = genHueVec(V, fh, 'scalar', 1, 'scale', scale);
+			[refVec status dims] = genHueVec(V, fh, 'scalar', 1, 'scale', S_FAC);
 			if(status == -1)
 				fprintf('ERROR: genHueVec() produced badly-formed vector\n';
 				if(nargout > 1)
 					varargout{1} = -1;
 				end
+				vec = [];
 				return;
 			end
+			%TODO: Further massaging here
+			errVec = zeros(1,length(vec));
+			numErr = 0;
+			for k = 1:length(vec)
+				if(refVec(k) ~= vec(k))
+					numErr = numErr + 1;
+					errVec(numErr) = 1;
+				end
+			end
+	
+			%Trim errVec
+			if(numErr < 1)
+				errVec = [];
+			elseif(numErr < length(errVec))
+				errVec = errVec(1:numErr);
+			end
+				
 			
 		otherwise
 			fprintf('ERROR: Invalid type %s\n', vtype);

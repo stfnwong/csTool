@@ -151,7 +151,6 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     % Update handles structure
     guidata(hObject, handles);
     uiwait(handles.csToolGenerateFig);
-    %uiwait(hObject);
 
 
 

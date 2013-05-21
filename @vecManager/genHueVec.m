@@ -36,6 +36,8 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok
 
 %CHANGES: MLINT warning about V argument was suppressed, so that this
 %function is identified as part of vecManager class
+% TODO: The documentation is out of date - the fmt string has been replaced by vtype
+% and val arguments (see code for details)
 
 	%SCALE_HUE = false;
 	

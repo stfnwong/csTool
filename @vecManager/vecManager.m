@@ -102,10 +102,84 @@ classdef vecManager
 		function rfilename = getRfilename(V)
 			rfilename = V.rfilename;
 		end
+	
+		% -------- TRAJECTORY BUFFER -------- %
 		
+		% ---- Get size of trajectory buffer ---- %
 		function sz = getTrajBufSize(V)
 			sz = length(V.trajBuf);
 		end 	
+
+		% ---- Read data out of trajectory buffer at index idx ---- %
+		function data = readTrajBuf(V, idx)
+		% READTRAJBUF
+		% Read data out of trajectory buffer from index idx. idx can be a scalar to
+		% address a single index, a vector to address particular indicies, or a range
+		% to address between [rl rh]. Passing the string 'all' as idx causes the 
+		% entire cell array to be returned
+		%
+		
+			if(strncmpi(idx, 'all', 3))
+				data = V.trajBuf;
+			elseif(isscalar(idx))
+				if(idx < 1 || idx > length(V.trajBuf))
+					fprintf('ERROR: idx (%d) out of bounds, must be [1 - %d]\n', idx, length(V.trajBuf));
+					data = [];
+					return;
+				end
+				data = V.trajBuf{idx};
+			else
+				if(length(idx) > 2)
+					data = cell(1, length(idx));
+					for k = 1:length(idx)
+						data{k} = V.trajBuf{idx(k)};
+					end
+				else
+					data = cell(1, length(idx(1):idx(2)));
+					n    = 1;
+					for k = idx(1):idx(2)
+						data{n} = V.trajBuf{k};
+						n = n +1;
+					end
+				end
+			end
+
+		end 	%readTrajBuf()
+
+		% ---- Read labels out of trajectory buffer ---- %
+		function label = readTrajBufLabel(V, idx)
+		% READTRAJBUFLABEL
+		% Read label out of label buffer from index idx. idx can be a scalar to
+		% address a single index, a vector to address particular indicies, or a range
+		% to address between [rl rh]. Passing the string 'all' as idx causes the 
+		% entire cell array to be returned
+		
+			if(strncmpi(idx, 'all', 3))
+				label = V.trajLabel;
+			elseif(isscalar(idx))
+				if(idx < 1 || idx > length(V.trajLabel))
+					fprintf('ERROR: idx (%d) out of bounds, must be [1 - %d]\n', idx, length(V.trajLabel))
+					label = [];
+					return;
+				end
+				label = V.trajLabel{idx};
+			else
+				if(length(idx) > 2)
+					label = cell(1, length(idx));
+					for k = 1:length(idx)
+						label{k} = V.trajLabel{idx(k)};
+					end
+				else
+					label = cell(1, length(idx(1):idx(2)));
+					n     = 1;
+					for k = idx(1):idx(2)
+						data{n} = V.trajBuf{k};
+					end
+				end
+			end
+	
+		end 	%readTrajLabel()
+
 
 		function auto = checkAutoGen(V)
 			auto = V.autoGen;
@@ -228,17 +302,7 @@ classdef vecManager
             Vout = V;
 			
 		end 	%writeTrajBufLabel()
-		% ---- Read data out of trajectory buffer at index idx ---- %
-		function data = readTrajBuf(V, idx)
-		% READTRAJBUF
-		% Read data out of trajectory buffer from index idx
-			if(idx < 1 || idx > length(V.trajBuf))
-				fprintf('ERROR: idx (%d) out of bounds, must be [1 - %d]\n', idx, length(V.trajBuf));
-				data = [];
-				return;
-			end
-			data = V.trajBuf{idx};
-		end 	%readTrajBuf()
+
 
 		% ---- PROCESSING METHODS ---- %
 		% These methods provide one level of indirection to the methods in files.
