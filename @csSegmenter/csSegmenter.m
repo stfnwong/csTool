@@ -139,25 +139,25 @@ classdef csSegmenter < handle
 		end 	%csSegmenter CONSTRUCTOR
 
 		% ---- GETTER METHODS ----- %
-		function mhist = getMhist(T)
+		function mhist = getMhist(S)
 			mhist = S.mhist;
 		end	
 	
-		function dataSz = getDataSz(T)
+		function dataSz = getDataSz(S)
 			dataSz = S.DATA_SZ;
 		end
 
-        function region = getImRegion(T)
+        function region = getImRegion(S)
             region = S.imRegion;
         end
 
-		function verbose = getVerbose(T)
+		function verbose = getVerbose(S)
 			verbose = S.verbose;
 		end
 	
 		% ---- disp(T) : DISPLAY METHOD
-		function disp(T)
-			csSegmenter.segDisplay(T);
+		function disp(S)
+			csSegmenter.segDisplay(S);
 		end 	%disp()
 
 		% ---- getOpts() : GET A COMPLETE OPTIONS STRUCT (for csToolGUI)
@@ -179,7 +179,7 @@ classdef csSegmenter < handle
 		function varargout = genMhist(S, img, imRegion, varargin)
 
 			if(~isempty(varargin))
-				if(strncmpi(varargin{k}, 'set', 3))
+				if(strncmpi(varargin{1}, 'set', 3))
 					hSet = true; 	%save histogram in S.mhist
 				end
 			else
@@ -226,7 +226,7 @@ classdef csSegmenter < handle
 		end 	%genMhist()
 
 		% ---- INTERFACE METHODS ----- %
-		function segFrame(T, fh)
+		function segFrame(S, fh)
 			% CSSEGMENTER.SEGFRAME
 			% segFrame(S, fh)
 			%
@@ -288,7 +288,7 @@ classdef csSegmenter < handle
 		end 	%frameSegment()
 
 		% ---- SETTER METHODS ----- %
-		function setImRegion(T, imregion)
+		function setImRegion(S, imregion)
 		% SETIMREGION
 		%
 		% Set a new image region to generate model histogram from. The 
@@ -307,7 +307,7 @@ classdef csSegmenter < handle
 		end 	%setImRegion()
 		
 		% ---- setDataSz() : SET WORD SIZE FOR FPGA MODE 
-		function setDataSz(T, size)
+		function setDataSz(S, size)
 		
 			if(isdouble(size))
 				size = uint8(size);
@@ -316,11 +316,11 @@ classdef csSegmenter < handle
 		end 	%setDataSize()
 
 		% ---- setSegMethod() : SET SEGMENTATION METHOD 
-        function setSegMethod(T, method)
+        function setSegMethod(S, method)
             S.method = method;
         end     %setSegMethod();
 
-		function setVerbose(T, verbose)
+		function setVerbose(S, verbose)
 			S.verbose = verbose;
 		end
 
@@ -330,18 +330,18 @@ classdef csSegmenter < handle
 	% ---- METHODS IN FILES ---- % 
 	methods (Access = 'private')
 		% ---- hbp_img()   : HISTOGRAM BACKPROJECTION OVER IMAGE
-		[bpdata rhist] = hbp_img(T, img, mhist);
+		[bpdata rhist] = hbp_img(S, img, mhist);
 		% ---- hbp_block() : HISTOGRAM BACKPROJECTION PER BLOCK
-		[bpdata rhist] = hbp_block(T, img, mhist);
+		[bpdata rhist] = hbp_block(S, img, mhist);
 		% ---- hbp_row()   : HISTOGRAM BACKPROJECTION PER ROW
-		[bpdata rhist] = hbp_row(T, img, mhist);
+		[bpdata rhist] = hbp_row(S, img, mhist);
 	end 		%csSegmenter METHODS (Private)
 
 	methods (Static)
 		%Options parser
 		sOpt = optParser(options);
 		%display function
-		segDisplay(T);
+		segDisplay(S);
 	end 		%csSegmenter METHODS (Static)
 
 

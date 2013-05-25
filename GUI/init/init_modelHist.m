@@ -70,9 +70,10 @@ function [status nh varargout] = init_modelHist(handles, region, idx, varargin)
 	if(rSet)
 		handles.segmenter.setImRegion(region);
 	end
-	handles.segmenter.genMhist(hue_img, region);
+	mhist = handles.segmenter.genMhist(hue_img, region, 'set');
 	if(nargout > 2)
-		varargout{1} = handles.segmenter.getMhist();
+		%varargout{1} = handles.segmenter.getMhist();
+        varargout{1} = mhist;
 	end
 	
 	status = 0;

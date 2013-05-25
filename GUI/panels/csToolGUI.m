@@ -1108,7 +1108,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				end
 				handles.rData = rData;
 				%Set imRegion in segmenter and create model histogram
-				[status nh mhist] = init_modelHist(handles, rData.rRegion, frameIndex);
+				[status nh mhist] = init_modelHist(handles, rData.rRegion, frameIndex, 'set');
 				if(status == -1)
 					return;
 				end

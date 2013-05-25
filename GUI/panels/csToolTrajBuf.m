@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 22-May-2013 02:24:03
+% Last Modified by GUIDE v2.5 26-May-2013 00:31:11
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -314,7 +314,7 @@ function stats = gui_renderText(pErr, pTraj)
             %just place the trajectory information in listbox
             stats = cell(1, length(pTraj));
             for k = 1:length(stats)
-                stats{k} = sprintf('[%3d] x: %f y: %f', k, pTraj(1,k), pTraj(2,k));
+                stats{k} = sprintf('[%3d] x: %3.2f y: %3.2f', k, pTraj(1,k), pTraj(2,k));
             end
         else
             %format the string to have error terms on end
@@ -324,7 +324,7 @@ function stats = gui_renderText(pErr, pTraj)
             end
             stats = cell(1, length(pTraj));
             for k = 1:length(stats)
-                stats{k} = sprintf('[%3d] x: %f y: %f | err: %f', k, pTraj(1,k), pTraj(2,k), pErr(k));
+                stats{k} = sprintf('[%3d] x: %3.2f y: %3.2f | err(x): %3.2f err(y): %3.2f', k, pTraj(1,k), pTraj(2,k), pErr(1,k), pErr(2,k));
             end
         end
 
@@ -422,7 +422,7 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     %Update current frame text
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 	guidata(hObject, handles);
-	uiresume(handles.fig_trajBuf);
+	%uiresume(handles.fig_trajBuf);
 
 function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Bounds check and decrement frame index
@@ -445,6 +445,71 @@ function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
+
+
+
+function bLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    %Go straight to the last frame
+    handles.fbIdx = handles.frameBuf.getNumFrames();
+    %Update previews
+    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+    ta  = handles.trajBuf;
+    tb  = handles.compBuf;
+    err = handles.errBuf;
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+
+    %Update text position
+    if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
+        set(handles.lbTrajStats, 'Value', handles.fbIdx);
+    end
+    set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
+    guidata(hObject, handles);
+
+
+function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    %Go straight to the first frame
+    handles.fbIdx = 1;
+    %Update previews
+    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+    ta  = handles.trajBuf;
+    tb  = handles.compBuf;
+    err = handles.errBuf;
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+
+    %Update text position
+    if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
+        set(handles.lbTrajStats, 'Value', handles.fbIdx);
+    end
+    set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
+    guidata(hObject, handles);
+
+
+function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+	%Check value in textbox
+    
+    idx = str2double(handles.etGoto, 'String');
+    if(idx < 1 || idx > handles.frameBuf.getNumFrames())
+        return;
+    end
+    handles.fbIdx = idx;
+    %Update previews
+    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+    ta  = handles.trajBuf;
+    tb  = handles.compBuf;
+    err = handles.errBuf;
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+
+    %Update text position
+    if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
+        set(handles.lbTrajStats, 'Value', handles.fbIdx);
+    end
+    set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
+    guidata(hObject, handles);
+
+
 
 function bWrite_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Write current trajectory (from buffer) to specified index in vecManager
@@ -598,6 +663,17 @@ function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	%Save current selection to trajectory buffer
 	handles.trajBuf = traja;
 	handles.compBuf = trajb;
+    %Update text area
+    stats = gui_renderText(handles.errBuf, handles.compBuf);
+    set(handles.lbTrajStats, 'String', stats);
+    set(handles.lbTrajStats, 'Value', handles.fbIdx);
+    %Update the trajectory label box each time a new trajectory is read
+    nLabel = handles.vecManager.getTrajBufLabel(get(handles.pmBufIdx, 'Value'));
+    set(handles.etTrajLabel, 'String', nLabel);
+    %Update the label buffer
+    clab   = handles.vecManager.getTrajBufLabel(get(handles.pmCompIdx, 'Value'));
+    handles.labBuf{1} = nLabel;
+    handles.labBuf{2} = clab;
 		
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
@@ -628,6 +704,12 @@ function menu_bufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
+
+% Build into this GUI the notion of range, so that when we adjust the value
+% in either of these boxes, only entires within the ranges are displayed on
+% in the preview area, error plot etc
+function etRangeLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etRangeHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Create a new figure with all data plotted for use in papers, reports, etc
@@ -660,7 +742,7 @@ function menu_data_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkKeep_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etBufSize_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
+function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 % -------- CREATE FUNCTIONS ------- %
 function etTrajLabel_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -703,6 +785,14 @@ function etCurFrame_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
+function etGoto_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
 
 
 %function bTrajExtract_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
+
+
+
