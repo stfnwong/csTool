@@ -10,6 +10,7 @@ function [status nh varargout] = init_modelHist(handles, region, idx, varargin)
 
 	%Set internal constants
 	DEBUG = 0;
+	rSet  = false;
 
 	if(~isempty(varargin))
 		%Parse optional inputs
@@ -19,6 +20,8 @@ function [status nh varargout] = init_modelHist(handles, region, idx, varargin)
 					DEBUG = 1;
 				elseif(strncmpi(varargin{k}, 'size', 4))
 					DATA_SZ = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'set', 3))
+					rSet = true;
 				end
 			end
 		end
@@ -64,8 +67,10 @@ function [status nh varargout] = init_modelHist(handles, region, idx, varargin)
 	img     = imread(get(fh, 'filename'), 'TIFF');
 	hsv_img = rgb2hsv(img);
 	hue_img = DATA_SZ .* hsv_img(:,:,1);
-	handles.segmenter.setImRegion(region);
-	handles.segmenter.genMhist(hue_img);
+	if(rSet)
+		handles.segmenter.setImRegion(region);
+	end
+	handles.segmenter.genMhist(hue_img, region);
 	if(nargout > 2)
 		varargout{1} = handles.segmenter.getMhist();
 	end

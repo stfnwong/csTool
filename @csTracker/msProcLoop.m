@@ -90,6 +90,10 @@ function status = msProcLoop(T, fh, trackWindow)
 				moments = imgAccumVec(T, spvec, 'sp', spstat);
 			case T.MOMENT_WINVEC
 				moments = winAccumVec(T, bpvec, trackWindow, dims);	
+			case T.ONLINE_SELECTION
+				fprintf('UNDER CONSTRUCTION\n');
+			case T.SPARSE_ONLINE_SELECTION
+				fprintf('UNDER CONSTRUCTION\n');
 			otherwise
 				fprintf('Not yet implemented\n');
 				status = -1;

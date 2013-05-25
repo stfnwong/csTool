@@ -140,19 +140,19 @@ classdef csSegmenter < handle
 
 		% ---- GETTER METHODS ----- %
 		function mhist = getMhist(T)
-			mhist = T.mhist;
+			mhist = S.mhist;
 		end	
 	
 		function dataSz = getDataSz(T)
-			dataSz = T.DATA_SZ;
+			dataSz = S.DATA_SZ;
 		end
 
         function region = getImRegion(T)
-            region = T.imRegion;
+            region = S.imRegion;
         end
 
 		function verbose = getVerbose(T)
-			verbose = T.verbose;
+			verbose = S.verbose;
 		end
 	
 		% ---- disp(T) : DISPLAY METHOD
@@ -176,19 +176,33 @@ classdef csSegmenter < handle
 		end 	%getOpts()
 
 		% --- genMhist() : GENERATE NEW MODEL HISTOGRAM
-		function genMhist(T, img)
+		function varargout = genMhist(S, img, imRegion, varargin)
 
-			if(isempty(T.imRegion))
-				error('Empty region in T.imRegion');
+			if(~isempty(varargin))
+				if(strncmpi(varargin{k}, 'set', 3))
+					hSet = true; 	%save histogram in S.mhist
+				end
+			else
+				hSet = false; %dont save (and presumably return hist to caller)
+			end
+
+			if(isempty(imRegion))
+				if(isempty(S.imRegion))
+					fprintf('ERROR: No imRegion at call time or in object\n');
+					return;
+				else
+					fprintf('No imregion parameter specified, using internal\n');
+					imRegion = S.imRegion;
+				end
 			end
 			%Get region limits
-			xmin  = T.imRegion(1,1);
-			xmax  = T.imRegion(1,2);
-			ymin  = T.imRegion(2,1);
-			ymax  = T.imRegion(2,2);
+			xmin  = imRegion(1,1);
+			xmax  = imRegion(1,2);
+			ymin  = imRegion(2,1);
+			ymax  = imRegion(2,2);
 			%Generate histogram bins
-			bins   = T.N_BINS.*(1:T.N_BINS);
-			t_mhist = zeros(1,T.N_BINS);
+			bins   = S.N_BINS.*(1:S.N_BINS);
+			t_mhist = zeros(1,S.N_BINS);
 			%Find histogram	
 			for y = ymin : ymax
 				for x = xmin : xmax
@@ -198,11 +212,16 @@ classdef csSegmenter < handle
 			end
 			%Normalise histogram
 			t_mhist = t_mhist ./ max(max(t_mhist));
-			if(T.FPGA_MODE)
-				t_mhist = fix(T.DATA_SZ.*t_mhist);
+			if(S.FPGA_MODE)
+				t_mhist = fix(S.DATA_SZ.*t_mhist);
 			end
 			%Set mhist data in segmenter object
-			T.mhist = t_mhist;
+			if(hSet)
+				S.mhist = t_mhist;
+			end
+			if(nargout > 0)
+				varargout{1} = t_mhist;
+			end
 			
 		end 	%genMhist()
 
@@ -216,39 +235,48 @@ classdef csSegmenter < handle
 			%
 			% In the current version, the image is read from disk from within this
 			% method
-			if(T.verbose)
+			if(S.verbose)
 				fprintf('Reading image from %s...\n', get(fh, 'filename'));
 			end
             im = imread(get(fh, 'filename'), 'TIFF');
 			im = rgb2hsv(im);
-			im = fix(T.DATA_SZ .* im(:,:,1));
+			im = fix(S.DATA_SZ .* im(:,:,1));
 			%Check for dims property, and set if empty
 			if(isempty(get(fh, 'dims')))
 				sz   = size(im);
 				dims = [sz(2) sz(1)];
 				set(fh, 'dims', dims);
-				if(T.verbose)
+				if(S.verbose)
 					fprintf('Set dims as [%dx%d]\n', dims(1), dims(2));
 				end
 			else
 				dims = get(fh, 'dims');
-				if(T.verbose)
+				if(S.verbose)
 					fprintf('Read dims as [%dx%d]\n', dims(1), dims(2));
 				end
 			end
-			switch T.method
-				case T.HIST_BP_IMG
-					[bpvec rhist] = hbp_img(T, im, T.mhist);
-				case T.HIST_BP_BLOCK
-					[bpvec rhist] = hbp_block(T, im, T.mhist);
-				case T.HIST_BP_ROW
-					[bpvec rhist] = hbp_row(T, im, T.mhist);
-				case T.PCA
+			switch S.method
+				case S.HIST_BP_IMG
+					[bpvec rhist] = hbp_img(S, im, S.mhist);
+					if(S.BG_MODE)
+						[bgvec bg_rhist] = hbp_img(S, im, S.bghist);
+					end
+				case S.HIST_BP_BLOCK
+					[bpvec rhist] = hbp_block(S, im, S.mhist);
+					if(S.BG_MODE)
+						[bgvec bg_rhist] = hbp_block(S, im, S.bghist);
+					end
+				case S.HIST_BP_ROW
+					[bpvec rhist] = hbp_row(S, im, S.mhist);
+					if(S.BG_MODE)
+						[bgvec bg_rhist] = hbp_row(S, im, S.bghist);
+					end
+				case S.PCA
 					fprintf('Currently not implemented\n');
 				otherwise
-					error('Invalid segmentation method in T.method');
+					error('Invalid segmentation method in S.method');
 			end
-			if(T.verbose)
+			if(S.verbose)
 				fprintf('Ratio hist for frame %s : ', get(fh, 'filename'))
 				disp(rhist);
 			end
@@ -274,7 +302,7 @@ classdef csSegmenter < handle
 			if(sz(1) ~= 2 || sz(2) ~= 2)
 				error('imregion must be 2x2 matrix');
 			end
-			T.imRegion = imregion;
+			S.imRegion = imregion;
 			
 		end 	%setImRegion()
 		
@@ -284,16 +312,16 @@ classdef csSegmenter < handle
 			if(isdouble(size))
 				size = uint8(size);
 			end
-			T.DATA_SZ = size;
+			S.DATA_SZ = size;
 		end 	%setDataSize()
 
 		% ---- setSegMethod() : SET SEGMENTATION METHOD 
         function setSegMethod(T, method)
-            T.method = method;
+            S.method = method;
         end     %setSegMethod();
 
 		function setVerbose(T, verbose)
-			T.verbose = verbose;
+			S.verbose = verbose;
 		end
 
 	end 		%csSegmenter METHODS (Public)
