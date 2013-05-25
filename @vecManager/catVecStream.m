@@ -14,9 +14,10 @@ function [vec varargout] = catVecStream(V, vtype, val, varargin)
 % val   - Length to concatenate vector to 
 %
 % OPTIONAL ARGUMENTS
-% 'seq' - Read in sequentially numbered vectors
-% 'num' - Number of sequential vectors to read 
-% 'list' - Pass in a list of filenames as a cell array
+% 'fname' - Name of vector file to read
+% 'seq'   - Read in sequentially numbered vectors
+% 'num'   - Number of sequential vectors to read 
+% 'list'  - Pass in a list of filenames as a cell array
 %
 % OUTPUTS
 % vec - Cell array of concatenated vectors
@@ -39,6 +40,8 @@ function [vec varargout] = catVecStream(V, vtype, val, varargin)
 					list = true;
 				elseif(strncmpi(varargin{k}, 'num', 3))
 					N    = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'fname', 5))
+					fname = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'debug', 5))
 					debug = true;
 				end
@@ -47,7 +50,23 @@ function [vec varargout] = catVecStream(V, vtype, val, varargin)
 	end
 
 	%Check what we have
+	if(~exist('fname', 'var'))
+		fprintf('ERROR: No filename specified, aborting...\n');
+		vec = [];
+		if(nargout > 1)
+			for k = 1:nargout-1
+				varargout{k} = [];
+			end
+		end
+		return;
+	end
 	
+	%Read data from disk
+	if(seq)
+
+	elseif(list)
+	
+	end
 
 	%Perform concatenation
 	switch(vtype)

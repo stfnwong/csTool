@@ -92,6 +92,7 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
 	wMeth   = {'Zero Moment', 'Eigenvector length'};
 	rMeth   = {'Resize each iter', 'Resize each frame'};
     spFac   = {'1', '2', '4', '8', '16', '32', '64'};
+	spAnch  = {'tl', 'tr', 'bl', 'br', 'cent'};
     set(handles.pmSparseFac,   'String', spFac);
     predAmt = {'No Prediction', '1', '2', '4', '8', '16'};
 	set(handles.pmWinMethod,   'String', wMeth);
@@ -104,6 +105,7 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
     else
         set(handles.pmPredWin, 'Value', pmIdx);
     end
+	%Set sparse factor
     spIdx = find(fix(str2double(spFac)) == tOpts.sparseFac, 1, 'first');
     if(isempty(spIdx))
         fprintf('ERROR: Unable to set sparse fac, defaulting to 1\n');
@@ -111,6 +113,15 @@ function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<
     else
         set(handles.pmSparseFac, 'Value', spIdx);
     end
+	%Set sparse anchor point
+	saIdx = find(strcmpi(spAnch, tOpts.sparseAnch), 1, 'first');
+	if(isempty(saIdx))
+		fprintf('ERROR: Unable to set sparse anchor point, defaulting to [tl]\n');
+		set(handles.pmAnchorPoint, 'Value', 1);
+	else
+		set(handles.pmAnchorPoint, 'Value', saIdx);
+	end
+
     %Choose the method currently selected in csTracker object
     %This check is a shortcut to avoid the problem of zero values creeping into the
     %GUI. In actual fact, this is probably result of some old prefs stored on the 

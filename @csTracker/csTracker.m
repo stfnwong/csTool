@@ -61,6 +61,7 @@ classdef csTracker < handle
 		MAX_ITER;
 		%Sparse vector options
 		SPARSE_FAC;
+		SPARSE_ANCH;	%Anchor point for sparse tracker
 		%Window sizing methods
 		WSIZE_METHOD;
 		WSIZE_CONT;		%Continously resize window (on each iteration) if true.
@@ -71,12 +72,14 @@ classdef csTracker < handle
 	% METHOD ENUM
 	properties (Constant = true, GetAccess = 'public')
 		%Tracking method constants
-		MOMENT_WINACCUM = 1;
-		MOMENT_IMGACCUM = 2;
-		KERNEL_DENSITY  = 3;
-		SPARSE_WINDOW   = 4;
-		SPARSE_IMG      = 5;
-		MOMENT_WINVEC   = 6;
+		MOMENT_WINACCUM  = 1;
+		MOMENT_IMGACCUM  = 2;
+		KERNEL_DENSITY   = 3;
+		SPARSE_WINDOW    = 4;
+		SPARSE_IMG       = 5;
+		MOMENT_WINVEC    = 6;
+		ONLINE_SELECTION = 7;
+		SPARSE_ONLINE_SELECTION = 8;
 		%Window size method constants
 		ZERO_MOMENT     = 1;
 		EIGENVEC        = 2;
@@ -116,6 +119,7 @@ classdef csTracker < handle
 					T.MAX_ITER     = 8;
 					T.EPSILON      = 0;
 					T.SPARSE_FAC   = 4;
+					T.SPARSE_ANCH  = 'tl';
 					T.WSIZE_METHOD = 1;
 					T.WSIZE_CONT   = 1;		%continously re-size the tracking window
 					T.FORCE_TRACK  = 0;
@@ -138,6 +142,7 @@ classdef csTracker < handle
 						T.MAX_ITER     = opts.maxIter;
 						T.EPSILON      = opts.epsilon;
 						T.SPARSE_FAC   = opts.sparseFac;
+						T.SPARSE_ANCH  = opts.sparseAnch;
 						T.WSIZE_METHOD = opts.wsizeMethod;
 						T.WSIZE_CONT   = opts.wsizeCont;
 						T.FORCE_TRACK  = opts.forceTrack;
@@ -165,7 +170,8 @@ classdef csTracker < handle
                           'fixedIter' ,  T.FIXED_ITER,  ...
                           'maxIter'   ,  T.MAX_ITER,    ...
                           'epsilon'   ,  T.EPSILON,     ...
-                          'sparseFac' ,  T.SPARSE_FAC,  ...
+                          'sparseFac' ,  T.SPARSE_FAC,  ...	
+                          'sparseAnch',  T.SPARSE_ANCH, ...
                           'wsizeMethod', T.WSIZE_METHOD, ...
                           'wsizeCont',   T.WSIZE_CONT, ...
                           'forceTrack',  T.FORCE_TRACK);

@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 21-May-2013 23:27:03
+% Last Modified by GUIDE v2.5 22-May-2013 02:24:03
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -53,6 +53,7 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<IN
 	handles.trajBuf   = [];		%temporary buffer to hold extracted trajectory
 	handles.compBuf   = [];
 	handles.renderBuf = cell(1,1);
+    handles.labBuf    = cell(1,2);
 	handles.errBuf    = [];
 	handles.fbIdx     = 1;
     %Parse optional arguments
@@ -199,9 +200,15 @@ function gui_renderErrorPlot(axHandle, traj, idx, varargin)
 	end
 
 	if(~isempty(varargin))
-		if(strncmpi(varargin{1}, 'label', 5))
-			label = varargin{2};
-		end
+        for k = 1:length(varargin)
+            if(ischar(varargin{k}))
+                if(strncmpi(varargin{k}, 'label', 5))
+                    label = varargin{k+1};
+                elseif(strncmpi(varargin{k}, 'leg', 3))
+                    lgnd  = varargin{k+1};
+                end
+            end
+        end
 	end
 
 	if(length(axHandle) < length(traj))
@@ -226,21 +233,25 @@ function gui_renderErrorPlot(axHandle, traj, idx, varargin)
 				% create a NaN array and place in the correct position the value 
 				% from the trajectory array to create a stem plot with a
 				% single element.
+                cla(axHandle(k));
 				hold(axHandle(k), 'on');
 				t      = traj{k};
-				sh     = stem(axHandle(k), 1:length(t), t(k,:));
+				sh     = stem(axHandle(k), 1:length(t), t); %t already scalar
 				p      = NaN * zeros(1, length(t));
-				p(idx) = t(k,idx);
-				shp    = stem(axHandle(k), 1:length(p), p);
-				set(sh, 'Color',[0 0 1], 'MarkerFaceColor',[0 1 0], 'MarkerSize', 2);
-				set(shp,'Color',[0 0 1], 'MarkerFaceColor',[1 0 0], 'MarkerSize',10);
+				p(idx) = t(idx);
+				shp    = stem(axHandle(k), 1:length(p), p, 'v');
+                set(sh, 'Color',[0 0 1], 'MarkerFaceColor',[0 1 0], 'MarkerSize', 2);
+                set(shp,'Color',[0 0 1], 'MarkerFaceColor',[1 0 0], 'MarkerSize',10);
                 if(k == 1)
                     title('Trajectory Error (x)');
                 else
                     title('Trajectory Error (y)');
                 end
                 xlabel('Frame #');
-                ylabel('Error');
+                ylabel('Error (pixels)');
+                if(exist('lgnd', 'var'))
+                    legend(sh, lgnd);       %DEPRECATED
+                end
 				hold(axHandle(k), 'off');
 			end
 		end
@@ -251,10 +262,20 @@ function gui_renderErrorPlot(axHandle, traj, idx, varargin)
 	%guidata(hObject, handles);
 
 
-function gui_renderTraj(axHandle, traj, idx)
+function gui_renderTraj(axHandle, traj, idx, col, varargin)
 	% Place the trajectory traj on the axes axHandle highlighting index idx
-    error(nargchk(3,3,nargin));
-	
+    %error(nargchk(3,3,nargin));
+
+    if(~isempty(varargin))
+        if(strncmpi(varargin{1}, 'tag', 3))
+            plotTag = varargin{2};
+        end
+    end
+
+    if(isempty(col))
+        col = [0 1 0];
+    end
+
 	%Bounds check our index
 	if(idx < 1 || idx > length(traj))
 		fprintf('ERROR: index (%d) out of bounds [1 %d]\n', idx, length(traj));
@@ -268,9 +289,10 @@ function gui_renderTraj(axHandle, traj, idx)
 	end
 	hold(axHandle, 'on');
 	ph = plot(axHandle, traj(1,:), traj(2,:), 'v-'); 	%main trajectory
-	set(ph, 'Color', [0 1 0], 'MarkerSize', 10, 'LineWidth', 2);
+	set(ph, 'Color', col, 'MarkerSize', 8, 'LineWidth', 1);
 	ih = plot(axHandle, traj(1,idx), traj(2,idx), 'x');		%index point
-	set(ih, 'Color', [1 0 0], 'MarkerSize', 14, 'LineWidth', 4);
+	set(ih, 'Color', [1 0 0], 'MarkerSize', 16, 'LineWidth', 2);
+    set(ph, 'Tag', plotTag);
 	hold(axHandle, 'off');
 
 
@@ -306,11 +328,23 @@ function stats = gui_renderText(pErr, pTraj)
             end
         end
 
-function gui_updateTrajlist(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-	% Update the trajectory listbox whenver labels are changed or the buffer 
-	% is resized
+function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)
 
-function gui_updatePreview(axHandle, fh, idx, traja, trajb)
+    if(~isempty(varargin))
+        if(iscell(varargin{1}))
+            lab = varargin{1}; %Check if empty (ie, because this is first run)
+            if(isempty(lab{1}))
+                lab{1} = 'Trajectory A';
+            end
+            if(isempty(lab{2}))
+                lab{2} = 'Trajectory B';
+            end
+        end
+    end
+    %Check what we have
+    if(~exist('lab', 'var'))
+        lab = {'Trajectory A', 'Trajectory B'};
+    end
 	%Pass all 3 axes handles here to save having really long lines at the caller
 	if(length(axHandle) < 3)
 		fprintf('ERROR: Pass in all axes handles in the following order\n');
@@ -320,15 +354,46 @@ function gui_updatePreview(axHandle, fh, idx, traja, trajb)
 	end
 	%Update the fig_trajPreview axes
 	gui_renderPreview(axHandle(1), fh, idx);
+
     if(~isempty(traja))
-        gui_renderTraj(axHandle(1), traja, idx);
+        gui_renderTraj(axHandle(1), traja, idx, [0 1 0], 'tag', 'pTraj1');
     end
     if(~isempty(trajb))
-        gui_renderTraj(axHandle(1), trajb, idx);
+        gui_renderTraj(axHandle(1), trajb, idx, [0 0 1], 'tag', 'pTraj2');
     end
+    %Heres a (somewhat complicated) way to get the legend to be correct
+    %every time
+    axc = get(axHandle(1), 'Children');
+    n   = 1;
+    for k = 1:length(axc)
+        if(strncmpi(get(axc(k), 'tag'), 'pTraj1', 6))
+            lgnd(n) = axc(k);   %#ok<AGROW>
+            n = n + 1;
+        elseif(strncmpi(get(axc(k), 'tag'), 'pTraj2', 6))
+            lgnd(n) = axc(k);   %#ok<AGROW>
+            n = n + 1;
+        end
+    end
+    if(exist('lgnd', 'var'))
+        if(length(lgnd) > 1)
+            legend(lgnd, lab{1}, lab{2});
+        else
+            legend(lgnd, lab{1});
+        end
+    end
+    %If we passed in a legend for the main window, add it here
+    %if(exist('lab', 'var'))
+    %    legend(axHandle(1), lab{1}, lab{2});
+    %end
 	%Update the error plots if we have two trajectories
-    if(~isempty(traja) && ~isempty(trajb))
-        t  = {traja, trajb};
+    %if(~isempty(trajErr))
+    %    if(~isempty(traja) && ~isempty(trajb))
+    %        t  = {traja, trajb};
+    %        gui_renderErrorPlot([axHandle(2) axHandle(3)], t, idx);
+    %    end
+    %end
+    if(~isempty(trajErr))
+        t = {trajErr(1,:), trajErr(2,:)};
         gui_renderErrorPlot([axHandle(2) axHandle(3)], t, idx);
     end
 	
@@ -342,10 +407,11 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		handles.fbIdx = handles.fbIdx + 1;
 		fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
 		%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
-		ah = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
-		ta = handles.trajBuf;
-		tb = handles.compBuf;
-		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb);
+		ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+		ta  = handles.trajBuf;
+		tb  = handles.compBuf;
+        err = handles.errBuf;
+		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
 	else
 		handles.fbIdx = N;
 	end
@@ -364,10 +430,11 @@ function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		handles.fbIdx = handles.fbIdx - 1;
 		fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
 		%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
-		ah = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
-		ta = handles.trajBuf;
-		tb = handles.compBuf;
-		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb);
+		ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+		ta  = handles.trajBuf;
+		tb  = handles.compBuf;
+        err = handles.errBuf;
+		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
 	else
 		handles.fbIdx = 1;
 	end
@@ -379,7 +446,7 @@ function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
 
-function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+function bWrite_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Write current trajectory (from buffer) to specified index in vecManager
 	if(isempty(handles.trajBuf) || numel(handles.trajBuf) == 0)
 		fprintf('No data in intermediate trajectory buffer\n');
@@ -396,6 +463,10 @@ function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     labelString = handles.vecManager.getTrajBufLabel('all');
     set(handles.pmBufIdx, 'String', labelString);
     set(handles.pmCompIdx, 'String', labelString);
+    %Update the label buffer
+    clab = handles.vecManager.getTrajBufLabel(get(handles.pmCompIdx, 'Value'));
+    handles.labBuf{1} = label;
+    handles.labBuf{2} = clab;
 
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
@@ -403,13 +474,17 @@ function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Read data out of the vecManager trajectory buffer at the specified
 	% index. Place data into compare buffer (handles.compBuf)
-	traj = handles.vecManager.readTrajBuf(handles.fbIdx);
+    idx  = get(handles.pmBufIdx, 'Value');
+	traj = handles.vecManager.readTrajBuf(idx);
 	handles.compBuf = traj;
     fprintf('[csToolTrajBuf] : placed trajectory at index %d into compare buffer\n', handles.fbIdx);
     %Also update GUI
-    ah = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
-    fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
-    gui_updatePreview(ah, fh, handles.fbIdx, handles.trajBuf, handles.compBuf);
+    ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    ta  = handles.trajBuf;
+    tb  = handles.compBuf;
+    err = handles.errBuf;
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
     %Update Text region
     if(~isempty(handles.trajBuf) && ~isempty(handles.compBuf))
         pErr = abs(handles.trajBuf - handles.compBuf);
@@ -422,6 +497,10 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     %Update the trajectory label box each time a new trajectory is read
     nLabel = handles.vecManager.getTrajBufLabel(get(handles.pmBufIdx, 'Value'));
     set(handles.etTrajLabel, 'String', nLabel);
+    %Update the label buffer
+    clab   = handles.vecManager.getTrajBufLabel(get(handles.pmCompIdx, 'Value'));
+    handles.labBuf{1} = nLabel;
+    handles.labBuf{2} = clab;
     
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
@@ -435,9 +514,12 @@ function bTrajExtract_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	handles.trajBuf = handles.frameBuf.getTraj(range);
 
 	% Also show trajectory in preview
-    fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
-    ah = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
-    gui_updatePreview(ah, fh, handles.fbIdx, handles.compBuf, handles.trajBuf);
+    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+    ta  = handles.trajBuf;
+    tb  = handles.compBuf;
+    err = handles.errBuf;
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
 	%gui_renderTraj(handles.fig_trajPreview, handles.trajBuf);
     %Set the trajectory name
     trajLab = get(handles.etTrajLabel, 'String');
@@ -470,6 +552,12 @@ function bSetLabel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     labelString = handles.vecManager.getTrajBufLabel('all');
     set(handles.pmBufIdx, 'String', labelString);
     set(handles.pmCompIdx, 'String', labelString);
+    %Update the handle buffer
+    blab = handles.vecManager.getTrajBufLabel(get(handles.pmBufIdx, 'Value'));
+    clab = handles.vecManager.getTrajBufLabel(get(handles.pmCompIdx, 'Value'));
+    handles.labBuf{1} = blab;
+    handles.labBuf{2} = clab;
+
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
 
@@ -494,11 +582,19 @@ function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	end
 
 	%Pre compute error terms and render
-	fh             = handles.frameBuf.getFrameHandle(handles.fbIdx);
-	handles.errBuf = abs(traja - trajb);
-	gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
-	gui_renderTraj(handles.fig_trajPreview, traja, handles.fbIdx);
-	gui_renderTraj(handles.fig_trajPreview, trajb, handles.fbIdx);
+	fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+    err = abs(traja - trajb);
+    gui_updatePreview(ah, fh, handles.fbIdx, traja, trajb, err, handles.labBuf);
+	handles.errBuf = err;
+    % DEPRECATED
+	%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
+	%gui_renderTraj(handles.fig_trajPreview, traja, handles.fbIdx, [0 1 0]);
+	%gui_renderTraj(handles.fig_trajPreview, trajb, handles.fbIdx, [0 0 1]);
+    %Render error plot
+    %ah = [handles.fig_trajErrorX handles.fig_trajErrorY];
+    %traj = {traja, trajb};
+    %gui_renderErrorPlot(ah, traj, handles.fbIdx);
 	%Save current selection to trajectory buffer
 	handles.trajBuf = traja;
 	handles.compBuf = trajb;
@@ -610,6 +706,3 @@ function etCurFrame_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 
 %function bTrajExtract_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
-
-

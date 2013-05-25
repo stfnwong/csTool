@@ -307,6 +307,7 @@ classdef csFrameBuffer
 				%traj(1,n) = wp(1);
 				%traj(2,n) = wp(2);
 				traj(:,n) = [wp(1) ; wp(2)];
+                n = n + 1;
 			end
 
 		end 	%getTraj()

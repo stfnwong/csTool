@@ -19,6 +19,13 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 % 
 % OPTIONAL OUTPUTS
 % vec    - Return the error vector to the caller
+% errVec - Return the error vector to the caller. The error vectors is a 3xN matrix, 
+%          where N is the number of errors in the test, row 1 is the reference vector
+%          value, row 2 the test vector value, and row 3 is the position in the vector
+%          stream where the error occured. For test vectors that are agglomerated 
+%          (ie: they are testing a non-scalar value in the CAMShift pipeline), the
+%          errVec matrix may be a cell array. The purpose in each position of the
+%          array is the same, but the number of entries will depend on the vector size
 %
 
 % Stefan Wong 2013
@@ -118,19 +125,23 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 				vec = [];
 				return;
 			end
+
 			%TODO: Further massaging here
-			errVec = zeros(1,length(vec));
+			
+			%Potentially all the elements could be wrong, so over-allocate here and
+			%trim the result later
+			errVec = zeros(3,length(vec)); 
 			numErr = 0;
 			for k = 1:length(vec)
 				if(refVec(k) ~= vec(k))
 					numErr = numErr + 1;
-					errVec(numErr) = 1;
+					errVec(:, numErr) = [refVec(k) vec(k) k]';
 				end
 			end
 	
 			%Trim errVec
 			if(numErr < 1)
-				errVec = [];
+				errVec = [];		%turns out the vector was correct
 			elseif(numErr < length(errVec))
 				errVec = errVec(1:numErr);
 			end

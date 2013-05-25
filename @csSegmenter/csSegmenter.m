@@ -37,6 +37,7 @@ classdef csSegmenter < handle
 	properties (SetAccess = private, GetAccess = private)
 		method;
 		mhist;
+		bghist;			%Used in the online discriminative feature mode
 		imRegion;	
 		%Histogram properties
 		N_BINS;
@@ -45,6 +46,9 @@ classdef csSegmenter < handle
 		FPGA_MODE;
 		BP_THRESH;		%if the bin value is less than this value, zero out pixel
 		GEN_BP_VEC;
+		%Parameters for online discriminative tracking
+		BG_MODE;		% 0=normal, 1=online disriminative mode
+		BG_WIN_SZ;		%How much to expand window by to encompass window
 		%global settings
 		mGenVec;			%Methods generate vectors
 		verbose;
@@ -102,6 +106,8 @@ classdef csSegmenter < handle
 					S.BP_THRESH  = 0;
 					%S.GEN_BP_VEC = 0;
 					%Default internals
+					BG_MODE      = 0;
+					BG_WIN_SZ    = 0;
 					S.method     = 1;
 					S.mhist      = zeros(1, S.N_BINS);
 					S.imRegion   = zeros(2,2);
@@ -120,6 +126,8 @@ classdef csSegmenter < handle
 						S.FPGA_MODE  = opts.fpgaMode;
 						S.BP_THRESH  = opts.bpThresh;
 						%S.GEN_BP_VEC = opts.gen_bpvec;
+						S.BG_MODE    = opts.bgMode;
+						S.BG_WIN_SZ  = opts.bgWinSize;
 						S.N_BINS     = opts.nBins;
 						S.method     = opts.method;
 						S.mhist      = opts.mhist;
@@ -154,15 +162,17 @@ classdef csSegmenter < handle
 
 		% ---- getOpts() : GET A COMPLETE OPTIONS STRUCT (for csToolGUI)
 		function opts = getOpts(S)
-			opts = struct('dataSz'  , S.DATA_SZ,   ...
-                          'blkSz'   , S.BLK_SZ,    ...
-                          'nBins'   , S.N_BINS,    ...
-                          'fpgaMode', S.FPGA_MODE, ...
-                          'bpThresh', S.BP_THRESH, ...
-                          'method'  , S.method,   ...
-                          'mhist'   , S.mhist,    ...
-                          'imRegion', S.imRegion, ...
-                          'verbose' , S.verbose );
+			opts = struct('dataSz'  ,  S.DATA_SZ,   ...
+                          'blkSz'   ,  S.BLK_SZ,    ...
+                          'nBins'   ,  S.N_BINS,    ...
+                          'fpgaMode',  S.FPGA_MODE, ...
+                          'bpThresh',  S.BP_THRESH, ...
+                          'method'  ,  S.method,   ...
+                          'mhist'   ,  S.mhist,    ...
+                          'bgMode',    S.BG_MODE,  ...
+                          'bgWinSize', S.BG_WIN_SIZE, ...
+                          'imRegion',  S.imRegion, ...
+                          'verbose' ,  S.verbose );
 		end 	%getOpts()
 
 		% --- genMhist() : GENERATE NEW MODEL HISTOGRAM

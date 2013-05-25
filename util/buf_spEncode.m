@@ -276,6 +276,11 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 						spvec(:,k) = [x+fac-1 ; y];
 					case 'br'
 						spvec(:,k) = [x+fac-1 ; y+fac-1];
+					case 'cent'
+						%Find the 'mid-point' pixel. This will be biased one pixel up
+						%and one pixel left since the 'mid-point' in this case is the
+						%top left of the 2x2 block inside the main NxN block
+						spvec(:,k) = [x+(fac/2)-1 ; y+(fac/2)-1];	
 					otherwise
 						error('Invalid anchor point %s', anchor);
 				end
