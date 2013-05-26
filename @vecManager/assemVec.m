@@ -56,6 +56,14 @@ function img = assemVec(vectors, varargin)
 		imSz = [640 480];
 	end
 
+	%If the vectors parameter isn't a cell array, this must be an image stream, and
+	%therefore the vecFmt parameter should be scalar
+	if(~iscell(vectors))
+		vecFmt = 'scalar';
+	else
+		%Format cell array for processing
+	end
+
 	%Take the data and place into image array
 	img = zeros(imSz(2), imSz(1));
 	
@@ -69,14 +77,32 @@ function img = assemVec(vectors, varargin)
 					i = i +1;
 				end
 			end
-					
+	
 		case 'col'
 			for k = 1:vecSz
 				vk = vectors{k};
 				i  = 0;
 				for n = 1:vecSz:(imSz(2) / vecSz)
-					img(n,:) = vk(i*imSz(2)+1:(2*i)*imSz(2));
+					img(n,:) = vk(i*imSz(2)+1:(i+1)*imSz(2));
 					i = i + 1;
+				end
+			end
+		case 'scalar'
+			%Take a serialised vector and lay it out in raster form, wrapping the 
+			%dimensions based on imSz parameter. If we get to there and the vectors
+			%parameter is a cell array, then exit early (we could extract the first
+			%thing in the cell array and try it, but we have no idea what the contents
+			%would be.
+			if(iscell(vectors))
+				fprintf('ERROR: scalar option requires non-cell array argument\n');
+				img = [];
+				return;
+			end	
+			n = 1;
+			for y = 1:imSz(2)
+				for x = 1:imSz(1)
+					img(y,x) = vectors(n);
+					n = n +1;
 				end
 			end
 		otherwise

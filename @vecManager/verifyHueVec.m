@@ -75,7 +75,6 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 		S_FAC = 256;	%Most common case, so default to this
 	end
 
-
 	%Perform verification step
 	switch(vtype)
 		% Data stream coming out of testbenches should be a series of scalar pixel 

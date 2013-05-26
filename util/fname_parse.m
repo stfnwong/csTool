@@ -74,26 +74,42 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 	end
 
 	%Look for underscore character
-	usIdx = strfind(fstring, '_');
-	if(isempty(usIdx))
-		fprintf('ERROR: String does not contain "_", returning original string\n');
+	%usIdx = strfind(fstring, '_');
+	%if(isempty(usIdx))
+	%	fprintf('ERROR: String does not contain "_", returning original string\n');
+	%	str      = fstring(1:extIdx);
+	%	path     = fstring(1:fslsh+1);
+	%	num      = 0;
+	%	ext      = fstring(extIdx(end)+1:end);
+	%	exitflag = -1;		
+	%	outvars  = {num ext path};
+	%	for k = 1:nargout-2
+	%		varargout{k} = outvars{k};
+	%	end
+	%	return;
+	%end
+    %%Take the last underscore character in string if there's more than one
+    %if(length(usIdx) > 1)
+    %    usIdx = usIdx(end);
+    %end
+	%if(DEBUG)
+	%	fprintf('DEBUG:usIdx = %d\n', usIdx);
+	%end
+
+	num = str2double(fstring(extIdx-4:extIdx-1))
+	if(num < 1 || num > 999)
+		%Outside the range we will accept
+		fprintf('ERROR: csTool only supports the first 999 non-zero numbers\n');
 		str      = fstring(1:extIdx);
-		path     = fstring(1:fslsh+1);
+		path     = fstring(1:fslsh-1);
 		num      = 0;
 		ext      = fstring(extIdx(end)+1:end);
-		exitflag = -1;		
-		outvars  = {num ext path};
+		exitflag = -1;
+		outvars  = {num, ext, path};
 		for k = 1:nargout-2
 			varargout{k} = outvars{k};
 		end
 		return;
-	end
-    %Take the last underscore character in string if there's more than one
-    if(length(usIdx) > 1)
-        usIdx = usIdx(end);
-    end
-	if(DEBUG)
-		fprintf('DEBUG:usIdx = %d\n', usIdx);
 	end
 	
 

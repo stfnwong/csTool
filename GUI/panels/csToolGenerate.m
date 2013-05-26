@@ -103,6 +103,7 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     end
 
     %Populate GUI elements 
+    vOpts  = handles.vecManager.getOpts();
     fmtStr = {'16', '8', '4', '2', 'scalar'};
     orStr  = {'row', 'col'};
     set(handles.pmVecSz, 'String', fmtStr);
@@ -110,6 +111,12 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     %Make default selection 2c
     set(handles.pmVecSz, 'Value', 4);
     set(handles.pmVecOr, 'Value', 2);
+	%Check filenames in vecManager object, and load into filename field
+	if(strcmpi(vOpts.wfilename, ' '))
+		set(handles.etWriteFile, 'String', 'data/vectors/imvec.dat');
+	else
+		set(handles.etWriteFile, 'String', vOpts.wfilename);
+	end
 
     %Check that there are frames in the frame buffer
     if(handles.frameBuf.getNumFrames() < 1)
@@ -269,6 +276,10 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     fh    = handles.frameBuf.getFrameHandle(handles.idx);
     fname = get(handles.etWriteFile, 'String');
+	%Set the filename in the vecManager object as well 
+	%TODO: Update the internal file handling scheme to automatically generate 
+	%properly numbered files
+	handles.vecManager = handles.vecManager.setWLoc(fname);
     
     if(get(handles.chkRGB, 'Value'))
         if(handles.debug)

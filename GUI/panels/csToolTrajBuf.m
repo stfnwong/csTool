@@ -206,6 +206,8 @@ function gui_renderErrorPlot(axHandle, traj, idx, varargin)
                     label = varargin{k+1};
                 elseif(strncmpi(varargin{k}, 'leg', 3))
                     lgnd  = varargin{k+1};
+                elseif(strncmpi(varargin{k}, 'range', 5))
+                    range = varargin{k+1};
                 end
             end
         end
@@ -236,6 +238,9 @@ function gui_renderErrorPlot(axHandle, traj, idx, varargin)
                 cla(axHandle(k));
 				hold(axHandle(k), 'on');
 				t      = traj{k};
+                if(exist('range', 'var'))
+                    t = t(range(1):range(2));
+                end
 				sh     = stem(axHandle(k), 1:length(t), t); %t already scalar
 				p      = NaN * zeros(1, length(t));
 				p(idx) = t(idx);
@@ -267,8 +272,14 @@ function gui_renderTraj(axHandle, traj, idx, col, varargin)
     %error(nargchk(3,3,nargin));
 
     if(~isempty(varargin))
-        if(strncmpi(varargin{1}, 'tag', 3))
-            plotTag = varargin{2};
+        for k = 1:length(varargin)
+            if(ischar(varargin{k}))
+                if(strncmpi(varargin{1}, 'tag', 3))
+                    plotTag = varargin{2};
+                elseif(strncmpi(varargin{k}, 'range', 5))
+                    range = varargin{k+1};
+                end
+            end
         end
     end
 
@@ -287,6 +298,10 @@ function gui_renderTraj(axHandle, traj, idx, col, varargin)
 		fprintf('ERROR: Trajectory data not well formed (first dim must be 2)\n');
 		return;
 	end
+    %Perform range extraction, if requested
+    if(exist('range', 'var'))
+        traj = traj(range(1):range(2), :);
+    end
 	hold(axHandle, 'on');
 	ph = plot(axHandle, traj(1,:), traj(2,:), 'v-'); 	%main trajectory
 	set(ph, 'Color', col, 'MarkerSize', 8, 'LineWidth', 1);
@@ -331,19 +346,27 @@ function stats = gui_renderText(pErr, pTraj)
 function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)
 
     if(~isempty(varargin))
-        if(iscell(varargin{1}))
-            lab = varargin{1}; %Check if empty (ie, because this is first run)
-            if(isempty(lab{1}))
-                lab{1} = 'Trajectory A';
-            end
-            if(isempty(lab{2}))
-                lab{2} = 'Trajectory B';
+        for k = 1:length(varargin)
+            if(ischar(varargin{k}))
+                if(strncmpi(varargin{k}, 'label', 5))
+                    lab = varargin{k+1};
+                elseif(strncmpi(varargin{k}, 'range', 5))
+                    range = varargin{k+1};
+                end
             end
         end
     end
+
     %Check what we have
     if(~exist('lab', 'var'))
         lab = {'Trajectory A', 'Trajectory B'};
+    else
+        if(isempty(lab{1}))
+            lab{1} = 'Trajectory A';
+        end
+        if(isempty(lab{2}))
+            lab{2} = 'Trajectory B';
+        end
     end
 	%Pass all 3 axes handles here to save having really long lines at the caller
 	if(length(axHandle) < 3)
@@ -411,7 +434,7 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		ta  = handles.trajBuf;
 		tb  = handles.compBuf;
         err = handles.errBuf;
-		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 	else
 		handles.fbIdx = N;
 	end
@@ -434,7 +457,7 @@ function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		ta  = handles.trajBuf;
 		tb  = handles.compBuf;
         err = handles.errBuf;
-		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 	else
 		handles.fbIdx = 1;
 	end
@@ -457,7 +480,7 @@ function bLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 
     %Update text position
     if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
@@ -476,7 +499,7 @@ function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 
     %Update text position
     if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
@@ -500,7 +523,7 @@ function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 
     %Update text position
     if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
@@ -549,7 +572,7 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
     %Update Text region
     if(~isempty(handles.trajBuf) && ~isempty(handles.compBuf))
         pErr = abs(handles.trajBuf - handles.compBuf);
@@ -584,7 +607,7 @@ function bTrajExtract_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, handles.labBuf);
+    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 	%gui_renderTraj(handles.fig_trajPreview, handles.trajBuf);
     %Set the trajectory name
     trajLab = get(handles.etTrajLabel, 'String');
@@ -650,7 +673,7 @@ function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
     ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
     err = abs(traja - trajb);
-    gui_updatePreview(ah, fh, handles.fbIdx, traja, trajb, err, handles.labBuf);
+    gui_updatePreview(ah, fh, handles.fbIdx, traja, trajb, err, 'label', handles.labBuf);
 	handles.errBuf = err;
     % DEPRECATED
 	%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
@@ -730,8 +753,6 @@ function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 % ---- UNUSED CALLBACKS ---- %
 function etTrajLabel_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-function etRangeLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function etRangeHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmBufIdx_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function lbTrajStats_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmCompIdx_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>

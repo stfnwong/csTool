@@ -94,7 +94,7 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok
 				for y = 1:img_h
                     %TODO: check this expression
 					%row(y:y+(img_h/rdim)) = hue_img(y, n:rdim:img_w);
-                    row(ridx:ridx+numel(n:rdim:img_w)) = hue_img(y, n:rdim:img_w);
+                    row(ridx:ridx+numel(n:rdim:img_w)-1) = hue_img(y, n:rdim:img_w);
 					waitbar(p/t, wb, sprintf('Generating column vector (%d/%d)', ...
                                      p, t));
 					p = p+1;

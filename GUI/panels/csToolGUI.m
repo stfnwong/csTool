@@ -1539,10 +1539,13 @@ end     %menu_trackOptions_Callback(0
 
 % --- Executes on button press in bUIgetfile.
 function bUIgetfile_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
-% hObject    handle to bUIgetfile (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    %Save the original contents of the text box in case we cancel, or the
+    %result returns empty
+    oldText = get(handles.etFilePath, 'String');
     [fname path] = uigetfile('*.tif', 'Select image file...');
+    if(isempty(fname))
+        fname = oldText;
+    end
     set(handles.etFilePath, 'String', sprintf('%s%s', path, fname));
 
     guidata(hObject, handles);
