@@ -565,13 +565,13 @@ classdef vecManager
 						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
 						fname = sprintf('%s%02d', str, num);
 					end
-					for n = length(vec):-1:1
-						vecnames{n} = sprintf('%s-vec%02.dat', fname, n);
-					end
-                    if(iscell(vec))
-                        vecDiskWrite(V, vec, 'fname', vecnames);
+                    if(strcmpi(vtype, 'scalar'))
+                        vecDiskWrite(V, {vec}, 'fname', {fname});
                     else
-                        vecDiskWrite(V, {vec}, 'fname', vecnames);
+						for n = length(vec):-1:1
+							vecnames{n} = sprintf('%s-vec%02.dat', fname, n);
+						end
+                        vecDiskWrite(V, vec, 'fname', vecnames);
                     end
 				end
 			else
@@ -586,13 +586,14 @@ classdef vecManager
 					[ef str num] = fname_parse(get(fh, 'filename'), 'n');  %#ok
 					fname = sprintf('%s%02d', str, num);
 				end
-				for n = length(vec):-1:1
-					vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
-				end
-                if(iscell(vec))
-                    vecDiskWrite(V, vec, 'fname', vecnames);
+				%Don't bother creating a set of filenames if the vector type is scalar
+                if(strcmpi(vtype, 'scalar'))
+                    vecDiskWrite(V, {vec}, 'fname', {fname});
                 else
-                    vecDiskWrite(V, {vec}, 'fname', vecnames);
+					for n = length(vec):-1:1
+						vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
+					end
+                    vecDiskWrite(V, vec, 'fname', vecnames);
                 end
 			end
 		end 	%writeHueVec()
@@ -702,6 +703,8 @@ classdef vecManager
 		status = verifyTrackingVec(V, fh, vec);
 		status = verifyHSVVec(V, fh, vec);
 		status = verifyBPVec(V, fh, vec, varargin);
+		img    = assemVec(V, vectors, varargin);
+		[s varargout] = verifyHueVec(V, fh, vec, varargin);
 		
 	end 		%vecManager METHODS (Private)
 

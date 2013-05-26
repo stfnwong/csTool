@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 26-May-2013 00:31:11
+% Last Modified by GUIDE v2.5 26-May-2013 23:50:24
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -734,13 +734,93 @@ function menu_bufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 function etRangeLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etRangeHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
+function menu_save_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    %Save all available data to disk
+    DATA_DIR  = 'data/settings';
+    trajData  = handles.vecManager.readTrajBuf('all');
+    trajLabel = handles.vecManager.getTrajBufLabel('all');
+    fprintf('Saving trajectory data...\n');
+    wb = waitbar(0, 'Saving trajectories from buffer', ...
+                    'Name', 'Saving Trajectory Data');
+    for k = 1:length(trajData)
+        if(~isempty(trajData{k}))
+            tData = trajData{k};    %#ok
+            save(sprintf('%s/trajBuf-%02d', DATA_DIR, k), 'tData');
+        end
+        if(~isempty(trajLabel{k}))
+            tLabel = trajLabel{k};  %#ok
+            save(sprintf('%s/trajLabel-%02d', DATA_DIR, k), 'tLabel');
+        end
+        waitbar(k/length(trajData), wb, 'Saving Trajectory Data...');
+    end
+    delete(wb);
+    fprintf('...done\n');
+            
+
+function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    %Load variables from disk
+    DATA_DIR = 'data/settings';
+    tbLen    = handles.vecManager.getTrajBufSize();
+    for k = 1:tbLen
+        fname = sprintf('%s/trajBuf-%02d', DATA_DIR, k);
+        if(exist(fname, 'file') == 2)
+            load(fname);
+        end
+    end
+
 function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Create a new figure with all data plotted for use in papers, reports, etc
-	
-	fPrev  = figure('Name', 'Trajectory Results');
-	fErr   = figure('Name', 'Trajectory Error');
-	axPrev = axes('Parent', fPrev);
-	axErr  = axes('Parent', fErr);
+
+	%Don't bother doing this if we haven't got any data in the trajectory
+    %and compare buffers.
+    if(isempty(handles.trajBuf) || isempty(handles.compBuf))
+        fprintf('ERROR; Both trajBuf and compBuf must be set\n');
+        return;
+    end
+
+    % Format data as required
+    rl  = str2double(get(handles.etRangeLow, 'String'));
+    rh  = str2double(get(handles.etRangeHigh, 'String'));
+    if(rl < 1)
+        fprintf('ERROR: low range < 1\n');
+        return;
+    end
+    if(rh > handles.frameBuf.getNumFrames())
+        fprintf('ERROR: high range > num frames (%d)\n', handles.frameBuf.getNumFrames());
+        return;
+    end
+    fh    = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    img   = imread(get(fh, 'filename'), 'TIFF');
+    traja = handles.trajBuf(:, rl:rh);
+    trajb = handles.compBuf(:, rl:rh);
+    err   = handles.errBuf(:, rl:rh);
+    %Show trajectory preview
+	figure('Name', 'Trajectory Results');
+    %axPrev = axes('Parent', fPrev);
+
+    imshow(img);
+    hold on;
+    plot(traja(1,:), traja(2,:), 'x-', 'Color', [0 0 1], ...
+         'MarkerFaceColor', [1 0 0], 'MarkerSize', 12);
+    plot(trajb(1,:), trajb(2,:), 'x-', 'Color', [0 1 0], ...
+         'MarkerFaceColor', [1 0 0], 'MarkerSize', 12);
+    hold off;
+    title('Target Trajectory');
+    legend(sprintf('%s', handles.labBuf{1}), sprintf('%s', handles.labBuf{2}));
+    
+    %Show error preview
+	figure('Name', 'Trajectory Error');
+	%axErr  = axes('Parent', fErr);
+    subplot(2,1,1);
+    stem(1:length(err), err(1,:), 'Marker', 'v', ...
+         'MarkerFaceColor', [1 0 0], 'Color', [0 0 1], 'MarkerSize', 8);
+    title('Trajectory Error (x-axis)');
+    xlabel('Frame #'); ylabel('Error (pixels)');
+    subplot(2,1,2);
+    stem(1:length(err), err(2,:), 'Marker', 'v', ...
+         'MarkerFaceColor', [1 0 0], 'Color', [0 0 1], 'MarkerSize', 8);
+    title('Trajectory Error (y-axis)');
+    xlabel('Frame #'); ylabel('Error (pixels)');
 	
 	
 	guidata(hObject, handles);

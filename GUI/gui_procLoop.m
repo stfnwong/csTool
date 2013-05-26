@@ -65,20 +65,21 @@ function [status] = gui_procLoop(handles, varargin)
 				initParam = p{N};
 			else
 				%Actually check
-				if(get(pFrame, 'nIters') == 0)
-					fprintf('No iterations occured in param (frame %d)\n', range(1));
-					status = -1;
-					return;
+				if(TRACK)
+					if(get(pFrame, 'nIters') == 0)
+						fprintf('No iterations occured in param (frame %d)\n', range(1));
+						status = -1;
+						return;
+					end
+					if(isequal(get(pFrame, 'winParams'), zeros(1,5)))
+						fprintf('frame %d has zero param\n', range(1));
+						status = -1;
+						return;
+					end
+					initParam  = get(pFrame, 'winParams');
+					%p         = get(pFrame, 'winParams');
+					%initParam = p{get(pFrame, 'nIters')};
 				end
-				if(isequal(get(pFrame, 'winParams'), zeros(1,5)))
-					fprintf('frame %d has zero param\n', range(1));
-					status = -1;
-					return;
-				end
-                initParam  = get(pFrame, 'winParams');
-				%p         = get(pFrame, 'winParams');
-				%initParam = p{get(pFrame, 'nIters')};
-                
 			end	
 		else
 			rData = handles.rData;

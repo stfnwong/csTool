@@ -269,7 +269,9 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	vstr  = get(handles.pmVecSz, 'String');
     %val   = vstr(get(handles.pmVecSz, 'Value'));
     val   = vstr{get(handles.pmVecSz, 'Value')};
-    if(strncmpi(ftype, 'row', 3))
+    if(strncmpi(ftype, 'scalar', 6))
+        fmt = 'scalar';
+    elseif(strncmpi(ftype, 'row', 3))
         fmt = strcat(num2str(val), 'r');
     else
         fmt = strcat(num2str(val), 'c');
@@ -285,25 +287,25 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         if(handles.debug)
             fprintf('Generating RGB Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeRGBVec(fh, 'fmt', fmt, 'fname', fname);
+        handles.vecManager.writeRGBVec(fh, 'fmt', fmt, 'file', fname);
     end
     if(get(handles.chkHue, 'Value'))
         if(handles.debug)
             fprintf('Generating Hue Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeHueVec(fh, 'fmt', fmt, 'fname', fname);
+        handles.vecManager.writeHueVec(fh, 'fmt', fmt, 'file', fname);
     end
     if(get(handles.chkHSV, 'Value'))
         if(handles.debug)
             fprintf('Generating HSV Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeHSVVec(fh, 'fmt', fmt, 'fname', fname);
+        handles.vecManager.writeHSVVec(fh, 'fmt', fmt, 'file', fname);
     end
     if(get(handles.chkBP, 'Value'))
         if(handles.debug)
             fprintf('Generating BPVec (%s) for frame %s\n', fmt, get(fh, 'filename'))
         end
-        handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'fname', fname);
+        handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'file', fname);
     end
 
     guidata(hObject, handles);

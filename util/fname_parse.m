@@ -96,7 +96,7 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 	%	fprintf('DEBUG:usIdx = %d\n', usIdx);
 	%end
 
-	num = str2double(fstring(extIdx-4:extIdx-1))
+	num = str2double(fstring(extIdx-3:extIdx-1));
 	if(num < 1 || num > 999)
 		%Outside the range we will accept
 		fprintf('ERROR: csTool only supports the first 999 non-zero numbers\n');
@@ -114,8 +114,9 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 	
 
 	%Split string
-	str      = fstring(fslsh+1:usIdx-1);
-	num      = str2double(fstring(usIdx+1:extIdx-1));
+	%str      = fstring(fslsh+1:usIdx-1);
+	%num      = str2double(fstring(usIdx+1:extIdx-1));
+    str      = fstring(fslsh+1:extIdx-5);
 	ext      = fstring(extIdx+1:end);
 	%if(fslsh == 0)
 	path     = fstring(1:fslsh);

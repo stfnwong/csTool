@@ -285,6 +285,9 @@ classdef csSegmenter < handle
             set(fh, 'bpSum', bpsum);
             set(fh, 'bpVec', bpvec);
             set(fh, 'rhist', rhist);	
+			if(S.verbose)
+				fprintf('bpSum : %f\n', bpsum);
+			end
 		end 	%frameSegment()
 
 		% ---- SETTER METHODS ----- %

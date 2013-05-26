@@ -45,7 +45,7 @@ end
 
 
 % --- Executes just before csToolVerify is made visible.
-function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin)
+function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -56,7 +56,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin)
 	handles.status = 0;
 
     if(~isempty(varargin))
-		for k = 1:length(varargin))
+		for k = 1:length(varargin)
 			if(ischar(varargin))
 				if(strncmpi(varargin{k}, 'debug', 5))
 					handles.debug = true;
@@ -78,7 +78,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin)
 
 	%Populate GUI elements
     fmtStr  = {'16', '8', '4', '2', 'scalar'};
-    orStr   = {'row', 'col'};
+    orStr   = {'row', 'col', 'scalar'};
     typeStr = {'HSV', 'Hue', 'BP'};
 	set(handles.pmVecSz, 'String', fmtStr);
 	set(handles.pmVecOr, 'String', orStr);
@@ -105,9 +105,21 @@ function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<IN
 
 
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    
 function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Call VecManager options to read and re-format vector from file
 
+    vtype = get(handles.pmVecOr, 'String');
+    vsize = fix(str2double(get(handles.pmVecSz, 'String')));
+    switch(vtype)
+        case 'row'
+        case 'col'
+        case 'scalar'
+        otherwise
+            %No real way to get here, but in case I do something while
+            %debugging or the like...
+            fprintf('Not a valid vector type (%s)\n', vtype);
+    end
 
 
 function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>

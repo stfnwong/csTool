@@ -1,4 +1,4 @@
-function img = assemVec(vectors, varargin)
+function img = assemVec(V, vectors, varargin)
 % ASSEMVEC
 % img = assemVec(vectors, [..OPTIONS..])
 %

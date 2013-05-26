@@ -68,7 +68,7 @@ classdef csFrame < hgsetget
 						cf.img       = [];
 						cf.bpImg     = [];
 						cf.bpVec     = [];
-						cf.bpSum     = [];
+						cf.bpSum     = 0;
 						cf.rhist     = zeros(1,16, 'uint8');
 						cf.ihist     = [];
 						%cf.winParams = cell(1,1);
@@ -120,7 +120,7 @@ classdef csFrame < hgsetget
 						cf.img       = [];
 						cf.bpImg     = [];
 						cf.bpVec     = [];
-						cf.bpSum     = [];
+						cf.bpSum     = 0;
 						cf.rhist     = zeros(1,16);
 						cf.ihist     = [];
 						%cf.winParams = cell(1,1);
