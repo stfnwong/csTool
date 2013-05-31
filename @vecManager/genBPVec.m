@@ -52,11 +52,14 @@ function [vec varargout] = genBPVec(fh, vtype, val)
 			%Extract row vectors
 			for n = 1:rdim
 				row = zeros(1, img_h * (img_w/rdim));
+				ridx = 1;
 				for y = 1:img_h
-					row(y:*+(img_h/rdim)) = bpimg(y, n:rdim:img_w);
+					%row(y:*+(img_h/rdim)) = bpimg(y, n:rdim:img_w);
+					row(ridx:ridx+numel(n:rdim:img_w)-1) = bpimg(y, n:rdim:img_w);
 					waitbar(p/t, wb, sprintf('Generating column vector (%d/%d)', ...
                                      p, t);
 					p = p+1;
+					ridx = ridx + numel(n:rdim:img_w);
 				end
 				vec{n} = row;
 			end

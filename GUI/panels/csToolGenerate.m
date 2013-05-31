@@ -413,7 +413,11 @@ function bUIgetfile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
     %Take filename and path from uigetfile, and place into etWriteFile
     %String field
+    oldPath = get(handles.etWriteFile, 'String');
     [fname path] = uiputfile('*.dat', 'Save Vector As...');
+    if(isempty(fname))
+        fname = oldPath;
+    end
     set(handles.etWriteFile, 'String', sprintf('%s%s', path, fname));
     guidata(hObject, handles);
 

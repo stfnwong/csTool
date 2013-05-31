@@ -248,6 +248,7 @@ function csToolParamBrowser_CloseRequestFcn(hObject, eventdata, handles)	%#ok<IN
 	delete(hObject);
 
 function str = cstParam_FmtParamString(handles)   
+	%TODO: The layout here is awful - please kill it in a future version
     %Format string containing parameter data.
     fh = handles.frameBuf.getFrameHandle(handles.idx);
     N  = handles.frameBuf.getNumFrames();

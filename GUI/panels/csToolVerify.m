@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 12-Apr-2013 22:09:22
+% Last Modified by GUIDE v2.5 28-May-2013 21:18:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,7 +58,9 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin))
-				if(strncmpi(varargin{k}, 'debug', 5))
+				if(strncmpi(varargin{k}, 'imsz', 4))
+					imsz = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'debug', 5))
 					handles.debug = true;
 				end
 			else
@@ -75,6 +77,11 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 		delete(handles.csToolVerifyFig);
 		return;
 	end
+	if(~exist('imsz', 'var'))
+		handles.imsz = [640 480];
+	else
+		handles.imsz = imsz;
+	end
 
 	%Populate GUI elements
     fmtStr  = {'16', '8', '4', '2', 'scalar'};
@@ -82,7 +89,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     typeStr = {'HSV', 'Hue', 'BP'};
 	set(handles.pmVecSz, 'String', fmtStr);
 	set(handles.pmVecOr, 'String', orStr);
-	set(handles.pmVecType, 'String', typeStr);
+	%set(handles.pmVecType, 'String', typeStr);
 
 	%Setup preview figure
 	set(handles.figPreview, 'XTick', [], 'XTickLabel', []);
@@ -105,22 +112,34 @@ function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<IN
 
 
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    %Exit the panel
     
 function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Call VecManager options to read and re-format vector from file
-
+	filename = get(handles.etFileName, 'String');
     vtype = get(handles.pmVecOr, 'String');
     vsize = fix(str2double(get(handles.pmVecSz, 'String')));
-    switch(vtype)
-        case 'row'
-        case 'col'
-        case 'scalar'
-        otherwise
-            %No real way to get here, but in case I do something while
-            %debugging or the like...
-            fprintf('Not a valid vector type (%s)\n', vtype);
-    end
+	vectors = handles.vecManager.vecDiskRead('fname', filename, 'sz', vsize);
+	img     = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
+    %switch(vtype)
+    %    case 'row'
+    %    case 'col'
+    %    case 'scalar'
+    %    otherwise
+    %        %No real way to get here, but in case I do something while
+    %        %debugging or the like...
+    %        fprintf('Not a valid vector type (%s)\n', vtype);
+    %end
 
+function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU.
+    %Browse for file to read
+    oldText = get(handles.etFileName, 'String');
+    [fname path] = uigetfile('*.dat', 'Select vector file...');
+    if(isempty(fname))
+        fname = oldText;
+    end
+    set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
+    guidata(hObject, handles);
 
 function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -137,3 +156,8 @@ function pmVecOr_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+
+
+
+
+

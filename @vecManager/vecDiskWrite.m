@@ -76,9 +76,8 @@ function status = vecDiskWrite(V, data, varargin)
 	%Write data to disk	
 	for k = 1:length(data)
 		vec = data{k};
-		wb  = waitbar(0, sprintf('Writing %s (0/%d)', filename{k}, length(vec)), ...
-                         'Name', sprintf('Writing %s', filename{k}), ...
-                          'Interpreter', 'None');
+		wb  = waitbar(0, sprintf('Writing vector 0/%d', filename{k}, length(vec)), ...
+                         'Name', sprintf('Writing %s', filename{k}));
 		%Write address for modelsim
 		fprintf(fp(k), '@0 ');
 		for n = 1:length(vec)
@@ -95,7 +94,7 @@ function status = vecDiskWrite(V, data, varargin)
 					status = -1;
 					return;
 			end
-			waitbar(n/length(vec), wb, sprintf('Writing %s (%d/%d)', ...
+			waitbar(n/length(vec), wb, sprintf('Writing vector (%d/%d)', ...
                                        filename{k}, n, length(vec)));
 		end
         delete(wb);

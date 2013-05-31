@@ -131,12 +131,17 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 			%trim the result later
 			errVec = zeros(3,length(vec)); 
 			numErr = 0;
+			%Get a waitbar so that we have some vague notion the process is working
+			wb = waitbar(0, 'Name', 'Verifying hue vector');
 			for k = 1:length(vec)
 				if(refVec(k) ~= vec(k))
 					numErr = numErr + 1;
 					errVec(:, numErr) = [refVec(k) vec(k) k]';
 				end
+				waitbar(k/length(vec), wb, ...
+                sprintf('Verifying [%s] (%d/%d)', get(fh,'filename'),k, length(vec)));
 			end
+			delete(wb);
 	
 			%Trim errVec
 			if(numErr < 1)

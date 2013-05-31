@@ -1439,6 +1439,22 @@ end
 % --- Executes on button press in bVerify.
 function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
     %TODO: Call the verify panel
+    global frameIndex;
+	
+	fh   = handles.frameBuf.getFrameHandle(frameIndex);
+	imsz = get(fh, 'dims');
+	if(handles.debug)
+	    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug');
+	else
+		ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
+	end
+	if(ef == -1)
+		fprintf('ERROR: csToolVerify returned status -1\n');
+		return;
+	end
+	
+	guidata(hObject, handles);
+	
 end     %bVerify_Callback()
 
 % --- Executes on button press in chkShowSparse.

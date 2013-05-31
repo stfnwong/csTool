@@ -512,7 +512,7 @@ function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Check value in textbox
     
-    idx = str2double(handles.etGoto, 'String');
+    idx = str2double(get(handles.etGoto, 'String'));
     if(idx < 1 || idx > handles.frameBuf.getNumFrames())
         return;
     end

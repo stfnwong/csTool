@@ -18,32 +18,56 @@ function status = verifyBPVec(V, fh, vec, varargin)
 
 % Stefan Wong 2012
 
-
-	vtype   = 'col';
-	sparse = 0;
-	%Parse optional arguments
-	if(nargin > 3)
+	debug   = false;
+	vsparse = false;
+	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
 				if(strncmpi(varargin{k}, 'type', 4))
-					if(~ischar(varargin{k+1}))
-						error('Type must be string (row or col');
-					else
-						vtype = varargin{k+1};
-					end
+					vtype = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'val', 3))
+					val   = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'scale', 5))
+					scale = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'sparse', 6))
-					fac    = varargin{k+1};
-					if(fac ~= 16 || fac ~= 8 || fac ~= 4)
-						error('Invalid value for fac (must be 16, 8, or 4)');
-					end
-					sparse = 1;
+					vsparse = true;
+				elseif(strncmpi(varargin{k}, 'debug', 5))
+					debug   = true;
 				end
 			end
 		end
 	end
 
-	%Get backprojection data from fh
-	bpvec = get(fh, 'bpvec');
+	%Check what we have
+	if(~exist('vtype', 'var'))
+		vtype = 'scalar';
+	end
+	if(~exist('val', 'var'))
+		val = 1;
+	end
+	if(~exist('scale', 'var'))
+		S_FAC = 256;
+	end
 	
+	% ======== VERIFICATION ========
+	switch(vtype)
+		case 'row'
+			[refVec status dims] = genBPVec(V, fh, vtype, val, 'scale', S_FAC);
+			if(status == -1)
+				fprintf('ERROR: genBPVec() prodced badly-formed vector\n');
+				if(nargout > 1)
+					varargout{1} = -1;
+				end
+				return;
+			end
+			rdim = 
+		case 'col'
+		case 'scalar'
+		otherwise
+			fprintf('ERROR: [%s] not a valid vtype\n', vtype);
+			status = -1;
+			return;
+	end
+			
 
 end 	%verifyBPVec()

@@ -691,7 +691,7 @@ classdef vecManager
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
 		         vecDiskWrite(V, data, varargin);			%commit data to disk
-		vec    = vecDiskRead(V, file, varargin);
+		[vec varargout] = vecDiskRead(V, varargin);
 		vec    = genTrackingVec(fh);
 		[vec varargout] = genBPVec(fh, vtype, val);
         [vec varargout] = genHueVec(fh, vtype, val, varargin);

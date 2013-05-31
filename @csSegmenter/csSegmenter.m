@@ -106,8 +106,8 @@ classdef csSegmenter < handle
 					S.BP_THRESH  = 0;
 					%S.GEN_BP_VEC = 0;
 					%Default internals
-					BG_MODE      = 0;
-					BG_WIN_SZ    = 0;
+					S.BG_MODE      = 0;
+					S.BG_WIN_SZ    = 0;
 					S.method     = 1;
 					S.mhist      = zeros(1, S.N_BINS);
 					S.imRegion   = zeros(2,2);
@@ -170,7 +170,7 @@ classdef csSegmenter < handle
                           'method'  ,  S.method,   ...
                           'mhist'   ,  S.mhist,    ...
                           'bgMode',    S.BG_MODE,  ...
-                          'bgWinSize', S.BG_WIN_SIZE, ...
+                          'bgWinSize', S.BG_WIN_SZ, ...
                           'imRegion',  S.imRegion, ...
                           'verbose' ,  S.verbose );
 		end 	%getOpts()
