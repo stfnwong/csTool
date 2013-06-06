@@ -45,7 +45,7 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 				elseif(strncmpi(varargin{k}, 'sz', 2))
 					vecSz    = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'debug', 5))
-					debu     = true;
+					debug    = true;
 				end
 			end
 		end
@@ -72,54 +72,44 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 		return;
 	end
 
-	%Open file handles and read the data from disk
-	if(vecSz == 1)
-		%just open one file to read
-		fn = sprintf('%s/%s-%03d.%s', path, str, num, ext);
+	if(vecSz > 1)
+		vectors = cell(1, vecSz);
+	else
+		vectors = cell(1,1);
+	end	
+
+	% Attempt to open files, placing data into cell array as we go
+	k = 1;
+	for n = num:(num+vecSz)
+		fn = sprintf('%s/%s/-%03d.%s', path, str, n, ext);
 		fh = fopen(fn);
 		if(fh == -1)
-			fprintf('ERROR: Could not open file [%s]\n', fn);
-			%No other files we could possibly use, so exit here
-			vectors = [];
-			if(nargout > 1)
-				varargout{1} = -1;
-			end
-			return;
+			fprintf('ERROR: Couldn''t open file [%s]\n', fn(k));
+			break;
 		end
-	else
-		fnum = num:num+vecSz;
-		for n = vecSz:-1:1
-			fn   = sprintf('%s/%s/-%03d.%s', path, str, fnum(k), ext);
-			fh(k) = fopen(fn);
-			if(fh(k) == -1)
-				fprintf('ERROR: Couldn''t open file [%s]\n', fn(k));
-				break;
-			end
-		end
-	end
-
-	%Open the files and organise into a cell array, each element containing the vector
-	%stream for that file
-	if(length(fh) > 1)
-		vectors = cell(1, length(fh));
-		for k = 1:length(fh)
-			%Skip the leading '@' character, if it exists (modelsim address char)
-			c = fread(fh(k), 1, 'uint8=>char');
-			if(strncmp(c, '@', 1))
-				fseek(fh(k), 4, -1);
-			else
-				fseek(fh(k), 0);
-			end
-			vectors{k} = fread(fh(k), 'uint8');
-		end
-	else
+		%Skip the leading '@' character, if it exists (modelsim address char)
 		c = fread(fh, 1, 'uint8=>char');
 		if(strncmp(c, '@', 1))
 			fseek(fh, 4, -1);
 		else
 			fseek(fh, 0);
 		end
-		vectors{1} = fread(fh, 'uint8');
+		vectors{k} = fread(fh, 'uint8');
+		k = k + 1;
+	end
+	if(n < vecSz)
+		%We didn't manage to read all files, format error code and return what we have
+		fprintf('Read %d of %d files\n', n, vecSz);
+		if(nargout > 1)
+			varargout{1} = 2;
+		end
+		vectors = vectors{1:n};
+	else
+		if(nargout > 1)
+			varargout{1} = 0;
+		end
 	end
 
 end 	%vecDiskRead()
+
+

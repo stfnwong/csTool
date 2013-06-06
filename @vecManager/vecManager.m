@@ -104,6 +104,41 @@ classdef vecManager
 		function rfilename = getRfilename(V)
 			rfilename = V.rfilename;
 		end
+
+		%---- Read vector data from disk ---- %
+		function [vecdata] = readVec(V, varargin)
+		% READVEC
+		% This method wraps the vecDiskRead() method to read sets of vector data
+		% out of Verilog testbenches back from disk. This is done to prevent 
+		% this class definition from becoming overly long.
+
+			if(~isempty(varargin))
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'fname', 5))
+							fname = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'sz', 2))
+							sz    = varargin{k+1};
+						end
+					end
+				end	
+			end
+
+			%Check what we have
+			if(~exist('fname', 'var'))
+				fname = V.rfilename;
+			end
+			if(~exist('sz', 'var'))
+				sz    = V.dataSz;
+			end
+			[vec ef] = vecDiskRead(V, 'fname', fname, 'sz', sz);
+			if(ef == -1)
+				fprintf('Unable to read file [%s]\n', fname);
+				vec = [];
+				return;
+			end		
+
+		end 	%readVec()
 	
 		% -------- TRAJECTORY BUFFER -------- %
 		

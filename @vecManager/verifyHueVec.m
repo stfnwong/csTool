@@ -75,84 +75,74 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 		S_FAC = 256;	%Most common case, so default to this
 	end
 
+	% TODO: The verification is actually the same in all cases - we just take the 
+	% vector provided by the caller, and loop over all the elements comparing to the
+	% reference vector. 
+
 	%Perform verification step
-	switch(vtype)
-		% Data stream coming out of testbenches should be a series of scalar pixel 
-		% values. The vector will be split across multiple files, and pointer will
-		% advance each stream (ie: each vector element) simultaneously. 
-		case 'row'
-			[refVec status dims] = genHueVec(V, fh, vtype, val, 'scale' S_FAC);
-			if(status == -1)
-				fprintf('ERROR: genHueVec() produced badly-formed vector\n');
-				if(nargout > 1)
-					varargout{1} = -1;
-				end
-				vec = [];
-				return;
+	if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
+		[refVec status dims] = genHueVec(V, fh, vtype, val, 'scale', S_FAC);
+		if(status == -1)
+			fprintf('ERROR: genHueVec() produced badly-formed vector\n');
+			if(nargout > 1)
+				varargout{1} = -1;
 			end
-			%dims should have format [w h]
-			rdim = dims(1) / val;
-			vec  = cell(1,rdim);
+			return;
+		end
+		vdim   = dims(1) / val;
+		vec    = cell(1,rdim);
+		errVec = cell(1,rdim);
+		numErr = 0;
+		%Show a waitbar to indicate progress hasn't stalled
+		for k = 1:vdim
+			rvec = refVec{k};				
+			tvec = vec{k};					%test vector for element k
+			evec = zeros(1,length(rvec));
+			if(rvec(k) ~= tvec(k))
+				numErr  = numErr + 1;
+				evec(k) = 1;
+			end
+			errVec{k} = evec;
+		end
+	elseif(strncmpi(vtype, 'scalar', 6))
+		%Generate a hue vector to compare against
+		[refVec status dims] = genHueVec(V, fh, 'scalar', 1, 'scale', S_FAC);
+		if(status == -1)
+			fprintf('ERROR: genHueVec() produced badly-formed vector\n';
+			if(nargout > 1)
+				varargout{1} = -1;
+			end
+			vec = [];
+			return;
+		end
 
+		%TODO: Further massaging here
+		
+		%Potentially all the elements could be wrong, so over-allocate here and
+		%trim the result later
+		errVec = zeros(3,length(vec)); 
+		numErr = 0;
+		%Get a waitbar so that we have some vague notion the process is working
+		wb = waitbar(0, 'Name', 'Verifying hue vector');
+		for k = 1:length(vec)
+			if(refVec(k) ~= vec(k))
+				numErr = numErr + 1;
+				errVec(:, numErr) = [refVec(k) vec(k) k]';
+			end
+			waitbar(k/length(vec), wb, ...
+			sprintf('Verifying [%s] (%d/%d)', get(fh,'filename'),k, length(vec)));
+		end
+		delete(wb);
 
-		case 'col'
-			[refVec status dims] = genHueVec(V, fh, vtype, val, 'scale', S_FAC);
-			if(status == -1)
-				fprintf('ERROR: genHueVec() produced badly-formed vector\n');
-				if(nargout > 1)
-					varargout{1} = -1;
-				end
-				vec = [];
-				return;
-			end
-			cdim   = dims(2) / val;
-			vec    = cell(1,cdim);
-			errVec = cell(1,cdim);		%trim this array at the end of operation 
-			for k = 1:cdim
-				%Extract current cell from reference array and compare to elements 
-				%of the test array 
-			end
-
-		case 'scalar'
-			%Generate a hue vector to compare against
-			[refVec status dims] = genHueVec(V, fh, 'scalar', 1, 'scale', S_FAC);
-			if(status == -1)
-				fprintf('ERROR: genHueVec() produced badly-formed vector\n';
-				if(nargout > 1)
-					varargout{1} = -1;
-				end
-				vec = [];
-				return;
-			end
-
-			%TODO: Further massaging here
-			
-			%Potentially all the elements could be wrong, so over-allocate here and
-			%trim the result later
-			errVec = zeros(3,length(vec)); 
-			numErr = 0;
-			%Get a waitbar so that we have some vague notion the process is working
-			wb = waitbar(0, 'Name', 'Verifying hue vector');
-			for k = 1:length(vec)
-				if(refVec(k) ~= vec(k))
-					numErr = numErr + 1;
-					errVec(:, numErr) = [refVec(k) vec(k) k]';
-				end
-				waitbar(k/length(vec), wb, ...
-                sprintf('Verifying [%s] (%d/%d)', get(fh,'filename'),k, length(vec)));
-			end
-			delete(wb);
-	
-			%Trim errVec
-			if(numErr < 1)
-				errVec = [];		%turns out the vector was correct
-			elseif(numErr < length(errVec))
-				errVec = errVec(1:numErr);
-			end
+		%Trim errVec
+		if(numErr < 1)
+			errVec = [];		%turns out the vector was correct
+		elseif(numErr < length(errVec))
+			errVec = errVec(1:numErr);
+		end
 				
-			
-		otherwise
-			fprintf('ERROR: Invalid type %s\n', vtype);
+	else
+		fprintf('ERROR: Not a valid vtype [%s]\n', vtype);		
 	end
 
 

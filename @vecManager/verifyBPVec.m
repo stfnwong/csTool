@@ -54,15 +54,30 @@ function status = verifyBPVec(V, fh, vec, varargin)
 		case 'row'
 			[refVec status dims] = genBPVec(V, fh, vtype, val, 'scale', S_FAC);
 			if(status == -1)
-				fprintf('ERROR: genBPVec() prodced badly-formed vector\n');
+				fprintf('ERROR: genBPVec() produced badly-formed vector\n');
 				if(nargout > 1)
 					varargout{1} = -1;
 				end
 				return;
 			end
-			rdim = 
+			rdim = dims(1) / val;
+			vec  = cell(1, rdim);
+
 		case 'col'
+			[refVec status dims] = genBPVec(V, fh, vtpye, val, 'scale', S_FAC);
+			if(status == -1)
+				fprintf('ERROR: genBPVec() produced badly-formed vector\n');
+				if(nargout > 1)
+					varargout{1} = -1;
+				end
+				return;
+			end
+			cdim = dims(1) / val;
+			vec  = cell(1, cdim);
+
 		case 'scalar'
+			%Not really any need for scalar backprojection vectors in CSoC, but just
+			%for completeness 
 		otherwise
 			fprintf('ERROR: [%s] not a valid vtype\n', vtype);
 			status = -1;

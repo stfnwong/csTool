@@ -117,10 +117,11 @@ function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Call VecManager options to read and re-format vector from file
 	filename = get(handles.etFileName, 'String');
-    vtype = get(handles.pmVecOr, 'String');
-    vsize = fix(str2double(get(handles.pmVecSz, 'String')));
-	vectors = handles.vecManager.vecDiskRead('fname', filename, 'sz', vsize);
-	img     = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
+    vtype    = get(handles.pmVecOr, 'String');
+    vsize    = fix(str2double(get(handles.pmVecSz, 'String')));
+	vectors  = handles.vecManager.readVec('fname', filename, 'sz', vsize);
+	img      = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
+
     %switch(vtype)
     %    case 'row'
     %    case 'col'
