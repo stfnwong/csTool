@@ -109,19 +109,24 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> 
     varargout{1} = handles.output;
 
-
-
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
     
 function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Call VecManager options to read and re-format vector from file
-	filename = get(handles.etFileName, 'String');
-    vtype    = get(handles.pmVecOr, 'String');
-    vsize    = fix(str2double(get(handles.pmVecSz, 'String')));
-	vectors  = handles.vecManager.readVec('fname', filename, 'sz', vsize);
-	img      = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
+	filename     = get(handles.etFileName, 'String');
+    vtype        = get(handles.pmVecOr, 'String');
+    vsize        = fix(str2double(get(handles.pmVecSz, 'String')));
+	[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize);
+	if(ef == -1)
+		fprintf('ERROR: Failed to read vector in file [%s]\n', filename);
+		return;
+	end
+	%img      = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
+	img          = handles.vecManager.formatVecImg(vectors, 'vecFmt', 'scalar');
 
+	%Show image in preview area
+	imshow(img, 'Parent', figPreview);
     %switch(vtype)
     %    case 'row'
     %    case 'col'

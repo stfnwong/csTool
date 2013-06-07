@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 02-May-2013 17:58:59
+% Last Modified by GUIDE v2.5 06-Jun-2013 23:35:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,6 +59,8 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
                     handles.debug = 1;
                 elseif(strncmpi(varargin{k}, 'idx', 3))
                     handles.idx   = varargin{k+1};
+                elseif(strncmpi(varargin{k}, 'mhist', 5))
+                    handles.mhist = varargin{k+1};
                 end
             else
                 %These are the mandatory arguments
@@ -94,6 +96,11 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
         %view, start at first frame
         fprintf('WARNING: No idx parameter, setting index to 1\n');
         handles.idx = 1;
+    end
+    if(~isfield(handles, 'mhist'))
+        %Without model histogram, can't produce mhist vec
+        fprintf('WARNING; no mhist parameter, setting to 16 zeros\n');
+        handles.mhist = zeros(1,16);
     end
 
     if(handles.debug)
@@ -312,6 +319,25 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     uiresume(handles.csToolGenerateFig);
     delete(handles.csToolGenerateFig);
 
+function bGenMhist_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    %Take Current model histogram and produce a vector that can be used in
+    %a Verilog Testbench
+    %TODO: have a seperate field for mhist name?
+    fh    = handles.frameBuf.getFrameHandle(handles.idx);
+    fname = sprintf('%s-mhist.dat', get(fh, 'filename'));
+    fp    = fopen(fname);
+    if(fp == -1)
+       fprintf('ERROR: Unable to open file [%s]\n', fname);
+        return;
+    end
+    fprintf('Writing model histogram...\n');
+    fwrite(fp, '@0 ');      %write modelsim address
+    for k = 1:length(handles.mhist)
+        fwritw(fp, '%2X ', handles.mhist(k));
+    end
+    fclose(fp);
+    fprintf('...done\n');
+
 function chkUseFrameFilename_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Modify the value of rfilename and wfilename when this is checked 
 
@@ -420,4 +446,3 @@ function bUIgetfile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etWriteFile, 'String', sprintf('%s%s', path, fname));
     guidata(hObject, handles);
-

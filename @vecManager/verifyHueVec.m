@@ -75,10 +75,6 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 		S_FAC = 256;	%Most common case, so default to this
 	end
 
-	% TODO: The verification is actually the same in all cases - we just take the 
-	% vector provided by the caller, and loop over all the elements comparing to the
-	% reference vector. 
-
 	%Perform verification step
 	if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
 		[refVec status dims] = genHueVec(V, fh, vtype, val, 'scale', S_FAC);
@@ -94,21 +90,35 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 		errVec = cell(1,rdim);
 		numErr = 0;
 		%Show a waitbar to indicate progress hasn't stalled
+		total  = vdim * length(vec{0});		%Total progress
+		prg    = 0;							%Current progress
+		wb = waitbar(0, 'Name', 'Verifying Vector...');
 		for k = 1:vdim
 			rvec = refVec{k};				
 			tvec = vec{k};					%test vector for element k
 			evec = zeros(1,length(rvec));
-			if(rvec(k) ~= tvec(k))
-				numErr  = numErr + 1;
-				evec(k) = 1;
+			for n = 1:length(tvec)
+				if(rvec(n) ~= tvec(n))
+					numErr  = numErr + 1;
+					evec(n) = 1;
+				end
+				prg = prg + 1;
+				waitbar(prg/total, wb, sprintf('Verifying (%d/%d)', prg, total));
 			end
 			errVec{k} = evec;
 		end
+		delete(wb);
+
+		if(nargout > 1)
+			%Format stats for output
+		end
+		
 	elseif(strncmpi(vtype, 'scalar', 6))
 		%Generate a hue vector to compare against
 		[refVec status dims] = genHueVec(V, fh, 'scalar', 1, 'scale', S_FAC);
 		if(status == -1)
-			fprintf('ERROR: genHueVec() produced badly-formed vector\n';
+			fprintf('ERROR: genHueVec() produced badly-formed vector\n');
+			status = -1;
 			if(nargout > 1)
 				varargout{1} = -1;
 			end
@@ -116,7 +126,6 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 			return;
 		end
 
-		%TODO: Further massaging here
 		
 		%Potentially all the elements could be wrong, so over-allocate here and
 		%trim the result later
@@ -140,9 +149,16 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 		elseif(numErr < length(errVec))
 			errVec = errVec(1:numErr);
 		end
+
+		if(nargout > 1)
+			%Format stats for caller
+		end
+		return;
 				
 	else
 		fprintf('ERROR: Not a valid vtype [%s]\n', vtype);		
+		status = -1;
+		return;
 	end
 
 

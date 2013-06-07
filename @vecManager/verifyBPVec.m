@@ -49,40 +49,49 @@ function status = verifyBPVec(V, fh, vec, varargin)
 		S_FAC = 256;
 	end
 	
-	% ======== VERIFICATION ========
-	switch(vtype)
-		case 'row'
-			[refVec status dims] = genBPVec(V, fh, vtype, val, 'scale', S_FAC);
-			if(status == -1)
-				fprintf('ERROR: genBPVec() produced badly-formed vector\n');
-				if(nargout > 1)
-					varargout{1} = -1;
-				end
-				return;
+	if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
+		%Get a reference vector		
+		[refVec status dims] = genHueVec(V, fh, vtype, val, 'scale', S_FAC);
+		if(status == -1)
+			fprintf('ERROR: genHueVec() produced badly-formed vector\n');
+			if(nargout > 1)
+				varargout{1} = -1;
 			end
-			rdim = dims(1) / val;
-			vec  = cell(1, rdim);
-
-		case 'col'
-			[refVec status dims] = genBPVec(V, fh, vtpye, val, 'scale', S_FAC);
-			if(status == -1)
-				fprintf('ERROR: genBPVec() produced badly-formed vector\n');
-				if(nargout > 1)
-					varargout{1} = -1;
-				end
-				return;
-			end
-			cdim = dims(1) / val;
-			vec  = cell(1, cdim);
-
-		case 'scalar'
-			%Not really any need for scalar backprojection vectors in CSoC, but just
-			%for completeness 
-		otherwise
-			fprintf('ERROR: [%s] not a valid vtype\n', vtype);
-			status = -1;
 			return;
-	end
-			
+		end
+		vdim   = dims(1) / val;
+		vec    = cell(1,rdim);
+		errVec = cell(1,rdim);
+		numErr = 0;
+		%Show a waitbar to indicate progress hasn't stalled
+		total  = vdim * length(vec{0});		%Total progress
+		prg    = 0;							%Current progress
+		wb = waitbar(0, 'Name', 'Verifying Vector...');
+		for k = 1:vdim
+			rvec = refVec{k};				
+			tvec = vec{k};					%test vector for element k
+			evec = zeros(1,length(rvec));
+			for n = 1:length(tvec)
+				if(rvec(n) ~= tvec(n))
+					numErr  = numErr + 1;
+					evec(n) = 1;
+				end
+				prg = prg + 1;
+				waitbar(prg/total, wb, sprintf('Verifying (%d/%d)', prg, total));
+			end
+			errVec{k} = evec;
+		end
+		delete(wb);
+
+		if(nargout > 1)
+			%Format stats for output
+		end
+	elseif(strncmpi(vtype, 'scalar', 6))
+
+	else
+		fprintf('ERROR: Not a valid vtype [%s]\n', vtype);
+		status = -1;
+		return;
+	end	
 
 end 	%verifyBPVec()

@@ -106,7 +106,7 @@ classdef vecManager
 		end
 
 		%---- Read vector data from disk ---- %
-		function [vecdata] = readVec(V, varargin)
+		function [vecdata varargout] = readVec(V, varargin)
 		% READVEC
 		% This method wraps the vecDiskRead() method to read sets of vector data
 		% out of Verilog testbenches back from disk. This is done to prevent 
@@ -131,12 +131,17 @@ classdef vecManager
 			if(~exist('sz', 'var'))
 				sz    = V.dataSz;
 			end
-			[vec ef] = vecDiskRead(V, 'fname', fname, 'sz', sz);
+			[vecdata ef] = vecDiskRead(V, 'fname', fname, 'sz', sz);
 			if(ef == -1)
 				fprintf('Unable to read file [%s]\n', fname);
-				vec = [];
+				vecdata = [];
+				if(nargout > 1)	
+					varargout{1} = -1;
 				return;
 			end		
+			if(nargout > 1)
+				varargout{1} = 0;
+			end
 
 		end 	%readVec()
 	
@@ -456,6 +461,35 @@ classdef vecManager
 			end
 
 		end 	%parseFmt()
+
+		% ---- Reassemble a vector into an image
+		function img = formatVecImg(V, vec, varargin)
+		% FORMATVECIMG
+		% This method is a wrapper for assemVec. 
+		
+			if(~isempty(varargin))
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'imsz', 4))
+							imSz = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'vecfmt', 6))
+							vecFmt = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'vecsz', 5))
+							vecSz = varargin{k+1};
+						end
+					end
+				end
+			end
+
+			%If variables not assigned, have assemVec() use internal defaults
+			if(exist('imSz', 'var') && exist('vecFmt', 'var') && exist('vecSz', 'var'))
+				img = assemVec(V, vec, 'imsz', imSz, 'vecfmt', vecFmt, 'vecsz', vecSz);
+			else
+				img = assemVec(V, vec);
+			end
+			
+
+		end 	%formatVecImg()
 
 		% -------- WRITERGBVEC() ------- %
 		function writeRGBVec(V, fh, varargin)

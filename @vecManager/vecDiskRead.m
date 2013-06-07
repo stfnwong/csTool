@@ -57,7 +57,7 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 	end
 	%If no vector size, assume scalar
 	if(~exist('vecSz', 'var'))
-		vecSz = 1;:
+		vecSz = 1;
 	end
 
 	%Attempt to parse the filename here. If this step fails, the filename isn't in the

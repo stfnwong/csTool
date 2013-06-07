@@ -831,11 +831,11 @@ function bGenerate_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	%Call generate gui
 	
 	global frameIndex;
-
+	mhist = handles.segmenter.getMhist();
 	if(handles.debug)
-		status = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'debug');
+		status = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'debug', 'mhist', mhist);
 	else	
-		status = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex);
+		status = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'mhist', mhist);
 	end
 	if(status == -1)
 		return;

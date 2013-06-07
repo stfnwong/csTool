@@ -802,8 +802,10 @@ function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
     hold on;
     plot(traja(1,:), traja(2,:), 'x-', 'Color', [0 0 1], ...
          'MarkerFaceColor', [1 0 0], 'MarkerSize', 12);
+	axis tight;
     plot(trajb(1,:), trajb(2,:), 'x-', 'Color', [0 1 0], ...
          'MarkerFaceColor', [1 0 0], 'MarkerSize', 12);
+	axis tight;
     hold off;
     title('Target Trajectory');
     legend(sprintf('%s', handles.labBuf{1}), sprintf('%s', handles.labBuf{2}));
