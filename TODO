@@ -4,6 +4,9 @@
 #
 ###############################################################
 
+VECMANAGER READ:
+Problem in read method getting correct filename
+
 ARCHITECTURAL:
 
 - Completely convert bpdata to be vector, rather than matrix (image grid)

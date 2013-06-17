@@ -115,8 +115,16 @@ function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Call VecManager options to read and re-format vector from file
 	filename     = get(handles.etFileName, 'String');
+	%DEBUG:
+	fprintf('(DEBUG)filename - [%s]\n', filename);
     vtype        = get(handles.pmVecOr, 'String');
-    vsize        = fix(str2double(get(handles.pmVecSz, 'String')));
+    vidx         = get(handles.pmVecSz, 'Value');
+    vstr         = get(handles.pmVecSz, 'String');
+    if(strncmpi(vstr, 'scalar', 6))
+        vsize = 1;
+    else
+        vsize = fix(str2double(vstr{vidx}));
+    end
 	[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize);
 	if(ef == -1)
 		fprintf('ERROR: Failed to read vector in file [%s]\n', filename);

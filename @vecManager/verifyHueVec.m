@@ -125,8 +125,6 @@ function [status varargout] = verifyHueVec(V, fh, vec, varargin)
 			vec = [];
 			return;
 		end
-
-		
 		%Potentially all the elements could be wrong, so over-allocate here and
 		%trim the result later
 		errVec = zeros(3,length(vec)); 

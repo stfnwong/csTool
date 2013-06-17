@@ -276,7 +276,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	vstr  = get(handles.pmVecSz, 'String');
     %val   = vstr(get(handles.pmVecSz, 'Value'));
     val   = vstr{get(handles.pmVecSz, 'Value')};
-    if(strncmpi(ftype, 'scalar', 6))
+    if(strncmpi(val, 'scalar', 6))
         fmt = 'scalar';
     elseif(strncmpi(ftype, 'row', 3))
         fmt = strcat(num2str(val), 'r');

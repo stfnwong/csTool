@@ -34,13 +34,16 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 
 	
 	DEBUG  = 0;		%dont print debug messages
-	STRING = 1;		%return num value as a string 
+	STRING = true;		%return num value as a string 
+	SCALAR = false;
 	if(nargin > 1)
 		for k = 1:length(varargin)
 			if(strncmpi(varargin{k}, 'd', 1))
 				DEBUG = 1;
+			elseif(strncmpi(varargin{k}, 'scalar', 6))
+				SCALAR = true;
 			elseif(strncmpi(varargin{k}, 'n', 1))
-				STRING = 0;		%return num value as numeric constant
+				STRING = false;		%return num value as numeric constant
 			end
 		end
 	end
@@ -100,20 +103,28 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 	%	fprintf('DEBUG:usIdx = %d\n', usIdx);
 	%end
 
-	num = str2double(fstring(extIdx-3:extIdx-1));
-	if(num < 1 || num > 999)
-		%Outside the range we will accept
-		fprintf('ERROR: csTool only supports the first 999 non-zero numbers\n');
-		str      = fstring(1:extIdx);
-		path     = fstring(1:fslsh-1);
-		num      = 0;
-		ext      = fstring(extIdx(end)+1:end);
-		exitflag = -1;
-		outvars  = {num, ext, path};
-		for k = 1:nargout-2
-			varargout{k} = outvars{k};
-		end
-		return;
+	if(~SCALAR)
+        if(STRING)
+			num = fstring(extIdx-3:extIdx-1);
+		else
+			num = str2double(fstring(extIdx-3:extIdx-1));
+            if(num < 1 || num > 999)
+                %Outside the range we will accept
+                fprintf('ERROR: csTool only supports the first 999 non-zero numbers\n');
+                str      = fstring(1:extIdx);
+                path     = fstring(1:fslsh-1);
+                num      = 0;
+                ext      = fstring(extIdx(end)+1:end);
+                exitflag = -1;
+                outvars  = {num, ext, path};
+                for k = 1:nargout-2
+                    varargout{k} = outvars{k};
+                end
+                return;
+            end
+        end
+	else
+		num = [];
 	end
 	
 

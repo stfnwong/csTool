@@ -117,6 +117,8 @@ classdef vecManager
 					if(ischar(varargin{k}))
 						if(strncmpi(varargin{k}, 'fname', 5))
 							fname = varargin{k+1};
+                        elseif(strncmpi(varargin{k}, 'vtype', 5))
+                            vtype = varargin{k+1};
 						elseif(strncmpi(varargin{k}, 'sz', 2))
 							sz    = varargin{k+1};
 						end
@@ -131,13 +133,17 @@ classdef vecManager
 			if(~exist('sz', 'var'))
 				sz    = V.dataSz;
 			end
-			[vecdata ef] = vecDiskRead(V, 'fname', fname, 'sz', sz);
+            if(~exist('vtype', 'var'))
+                vtype = 'scalar';
+            end
+			[vecdata ef] = vecDiskRead(V, 'fname', fname, 'sz', sz, 'vtype', vtype);
 			if(ef == -1)
 				fprintf('Unable to read file [%s]\n', fname);
 				vecdata = [];
-				if(nargout > 1)	
+                if(nargout > 1)
 					varargout{1} = -1;
-				return;
+                    return;
+                end
 			end		
 			if(nargout > 1)
 				varargout{1} = 0;
@@ -215,7 +221,7 @@ classdef vecManager
 					label = cell(1, length(idx(1):idx(2)));
 					n     = 1;
 					for k = idx(1):idx(2)
-						data{n} = V.trajBuf{k};
+						label{n} = V.trajBuf{k};
 					end
 				end
 			end
@@ -559,14 +565,7 @@ classdef vecManager
 					end
 				end
 			end
-
-			%if(exist('fmt','var'))
-			%	[vtype val] = parseFmt(V,fmt);
-			%else
-			%	vtype = 'scalar';
-			%	val   = 0;
-			%end
-		
+			
 			if(length(fh) > 1)	
 				for k = 1:length(fh)
 					vec  = genHSVVec(fh(k));

@@ -33,7 +33,7 @@ function status = vecDiskWrite(V, data, varargin)
 		end
 	end
 
-	%Check what we have
+	%Check what we haveerrors
 	if(~iscell(data))
 		fprintf('ERROR: Data must be cell array\n');
 		status = -1;
@@ -76,7 +76,7 @@ function status = vecDiskWrite(V, data, varargin)
 	%Write data to disk	
 	for k = 1:length(data)
 		vec = data{k};
-		wb  = waitbar(0, sprintf('Writing vector 0/%d', filename{k}, length(vec)), ...
+		wb  = waitbar(0, sprintf('Writing vector %s (0/%d)', filename{k}, length(vec)), ...
                          'Name', sprintf('Writing %s', filename{k}));
 		%Write address for modelsim
 		fprintf(fp(k), '@0 ');
@@ -94,7 +94,7 @@ function status = vecDiskWrite(V, data, varargin)
 					status = -1;
 					return;
 			end
-			waitbar(n/length(vec), wb, sprintf('Writing vector (%d/%d)', ...
+			waitbar(n/length(vec), wb, sprintf('Writing vector %s (%d/%d)', ...
                                        filename{k}, n, length(vec)));
 		end
         delete(wb);
