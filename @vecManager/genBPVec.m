@@ -40,7 +40,6 @@ function [vec varargout] = genBPVec(fh, vtype, val)
 	
 	switch(vtype)
 		case 'row'
-			
 			%Data enters the system serially, so row vectors need to be pulled out 
 			%along the row dimension of the image
 			rdim = img_w / val;

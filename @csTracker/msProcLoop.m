@@ -169,6 +169,9 @@ function status = msProcLoop(T, fh, trackWindow)
                isinf(trackWindow(1)) || isinf(trackWindow(2)) || ...
                trackWindow(1) == 0   || trackWindow(2) == 0   || ...
                (trackWindow(1) == 1  && trackWindow(2) == 1))
+				if(T.verbose)
+					fprintf('Reverting to temp centroid [%f %f]\n', ctemp(1), ctemp(2));
+				end
 				trackWindow(1) = ctemp(1);
 				trackWindow(2) = ctemp(2);
 			end
