@@ -1,4 +1,4 @@
-function [vec varargout] = genBPVec(fh, vtype, val)
+function [vec varargout] = genBPVec(V, fh, vtype, val) %#ok
 % GENBPVEC
 % vec = genBPVec(fh, vtype, val)
 % Generate backprojection vector in either row or column format with variable vector
@@ -35,7 +35,7 @@ function [vec varargout] = genBPVec(fh, vtype, val)
 % Stefan Wong 2013
 
 	%Get data for vector
-	bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+	bpimg         = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
 	[img_h img_w] = size(bpimg);		%should be 1 channel, so don't need extra d
 	
 	switch(vtype)
@@ -43,48 +43,45 @@ function [vec varargout] = genBPVec(fh, vtype, val)
 			%Data enters the system serially, so row vectors need to be pulled out 
 			%along the row dimension of the image
 			rdim = img_w / val;
-			vec  = cell(1, rdim);
-			t    = rdim * img_h;
-			wb   = waitbar(0, sprintf('Generating column vector (0/%d)', t), ...
-                              'Name', 'Generating column vector');
-			p    = 1;		%Progress counter
-			%Extract row vectors
-			for n = 1:rdim
-				row = zeros(1, img_h * (img_w/rdim));
-				ridx = 1;
-				for y = 1:img_h
-					%row(y:*+(img_h/rdim)) = bpimg(y, n:rdim:img_w);
-					row(ridx:ridx+numel(n:rdim:img_w)-1) = bpimg(y, n:rdim:img_w);
-					waitbar(p/t, wb, sprintf('Generating column vector (%d/%d)', ...
-                                     p, t);
-					p = p+1;
-					ridx = ridx + numel(n:rdim:img_w);
+			vec  = cell(val, rdim * img_w);
+			%Bookkeeping for waitbar
+			t    = img_w * rdim;
+			p    = 1;				%progress counter
+			wb   = waitbar(0, sprintf('Generating row vector (0/%d0', t));
+			for v = 1:val
+				idx = 0;
+				for n = 1:img_h
+					vec{v, (idx*rdim+1 : (idx+1)*rdim)} = bpimg(n, v:val:img_w);
+					idx = idx + 1;
+					%Update waitbar
+					waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
+						    p, t));
+					p = p + 1;
 				end
-				vec{n} = row;
 			end
 			delete(wb);
 			if(nargout > 1)
 				varargout{1} = 0;
-			end			
+			end
 		case 'col'
-			%Because data enters serially, we can just pull the whole row out, and 
-			%then move down the image by N rows, where N is the size of the vector.
 			cdim = img_h / val;
-			vec  = cell(1, cdim);
-			t    = cdim * img_h;
-			wb   = waitbar(0, sprintf('Generating row vector (0/%d)', t), ...
-                              'Name', 'Generating row vector');
-			p     = 1;	%Progress counter
-			%Extract column vectors
-			for n = 1:cdim
-				col = zeros(1, img_w * (img_h/cdim));
-				for y = n:cdim:img_h
-					col(y:y*img_w) = bpimg(y, n:img_w);
+			vec  = cell(val, cdim * img_w);
+			% Bookkeeping for waitbar
+			t    = cdim * img_w;
+			p    = 1;		%progress counter
+			wb   = waitbar(0, sprintf('Generating col vector (0/%d)', t));
+			for v = 1 : val
+				%Need to compute start and end row for vector 
+				idx = 0;
+				for n = v : val : img_h
+					% RHS has too few values to satisfy LHS
+					vec{v, (idx*img_w+1 : (idx+1)*img_w)} = bpimg(n, 1:img_w);
+					idx = idx + 1;
+					%Update waitbar
 					waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
-                                     p, t);
+						    p,t));
 					p = p + 1;
 				end
-				vec{n} = col;
 			end
 			delete(wb);
 			if(nargout > 1)
@@ -93,16 +90,16 @@ function [vec varargout] = genBPVec(fh, vtype, val)
 		case 'scalar'
 			%Linearise data into raster
 			data = zeros(1, img_w*img_h);
+			t    = img_w * img_h;
 			wb   = waitbar(0, sprintf('Generating raster vector (0/%d)', t), ...
                               'Name', 'Generating raster vector');
-			t    = img_w * img_h;
 			p    = 1;		%Progress counter
 			%Extract raster data
 			for y = 1:img_h
 				for x = 1:img_w
 					data(y,x) = bpimg(y,x);
 					waitbar(p/t, wb, sprintf('Generating raster vector (%d/%d)', ...
-                                     p, t);
+                                     p, t));
 					p = p + 1;
 				end
 			end

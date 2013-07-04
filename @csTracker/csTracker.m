@@ -235,7 +235,7 @@ classdef csTracker < handle
 				fprintf('ERROR: Empty window position vector\n');
 				return;
 			end
-
+			%Run tracking loop
 			plFlag = msProcLoop(T, fh, wpos);
 			if(plFlag == -1)
 				fprintf('WARNING: problem tracking frame %s\n', get(fh, 'filename'));

@@ -694,7 +694,7 @@ classdef vecManager
 			
 			if(length(fh) > 1)
 				for k = 1:length(fh)
-					vec  = genBPVec(fh(k), vtype, val);
+					vec  = genBPVec(V, fh(k), vtype, val);
 					if(~exist('fname', 'var'))
 						[ef str num] = fname_parse(get(fh(k), 'filename')); %#ok
 						fname = sprintf('%s%02d', str, num);
@@ -705,7 +705,7 @@ classdef vecManager
 					vecDiskWrite(V, vec, 'fname', vecnames);
 				end
 			else
-				vec = genBPVec(fh, vtype, val);
+				vec = genBPVec(V, fh, vtype, val);
 				if(~exist('fname', 'var'))
 					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
 					fname = sprintf('%s%02d', str, num);
@@ -758,21 +758,21 @@ classdef vecManager
 		%[ftype val] = parseFmt(V,fmt);
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
-		         vecDiskWrite(V, data, varargin);			%commit data to disk
+		                  vecDiskWrite(V, data, varargin);	%commit data to disk
 		[vec varargout] = vecDiskRead(V, varargin);
-		vec    = genTrackingVec(fh);
-		[vec varargout] = genBPVec(fh, vtype, val);
-        [vec varargout] = genHueVec(fh, vtype, val, varargin);
-        vec    = genHSVVec(fh, varargin);
-		vec    = genRGBVec(fh, varargin);
-		vec    = genBpImgData(V, bpImg, varargin);
-		vec    = genBpVecData(V, bpVec, varargin);
+		vec             = genTrackingVec(V, fh);
+		[vec varargout] = genBPVec(V ,fh, vtype, val);
+        [vec varargout] = genHueVec(V, fh, vtype, val, varargin);
+        vec             = genHSVVec(fh, varargin);
+		vec             = genRGBVec(fh, varargin);
+		vec             = genBpImgData(V, bpImg, varargin);
+		vec             = genBpVecData(V, bpVec, varargin);
 		% ----- TEST VECTOR VERIFICATION ---- %
-		status = verifyTrackingVec(V, fh, vec);
-		status = verifyHSVVec(V, fh, vec);
-		status = verifyBPVec(V, fh, vec, varargin);
-		img    = assemVec(V, vectors, varargin);
-		[s varargout] = verifyHueVec(V, fh, vec, varargin);
+		status          = verifyTrackingVec(V, fh, vec);
+		status          = verifyHSVVec(V, fh, vec);
+		status          = verifyBPVec(V, fh, vec, varargin);
+		img             = assemVec(V, vectors, varargin);
+		[s varargout]   = verifyHueVec(V, fh, vec, varargin);
 		
 	end 		%vecManager METHODS (Private)
 

@@ -94,7 +94,7 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 		%Initialise moment sums
 		M00 = 0; M10 = 0; M01 = 0; M11 = 0; M20 = 0; M02 = 0;
 		%Check bpvec type for bpval data
-		bpdim = size(bpvec)
+		bpdim = size(bpvec);
 		if(bpdim(1) == 3)
 			%Use bpval instead of 1
 			for k = 1:length(bpvec)

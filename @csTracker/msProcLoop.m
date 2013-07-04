@@ -77,7 +77,7 @@ function status = msProcLoop(T, fh, trackWindow)
 				status = -1;
 				return;
 			case T.SPARSE_WINDOW
-                %A BUG IS HERE
+                %A BUG IS HERE  <- EDIT(04/07/13) - This may have been resolved
                 %To avoid crashing csTool, perform a more graceful exit if
                 %we dont have spvec by this point
                 if(~exist('spvec', 'var'))
