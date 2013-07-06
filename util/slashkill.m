@@ -35,14 +35,16 @@ function [str varargout] = slashkill(fstring)
 	ndup = 0;
 	sidx = 1;
 	for k = 1:length(slsh)-1
-		if(slsh(k)+1 == slsh(k+1))
+        if(slsh(k)+1 == slsh(k+1))
 			%Duplicate!
 			ndup = ndup + 1;
 			str(sidx:slsh(k)) = fstring(sidx:slsh(k));
 			if(k+2 < length(slsh))
 				sidx = slsh(k+2);
 			end
-		end
+		else
+            str(k) = fstring(k);
+        end
 	end
     %Add all remaining chars
     if(ndup == 0)

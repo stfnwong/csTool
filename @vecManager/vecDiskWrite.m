@@ -18,7 +18,10 @@ function status = vecDiskWrite(V, data, varargin)
 
 % Stefan Wong 2013
 
-	DEBUG = false;
+	VSIM_ADR = false;
+	BIT_1    = false;
+	BIT_2    = false;
+	DEBUG    = false;
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
@@ -26,6 +29,12 @@ function status = vecDiskWrite(V, data, varargin)
 					filename = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'num', 3))
 					numFmt = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'vsim', 4) || strncmpi(varargin{k}, 'adr', 3))
+					VSIM_ADR = true;
+				elseif(strncmpi(varargin{k}, '1b', 2))
+					BIT_1   = true;
+				elseif(strncmpi(varargin{k}, '2b', 2))
+					BIT_2   = true;
 				elseif(strncmpi(varargin{k}, 'debug', 5))
 					DEBUG = true;
 				end
@@ -76,10 +85,21 @@ function status = vecDiskWrite(V, data, varargin)
 	%Write data to disk	
 	for k = 1:length(data)
 		vec = data{k};
+		%Normalise data if required
+		if(BIT_1)
+			vec = vec./(max(max(vec)));
+			vec = round(vec);
+		elseif(BIT_2)
+			vec = vec ./ (max(max(vec)));
+			vec = vec .* 4;
+			vec = round(vec);
+		end
 		wb  = waitbar(0, sprintf('Writing vector %s (0/%d)', filename{k}, length(vec)), ...
                          'Name', sprintf('Writing %s', filename{k}));
-		%Write address for modelsim
-		fprintf(fp(k), '@0 ');
+		if(VSIM_ADR)
+			%Write address for modelsim
+			fprintf(fp(k), '@0 ');
+		end
 		for n = 1:length(vec)
 			switch numFmt
 				case 'hex'

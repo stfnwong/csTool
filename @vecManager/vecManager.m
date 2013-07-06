@@ -138,7 +138,7 @@ classdef vecManager
             end
 			[vecdata ef] = vecDiskRead(V, 'fname', fname, 'sz', sz, 'vtype', vtype);
 			if(ef == -1)
-				fprintf('Unable to read file [%s]\n', fname);
+				fprintf('(vecDiskRead) : Unable to read file [%s]\n', fname);
 				vecdata = [];
                 if(nargout > 1)
 					varargout{1} = -1;
@@ -533,7 +533,7 @@ classdef vecManager
 						fname = sprintf('%s%02d', str, num);
 					end
 					vecname = {sprintf('%s.dat', fname)};
-					vecDiskWrite(V, vec, 'fname', vecname);
+					vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
 				end	
 			else
 				vec = genRGBVec(V, fh, opts);
@@ -542,7 +542,7 @@ classdef vecManager
 					fname = sprintf('%s%02d', str, num);
 				end
 				vecname{1} = sprintf('%s.dat', fname);
-                vecDiskWrite(V, vec, 'fname', vecname);
+                vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
 			end
 		end 	%writeRGBVec()
 
@@ -553,6 +553,7 @@ classdef vecManager
 				error('Invalid frame handle fh');
 			end
 
+			%TODO : Add options here for address generation, etc...
 			%Parse optional arguments 
 			if(~isempty(varargin))
 				for k = 1:length(varargin)
@@ -577,7 +578,7 @@ classdef vecManager
 					vecnames{1} = sprintf('%s-hue-frame%02d.dat', fname, k);
 					vecnames{2} = sprintf('%s-sat-frame%02d.dat', fname, k);
 					vecnames{3} = sprintf('%s-val-frame%02d.dat', fname, k);
-					vecDiskWrite(V, vec, 'fname', vecnames);
+					vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
 				end
 			else
 				vec = genHSVVec(fh);
@@ -589,7 +590,7 @@ classdef vecManager
 				vecname{1} = sprintf('%s-hue.dat', fname);
 				vecname{2} = sprintf('%s-sat.dat', fname);
 				vecname{3} = sprintf('%s-val.dat', fname);
-                vecDiskWrite(V, vec, 'fname', vecname);
+                vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
 			end
 					
 		end 	%writeHSVVec()
@@ -634,12 +635,12 @@ classdef vecManager
 						fname = sprintf('%s%02d', str, num);
 					end
                     if(strcmpi(vtype, 'scalar'))
-                        vecDiskWrite(V, {vec}, 'fname', {fname});
+                        vecDiskWrite(V, {vec}, 'fname', {fname}, 'vsim');
                     else
 						for n = length(vec):-1:1
 							vecnames{n} = sprintf('%s-vec%02.dat', fname, n);
 						end
-                        vecDiskWrite(V, vec, 'fname', vecnames);
+                        vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
                     end
 				end
 			else
@@ -656,12 +657,12 @@ classdef vecManager
 				end
 				%Don't bother creating a set of filenames if the vector type is scalar
                 if(strcmpi(vtype, 'scalar'))
-                    vecDiskWrite(V, {vec}, 'fname', {fname});
+                    vecDiskWrite(V, {vec}, 'fname', {fname}, 'vsim');
                 else
 					for n = length(vec):-1:1
 						vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
 					end
-                    vecDiskWrite(V, vec, 'fname', vecnames);
+                    vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
                 end
 			end
 		end 	%writeHueVec()
@@ -702,7 +703,7 @@ classdef vecManager
 					for n = length(vec):-1:1
 						vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
 					end					
-					vecDiskWrite(V, vec, 'fname', vecnames);
+					vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', '1b');
 				end
 			else
 				vec = genBPVec(V, fh, vtype, val);
@@ -713,7 +714,7 @@ classdef vecManager
 				for n = length(vec):-1:1
 					vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
 				end
-                vecDiskWrite(V, vec, 'fname', vecnames);
+                vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', '1b');
 			end
 		end 	%writeBPVec()
 

@@ -1,4 +1,4 @@
-function [vec varargout] = genBPVec(V, fh, vtype, val) %#ok
+function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 % GENBPVEC
 % vec = genBPVec(fh, vtype, val)
 % Generate backprojection vector in either row or column format with variable vector
@@ -42,46 +42,55 @@ function [vec varargout] = genBPVec(V, fh, vtype, val) %#ok
 		case 'row'
 			%Data enters the system serially, so row vectors need to be pulled out 
 			%along the row dimension of the image
-			rdim = img_w / val;
-			vec  = cell(val, rdim * img_w);
+			rdim = fix(img_w / val);
+			vec  = cell(val, 1);
 			%Bookkeeping for waitbar
 			t    = img_w * rdim;
 			p    = 1;				%progress counter
 			wb   = waitbar(0, sprintf('Generating row vector (0/%d0', t));
-			for v = 1:val
-				idx = 0;
+			for v = 1 : val
+				idx     = 0;
+                cur_row = zeros(1, rdim * img_w);
 				for n = 1:img_h
-					vec{v, (idx*rdim+1 : (idx+1)*rdim)} = bpimg(n, v:val:img_w);
+					%vec{v, (idx*rdim+1 : (idx+1)*rdim)} = bpimg(n, v:val:img_w);
+                    cur_row(idx*img_w+1 : (idx+1)*img_w) = bpimg(n, v:val:img_w);
 					idx = idx + 1;
 					%Update waitbar
 					waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
 						    p, t));
 					p = p + 1;
 				end
+                vec{v} = cur_row;
 			end
 			delete(wb);
 			if(nargout > 1)
 				varargout{1} = 0;
 			end
 		case 'col'
-			cdim = img_h / val;
-			vec  = cell(val, cdim * img_w);
+			cdim = fix(img_h / val);
+			vec  = cell(val, 1);
 			% Bookkeeping for waitbar
 			t    = cdim * img_w;
 			p    = 1;		%progress counter
 			wb   = waitbar(0, sprintf('Generating col vector (0/%d)', t));
 			for v = 1 : val
 				%Need to compute start and end row for vector 
-				idx = 0;
+				idx     = 0;
+                cur_col = zeros(1, cdim * img_w);
 				for n = v : val : img_h
-					% RHS has too few values to satisfy LHS
-					vec{v, (idx*img_w+1 : (idx+1)*img_w)} = bpimg(n, 1:img_w);
+                    %This line works in console, but not here...
+                    if(size(cur_col(idx+img_w+1 : (idx+1)*img_w)) ~= ...
+                       size(bpimg(n, 1:img_w)))
+                        fprintf('ERROR: cur_col and bpimg sizes do not match!\n');
+                    end
+                    cur_col(idx*img_w+1 : (idx+1)*img_w) = bpimg(n, 1:img_w);
 					idx = idx + 1;
 					%Update waitbar
 					waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
 						    p,t));
 					p = p + 1;
 				end
+                vec{v} = cur_col;
 			end
 			delete(wb);
 			if(nargout > 1)

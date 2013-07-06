@@ -151,6 +151,7 @@ function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU.
     [fname path] = uigetfile('*.dat', 'Select vector file...');
     if(isempty(fname))
         fname = oldText;
+		path  = '.';
     end
     set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);

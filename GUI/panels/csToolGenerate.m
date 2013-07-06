@@ -372,7 +372,7 @@ function gui_renderPreview(axHandle, fh, prevMode, idx)
         if(exitflag == -1)
             return;
         end
-        title(axHandle, sprintf('Frame %d (%s_%d)', idx, fname, num), 'Interpreter', 'None');
+        title(axHandle, sprintf('Frame %d (%s_%d) [%d x %d]', idx, fname, num, dims(2), dims(1)), 'Interpreter', 'None');
     else
         %Check that there is backprojection data for this frame
         if(get(fh, 'bpSum') == 0 || isempty(get(fh, 'bpVec')))
