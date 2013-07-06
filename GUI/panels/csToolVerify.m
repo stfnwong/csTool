@@ -111,10 +111,12 @@ function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<IN
 
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
+	delete(hObject);
     
 function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Call VecManager options to read and re-format vector from file
 	filename     = get(handles.etFileName, 'String');
+	filename     = slashkill(filename);		%get rid of slashes
 	%DEBUG:
 	fprintf('(DEBUG)filename - [%s]\n', filename);
     vtype        = get(handles.pmVecOr, 'String');
@@ -125,7 +127,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     else
         vsize = fix(str2double(vstr{vidx}));
     end
-	[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize);
+	[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize, 'vtype', vtype{vidx});
 	if(ef == -1)
 		fprintf('ERROR: Failed to read vector in file [%s]\n', filename);
 		return;
@@ -145,7 +147,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %        fprintf('Not a valid vector type (%s)\n', vtype);
     %end
 
-function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU.
+function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Browse for file to read
     oldText = get(handles.etFileName, 'String');
     [fname path] = uigetfile('*.dat', 'Select vector file...');

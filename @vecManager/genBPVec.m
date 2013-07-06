@@ -79,10 +79,10 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
                 cur_col = zeros(1, cdim * img_w);
 				for n = v : val : img_h
                     %This line works in console, but not here...
-                    if(size(cur_col(idx+img_w+1 : (idx+1)*img_w)) ~= ...
-                       size(bpimg(n, 1:img_w)))
-                        fprintf('ERROR: cur_col and bpimg sizes do not match!\n');
-                    end
+                    %if(size(cur_col(idx*img_w+1 : (idx+1)*img_w)) ~= ...
+                    %   size(bpimg(n, 1:img_w)))
+                    %    fprintf('ERROR: cur_col and bpimg sizes do not match!\n');
+                    %end
                     cur_col(idx*img_w+1 : (idx+1)*img_w) = bpimg(n, 1:img_w);
 					idx = idx + 1;
 					%Update waitbar

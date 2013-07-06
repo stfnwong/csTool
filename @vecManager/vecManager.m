@@ -530,7 +530,7 @@ classdef vecManager
 					vec  = genRGBVec(V, fh(k), opts);
 					if(~exist('fname', 'var'))
 						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
-						fname = sprintf('%s%02d', str, num);
+						fname = sprintf('%s%03d', str, num);
 					end
 					vecname = {sprintf('%s.dat', fname)};
 					vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
@@ -539,7 +539,7 @@ classdef vecManager
 				vec = genRGBVec(V, fh, opts);
 				if(~exist('fname', 'var'))
 					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
-					fname = sprintf('%s%02d', str, num);
+					fname = sprintf('%s%03d', str, num);
 				end
 				vecname{1} = sprintf('%s.dat', fname);
                 vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
@@ -572,7 +572,7 @@ classdef vecManager
 					vec  = genHSVVec(fh(k));
 					if(~exist('fname', 'var'))
 						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
-						fname = sprintf('%s%02d', str, num);
+						fname = sprintf('%s%03d', str, num);
 					end
                     vecnames    = cell(1,3);
 					vecnames{1} = sprintf('%s-hue-frame%02d.dat', fname, k);
@@ -584,7 +584,7 @@ classdef vecManager
 				vec = genHSVVec(fh);
 				if(~exist('fname', 'var'))
 					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
-					fname = sprintf('%s%02d', str, num);
+					fname = sprintf('%s%03d', str, num);
 				end
                 vecname    = cell(1,3); %NOTE: M-Lint didn't complain about this line
 				vecname{1} = sprintf('%s-hue.dat', fname);
@@ -632,7 +632,7 @@ classdef vecManager
 					if(~exist('fname', 'var'))
 						%Format a string based on filename of original frame
 						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
-						fname = sprintf('%s%02d', str, num);
+						fname = sprintf('%s%03d', str, num);
 					end
                     if(strcmpi(vtype, 'scalar'))
                         vecDiskWrite(V, {vec}, 'fname', {fname}, 'vsim');
@@ -653,14 +653,14 @@ classdef vecManager
 				if(~exist('fname', 'var'))
 					%Format a string from original filename
 					[ef str num] = fname_parse(get(fh, 'filename'), 'n');  %#ok
-					fname = sprintf('%s%02d', str, num);
+					fname = sprintf('%s%03d', str, num);
 				end
 				%Don't bother creating a set of filenames if the vector type is scalar
                 if(strcmpi(vtype, 'scalar'))
                     vecDiskWrite(V, {vec}, 'fname', {fname}, 'vsim');
                 else
 					for n = length(vec):-1:1
-						vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
+						vecnames{n} = sprintf('%s-vec%03d.dat', fname, n);
 					end
                     vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
                 end
@@ -698,10 +698,10 @@ classdef vecManager
 					vec  = genBPVec(V, fh(k), vtype, val);
 					if(~exist('fname', 'var'))
 						[ef str num] = fname_parse(get(fh(k), 'filename')); %#ok
-						fname = sprintf('%s%02d', str, num);
+						fname = sprintf('%s%03d', str, num);
 					end
 					for n = length(vec):-1:1
-						vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
+						vecnames{n} = sprintf('%s-vec%03d.dat', fname, n);
 					end					
 					vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', '1b');
 				end
@@ -709,10 +709,10 @@ classdef vecManager
 				vec = genBPVec(V, fh, vtype, val);
 				if(~exist('fname', 'var'))
 					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
-					fname = sprintf('%s%02d', str, num);
+					fname = sprintf('%s%03d', str, num);
 				end
 				for n = length(vec):-1:1
-					vecnames{n} = sprintf('%s-vec%02d.dat', fname, n);
+					vecnames{n} = sprintf('%s-vec%03d.dat', fname, n);
 				end
                 vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', '1b');
 			end

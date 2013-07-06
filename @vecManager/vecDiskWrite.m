@@ -51,13 +51,13 @@ function status = vecDiskWrite(V, data, varargin)
 
 	if(~exist('filename', 'var')) 
 		for k = length(data):-1:1
-			filename{k} = sprintf('vecstream_%02d.dat', k);
+			filename{k} = sprintf('vecstream_%03d.dat', k);
 		end
 	else
 		if(~iscell(filename))
 			fprintf('ERROR: filename must be cell array, using default\n');
 			for k = length(data):-1:1
-				filename{k} = sprintf('vecstream_%02d.dat', k);
+				filename{k} = sprintf('vecstream_%03d.dat', k);
 			end
 		end
 	end

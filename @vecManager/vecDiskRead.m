@@ -30,6 +30,9 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 % OPTIONAL OUTPUTS
 % status            - Equals 0 if no issues found, -1 if an error, and 2 if some of 
 %                     the files could not be read. 
+% dims              - Size of image computed from file size. The dimensions cannot
+%                     be computed correctly for scalar streams, and must therefore
+%                     be specified directy for scalar reconstruction.
 %
 
 % Stefan Wong 2012
@@ -64,7 +67,7 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 
 	if(strncmpi(vtype, 'scalar', 6))
 		%Don't need to parse in a loop, just open single file and return;
-		[ef str num ext path] = fname_parse(filename, 'scalar');
+		[ef str num ext path] = fname_parse(filename, 'scalar'); %#ok
 		if(ef == -1)
 			fprintf('ERROR: parse error in [%s]\n', filename);
 			vectors = [];
@@ -89,9 +92,12 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 		else
 			fseek(fh, 0, 0);
 		end
-		vectors = fread(fh, 'uint8');
+		[vectors N] = fread(fh, 'uint8');
 		if(nargout > 1)
 			varargout{1} = 0;
+			if(nargout > 2)
+				varargout{2} = N;
+			end
 		end
 		return;
 
@@ -103,6 +109,9 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 			vectors = [];
 			if(nargout > 1)
 				varargout{1} = -1;
+				if(nargout > 2)
+					varargout{2} = 0;
+				end
 			end
 			return;
 		end
@@ -125,12 +134,14 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 			%Skip the leading '@' character, if it exists (modelsim address char)
 			c = fread(fh, 1, 'uint8=>char');
 			if(strncmp(c, '@', 1))
-				fseek(fh, 4, -1);
+				fseek(fh, 3, 'bof');
 			else
 				fseek(fh, 0, 0);
 			end
-			vectors{k} = fread(fh, 'uint8');
+			[vectors{k} N] = fread(fh, 'uint8');
 			k = k + 1;
+			%compute dims from stream size
+
 		end
 		if(n < vecSz)
 			%Return the files we did read and format error code

@@ -1,4 +1,4 @@
-function [str varargout] = slashkill(fstring)
+function [str varargout] = slashkill(fstring, varargin)
 % SLASHKILL
 % Get rid of trails of recurring slashes
 %
@@ -20,6 +20,12 @@ function [str varargout] = slashkill(fstring)
 % a) Copy the substring str(dPtr:slsh(k))
 % b) Move the string pointer ahead  
 
+    DEBUG = false;
+    if(~isempty(varargin))
+        if(strncmpi(varargin{1}, 'debug', 5))
+            DEBUG = true;
+        end
+    end
 	
 	str  = zeros(1,length(fstring));
 	slsh = strfind(fstring, '/');
@@ -32,30 +38,46 @@ function [str varargout] = slashkill(fstring)
 		return;
 	end
 
-	ndup = 0;
-	sidx = 1;
-	for k = 1:length(slsh)-1
-        if(slsh(k)+1 == slsh(k+1))
-			%Duplicate!
-			ndup = ndup + 1;
-			str(sidx:slsh(k)) = fstring(sidx:slsh(k));
-			if(k+2 < length(slsh))
-				sidx = slsh(k+2);
-			end
-		else
-            str(k) = fstring(k);
-        end
-	end
-    %Add all remaining chars
-    if(ndup == 0)
-        %No duplicates afterall
-        str = fstring;
-        if(nargout > 1)
-            varargout{1} = 0;
-        end
-        return;
+    if(DEBUG)
+        fprintf('DEBUG: input string length %d\n', length(fstring));
     end
-	
+
+    iidx = 1;       %input pointer
+    oidx = 1;       %output pointer
+    while(iidx <= length(fstring))
+        %Assume a 3 char extension, dont bother to check once we're down to
+        %the last 3 chars
+        if(iidx < length(fstring)-3)
+            if(fstring(iidx) == fstring(iidx+1) && strncmpi(fstring(iidx), '/', 1))
+                %Eat this character
+                iidx = iidx + 1;
+            else
+                str(oidx) = fstring(iidx);
+                iidx = iidx + 1;
+                oidx = oidx + 1;
+            end
+        else
+            str(oidx) = fstring(iidx);
+            iidx = iidx + 1;
+            oidx = oidx + 1;
+        end
+            
+        if(DEBUG)
+            fprintf('fstring : %s\n', fstring);
+            fprintf('str     ; %s\n', char(str));
+            fprintf('iidx : %d, oidx : %d\n', iidx, oidx);
+        end
+    end
+
+%     while(iidx < length(fstring)-1)
+%         if(fstring(iidx) ~= fstring(iidx+1) && ~strncmpi(fstring(iidx), '/', 1))
+%             %Not a match - copy this character
+%             str(oidx) = fstring(iidx);
+%             oidx = oidx + 1;
+%         end
+%         iidx = iidx + 1;        %advance input stream pointer
+%     end
+            
 	%Trim string before returning
 	eidx = strfind(str, 0);
 	if(~isempty(eidx))
