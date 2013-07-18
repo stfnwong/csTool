@@ -35,6 +35,7 @@ function wparam = wparamComp(T, moments, varargin)
 		yym = moments(6) / moments(1);
 	end
 
+	%TODO :	Re-check this implementation 
 
 	%Compute covariance terms
 	u11      = xym - (xm * ym);

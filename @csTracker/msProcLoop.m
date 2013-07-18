@@ -204,6 +204,8 @@ function status = msProcLoop(T, fh, trackWindow)
 				wparam(5) = fix(sqrt(moments(1)));
 			end
 		case T.EIGENVEC
+			wparam(4) = sqrt(wparam(4));
+			wparam(5) = sqrt(wparam(5));
 			%Value are already correct in wparamComp
 		case T.HALF_EIGENVEC
 			%Make window size based on semi-major/semi-minor axes of ellipse

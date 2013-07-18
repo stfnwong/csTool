@@ -108,3 +108,17 @@ ROBERT COLLINS MEANSHIFT TARGET LOCALISATION
 (Online Selection of Discriminative Tracking Features)
 
 - In the csTracker class, this needs to be implemented both as is, and with a sparse/scaling vector (since the FPGA implementation will presumably contain a scaling buffer rather than a 1-bit buffer)
+
+
+VECMANAGER
+We may want to have a smarter naming system for categorising the sets of vectors that are related to a single image. 
+
+EX: say that we have an image img.tif that we wish to create a backprojection image of. We might ordinarily choose to generate a vector file called bpimg.dat. However if we are creating a 16 column-wise vector streams for use in a testbench we want to rename the file bpmg-vec%03d.dat, where the integer type specifier is the vector number ranging from 1 < k < V.
+
+We therefore might want to parse the name a second time, or add another section to the parser that can strip the .dat from the intial filename and replace it with -vec%03d.dat
+
+
+
+
+MEAN SHIFT VECTOR
+Add a routine to display the computed meanshift vector in the preview area (as a red line, for example)

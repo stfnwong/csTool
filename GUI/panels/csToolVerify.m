@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 28-May-2013 21:18:35
+% Last Modified by GUIDE v2.5 08-Jul-2013 04:27:24
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -91,6 +91,10 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	set(handles.pmVecOr, 'String', orStr);
 	%set(handles.pmVecType, 'String', typeStr);
 
+    % Make default image size 640x480
+    set(handles.etImageWidth, 'String','640');
+    set(handles.etImageHeight, 'String', '480');
+
 	%Setup preview figure
 	set(handles.figPreview, 'XTick', [], 'XTickLabel', []);
 	set(handles.figPreview, 'YTick', [], 'YTickLabel', []);
@@ -109,7 +113,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> 
     varargout{1} = handles.output;
 
-function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function bDone_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     %Exit the panel
 	delete(hObject);
     
@@ -136,7 +140,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	img          = handles.vecManager.formatVecImg(vectors, 'vecFmt', 'scalar');
 
 	%Show image in preview area
-	imshow(img, 'Parent', figPreview);
+	imshow(img, 'Parent', handles.figPreview);
     %switch(vtype)
     %    case 'row'
     %    case 'col'
@@ -158,6 +162,10 @@ function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);
 
+
+% -------- EMPTY FUNCTIONS -------- %
+function etImageHeight_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etImageWidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etFileName_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -174,7 +182,12 @@ function pmVecOr_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
+function etImageWidth_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
 
-
-
-
+function etImageHeight_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end

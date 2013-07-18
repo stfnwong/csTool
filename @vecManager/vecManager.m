@@ -711,8 +711,20 @@ classdef vecManager
 					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
 					fname = sprintf('%s%03d', str, num);
 				end
-				for n = length(vec):-1:1
-					vecnames{n} = sprintf('%s-vec%03d.dat', fname, n);
+				if(length(vec) > 1)
+				%TODO : Need to perform another parse here so that filename has form
+				%filename-vec%o3d.dat rather than filename.dat-vec%03d.dat
+					[ef str num path ext] = fname_parse(get(fh, 'filename'), 'n'); %#ok 
+					if(ef == -1)
+						fprintf('ERROR: Bad filename %s, exiting...\n', get(fh, 'filename'));
+						return;
+					end
+					for n = length(vec):-1:1
+						vecnames{n} = sprintf('%s%s-vec%03d.%s', path, str, n, ext);
+					end
+				else
+					vecnames = cell(1,1);
+					vecnames{1} = fname;
 				end
                 vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', '1b');
 			end

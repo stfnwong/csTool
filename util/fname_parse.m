@@ -1,6 +1,6 @@
 function [exitflag str varargout] = fname_parse(fstring, varargin)
 % FNAME_PARSE
-%
+% [exitflag str (..OPTIONS..)] = fname_parse(string, [..OPTIONS..])
 % Attempt to convert filename into string_number format.
 % This function will attempt to split filenames in the form string_number.ext into 
 % their string, number, and extension components. 
@@ -12,6 +12,15 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 % If the filename is does not conform to the /path/to/file/file_num.ext pattern, the
 % function will attempt to return as much relevant information as possible so that 
 % the single file can be read.
+%
+% CHANGES: 
+% Parsing method is made more general, and will accept filenames in the form 
+% 	path/to/file/long-filename.ext
+% OR
+% 	path/to/file/long-filename-with-vec%03d.ext
+%
+% All filenames are now expected to have a 3 digit sequence specifier (previously 
+% test vectors has a 2 digit format while images for tracking had a 3 digit format).
 %
 % ARGUMENTS
 % fstring  - Complete filename string. 
@@ -67,6 +76,11 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 		end
 		return;
 	end
+	%In case the filename has some extra '.' characters, use the last one as the
+	%actual index
+	if(length(extIdx) > 1)
+		extIdx = extIdx(end);
+	end
 	if(DEBUG)
 		fprintf('DEBUG: extIdx = %d\n', extIdx);
 	end
@@ -80,7 +94,29 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 		fslsh   = slashes(end);
 	end
 
-	%Look for underscore character
+	% Test if this file is numbered, and therefore part of a series
+	%[num st] = str2double(fstring(extIdx-3:extIdx-1));
+	num = str2double(fstring(extIdx-3 : extIdx-1));
+	if(isnan(num))
+		%Not in a series, so no number
+		num = [];
+	else
+		%Check that the number is sensible
+		if(num < 1 || num > 999)
+			fprintf('ERROR: csTool only supports the first 999 non-zero integers\n');
+			str      = fstring(1:extIdx);
+			path     = fstring(1:fslsh-1);
+			num      = 0;
+			ext      = fstring(extIdx(end)+1 : end);
+			exitflag = -1;
+			outvars  = {num, ext, path};
+			for k = 1:nargout-2
+				varargout{k} = outvars{k};
+			end
+			return;
+		end
+	end
+
 	%usIdx = strfind(fstring, '_');
 	%if(isempty(usIdx))
 	%	fprintf('ERROR: String does not contain "_", returning original string\n');
@@ -103,35 +139,14 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 	%	fprintf('DEBUG:usIdx = %d\n', usIdx);
 	%end
 
-	if(~SCALAR)
-        if(STRING)
-			num = fstring(extIdx-3:extIdx-1);
-		else
-			num = str2double(fstring(extIdx-3:extIdx-1));
-            if(num < 1 || num > 999)
-                %Outside the range we will accept
-                fprintf('ERROR: csTool only supports the first 999 non-zero numbers\n');
-                str      = fstring(1:extIdx);
-                path     = fstring(1:fslsh-1);
-                num      = 0;
-                ext      = fstring(extIdx(end)+1:end);
-                exitflag = -1;
-                outvars  = {num, ext, path};
-                for k = 1:nargout-2
-                    varargout{k} = outvars{k};
-                end
-                return;
-            end
-        end
-	else
-		num = [];
-	end
-	
-
 	%Split string
 	%str      = fstring(fslsh+1:usIdx-1);
 	%num      = str2double(fstring(usIdx+1:extIdx-1));
-    str      = fstring(fslsh+1:extIdx-5);
+	if(isempty(num))
+		str = fstring(fslsh+1 : extIdx-1);
+	else
+	    str = fstring(fslsh+1:extIdx-4);
+	end
 	ext      = fstring(extIdx+1:end);
 	%if(fslsh == 0)
 	path     = fstring(1:fslsh);

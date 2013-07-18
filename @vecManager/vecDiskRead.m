@@ -76,7 +76,7 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 			end
 			return;
 		end
-		fn = sprintf('%s/%s.%s', path, str, ext);
+		fn = sprintf('%s%s.%s', path, str, ext);
 		fh = fopen(fn, 'r');
 		if(fh == -1)
 			fprintf('ERROR: Couldn''t open file [%s] for write\n', fn);
@@ -125,7 +125,8 @@ function [vectors varargout] = vecDiskRead(V, varargin)
 		% Attempt to open files, placing data into cell array as we go
 		k = 1;
 		for n = num:(num+vecSz)
-			fn = sprintf('%s/%s/-%03d.%s', path, str, n, ext);
+			fn = sprintf('%s%s%03d.%s', path, str, n, ext);
+            fn = slashkill(fn);     %prevent double slashes
 			fh = fopen(fn, 'r');
 			if(fh == -1)
 				fprintf('ERROR: Couldn''t open file [%s]\n', fn(k));

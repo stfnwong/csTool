@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 26-May-2013 23:50:24
+% Last Modified by GUIDE v2.5 08-Jul-2013 03:55:00
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -189,7 +189,7 @@ function gui_renderPreview(axHandle, fh, idx, varargin)
 	if(ef == -1)
 		return;
 	end
-	title(axHandle, sprintf('frame %d (%s_%d)', idx, fname, num));
+	title(axHandle, sprintf('frame %d (%s_%d)', idx, fname, num), 'Interpreter', 'None');
 
 function gui_renderErrorPlot(axHandle, traj, idx, varargin)
 	% Render the error plot of the provided trajectories. traj must be cell array
@@ -828,6 +828,67 @@ function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
 
+% --- Executes on key press with focus on fig_trajBuf and none of its controls.
+function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    % Add some keyboard shortcuts for this subpanel for quicker navigation,
+    % etc
+	% TODO : The frame indexing methods are just cut/paste of bNext and bPrev
+	
+	switch eventdata.Character
+		case 'f'
+			%Move frame forward
+			N = handles.frameBuf.getNumFrames();
+			if(handles.fbIdx < N)
+				handles.fbIdx = handles.fbIdx + 1;
+				fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
+				%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
+				ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+				ta  = handles.trajBuf;
+				tb  = handles.compBuf;
+				err = handles.errBuf;
+				gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+			else
+				handles.fbIdx = N;
+			end
+			%Update text positon
+			if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
+				set(handles.lbTrajStats, 'Value', handles.fbIdx);
+			end
+			%Update current frame text
+		    set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
+		case 'b'
+			%Move frame back
+			% Bounds check and decrement frame index
+			if(handles.fbIdx > 1)
+				handles.fbIdx = handles.fbIdx - 1;
+				fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
+				%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
+				ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+				ta  = handles.trajBuf;
+				tb  = handles.compBuf;
+				err = handles.errBuf;
+				gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+			else
+				handles.fbIdx = 1;
+			end
+			if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
+				set(handles.lbTrajStats, 'Value', handles.fbIdx);
+			end
+			%Update current frame text
+			set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
+		case 'w'
+			%Write to currently selected buffer
+		case 'r'
+			%Read from currently selected buffer
+		case 'c' 
+			%Compare currently selected buffers
+		case 'g'
+			%Get current trajectory
+	end
+
+	guidata(hObject, handles)
+
+
 function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     %Close figure and return to main GUI
     close(handles.fig_trajBuf);
@@ -895,7 +956,6 @@ function etGoto_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 
 %function bTrajExtract_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
 
 
 

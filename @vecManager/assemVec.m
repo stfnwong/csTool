@@ -53,6 +53,7 @@ function img = assemVec(V, vectors, varargin)
 		vecFmt = 'row';
 	end
 	if(~exist('imSz', 'var'))
+		fprintf('WARNING: Using default image size of 640x480\n');
 		imSz = [640 480];
 	end
 
@@ -64,35 +65,36 @@ function img = assemVec(V, vectors, varargin)
 		%Format cell array for processing
 	end
 
-	%Take the data and place into image array
+	%Take the data and place into image array (WxH)
 	img = zeros(imSz(2), imSz(1));
-	
+
 	switch vecFmt
 		case 'row'
+			% NOTE : For row orientation, there is the problem of jumping over the (currently) 
+			% unused column entries until vectors{k+1} is read.
 			for k = 1:vecSz
-				vk = vectors{k};
-				i  = 0;
-				for n = 1:vecSz:(imSz(1) / vecSz)
-					img(:,n) = vk(i*imSz(1)+1:(2*i)*imSz(1));
-					i = i +1;
+				vk   = vectors{k};
+				cidx = 0;
+				%TODO : Try get rid of double nested loop here
+				for y = 1:imSz(2)
+
 				end
 			end
-	
 		case 'col'
 			for k = 1:vecSz
-				vk = vectors{k};
-				i  = 0;
+				vk   = vectors{k};
+				ridx = 0;
 				for n = 1:vecSz:(imSz(2) / vecSz)
-					img(n,:) = vk(i*imSz(2)+1:(i+1)*imSz(2));
-					i = i + 1;
+					img(n,:) = vk(ridx*imSz(1)+1 : (ridx+1)*imSz(1));
 				end
 			end
+
 		case 'scalar'
 			%Take a serialised vector and lay it out in raster form, wrapping the 
 			%dimensions based on imSz parameter. If we get to there and the vectors
 			%parameter is a cell array, then exit early (we could extract the first
 			%thing in the cell array and try it, but we have no idea what the contents
-			%would be.
+			%would be.)
 			if(iscell(vectors))
 				fprintf('ERROR: scalar option requires non-cell array argument\n');
 				img = [];
@@ -106,9 +108,53 @@ function img = assemVec(V, vectors, varargin)
 				end
 			end
 		otherwise
-			fprintf('ERROR: Not a valid vecFmt (%s)\n', vecFmt);
+			fprintf('ERROR: Invalid vector format %s\n', vecFmt);
 			img = [];
-			return;
+			return;	
 	end
+
+	%switch vecFmt
+	%	case 'row'
+	%		for k = 1:vecSz
+	%			vk = vectors{k};
+	%			i  = 0;
+	%			%for n = 1:vecSz:(imSz(1) / vecSz)
+	%			%	img(:,n) = vk(i*imSz(1)+1:(2*i)*imSz(1));
+	%			%	i = i +1;
+	%			%end
+	%		end
+	%
+	%	case 'col'
+	%		for k = 1:vecSz
+	%			vk = vectors{k};
+	%			i  = 0;
+	%			for n = 1:vecSz:(imSz(2) / vecSz)
+	%				img(n,:) = vk(i*imSz(2)+1:(i+1)*imSz(2));
+	%				i = i + 1;
+	%			end
+	%		end
+	%	case 'scalar'
+	%		%Take a serialised vector and lay it out in raster form, wrapping the 
+	%		%dimensions based on imSz parameter. If we get to there and the vectors
+	%		%parameter is a cell array, then exit early (we could extract the first
+	%		%thing in the cell array and try it, but we have no idea what the contents
+	%		%would be.
+	%		if(iscell(vectors))
+	%			fprintf('ERROR: scalar option requires non-cell array argument\n');
+	%			img = [];
+	%			return;
+	%		end	
+	%		n = 1;
+	%		for y = 1:imSz(2)
+	%			for x = 1:imSz(1)
+	%				img(y,x) = vectors(n);
+	%				n = n +1;
+	%			end
+	%		end
+	%	otherwise
+	%		fprintf('ERROR: Not a valid vecFmt (%s)\n', vecFmt);
+	%		img = [];
+	%		return;
+	%end
 
 end 	%assemVec()

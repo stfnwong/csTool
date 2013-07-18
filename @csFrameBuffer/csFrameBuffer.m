@@ -343,12 +343,18 @@ classdef csFrameBuffer
 				error('Filename must be string');
 			end
 			if(FB.verbose)
-				%[str num ext path exitflag] = fname_parse(fname, 'd')
-				[exitflag str num ext path] = fname_parse(fname, 'd');
+				vb = 'd';
 			else
-				%[str num ext path exitflag] = fname_parse(fname)
-				[exitflag str num ext path] = fname_parse(fname);
+				vb = 'x';
 			end
+			[exitflag str num ext path] = fname_parse(fname, vb);
+			%if(FB.verbose)
+			%	%[str num ext path exitflag] = fname_parse(fname, 'd')
+			%	[exitflag str num ext path] = fname_parse(fname, 'd');
+			%else
+			%	%[str num ext path exitflag] = fname_parse(fname)
+			%	[exitflag str num ext path] = fname_parse(fname);
+			%end
 			if(exitflag == -1)
 				%Check what fields we do have
 				if(isempty(ext))
@@ -478,14 +484,15 @@ classdef csFrameBuffer
 			%place this figure into FB.nFrames
 			if(ALL)
 				n  = 1;
-				fn = sprintf('%s%s_%03d.%s', fpath, FB.fName, n, FB.ext); 
+				%fn = sprintf('%s%s_%03d.%s', fpath, FB.fName, n, FB.ext); 
+				fn = sprintf('%s%s%03d.%s', fpath, FB.fName, n, FB.ext); 
 				while(isequal(exist(fn, 'file'), 2))
 					set(FB.frameBuf(k), 'filename', fn);
 					if(FB.verbose)
 						fprintf('Read frame %3d in sequence\n', n);
 					end
 					n  = n+1;
-					fn = sprintf('%s%s_%03d.%s', fpath, FB.fName, n, FB.ext);
+					fn = sprintf('%s%s%03d.%s', fpath, FB.fName, n, FB.ext);
 				end
 				if(n == 1)
 					fprintf('ERROR: Start file does not exist (%s)\n', fn);
@@ -503,7 +510,7 @@ classdef csFrameBuffer
 			else
 				%Load data into buffer
 				for k = 1:FB.nFrames
-					fn   = sprintf('%s%s_%03d.%s', fpath, FB.fName, fnum, FB.ext); 
+					fn   = sprintf('%s%s%03d.%s', fpath, FB.fName, fnum, FB.ext); 
 					set(FB.frameBuf(k), 'filename', fn);
 					if(FB.verbose)
 						fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);
@@ -535,7 +542,7 @@ classdef csFrameBuffer
 						set(F.frameBuf(k), 'img', []);
 					end
 				else
-					set(F.frameBuf(k), 'img', []);
+					set(F.frameBuf(N), 'img', []);
 				end
 			else
 				for k = 1:F.nFrames

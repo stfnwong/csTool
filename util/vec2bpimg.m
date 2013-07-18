@@ -48,6 +48,7 @@ function bpimg = vec2bpimg(vec, varargin)
 		end
 	end
 
+	%dim format is [w h], but matlab is row-major
 	if(exist('dim','var'))
 		bpimg = zeros(dim(2), dim(1));
 		if(DEBUG)
