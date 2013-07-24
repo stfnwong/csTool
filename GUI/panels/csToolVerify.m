@@ -86,7 +86,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	%Populate GUI elements
     fmtStr  = {'16', '8', '4', '2', 'scalar'};
     orStr   = {'row', 'col', 'scalar'};
-    typeStr = {'HSV', 'Hue', 'BP'};
+    %typeStr = {'HSV', 'Hue', 'BP'};
 	set(handles.pmVecSz, 'String', fmtStr);
 	set(handles.pmVecOr, 'String', orStr);
 	%set(handles.pmVecType, 'String', typeStr);
@@ -119,23 +119,25 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Call VecManager options to read and re-format vector from file
 	filename     = get(handles.etFileName, 'String');
 	filename     = slashkill(filename);		%get rid of slashes
-	%DEBUG:
-	fprintf('(DEBUG)filename - [%s]\n', filename);
-    vtype        = get(handles.pmVecOr, 'String');
-    vidx         = get(handles.pmVecOr, 'Value');
-    vstr         = get(handles.pmVecSz, 'String');
-    if(strncmpi(vstr, 'scalar', 6))
-        vsize = 1;
-    else
-        vsize = fix(str2double(vstr{vidx}));
-    end
-	[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize, 'vtype', vtype{vidx});
+
+    vtlist       = get(handles.pmVecOr, 'String');
+    vtidx        = get(handles.pmVecOr, 'Value');
+    vtype        = vtlist{vtidx};
+    vslist       = get(handles.pmVecSz, 'String');
+    vsidx        = get(handles.pmVecSz, 'Value');
+    vsize        = vslist{vsidx};
+    
+	[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize, 'vtype', vtype);
 	if(ef == -1)
 		fprintf('ERROR: Failed to read vector in file [%s]\n', filename);
 		return;
 	end
 	%img      = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
-	img          = handles.vecManager.formatVecImg(vectors, 'vecFmt', 'scalar');
+	if(iscell(vectors) && strncmpi(vtype, 'scalar', 6))
+		img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar');
+	else
+		img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype);
+	end
 
 	%Show image in preview area
 	imshow(img, 'Parent', handles.figPreview);

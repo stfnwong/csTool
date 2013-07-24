@@ -113,23 +113,22 @@ function status = vecDiskWrite(V, data, varargin)
 			%Write address for modelsim
 			fprintf(fp(k), '@0 ');
 		end
-		for n = 1:length(vec)
-			switch numFmt
-				case 'hex'
-					fprintf(fp(k), '%02X ', vec(n));
-				case 'dec'
-					fprintf(fp(k), '%02d ', vec(n));
-				otherwise 
-					fprintf('Not a supported number format, quitting...\n');
-					for m = 1:length(data)
-						fclose(fp(m));
-					end
-					status = -1;
-					return;
-			end
-			waitbar(n/length(vec), wb, sprintf('Writing vector %s (%d/%d)', ...
-                                       filename{k}, n, length(vec)));
+		switch numFmt
+			case 'hex'
+				fprintf(fp(k), '%02X ', vec);
+			case 'dec'
+				fprintf(fp(k), '%02d ', vec);
+			otherwise 
+				fprintf('Not a supported number format, quitting...\n');
+				for m = 1:length(data)
+					fclose(fp(m));
+				end
+				status = -1;
+				return;
 		end
+		waitbar(k/length(vec), wb, sprintf('Writing vector %s (%d/%d)', ...
+			                       filename{k}, k, length(vec)));
+        %                               filename{k}, n, length(vec)));
         delete(wb);
 	end
 	%delete(wb);

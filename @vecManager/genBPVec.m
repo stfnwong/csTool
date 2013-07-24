@@ -86,7 +86,6 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
                     %end
                     cur_col(idx*img_w+1 : (idx+1)*img_w) = bpimg(n, 1:img_w);
 					idx = idx + 1;
-					%Update waitbar
 					waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
 						    p,t));
 					p = p + 1;

@@ -151,7 +151,7 @@ classdef vecManager
 				end
 			end
 			if(~exist('dtype', 'var'))
-				dtype = 'uint8';
+				dtype = '%u8';
 				fprintf('(readVec) : set dtype to [%s]\n', dtype);
 			end
 
