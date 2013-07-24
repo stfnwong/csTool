@@ -1,169 +1,91 @@
-function [vectors varargout] = vecDiskRead(V, varargin)
+function [vector varargout] = vecDiskRead(V, fname, varargin)
 % VECDISKREAD
 %
 % ARGUMENTS
-% V - vecManager object
-% file - Filename to read vectors from. If this is the first in a series of files 
-% (for example a set of backprojection vectors), the filename should be numbered with
-% the first in the series to read.
+% V    - vecManager object
+% fname - Name of file to open. If parsing is required (for example, to read a 
+%         series of numbered files) it is the responsibility of the caller to ensure
+%         the filename is correctly parsed before being passed to vecDiskRead()
 %
 % OPTIONAL ARGUMENTS
-% 'fname', filename - Filename to read vectors from. If this is the first in a series
-%                     of files (for example a set of backprojection vectors), the 
-%                     filename should be numbered with the first in the series to 
-%                     read). If no filename parameter is specified, vecDiskRead() 
-%                     will use the filename in V.rfilename.
-% 
-% 'sz', size        - Size of vector. This property is used to determine the number 
-%                     of files to read from disk. If no size is specified, scalar is  
-%                     assumed.
-%
-% OUTPUTS
-% vectors           - An array containing the data stream, or a cell array, each 
-%                     element of which contains one data stream. The size of the cell
-%                     array is normally vecSz, however if some of the files cannot be
-%                     read, vecDiskRead() will attempt to open as many files as it 
-%                     can. In this case, the size is equal to the number of files 
-%                     successfully opened. vecDiskRead() will return the status code
-%                     2 in this case (if requested)
-% 
-% OPTIONAL OUTPUTS
-% status            - Equals 0 if no issues found, -1 if an error, and 2 if some of 
-%                     the files could not be read. 
-% dims              - Size of image computed from file size. The dimensions cannot
-%                     be computed correctly for scalar streams, and must therefore
-%                     be specified directy for scalar reconstruction.
-%
+% dtype, 'str'  - Data type to read from file. This is a string selected from one of
+%                 the valid datatype options for fread()
+% debug         - Print debugging strings (verbose mode)
 
 % Stefan Wong 2012
 
 	debug = false;
-
-	%Parse optional arguments, if any
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
-				if(strncmpi(varargin{k}, 'fname', 5))
-					filename = varargin{k+1};
-				elseif(strncmpi(varargin{k}, 'sz', 2))
-					vecSz    = varargin{k+1};
-				elseif(strncmpi(varargin{k}, 'vtype', 5))
-					vtype    = varargin{k+1};
-				elseif(strncmpi(varargin{k}, 'debug', 5))
-					debug    = true;
+				if(strncmpi(varargin{k}, 'debug', 5))
+					debug = true;
+				elseif(strncmpi(varargin{k}, 'dtype', 5))
+					dtype = varargin{k+1};
+					fprintf('(vecDiskRead) : dtype set as [%s]\n', dtype);
 				end
 			end
 		end
 	end
 
-	%Check what we have
-	if(~exist('filename', 'var'))
-		filename = V.rfilename;
-	end
-	%If no vector size, assume scalar
-	if(~exist('vecSz', 'var'))
-		vecSz = 1;
+	%Check options
+	if(~exist('dtype', 'var'))
+		dtype = '%u8';
+		fprintf('(vecDiskRead) : set dtype to %s\n', dtype);
 	end
 
-	if(strncmpi(vtype, 'scalar', 6))
-		%Don't need to parse in a loop, just open single file and return;
-		[ef str num ext path] = fname_parse(filename, 'scalar'); %#ok
-		if(ef == -1)
-			fprintf('ERROR: parse error in [%s]\n', filename);
-			vectors = [];
-			if(nargout > 1)
-				varargout{1} = -1;
-			end
-			return;
-		end
-		fn = sprintf('%s%s.%s', path, str, ext);
-		fh = fopen(fn, 'r');
-		if(fh == -1)
-			fprintf('ERROR: Couldn''t open file [%s] for write\n', fn);
-			vectors = [];
-			if(nargout > 1)
-				varargout{1} = -1;
-			end
-			return;
-		end
-		c = fread(fh, 1, 'uint8=>char');
-		if(strncmp(c, '@', 1))
-			fseek(fh, 4, -1);
-		else
-			fseek(fh, 0, 0);
-		end
-		[vectors N] = fread(fh, 'uint8');
-		if(nargout > 1)
-			varargout{1} = 0;
-			if(nargout > 2)
-				varargout{2} = N;
-			end
-		end
-		return;
-
-	elseif(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
-		%Attempt to parse numbered files here
-		[ef str num ext path] = fname_parse(filename, 'n');
-		if(ef == -1)
-			fprintf('ERROR: parse error in [%s], filename not valid format\n', filename);
-			vectors = [];
-			if(nargout > 1)
-				varargout{1} = -1;
-				if(nargout > 2)
-					varargout{2} = 0;
-				end
-			end
-			return;
-		end
-
-		if(vecSz > 1)
-			vectors = cell(1, vecSz);
-		else
-			vectors = cell(1,1);
-		end	
-
-		% Attempt to open files, placing data into cell array as we go
-		k = 1;
-		for n = num:(num+vecSz)
-			fn = sprintf('%s%s%03d.%s', path, str, n, ext);
-            fn = slashkill(fn);     %prevent double slashes
-			fh = fopen(fn, 'r');
-			if(fh == -1)
-				fprintf('ERROR: Couldn''t open file [%s]\n', fn(k));
-				break;
-			end
-			%Skip the leading '@' character, if it exists (modelsim address char)
-			c = fread(fh, 1, 'uint8=>char');
-			if(strncmp(c, '@', 1))
-				fseek(fh, 3, 'bof');
-			else
-				fseek(fh, 0, 0);
-			end
-			[vectors{k} N] = fread(fh, 'uint8');
-			k = k + 1;
-			%compute dims from stream size
-
-		end
-		if(n < vecSz)
-			%Return the files we did read and format error code
-			fprintf('Read %d of %d files\n', n, vecSz);
-			if(nargout > 1)
-				varargout{1} = 2;
-			end
-			vectors = vectors{1:n};
-		else
-			if(nargout > 1)
-				varargout{1} = 0;
-			end
-		end
-		return;
-	else
-		fprintf('ERROR: Invalid vtype [%s]\n', vtype);
-		vectors = [];
+	fh = fopen(fname, 'r');
+	if(fh == -1)
+		fprintf('ERROR (vecDiskRead): Couldn''t open file [%s] for read\n', fname);
+		vector = [];
 		if(nargout > 1)
 			varargout{1} = -1;
 		end
-		return;
+	else	
+		%Read the file, taking care around the modelsim address character
+		c = fread(fh, 1, 'uint8=>char');
+		if(strncmp(c, '@', 1))
+			fseek(fh, 4, 'bof');
+		else
+			fseek(fh, 0, 'cof');
+		end
+		%[vector N] = fread(fh, dtype);
+		[vector N] = textscan(fh, dtype, 'Delimiter', ' ');
+		if(debug)
+			fprintf('Read %d %s from [%s]\n', N, dtype, fname);
+		end
+		if(nargout > 1)
+			varargout{1} = N;
+		end
+	end
+	fclose(fh);
+
+	%Trim spaces out of vector, if needed
+	%TODO : Proper (ie: fast) string conversion
+	if(strncmpi(dtype, '*uint8', 6) || strncmpi(dtype, 'uint8', 5))
+		if(~isempty(vector == 32)) 		%get rid of space
+			fprintf('Removing spaces from vector [%s]...\n', fname);
+			ns = length(vector == 32);
+			vector(vector == 32) = [];
+			cv = char(vector);
+			for k = length(vector):-1:1
+				vector(k) = str2double(cv(k));
+			end
+			fprintf('Removed %d spaces from [%s]\n', ns, fname);
+			fprintf('...done\n');
+		elseif(~isempty(vector == 44)) 	%get rid of comma
+			fprintf('Removing commas from vector [%s]...\n', fname);
+			nc = length(vector == 44);
+			vector(vector == 44) = [];
+			cv = char(vector);
+			for k = length(vector):-1:1
+				vector(k) = str2double(cv(k));
+			end
+			fprintf('Removed %d commas from [%s]\n', nc, fname);
+			fprintf('...done\n');
+		else
+			fprintf('(vecDiskRead) : Found delimiter <%c> [%d]\n', vector(2), vector(2));
+		end
 	end
 
 end 	%vecDiskRead()

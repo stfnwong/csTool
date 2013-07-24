@@ -10,10 +10,12 @@ function csToolSaveState(handles, DATA_DIR, frameIndex)
 	bufOpts      = handles.bufOpts;					%#ok
 	segOpts      = handles.segOpts; 	 			%#ok
 	trackOpts    = handles.trackOpts;				%#ok
+	vecOpts      = handles.vecManager;              %#ok
 
-	save(sprintf('%s/', DATA_DIR),                 'bufOpts');
+	save(sprintf('%s/bufOpts.mat', DATA_DIR),      'bufOpts');
 	save(sprintf('%s/segOpts.mat', DATA_DIR),      'segOpts');
 	save(sprintf('%s/trackOpts.mat', DATA_DIR),    'trackOpts');
+	save(sprintf('%s/vecOpts.mat', DATA_DIR),      'vecOpts');
 
 	%Save ui variables
 	ui.highRange = get(handles.etHighRange, 'String');
@@ -23,7 +25,7 @@ function csToolSaveState(handles, DATA_DIR, frameIndex)
 	%ui.curFrame  = get(handles.etCurFrame, 'String');
 	save(sprintf('%s/ui.mat', DATA_DIR), 'ui');
 	%Save frame index
-	svars.index = frameIndex;
+	svars.index = frameIndex;                       %#ok
 	save(sprintf('%s/svars.mat', DATA_DIR), 'svars');
 	
 	

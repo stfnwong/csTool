@@ -57,7 +57,7 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<IN
 	handles.errBuf    = [];
 	handles.fbIdx     = 1;
     %Parse optional arguments
-    if(~isempty(varargin))
+	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(isa(varargin{k}, 'vecManager'))
 				handles.vecManager = varargin{k};
@@ -180,7 +180,7 @@ function gui_renderPreview(axHandle, fh, idx, varargin)
 	end
 	if(strncmpi(prevMode, 'bp', 2))
 		%Show backprojection
-		bpimg = vec2bpimg(get(fh, 'bpData'), get(fh, 'dims'));
+		bpimg = vec2bpimg(get(fh, 'bpData'), 'dims', get(fh, 'dims'));
 		imshow(bpimg, 'Parent', axHandle);
 	else
 		imshow(img, 'Parent', axHandle);

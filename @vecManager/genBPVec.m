@@ -35,7 +35,7 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 % Stefan Wong 2013
 
 	%Get data for vector
-	bpimg         = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+	bpimg         = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
 	[img_h img_w] = size(bpimg);		%should be 1 channel, so don't need extra d
 	
 	switch(vtype)
@@ -66,6 +66,7 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 			if(nargout > 1)
 				varargout{1} = 0;
 			end
+
 		case 'col'
 			cdim = fix(img_h / val);
 			vec  = cell(val, 1);
@@ -96,6 +97,7 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 			if(nargout > 1)
 				varargout{1} = 0;
 			end
+
 		case 'scalar'
 			%Linearise data into raster
 			data = zeros(1, img_w*img_h);
@@ -106,17 +108,20 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 			%Extract raster data
 			for y = 1:img_h
 				for x = 1:img_w
-					data(y,x) = bpimg(y,x);
+					%data(y,x) = bpimg(y,x);
+					data(p) = bpimg(y,x);
 					waitbar(p/t, wb, sprintf('Generating raster vector (%d/%d)', ...
                                      p, t));
 					p = p + 1;
 				end
 			end
-			vec = data;
+			vec    = cell(1,1);
+			vec{1} = data;
 			delete(wb);
 			if(nargout > 1)
 				varargout{1} = 0;
 			end
+
 		otherwise
 			fprintf('ERROR: (%s) not a valid orientation\n', orientation);
 			if(nargout > 1)

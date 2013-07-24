@@ -119,32 +119,124 @@ classdef vecManager
 							fname = varargin{k+1};
                         elseif(strncmpi(varargin{k}, 'vtype', 5))
                             vtype = varargin{k+1};
-						elseif(strncmpi(varargin{k}, 'sz', 2))
+						elseif(strncmpi(varargin{k}, 'dtype', 5))
+							dtype = varargin{k+1};
+							fprintf('(readVec) dtype set to [%s]\n', dtype);
+						elseif(strncmpi(varargin{k}, 'sz', 2)) %no. elemn in vector
 							sz    = varargin{k+1};
+							fprintf('(readVec) size set to %d\n', sz);
+						elseif(strncmpi(varargin{k}, 'offset', 6))
+							of    = varargin{k+1};	%which file of the seq. to read
 						end
 					end
 				end	
 			end
 
-			%Check what we have
+			%Check what we have. For filename and vector sizer, if we don't know 
+			%just use what we have in the vecManager buffer and hope that it works.
 			if(~exist('fname', 'var'))
 				fname = V.rfilename;
 			end
-			if(~exist('sz', 'var'))
-				sz    = V.dataSz;
+			if(~exist('of', 'var'))
+				of = 0;
 			end
             if(~exist('vtype', 'var'))
                 vtype = 'scalar';
             end
-			[vecdata ef] = vecDiskRead(V, 'fname', fname, 'sz', sz, 'vtype', vtype);
-			if(ef == -1)
-				fprintf('(vecDiskRead) : Unable to read file [%s]\n', fname);
-				vecdata = [];
-                if(nargout > 1)
-					varargout{1} = -1;
-                    return;
-                end
-			end		
+			if(~exist('sz', 'var'))
+				if(exist('vtype', 'var') && strncmpi(vtype, 'scalar', 6))
+					sz = 1;
+				else
+					sz    = V.dataSz;
+				end
+			end
+			if(~exist('dtype', 'var'))
+				dtype = 'uint8';
+				fprintf('(readVec) : set dtype to [%s]\n', dtype);
+			end
+
+			if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
+				%Parse filename and read multiple files
+				[ef str num ext path] = fname_parse(fname, 'n'); %#ok
+				if(ef == -1)
+					fprintf('(readVec) : Unable to parse [%s]\n', fname);
+					vecdata = [];
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
+					return;
+				end
+				%Check that the first and last files in the sequence exist
+				%sfn = sprintf('%s%s-vec%03d.%s', path, str, of, ext);
+				%efn = sprintf('%s%s-vec%03d.%s', path, str, (of+sz), ext);
+				%NOTE : Dont need this check for scalar case
+				if(strncmpi(vtype, 'scalar', 6))
+					if(exist(fname, 'file') ~= 2)
+						fprintf('ERROR: Can''t find file [%s]\n', fname);
+						if(nargout > 1)
+							varargout{1} = -1;
+						end
+						return;
+					end
+				else
+					if(of > 0)
+						sfn = sprintf('%s%s%03d.%s', path, str, of, ext);
+						efn = sprintf('%s%s%03d.%s', path, str, (of+sz), ext);
+					else
+						%TODO : Might want to change the offset here so that they align 
+						%normally (although this would mean offset by -1 in generate)
+						sfn = sprintf('%s%s%03d.%s', path, str, of+1, ext);
+						efn = sprintf('%s%s%03d.%s', path, str, (of+sz), ext);
+					end
+					if(exist(sfn, 'file') ~= 2)	
+						fprintf('ERROR: Can''t find start file [%s]\n', sfn);
+					end
+					if(exist(efn, 'file') ~= 2)
+						fprintf('ERROR: Can''t find end file [%s]\n', efn);
+					end
+					if(exist(sfn, 'file') ~= 2 || exist(efn, 'file') ~= 2)
+						vecdata = [];
+						if(nargout > 1)
+							varargout{1} = -1;
+						end
+						return;
+					end
+				end
+				%Allocate memory and read files in sequence
+				vecdata = cell(1,sz);
+				%offset  = of-1;
+				wb = waitbar(0, sprintf('Reading vector [0/%d]', length(vecdata)));
+				for n = 1:length(vecdata)
+					fn = sprintf('%s%s%03d.%s', path, str, of+n, ext);
+					%debug
+					sprintf('filename : %s\n', fn);
+					[vecdata{n} ref] = vecDiskRead(V, fn, 'dtype', dtype);
+					if(ref == -1)
+						fprintf('(readVec) : error in element %d of vector array\n', n);
+						delete(wb);
+						if(nargout > 1)
+							varargout{1} = -1;
+						end
+						return;
+					end
+					waitbar(n/length(vecdata), wb, sprintf('Reading vector (%d/%d)', n, length(vecdata)));
+				end
+				delete(wb);
+			else
+				[vecdata N] = vecDiskRead(V, fname, 'dtype', dtype);
+				if(isempty(vecdata))
+					fprintf('(readVec) : Unable to read file [%s]\n', fname);
+					vecdata = [];
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
+					return;
+				else
+					fprintf('Read %d %s from [%s]\n', N, dtype, fname);
+				end
+			end
+			
+			%If we get to here status is fine
 			if(nargout > 1)
 				varargout{1} = 0;
 			end
@@ -472,7 +564,8 @@ classdef vecManager
 		function img = formatVecImg(V, vec, varargin)
 		% FORMATVECIMG
 		% This method is a wrapper for assemVec. 
-		
+	
+			SCALE = false;	
 			if(~isempty(varargin))
 				for k = 1:length(varargin)
 					if(ischar(varargin{k}))
@@ -482,9 +575,27 @@ classdef vecManager
 							vecFmt = varargin{k+1};
 						elseif(strncmpi(varargin{k}, 'vecsz', 5))
 							vecSz = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'datasz', 6) || ...
+							   strncmpi(varargin{k}, 'sz', 2))
+							DATASZ = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'scale', 5))
+							SCALE = true;
 						end
 					end
 				end
+			end
+
+			if(~exist('imSz', 'var'))
+				imSz = [640 480];
+			end
+			if(~exist('vecFmt', 'var'))
+				vecFmt = 'scalar';
+			end
+			if(~exist('vecSz', 'var'))
+				vecSz = 1;
+			end
+			if(~exist('dataSz', 'var'))
+				DATASZ = 256;
 			end
 
 			%If variables not assigned, have assemVec() use internal defaults
@@ -493,7 +604,10 @@ classdef vecManager
 			else
 				img = assemVec(V, vec);
 			end
-			
+
+			if(SCALE)
+				img = img.*DATASZ;
+			end	
 
 		end 	%formatVecImg()
 
@@ -712,11 +826,9 @@ classdef vecManager
 					fname = sprintf('%s%03d', str, num);
 				end
 				if(length(vec) > 1)
-				%TODO : Need to perform another parse here so that filename has form
-				%filename-vec%o3d.dat rather than filename.dat-vec%03d.dat
-					[ef str num path ext] = fname_parse(get(fh, 'filename'), 'n'); %#ok 
+					[ef str num ext path] = fname_parse(fname,'n');%#ok
 					if(ef == -1)
-						fprintf('ERROR: Bad filename %s, exiting...\n', get(fh, 'filename'));
+						fprintf('(writeBPVec): Bad filename [%s], exiting...\n', get(fh, 'filename'));
 						return;
 					end
 					for n = length(vec):-1:1
@@ -772,7 +884,7 @@ classdef vecManager
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
 		                  vecDiskWrite(V, data, varargin);	%commit data to disk
-		[vec varargout] = vecDiskRead(V, varargin);
+		[vec varargout] = vecDiskRead(V, fname, varargin);
 		vec             = genTrackingVec(V, fh);
 		[vec varargout] = genBPVec(V ,fh, vtype, val);
         [vec varargout] = genHueVec(V, fh, vtype, val, varargin);

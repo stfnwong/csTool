@@ -87,18 +87,18 @@ function [status nh] = gui_showPreview(handles, varargin)
 	if(get(fh, 'bpSum') ~= 0)
 		bpvec  = get(fh, 'bpVec');
 		bpdims = get(fh, 'dims');
-        bpimg  = vec2bpimg(bpvec, bpdims);
+        bpimg  = vec2bpimg(bpvec, 'dims', bpdims);
 		if(DEBUG)
 			sz = size(bpimg);
 			%fprintf('%s frame reports dims as [%d %d]\n', DSTR, bpdims(1), bpdims(2));
 			%fprintf('%s size from bpimg       [%d %d]\n', DSTR, sz(2), sz(1));
 		end
-        if(get(handles.chkShowSparse, 'Value'))
+		if(get(handles.chkShowSparse, 'Value'))
             %Check if this is a sparse vector, and show as such in preview
             if(get(fh, 'isSparse'))
                 [spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', get(fh, 'sparseFac'));
                 if(spstat.numZeros == 0)
-                    bpimg = vec2bpimg(spvec, bpdims);
+                    bpimg = vec2bpimg(spvec, 'dims', bpdims);
                 end
             end
 		end

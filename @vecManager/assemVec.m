@@ -35,12 +35,6 @@ function img = assemVec(V, vectors, varargin)
 	end
 
 	%Check what we have
-	if(~iscell(vectors))
-		fprintf('ERROR: vectors must be cell array\n');
-		img = [];
-		return;
-	end
-
 	if(~exist('vecSz', 'var'))
 		vecSz = length(vectors);
 	else
@@ -71,6 +65,11 @@ function img = assemVec(V, vectors, varargin)
 	switch vecFmt
 		case 'row'
 			% NOTE : For row orientation, there is the problem of jumping over the (currently) 
+			if(~iscell(vectors))
+				fprintf('ERROR: vectors must be cell array\n');
+				img = [];
+				return;
+			end
 			% unused column entries until vectors{k+1} is read.
 			for k = 1:vecSz
 				vk   = vectors{k};
@@ -81,6 +80,11 @@ function img = assemVec(V, vectors, varargin)
 				end
 			end
 		case 'col'
+			if(~iscell(vectors))
+				fprintf('ERROR: vectors must be cell array\n');
+				img = [];
+				return;
+			end
 			for k = 1:vecSz
 				vk   = vectors{k};
 				ridx = 0;

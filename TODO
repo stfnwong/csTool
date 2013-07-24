@@ -5,7 +5,8 @@
 ###############################################################
 
 VECMANAGER READ:
-Problem in read method getting correct filename
+Problem in read method getting correct filename (SOLVED)
+Need to strip out spaces in vecdata before we can assemble into frame
 
 ARCHITECTURAL:
 

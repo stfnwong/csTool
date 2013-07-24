@@ -189,7 +189,7 @@ function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
             fprintf('ERROR: No bpData in frame %d\n', handles.idx);
             return;
         else
-            bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+            bpimg = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
             imshow(bpimg, 'Parent', handles.figPreview);
             str = sprintf('Frame %d (backprojection) (%s)\n', handles.idx, get(fh, 'filename'));
             title(handles.figPreview, str);
@@ -312,6 +312,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         if(handles.debug)
             fprintf('Generating BPVec (%s) for frame %s\n', fmt, get(fh, 'filename'))
         end
+		fprintf('Backprojection filename : %s\n', fname);
         handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'file', fname);
     end
 
@@ -379,7 +380,7 @@ function gui_renderPreview(axHandle, fh, prevMode, idx)
             fprintf('ERROR: No bpData in frame %d\n', idx);
             return;
         else
-            bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+            bpimg = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
             imshow(bpimg, 'Parent', axHandle);
             [exitflag fname num] = fname_parse(get(fh, 'filename'));
             if(exitflag == -1)

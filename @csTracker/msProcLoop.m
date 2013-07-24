@@ -29,7 +29,7 @@ function status = msProcLoop(T, fh, trackWindow)
 	% ==== PRE-ALLOCATION STAGE ==== %
 	% Load any data needed in the loop here
 	if(T.method == T.MOMENT_WINACCUM || T.method == T.MOMENT_IMGACCUM)
-		bpimg = vec2bpimg(get(fh, 'bpVec'), get(fh, 'dims'));
+		bpimg = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
 	elseif(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
 		%if(get(fh, 'isSparse') == 0)
 			bpimg          = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));

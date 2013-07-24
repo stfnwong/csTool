@@ -21,7 +21,8 @@ function status = vecDiskWrite(V, data, varargin)
 	VSIM_ADR = false;
 	BIT_1    = false;
 	BIT_2    = false;
-	DEBUG    = false;
+	%DEBUG    = false;
+	DEBUG    = true;
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
@@ -62,6 +63,13 @@ function status = vecDiskWrite(V, data, varargin)
 		end
 	end
 	
+	if(V.verbose)
+		fprintf('Filenames :\n');
+		for k = 1 : length(filename)
+			fprintf('filename{%d} : [%s]\n', k, filename{k});
+		end
+	end
+		
 	if(~exist('numFmt', 'var'))
 		numFmt = 'hex';
 	else
@@ -70,7 +78,7 @@ function status = vecDiskWrite(V, data, varargin)
 			numFmt = 'hex';
 		end
 	end
-	if(DEBUG)
+	if(V.verbose)
 		fprintf('Number format set to %s\n', numFmt);
 	end
 
@@ -79,6 +87,11 @@ function status = vecDiskWrite(V, data, varargin)
 		fp(k) = fopen(filename{k}, 'w');
 		if(DEBUG)
 			fprintf('Opening file %s...\n',filename{k});
+		end
+		if(fp(k) == -1)
+			fprintf('(vecDiskWrite): Couldn''t open file [%s]\n', filename{k});
+			status = -1;
+			return;
 		end
 	end
 

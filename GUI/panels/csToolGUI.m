@@ -760,7 +760,7 @@ function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 			end
 			status = gui_procLoop(handles, 'range', R, 'param', wparam, 'proc', 'debug');
 		else
-			status = gui_procLoop(handles, 'range', R, proc', 'debug');	
+			status = gui_procLoop(handles, 'range', R, 'proc', 'debug');	
 		end
 	else
 		if(handles.rData.rFrame ~= sFrame)
@@ -1172,6 +1172,24 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			if(handles.debug)
 				fprintf('rData struct :\n');
 				disp(rData);
+			end
+
+			% ================ LAUNCH GENERATE SCREEN ================ %
+		case 'g'
+			mhist = handles.segmenter.getMhist();
+			ef = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'mhist', mhist);
+			if(ef == -1)
+				fprintf('ERROR: Error in csToolGenerate()\n');
+				return;
+			end
+			% ================ LAUNCH VERIFY SCREEN ================ %
+		case 'v'
+			fh   = handles.frameBuf.getFrameHandle(frameIndex);
+			imsz = get(fh, 'dims');
+			ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
+			if(ef == -1)
+				fprintf('ERROR: Error in csTooVerify()\n');
+				return;
 			end
 
 	end

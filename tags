@@ -1,237 +1,392 @@
-arr_create	mex/src/mdim_arr.c	/^int arr_create(int **array, int nrows, int ncols)$/;"	f
-arr_fastCreate	mex/src/mdim_arr.c	/^int arr_fastCreate(int **array, int nrows, int ncols)$/;"	f
-arr_free	mex/src/mdim_arr.c	/^void arr_free(int **array, int nrows)$/;"	f
-arr_print	mex/src/mdim_arr.c	/^void arr_print(int **array, int nrows, int ncols)$/;"	f
-arr_rand	mex/src/mdim_arr.c	/^void arr_rand(int **array, int nrows, int ncols)$/;"	f
-arr_zero	mex/src/mdim_arr.c	/^void arr_zero(int **array, int nrows, int ncols)$/;"	f
-bAccept_Callback	GUI/csToolSegOpts.m	/^function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>$/;"	f
-bAccept_Callback	GUI/csToolTrackOpts.m	/^function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>$/;"	f
-bBack_Callback	GUI/csToolGUI.m	/^function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
-bCancel_Callback	GUI/csToolSegOpts.m	/^function bCancel_Callback(hObject, eventdata, handles)   %#ok <INUSL>$/;"	f
-bCancel_Callback	GUI/csToolTrackOpts.m	/^function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
-bForward_Callback	GUI/csToolGUI.m	/^function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>$/;"	f
-bLoad_Callback	GUI/csToolGUI.m	/^function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
-bpimg2vec	util/bpimg2vec.m	/^function vec = bpimg2vec(bpimg, varargin)$/;"	f
-bSegFrame_Callback	GUI/csToolGUI.m	/^function bSegFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
-bSegOpts_Callback	GUI/csToolGUI.m	/^function bSegOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
-bSegRange_Callback	GUI/csToolGUI.m	/^function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>$/;"	f
-bTrackOpts_Callback	GUI/csToolGUI.m	/^function bTrackOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
-bufMemCheck	@csFrameBuffer/bufMemCheck.m	/^function status = bufMemCheck(nFrames, path, varargin)$/;"	f
-buf_spCompare	@csImProc/buf_spCompare.m	/^function [bpmoments spmoments] = buf_spCompare(I, bpvec, spvec, varargin)$/;"	f
-buf_spDecode	@csImProc/buf_spDecode.m	/^function [bpvec varargout] = buf_spDecode(spvec, varargin)$/;"	f
-buf_spEncode	@csImProc/buf_spEncode.m	/^function [spvec varargout] = buf_spEncode(bpimg, varargin)$/;"	f
-chkCordic_Callback	GUI/csToolTrackOpts.m	/^function chkCordic_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-chkFixedIter_Callback	GUI/csToolTrackOpts.m	/^function chkFixedIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-chkFPGA_Callback	GUI/csToolSegOpts.m	/^function chkFPGA_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>$/;"	f
-chkRotMatrix_Callback	GUI/csToolTrackOpts.m	/^function chkRotMatrix_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-chkVerbose_Callback	GUI/csToolGUI.m	/^function chkVerbose_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
-clearImData	@csFrameBuffer/csFrameBuffer.m	/^		function clearImData(F, varargin)$/;"	f
-consoleInput_Callback	GUI/csToolGUI.m	/^function consoleInput_Callback(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
-cpath	install_cstool.m	13
-csFrameBrowser	@csFrameBrowser/csFrameBrowser.m	/^		function B = csFrameBrowser(varargin)$/;"	f
-csFrameBuffer	@csFrameBuffer/csFrameBuffer.m	/^		function fb = csFrameBuffer(varargin)$/;"	f
-csFrame	@csFrame/csFrame.m	/^		function cf = csFrame(varargin)$/;"	f
-csImProc	@csImProc/csImProc.m	/^		function P = csImProc(varargin)$/;"	f
-csSegmenter	@csSegmenter/csSegmenter.m	/^		function S = csSegmenter(varargin)$/;"	f
-csToolFigure_CloseRequestFcn	GUI/csToolGUI.m	/^function csToolFigure_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
-csToolFigure_WindowButtonDownFcn	GUI/csToolGUI.m	/^function csToolFigure_WindowButtonDownFcn(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
-csToolFigure_WindowButtonUpFcn	GUI/csToolGUI.m	/^function csToolFigure_WindowButtonUpFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
-csToolGUI	GUI/csToolGUI.m	/^function varargout = csToolGUI(varargin)$/;"	f
-csToolGUI_OpeningFcn	GUI/csToolGUI.m	/^function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
-csToolGUI_OutputFcn	GUI/csToolGUI.m	/^function varargout = csToolGUI_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
-csToolSaveState	GUI/csToolGUI.m	/^function csToolSaveState(handles)		$/;"	f
-csToolSegOpts	GUI/csToolSegOpts.m	/^function varargout = csToolSegOpts(varargin)$/;"	f
-csToolSegOpts_OpeningFcn	GUI/csToolSegOpts.m	/^function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <INUSD>$/;"	f
-csToolSegOpts_OutputFcn	GUI/csToolSegOpts.m	/^function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
-csToolTrackOpts	GUI/csToolTrackOpts.m	/^function varargout = csToolTrackOpts(varargin)$/;"	f
-csToolTrackOpts_OpeningFcn	GUI/csToolTrackOpts.m	/^function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
-csToolTrackOpts_OutputFcn	GUI/csToolTrackOpts.m	/^function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
-csTracker	@csTracker/csTracker.m	/^		function T = csTracker(varargin)$/;"	f
-disp	@csFrameBrowser/csFrameBrowser.m	/^        function disp(T)$/;"	f
-disp	@csFrameBuffer/csFrameBuffer.m	/^		function disp(fb)$/;"	f
-disp	@csFrame/csFrame.m	/^		function disp(cf)$/;"	f
-disp	@csImProc/csImProc.m	/^		function disp(P)$/;"	f
-disp	@csSegmenter/csSegmenter.m	/^		function disp(T)$/;"	f
-disp	@csTracker/csTracker.m	/^		function disp(T)$/;"	f
-dispImProc	@csImProc/dispImProc.m	/^function dispImProc(I)$/;"	f
-drawCentroidPlot	@csFrameBrowser/drawCentroidPlot.m	/^function drawCentroidPlot(T, fh)$/;"	f
-drawFramePlot	@csFrameBrowser/Copy_of_drawFramePlot.m	/^function drawFramePlot(T, fh)$/;"	f
-drawFramePlot	@csFrameBrowser/drawFramePlot.m	/^function drawFramePlot(B, fh)$/;"	f
-drawHistPlot	@csFrameBrowser/drawHistPlot.m	/^function drawHistPlot(T, fh)$/;"	f
-drawPrevPlot	@csFrameBrowser/drawPrevPlot.m	/^function drawPrevPlot(B, fh, varargin)$/;"	f
-dStaticCall	@csFrameBuffer/dStaticCall.m	/^function dStaticCall(fb)$/;"	f
-etBlkSz_Callback	GUI/csToolSegOpts.m	/^function etBlkSz_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>$/;"	f
-etBlkSz_CreateFcn	GUI/csToolSegOpts.m	/^function etBlkSz_CreateFcn(hObject, eventdata, handles)  %#ok <INUSL>$/;"	f
-etDataSz_Callback	GUI/csToolSegOpts.m	/^function etDataSz_Callback(hObject, eventdata, handles)     %#ok<INUSD,DEFNU>$/;"	f
-etDataSz_CreateFcn	GUI/csToolSegOpts.m	/^function etDataSz_CreateFcn(hObject, eventdata, handles)    %#ok<INUSD,DEFNU>$/;"	f
-etEpsilon_Callback	GUI/csToolTrackOpts.m	/^function etEpsilon_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etEpsilon_CreateFcn	GUI/csToolTrackOpts.m	/^function etEpsilon_CreateFcn(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>$/;"	f
-etFilePath_Callback	GUI/csToolGUI.m	/^function etFilePath_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etFilePath_CreateFcn	GUI/csToolGUI.m	/^function etFilePath_CreateFcn(hObject, eventdata, handles) %#ok <INUSD,DEFNU>$/;"	f
-etHighRange_Callback	GUI/csToolGUI.m	/^function etHighRange_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etHighRange_CreateFcn	GUI/csToolGUI.m	/^function etHighRange_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etLowRange_Callback	GUI/csToolGUI.m	/^function etLowRange_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etLowRange_CreateFcn	GUI/csToolGUI.m	/^function etLowRange_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etMaxIter_Callback	GUI/csToolTrackOpts.m	/^function etMaxIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etMaxIter_CreateFcn	GUI/csToolTrackOpts.m	/^function etMaxIter_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etNBins_Callback	GUI/csToolSegOpts.m	/^function etNBins_Callback(hObject, eventdata, handles)  %#ok <INUSD,DEFNU>$/;"	f
-etNBins_CreateFcn	GUI/csToolSegOpts.m	/^function etNBins_CreateFcn(hObject, eventdata, handles)    %#ok<INUSD,DEFNU>$/;"	f
-etNumFrames_Callback	GUI/csToolGUI.m	/^function etNumFrames_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etNumFrames_CreateFcn	GUI/csToolGUI.m	/^function etNumFrames_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etThresh_Callback	GUI/csToolTrackOpts.m	/^function etThresh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-etThresh_CreateFcn	GUI/csToolTrackOpts.m	/^function etThresh_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-fbrsDisplay	@csFrameBrowser/fbrsDisplay.m	/^function fbrsDisplay(F)$/;"	f
-fbufDisplay	@csFrameBuffer/csFrameBuffer.m	/^        function fbufDisplay(fb)$/;"	f
-fbufDisplay	@csFrameBuffer/fbufDisplay.m	/^function fbufDisplay(fb)$/;"	f
-fcd	util/fcd.m	/^function fcd(varargin)$/;"	f
-finished	TODO	11
-fname_parse	GUI/fname_parse.m	/^function [str num ext exitflag] = fname_parse(fstring, varargin)$/;"	f
-f_tstSegmenter	uTest/f_tstSegmenter.m	/^function [segmenter flags] = f_tstSegmenter(varargin)$/;"	f
-f_tstTracker	uTest/f_tstTracker.m	/^function [tracker flags] = f_tstTracker(varargin)$/;"	f
-genBpImgData	@vecManager/genBpImgData.m	/^function data = genBpImgData(V, bpImg, varargin)$/;"	f
-genBPVec	@vecManager/genBPVec.m	/^function vec = genBPVec(fh, opts)$/;"	f
-genBPVec	@vecManager/genBPVecOLD.m	/^function vec = genBPVec(V, fh, opts)$/;"	f
-genCentroidPlot	@csFrameBrowser/genCentroidPlot.m	/^function genCentroidPlot(T, fh)$/;"	f
-genColVec	@vecManager/genColVec.m	/^function vec = genColVec(V, data, varargin)$/;"	f
-genFramePlot	@csFrameBrowser/genFramePlot.m	/^function genFramePlot(T, fh)$/;"	f
-genHistPlot	@csFrameBrowser/genHistPlot.m	/^function genHistPlot(T, fh)$/;"	f
-genHueVec	@vecManager/genHueVec.m	/^function vec = genHueVec(fh, opts)$/;"	f
-genMhist	@csSegmenter/csSegmenter.m	/^		function genMhist(T, img)$/;"	f
-genPrevPlot	@csFrameBrowser/genPrevPlot.m	/^function genPrevPlot(T, fh, varargin)$/;"	f
-genRGBVec	@vecManager/genRGBVec.m	/^function vec = genRGBVec(V, fh, opts)$/;"	f
-genRowVec	@vecManager/genRowVec.m	/^function vec = genRowVec(V, data, varargin)$/;"	f
-genTrackingVec	@vecManager/genTrackingVec.m	/^function vec = genTrackingVec(V, fh)$/;"	f
-getCurFParams	@csFrameBrowser/csFrameBrowser.m	/^		function fstats = getCurFParams(B)$/;"	f
-getCurMhist	@csImProc/csImProc.m	/^		function mhist = getCurMhist(P)$/;"	f
-getCurWparams	@csFrameBrowser/csFrameBrowser.m	/^		function wparams = getCurWparams(B)$/;"	f
-getDataSz	@csSegmenter/csSegmenter.m	/^		function dataSz = getDataSz(T)$/;"	f
-getExt	@csFrameBuffer/csFrameBuffer.m	/^		function ext = getExt(F)$/;"	f
-getFrameHandle	@csFrameBuffer/csFrameBuffer.m	/^		function fh = getFrameHandle(F, N)$/;"	f
-getImRegion	@csImProc/csImProc.m	/^		function region = getImRegion(P)$/;"	f
-getImRegion	@csSegmenter/csSegmenter.m	/^        function region = getImRegion(T)$/;"	f
-getMhist	@csSegmenter/csSegmenter.m	/^		function mhist = getMhist(T)$/;"	f
-getNumFrames	@csFrameBuffer/csFrameBuffer.m	/^		function n = getNumFrames(F)$/;"	f
-getTrackerFParams	@csImProc/csImProc.m	/^		function params = getTrackerFParams(P)$/;"	f
-getVerbose	@csSegmenter/csSegmenter.m	/^		function verbose = getVerbose(T)$/;"	f
-hbp_block	@csSegmenter/hbp_block.m	/^function [bpdata rhist] = hbp_block(T, img, mhist);$/;"	f
-hbp_block	mex/src/hbp_block.c	/^int hbp_block( unsigned int *img, $/;"	f
-hbp_img	@csSegmenter/hbp_img.m	/^function [bpdata rhist] = hbp_img(T, img, mhist)$/;"	f
-hbp_img	mex/src/hbp_img.c	/^int hbp_img(double *img, $/;"	f
-hbp_row	@csSegmenter/hbp_row.m	/^function [bpdata rhist] = hbp_row(T, img, mhist)$/;"	f
-img2vec	util/img2vec.m	/^function vec = img2vec(img)$/;"	f
-imgAccum	@csTracker/imgAccum.m	/^function moments = imgAccum(T, bpimg)$/;"	f
-init_editTextBoxes	GUI/csToolSegOpts.m	/^function init_editTextBoxes(handles)$/;"	f
-init_editTextBoxes	GUI/csToolTrackOpts.m	/^function init_editTextBoxes(handles)$/;"	f
-init_lbSegMethod	GUI/csToolSegOpts.m	/^function init_lbSegMethod(handles)$/;"	f
-init_lbTrackMethod	GUI/csToolTrackOpts.m	/^function init_lbTrackMethod(handles)$/;"	f
-init_parseOptionStructs	GUI/csToolGUI.m	/^function opts = init_parseOptionStructs()$/;"	f
-initProc	@csImProc/csImProc.m	/^		function Pout = initProc(P, varargin)$/;"	f
-init_restoreFrame	GUI/csToolGUI.m	/^function init_restoreFrame(handles)$/;"	f
-init_UIElements	GUI/csToolGUI.m	/^function init_UIElements(handles)$/;"	f
-inp	install_cstool.m	23
-install	install_cstool.m	4
-interp	GUI/interp.m	/^function [token flag] = interp(cmd, varargin)$/;"	f
-lbSegMethod_Callback	GUI/csToolSegOpts.m	/^function lbSegMethod_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>$/;"	f
-lbSegMethod_CreateFcn	GUI/csToolSegOpts.m	/^function lbSegMethod_CreateFcn(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
-lbTrackMethod_Callback	GUI/csToolTrackOpts.m	/^function lbTrackMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-lbTrackMethod_CreateFcn	GUI/csToolTrackOpts.m	/^function lbTrackMethod_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-loadFrameData	@csFrameBuffer/csFrameBuffer.m	/^		function [FB status] = loadFrameData(FB, varargin)$/;"	f
-m16_getmhist	util/m16_getmhist.m	/^function [mhist] = m16_getmhist(img, region, varargin)$/;"	f
-main	mex/src/mdim_arr.c	/^int main(int argc, char *argv[])$/;"	f
-menu_Debug_Callback	GUI/csToolGUI.m	/^function menu_Debug_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>$/;"	f
-menu_DebugShow_Callback	GUI/csToolGUI.m	/^function menu_DebugShow_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>$/;"	f
-menu_File_Callback	GUI/csToolGUI.m	/^function menu_File_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-menu_FileLoad_Callback	GUI/csToolGUI.m	/^function menu_FileLoad_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-menu_FileSave_Callback	GUI/csToolGUI.m	/^function menu_FileSave_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
-mexFunction	mex/src/mex_hbpBlock.c	/^void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])$/;"	f
-optParser	@csFrameBuffer/optParser.m	/^function opt = optParser(options)$/;"	f
-optParser	@csImProc/optParser.m	/^function ipOpt = optParser(options)$/;"	f
-parseFmt	@vecManager/vecManager.m	/^		function [type val] = parseFmt(fmt)$/;"	f
-plotFrame	@csFrameBrowser/csFrameBrowser.m	/^		function plotFrame(B, fh)$/;"	f
-plotHist	@csFrameBrowser/csFrameBrowser.m	/^		function plotHist(B, fh)$/;"	f
-plotPreview	@csFrameBrowser/csFrameBrowser.m	/^		function plotPreview(B, fh, varargin)$/;"	f
-printFrameContents	@csFrameBuffer/csFrameBuffer.m	/^        function printFrameContents(F)$/;"	f
-printTrackData	@csFrameBrowser/csFrameBrowser.m	/^		function printTrackData(fh, varargin)$/;"	f
-procFrame	@csImProc/csImProc.m	/^		function Pout = procFrame(P, fh)$/;"	f
-procLoop	@csImProc/csImProc.m	/^        function Pout = procLoop(P, fh)$/;"	f
-segDisplay	@csSegmenter/segDisplay.m	/^function segDisplay(T)$/;"	f
-segFrame	@csSegmenter/csSegmenter.m	/^		function segFrame(T, fh)$/;"	f
-segMethodList_Callback	GUI/csToolGUI.m	/^function segMethodList_Callback(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
-segMethodList_CreateFcn	GUI/csToolGUI.m	/^function segMethodList_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-setAxBuffer	@csFrameBrowser/csFrameBrowser.m	/^		function Bout = setAxBuffer(B, axBuffer)$/;"	f
-setAxHist	@csFrameBrowser/csFrameBrowser.m	/^		function Bout = setAxHist(B, axHist)$/;"	f
-setAxPreview	@csFrameBrowser/csFrameBrowser.m	/^		function Bout = setAxPreview(B, axPreview)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.bpImg(T, bpimg)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.bpSum(T, bpsum)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.bpVec(T, bpvec)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.filename(T, fname)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.img(T, img)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.moments(T, moments)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.rhist(T, rhist)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.tVec(T, vec)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.winInit(T, initParams)$/;"	f
-set	@csFrame/csFrame.m	/^		function set.winParams(T, wparams)$/;"	f
-setDataSz	@csSegmenter/csSegmenter.m	/^		function setDataSz(T, size)$/;"	f
-setDestDir	@vecManager/vecManager.m	/^		function VM = setDestDir(V, dir)$/;"	f
-setFParams	@csImProc/csImProc.m	/^		function Pout = setFParams(P, params)$/;"	f
-setGaussPlot	@csFrameBrowser/csFrameBrowser.m	/^		function setGaussPlot(B, gp)$/;"	f
-setImRegion	@csSegmenter/csSegmenter.m	/^		function setImRegion(T, imregion)$/;"	f
-setNFrames	@csFrameBuffer/csFrameBuffer.m	/^		function FB = setNFrames(FB, nFrames)$/;"	f
-setParams	@csTracker/csTracker.m	/^		function setParams(T, params)$/;"	f
-setPath	@csFrameBuffer/csFrameBuffer.m	/^        function FB = setPath(FB, path)$/;"	f
-setRLoc	@vecManager/vecManager.m	/^		function VM = setRLoc(V, rloc)$/;"	f
-setSegMethod	@csSegmenter/csSegmenter.m	/^        function setSegMethod(T, method)$/;"	f
-setTrackMethod	@csTracker/csTracker.m	/^        function setTrackMethod(T, method)$/;"	f
-setVerbose	@csImProc/csImProc.m	/^		function Pout = setVerbose(P)$/;"	f
-setVerbose	@csSegmenter/csSegmenter.m	/^		function setVerbose(T, verbose)$/;"	f
-setVerbose	@csTracker/csTracker.m	/^		function setVerbose(T, verbose)$/;"	f
-setWLoc	@vecManager/vecManager.m	/^		function VM = setWLoc(V, wloc)$/;"	f
-showPath	@csFrameBuffer/csFrameBuffer.m	/^		function path = showPath(fb, varargin)$/;"	f
-sh_parse	GUI/sh_parse.m	/^function [cmd flags] = sh_parse(inp, varargin)$/;"	f
-structs	multiTarget	3
-t_accumBasic	@csTracker/t_accumBasic.m	/^function [moments wparam] = t_accumBasic(varargin)$/;"	f
 !_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
 !_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-tDisplay	@csSegmenter/tDisplay.m	/^function tDisplay(T)$/;"	f
-tDisplay	@csTracker/tDisplay.m	/^function tDisplay(T)$/;"	f
-t_imgAccum	@csTracker/t_imgAccum.m	/^function moments = t_imgAccum(T, bpimg)$/;"	f
-trackFrame	@csTracker/csTracker.m	/^		function trackFrame(T, fh, varargin)$/;"	f
-trackMethodList_Callback	GUI/csToolGUI.m	/^function trackMethodList_Callback(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
-trackMethodList_CreateFcn	GUI/csToolGUI.m	/^function trackMethodList_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-tst_posCallback	tst_posCallback.m	/^function tst_posCallback(src, evendata, varargin)$/;"	f
-t_winAccum	@csTracker/t_winAccum.m	/^function [moments wparam] = t_winAccum(T, bpimg, varargin)$/;"	f
-ut_genmhist	util/ut_genmhist.m	/^function [mhist varargout] = ut_genmhist(img, varargin)$/;"	f
-ut_getimg	util/ut_getimg.m	/^function [img hsvimg hueimg] = ut_getimg(fn, varargin)$/;"	f
-ut_hbp	util/ut_hbp.m	/^function [bpimg rhist] = ut_hbp(img, mhist)$/;"	f
-ut_maccum	util/ut_maccum.m	/^function [moments] = ut_maccum(bpimg, varargin)$/;"	f
-ut_mwinaccum	util/ut_mwinaccum.m	/^function [moments wparam] = ut_mwinaccum(bpimg, winregion)$/;"	f
-ut_vecaccum	util/ut_vecaccum.m	/^function moments = ut_vecaccum(bpvec)$/;"	f
-ut_vecwinaccum	util/ut_vecwinaccum.m	/^function [moments wparam] = ut_vecwinaccum(bpvec, winregion)$/;"	f
-vec2bpimg	util/vec2bpimg.m	/^function bpimg = vec2bpimg(vec, varargin)$/;"	f
-vecAccum	@csTracker/vecAccum.m	/^function [moments wparam] = vecAccum(T, bpdata, varargin)$/;"	f
-vecDiskRead	@vecManager/vecDiskRead.m	/^function vec = vecDiskRead(V, file, varargin)$/;"	f
-vecDiskWrite	@vecManager/vecDiskWrite.m	/^function vecDiskWrite(V, data, varargin)$/;"	f
-vecManager	@vecManager/vecManager.m	/^		function V = vecManager(varargin)$/;"	f
-vector	TODO	9
-verifyBPVec	@vecManager/verifyBPVec.m	/^function status = verifyBPVec(V, fh, vec, varargin)$/;"	f
-winAccum	@csTracker/winAccum.m	/^function [moments wparam] = winAccum(T, bpvec, varargin)$/;"	f
-win_accum	mex/src/win_accum.c	/^int win_accum(double *bpvec[], double moments[], int N)$/;"	f
-wparamComp	@csTracker/winparamComp.m	/^function wparam = wparamComp(T, moments, varargin)$/;"	f
-wparamComp	@csTracker/wparamComp.m	/^function wparam = wparamComp(T, moments, varargin)$/;"	f
-writeBPVec	@vecManager/vecManager.m	/^		function writeBPVec(V, fh, varargin)$/;"	f
-writeHSVVec	@vecManager/vecManager.m	/^		function writeHSVVec(V, fh, varargin)$/;"	f
-writeHueVec	@vecManager/vecManager.m	/^		function writeHueVec(V, fh, varargin)$/;"	f
-writeHueVec	@vecManager/writeHueVec.m	/^function vec = writeHueVec(V, fh, fmt, varargin)$/;"	f
-writeRGBVec	@vecManager/vecManager.m	/^		function writeRGBVec(V, fh, varargin)$/;"	f
-writeTrackingVec	@vecManager/vecManager.m	/^		function writeTrackingVec(V, fh)$/;"	f
-writeVecData	@vecManager/writeVecData.m	/^function status = writeVecData(V, data, varargin)$/;"	f
 XM	mex/src/win_accum.c	17;"	d	file:
 XXM	mex/src/win_accum.c	20;"	d	file:
 XYM	mex/src/win_accum.c	19;"	d	file:
 YM	mex/src/win_accum.c	18;"	d	file:
 YYM	mex/src/win_accum.c	21;"	d	file:
 ZM	mex/src/win_accum.c	16;"	d	file:
+arr_create	mex/src/mdim_arr.c	/^int arr_create(int **array, int nrows, int ncols)$/;"	f
+arr_fastCreate	mex/src/mdim_arr.c	/^int arr_fastCreate(int **array, int nrows, int ncols)$/;"	f
+arr_free	mex/src/mdim_arr.c	/^void arr_free(int **array, int nrows)$/;"	f
+arr_print	mex/src/mdim_arr.c	/^void arr_print(int **array, int nrows, int ncols)$/;"	f
+arr_rand	mex/src/mdim_arr.c	/^void arr_rand(int **array, int nrows, int ncols)$/;"	f
+arr_zero	mex/src/mdim_arr.c	/^void arr_zero(int **array, int nrows, int ncols)$/;"	f
+assemVec	@vecManager/assemVec.m	/^function img = assemVec(V, vectors, varargin)$/;"	f
+bAccept_Callback	GUI/panels/csToolSegOpts.m	/^function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>$/;"	f
+bAccept_Callback	GUI/panels/csToolTrackOpts.m	/^function bAccept_Callback(hObject, eventdata, handles)  %#ok <INUSL,DEFNU>$/;"	f
+bAccept_Callback	GUI/panels/csToolVecOpts.m	/^function bAccept_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bBack_Callback	GUI/panels/csToolGUI.m	/^function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bCancel_Callback	GUI/panels/csToolGenerate.m	/^function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bCancel_Callback	GUI/panels/csToolSegOpts.m	/^function bCancel_Callback(hObject, eventdata, handles)   %#ok <INUSL>$/;"	f
+bCancel_Callback	GUI/panels/csToolTrackOpts.m	/^function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bCancel_Callback	GUI/panels/csToolTrajResize.m	/^function bCancel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+bCancel_Callback	GUI/panels/csToolVecOpts.m	/^function bCancel_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bChangePrev_Callback	GUI/panels/csToolGenerate.m	/^function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bCompare_Callback	GUI/panels/csToolTrajBuf.m	/^function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+bDone_Callback	GUI/panels/csToolParamBrowser.m	/^function bDone_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bDone_Callback	GUI/panels/csToolTrajBuf.m	/^function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+bDone_Callback	GUI/panels/csToolVerify.m	/^function bDone_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+bFirst_Callback	GUI/panels/csToolTrajBuf.m	/^function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bForward_Callback	GUI/panels/csToolGUI.m	/^function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>$/;"	f
+bFrameFirst_Callback	GUI/panels/csToolGUI.m	/^function bFrameFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bFrameLast_Callback	GUI/panels/csToolGUI.m	/^function bFrameLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bGenMhist_Callback	GUI/panels/csToolGenerate.m	/^function bGenMhist_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bGenerate_Callback	GUI/panels/csToolGUI.m	/^function bGenerate_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bGenerate_Callback	GUI/panels/csToolGenerate.m	/^function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bGetFile_Callback	GUI/panels/csToolVerify.m	/^function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bGoto_Callback	GUI/panels/csToolGUI.m	/^function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bGoto_Callback	GUI/panels/csToolTrajBuf.m	/^function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bLast_Callback	GUI/panels/csToolTrajBuf.m	/^function bLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bLoad_Callback	GUI/panels/csToolGUI.m	/^function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bNextFrame_Callback	GUI/panels/csToolParamBrowser.m	/^function bNextFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bNextParam_Callback	GUI/panels/csToolParamBrowser.m	/^function bNextParam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bNext_Callback	GUI/panels/csToolGenerate.m	/^function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bNext_Callback	GUI/panels/csToolTrajBuf.m	/^function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+bParamBrowse_Callback	GUI/panels/csToolGUI.m	/^function bParamBrowse_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bParamNext_Callback	GUI/panels/csToolGUI.m	/^function bParamNext_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bParamPrev_Callback	GUI/panels/csToolGUI.m	/^function bParamPrev_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bPrevFrame_Callback	GUI/panels/csToolParamBrowser.m	/^function bPrevFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bPrevParam_Callback	GUI/panels/csToolParamBrowser.m	/^function bPrevParam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bPrev_Callback	GUI/panels/csToolGenerate.m	/^function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bPrev_Callback	GUI/panels/csToolTrajBuf.m	/^function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+bPrintParams_Callback	GUI/panels/csToolTrackOpts.m	/^function bPrintParams_Callback(hObject, eventdata, handles)	 %#ok<INUSL,DEFNU>$/;"	f
+bProcAll_Callback	GUI/panels/csToolGUI.m	/^function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>$/;"	f
+bProcRange_Callback	GUI/panels/csToolGUI.m	/^function bProcRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bRead_Callback	GUI/panels/csToolTrajBuf.m	/^function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+bRead_Callback	GUI/panels/csToolVerify.m	/^function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bResize_Callback	GUI/panels/csToolTrajBuf.m	/^function bResize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bResize_Callback	GUI/panels/csToolTrajResize.m	/^function bResize_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+bSegAll_Callback	GUI/panels/csToolGUI.m	/^function bSegAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bSegFrame_Callback	GUI/panels/csToolGUI.m	/^function bSegFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bSegOpts_Callback	GUI/panels/csToolGUI.m	/^function bSegOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bSegRange_Callback	GUI/panels/csToolGUI.m	/^function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>$/;"	f
+bSetLabel_Callback	GUI/panels/csToolTrajBuf.m	/^function bSetLabel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+bTrackAll_Callback	GUI/panels/csToolGUI.m	/^function bTrackAll_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bTrackFrame_Callback	GUI/panels/csToolGUI.m	/^function bTrackFrame_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>$/;"	f
+bTrackOpts_Callback	GUI/panels/csToolGUI.m	/^function bTrackOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bTrackRange_Callback	GUI/panels/csToolGUI.m	/^function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bTrajExtract_Callback	GUI/panels/csToolTrajBuf.m	/^function bTrajExtract_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bUIgetfile_Callback	GUI/panels/csToolGUI.m	/^function bUIgetfile_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>$/;"	f
+bUIgetfile_Callback	GUI/panels/csToolGenerate.m	/^function bUIgetfile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bVecOpts_Callback	GUI/panels/csToolGUI.m	/^function bVecOpts_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>$/;"	f
+bVerify_Callback	GUI/panels/csToolGUI.m	/^function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>$/;"	f
+bWrite_Callback	GUI/panels/csToolTrajBuf.m	/^function bWrite_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+blockramEst	util/blockramEst.m	/^function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)$/;"	f
+blockramVs	util/blockramVs.m	/^function [varargout] = blockramVs(imsz, vlen, sfac, range, varargin)$/;"	f
+bpimg2vec	util/bpimg2vec.m	/^function vec = bpimg2vec(bpimg, varargin)$/;"	f
+bufMemCheck	@csFrameBuffer/bufMemCheck.m	/^function status = bufMemCheck(nFrames, path, varargin)$/;"	f
+buf_spCompare	util/buf_spCompare.m	/^function [bpmoments spmoments] = buf_spCompare(I, bpvec, spvec, varargin)$/;"	f
+buf_spDecode	util/buf_spDecode.m	/^function [bpvec varargout] = buf_spDecode(spvec, varargin)$/;"	f
+buf_spEncode	util/buf_spEncode.m	/^function [spvec varargout] = buf_spEncode(bpimg, varargin)$/;"	f
+catVecStream	@vecManager/catVecStream.m	/^function [vec varargout] = catVecStream(V, vtype, val, varargin)$/;"	f
+chkAutoGen_Callback	GUI/panels/csToolVecOpts.m	/^function chkAutoGen_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>$/;"	f
+chkBP_Callback	GUI/panels/csToolGenerate.m	/^function chkBP_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkCompCur_Callback	GUI/panels/csToolTrajBuf.m	/^function chkCompCur_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+chkCordic_Callback	GUI/panels/csToolTrackOpts.m	/^function chkCordic_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkFPGA_Callback	GUI/panels/csToolSegOpts.m	/^function chkFPGA_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>$/;"	f
+chkFixedIter_Callback	GUI/panels/csToolTrackOpts.m	/^function chkFixedIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkForceTrack_Callback	GUI/panels/csToolTrackOpts.m	/^function chkForceTrack_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkHSV_Callback	GUI/panels/csToolGenerate.m	/^function chkHSV_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkHue_Callback	GUI/panels/csToolGenerate.m	/^function chkHue_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkKeep_Callback	GUI/panels/csToolTrajBuf.m	/^function chkKeep_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkKeep_Callback	GUI/panels/csToolTrajResize.m	/^function chkKeep_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+chkRGB_Callback	GUI/panels/csToolGenerate.m	/^function chkRGB_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkRotMatrix_Callback	GUI/panels/csToolTrackOpts.m	/^function chkRotMatrix_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkShowSparse_Callback	GUI/panels/csToolGUI.m	/^function chkShowSparse_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>$/;"	f
+chkShowTraj_Callback	GUI/panels/csToolGUI.m	/^function chkShowTraj_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkUseFrameFilename_Callback	GUI/panels/csToolGenerate.m	/^function chkUseFrameFilename_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+chkVerbose_Callback	GUI/panels/csToolGUI.m	/^function chkVerbose_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+chkVerbose_Callback	GUI/panels/csToolSegOpts.m	/^function chkVerbose_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkVerbose_Callback	GUI/panels/csToolTrackOpts.m	/^function chkVerbose_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkVerbose_Callback	GUI/panels/csToolVecOpts.m	/^function chkVerbose_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>$/;"	f
+csToolClearPrefs	GUI/panels/csToolClearPrefs.m	/^function csToolClearPrefs(varargin)$/;"	f
+csToolFigure_CloseRequestFcn	GUI/panels/csToolGUI.m	/^function csToolFigure_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+csToolFigure_KeyPressFcn	GUI/panels/csToolGUI.m	/^function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>$/;"	f
+csToolFigure_WindowButtonDownFcn	GUI/panels/csToolGUI.m	/^function csToolFigure_WindowButtonDownFcn(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
+csToolFigure_WindowButtonUpFcn	GUI/panels/csToolGUI.m	/^function csToolFigure_WindowButtonUpFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+csToolGUI	GUI/panels/csToolGUI.m	/^function varargout = csToolGUI(varargin)$/;"	f
+csToolGUI_OpeningFcn	GUI/panels/csToolGUI.m	/^function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
+csToolGUI_OutputFcn	GUI/panels/csToolGUI.m	/^function varargout = csToolGUI_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
+csToolGenerate	GUI/panels/csToolGenerate.m	/^function varargout = csToolGenerate(varargin)$/;"	f
+csToolGenerateFig_CloseRequestFcn	GUI/panels/csToolGenerate.m	/^function csToolGenerateFig_CloseRequestFcn(hObject, eventdata, handles) %#ok <INUSL,DEFNU>$/;"	f
+csToolGenerate_OpeningFcn	GUI/panels/csToolGenerate.m	/^function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
+csToolGenerate_OutputFcn	GUI/panels/csToolGenerate.m	/^function varargout = csToolGenerate_OutputFcn(hObject, eventdata, handles) %#ok<INUSD> $/;"	f
+csToolParamBrowser	GUI/panels/csToolParamBrowser.m	/^function varargout = csToolParamBrowser(varargin)$/;"	f
+csToolParamBrowser_CloseRequestFcn	GUI/panels/csToolParamBrowser.m	/^function csToolParamBrowser_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+csToolParamBrowser_OpeningFcn	GUI/panels/csToolParamBrowser.m	/^function csToolParamBrowser_OpeningFcn(hObject, eventdata, handles, varargin)	%#ok<INUSL>$/;"	f
+csToolParamBrowser_OutputFcn	GUI/panels/csToolParamBrowser.m	/^function varargout = csToolParamBrowser_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
+csToolSaveState	GUI/panels/csToolSaveState.m	/^function csToolSaveState(handles, DATA_DIR, frameIndex)$/;"	f
+csToolSegOpts	GUI/panels/csToolSegOpts.m	/^function varargout = csToolSegOpts(varargin)$/;"	f
+csToolSegOpts_OpeningFcn	GUI/panels/csToolSegOpts.m	/^function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <INUSD>$/;"	f
+csToolSegOpts_OutputFcn	GUI/panels/csToolSegOpts.m	/^function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
+csToolTrackOpts	GUI/panels/csToolTrackOpts.m	/^function varargout = csToolTrackOpts(varargin)$/;"	f
+csToolTrackOpts_OpeningFcn	GUI/panels/csToolTrackOpts.m	/^function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
+csToolTrackOpts_OutputFcn	GUI/panels/csToolTrackOpts.m	/^function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
+csToolTrajBuf	GUI/panels/csToolTrajBuf.m	/^function varargout = csToolTrajBuf(varargin)$/;"	f
+csToolTrajBuf_OpeningFcn	GUI/panels/csToolTrajBuf.m	/^function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
+csToolTrajBuf_OutputFcn	GUI/panels/csToolTrajBuf.m	/^function varargout = csToolTrajBuf_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> $/;"	f
+csToolTrajResize	GUI/panels/csToolTrajResize.m	/^function varargout = csToolTrajResize(varargin)$/;"	f
+csToolTrajResize_OpeningFcn	GUI/panels/csToolTrajResize.m	/^function csToolTrajResize_OpeningFcn(hObject, eventdata, handles, varargin)$/;"	f
+csToolTrajResize_OutputFcn	GUI/panels/csToolTrajResize.m	/^function varargout = csToolTrajResize_OutputFcn(hObject, eventdata, handles) $/;"	f
+csToolVecOpts	GUI/panels/csToolVecOpts.m	/^function varargout = csToolVecOpts(varargin)$/;"	f
+csToolVecOpts_OpeningFcn	GUI/panels/csToolVecOpts.m	/^function csToolVecOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
+csToolVecOpts_OutputFcn	GUI/panels/csToolVecOpts.m	/^function varargout = csToolVecOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
+csToolVerify	GUI/panels/csToolVerify.m	/^function varargout = csToolVerify(varargin)$/;"	f
+csToolVerify_OpeningFcn	GUI/panels/csToolVerify.m	/^function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
+csToolVerify_OutputFcn	GUI/panels/csToolVerify.m	/^function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> $/;"	f
+cstParam_FmtParamString	GUI/panels/csToolParamBrowser.m	/^function str = cstParam_FmtParamString(handles)   $/;"	f
+cstParam_ShowPreview	GUI/panels/csToolParamBrowser.m	/^function status = cstParam_ShowPreview(handles)$/;"	f
+dStaticCall	@csFrameBuffer/dStaticCall.m	/^function dStaticCall(fb)$/;"	f
+dispImProc	@csImProc/dispImProc.m	/^function dispImProc(I)$/;"	f
+drawCentroidPlot	@csFrameBrowser/drawCentroidPlot.m	/^function drawCentroidPlot(T, fh)$/;"	f
+drawFramePlot	@csFrameBrowser/Copy_of_drawFramePlot.m	/^function drawFramePlot(T, fh)$/;"	f
+drawFramePlot	@csFrameBrowser/drawFramePlot.m	/^function drawFramePlot(B, fh)$/;"	f
+drawHistPlot	@csFrameBrowser/drawHistPlot.m	/^function drawHistPlot(T, fh)$/;"	f
+drawPrevPlot	@csFrameBrowser/drawPrevPlot.m	/^function drawPrevPlot(B, fh, varargin)$/;"	f
+dspmultEst	util/dspmultEst.m	/^function [nbits varargout] = dspmultEst(imsz, vlen, vdim, N, varargin)$/;"	f
+etBPTHRESH_Callback	GUI/panels/csToolSegOpts.m	/^function etBPTHRESH_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etBPTHRESH_CreateFcn	GUI/panels/csToolSegOpts.m	/^function etBPTHRESH_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etBlkSz_Callback	GUI/panels/csToolSegOpts.m	/^function etBlkSz_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>$/;"	f
+etBlkSz_CreateFcn	GUI/panels/csToolSegOpts.m	/^function etBlkSz_CreateFcn(hObject, eventdata, handles)  %#ok <INUSL>$/;"	f
+etBufSize_Callback	GUI/panels/csToolTrajBuf.m	/^function etBufSize_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etBufSize_Callback	GUI/panels/csToolTrajResize.m	/^function etBufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+etBufSize_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function etBufSize_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etBufSize_CreateFcn	GUI/panels/csToolTrajResize.m	/^function etBufSize_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etCurFrame_Callback	GUI/panels/csToolGUI.m	/^function etCurFrame_Callback(hObject, eventdata, handles)	%#ok>INUSD,DEFNU>$/;"	f
+etCurFrame_Callback	GUI/panels/csToolTrajBuf.m	/^function etCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etCurFrame_CreateFcn	GUI/panels/csToolGUI.m	/^function etCurFrame_CreateFcn(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>$/;"	f
+etCurFrame_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function etCurFrame_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etDataSz_Callback	GUI/panels/csToolSegOpts.m	/^function etDataSz_Callback(hObject, eventdata, handles)     %#ok<INUSD,DEFNU>$/;"	f
+etDataSz_Callback	GUI/panels/csToolVecOpts.m	/^function etDataSz_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etDataSz_CreateFcn	GUI/panels/csToolSegOpts.m	/^function etDataSz_CreateFcn(hObject, eventdata, handles)    %#ok<INUSD,DEFNU>$/;"	f
+etDataSz_CreateFcn	GUI/panels/csToolVecOpts.m	/^function etDataSz_CreateFcn(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etDestDir_Callback	GUI/panels/csToolVecOpts.m	/^function etDestDir_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etDestDir_CreateFcn	GUI/panels/csToolVecOpts.m	/^function etDestDir_CreateFcn(hObject, eventdata, handles) 	%#ok<INUSD,DEFNU>$/;"	f
+etEpsilon_Callback	GUI/panels/csToolTrackOpts.m	/^function etEpsilon_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etEpsilon_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function etEpsilon_CreateFcn(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>$/;"	f
+etErrorTol_Callback	GUI/panels/csToolVecOpts.m	/^function etErrorTol_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etErrorTol_CreateFcn	GUI/panels/csToolVecOpts.m	/^function etErrorTol_CreateFcn(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etFileName_Callback	GUI/panels/csToolVerify.m	/^function etFileName_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etFileName_CreateFcn	GUI/panels/csToolVerify.m	/^function etFileName_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etFilePath_Callback	GUI/panels/csToolGUI.m	/^function etFilePath_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etFilePath_CreateFcn	GUI/panels/csToolGUI.m	/^function etFilePath_CreateFcn(hObject, eventdata, handles) %#ok <INUSD,DEFNU>$/;"	f
+etGoto_Callback	GUI/panels/csToolGUI.m	/^function etGoto_Callback(hObject, eventdata, handles)		%#ok<INUSD,DEFNU>$/;"	f
+etGoto_Callback	GUI/panels/csToolTrajBuf.m	/^function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etGoto_CreateFcn	GUI/panels/csToolGUI.m	/^function etGoto_CreateFcn(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etGoto_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function etGoto_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etHighRange_Callback	GUI/panels/csToolGUI.m	/^function etHighRange_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etHighRange_CreateFcn	GUI/panels/csToolGUI.m	/^function etHighRange_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etImageHeight_Callback	GUI/panels/csToolVerify.m	/^function etImageHeight_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etImageHeight_CreateFcn	GUI/panels/csToolVerify.m	/^function etImageHeight_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etImageWidth_Callback	GUI/panels/csToolVerify.m	/^function etImageWidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etImageWidth_CreateFcn	GUI/panels/csToolVerify.m	/^function etImageWidth_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etLowRange_Callback	GUI/panels/csToolGUI.m	/^function etLowRange_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etLowRange_CreateFcn	GUI/panels/csToolGUI.m	/^function etLowRange_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etMaxIter_Callback	GUI/panels/csToolTrackOpts.m	/^function etMaxIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etMaxIter_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function etMaxIter_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etNBins_Callback	GUI/panels/csToolSegOpts.m	/^function etNBins_Callback(hObject, eventdata, handles)  %#ok <INUSD,DEFNU>$/;"	f
+etNBins_CreateFcn	GUI/panels/csToolSegOpts.m	/^function etNBins_CreateFcn(hObject, eventdata, handles)    %#ok<INUSD,DEFNU>$/;"	f
+etNumFrames_Callback	GUI/panels/csToolGUI.m	/^function etNumFrames_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etNumFrames_CreateFcn	GUI/panels/csToolGUI.m	/^function etNumFrames_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etParamData_Callback	GUI/panels/csToolParamBrowser.m	/^function etParamData_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>$/;"	f
+etParamData_CreateFcn	GUI/panels/csToolParamBrowser.m	/^function etParamData_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etRangeHigh_Callback	GUI/panels/csToolTrajBuf.m	/^function etRangeHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etRangeHigh_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function etRangeHigh_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etRangeLow_Callback	GUI/panels/csToolTrajBuf.m	/^function etRangeLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etRangeLow_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function etRangeLow_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etReadFile_Callback	GUI/panels/csToolGenerate.m	/^function etReadFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etReadFile_CreateFcn	GUI/panels/csToolGenerate.m	/^function etReadFile_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etRfilename_Callback	GUI/panels/csToolVecOpts.m	/^function etRfilename_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etRfilename_CreateFcn	GUI/panels/csToolVecOpts.m	/^function etRfilename_CreateFcn(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etSparseFac_Callback	GUI/panels/csToolTrackOpts.m	/^function etSparseFac_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etSparseFac_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function etSparseFac_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etThresh_Callback	GUI/panels/csToolTrackOpts.m	/^function etThresh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etThresh_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function etThresh_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etTrackingStats_Callback	GUI/panels/csToolTrajBuf.m	/^function etTrackingStats_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etTrajLabel_Callback	GUI/panels/csToolTrajBuf.m	/^function etTrajLabel_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etTrajLabel_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function etTrajLabel_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etWfilename_Callback	GUI/panels/csToolVecOpts.m	/^function etWfilename_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etWfilename_CreateFcn	GUI/panels/csToolVecOpts.m	/^function etWfilename_CreateFcn(hObject, eventdata, handles)		%#ok<INUSD,DEFNU>$/;"	f
+etWriteFile_Callback	GUI/panels/csToolGenerate.m	/^function etWriteFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etWriteFile_CreateFcn	GUI/panels/csToolGenerate.m	/^function etWriteFile_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+f_tstSegmenter	uTest/f_tstSegmenter.m	/^function [segmenter flags] = f_tstSegmenter(varargin)$/;"	f
+f_tstTracker	uTest/f_tstTracker.m	/^function [tracker flags] = f_tstTracker(varargin)$/;"	f
+fbrsDisplay	@csFrameBrowser/fbrsDisplay.m	/^function fbrsDisplay(F)$/;"	f
+fbufDisplay	@csFrameBuffer/fbufDisplay.m	/^function fbufDisplay(fb)$/;"	f
+fcd	util/fcd.m	/^function fcd(varargin)$/;"	f
+fifoStreamRead	util/fifoStreamRead.m	/^function [istream ostream] = fifoStreamRead(varargin)$/;"	f
+figSegOpts_CloseRequestFcn	GUI/panels/csToolSegOpts.m	/^function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+figTrackOpts_CloseRequestFcn	GUI/panels/csToolTrackOpts.m	/^function figTrackOpts_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+fig_trajBuf_CloseRequestFcn	GUI/panels/csToolTrajBuf.m	/^function fig_trajBuf_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+fig_trajBuf_KeyPressFcn	GUI/panels/csToolTrajBuf.m	/^function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+fname_parse	util/fname_parse.m	/^function [exitflag str varargout] = fname_parse(fstring, varargin)$/;"	f
+genBPVec	@vecManager/genBPVec.m	/^function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok$/;"	f
+genBPVec	@vecManager/genBPVecOLD.m	/^function vec = genBPVec(data, opts)$/;"	f
+genBpImgData	@vecManager/genBpImgData.m	/^function data = genBpImgData(V, bpImg, varargin)$/;"	f
+genCentroidPlot	@csFrameBrowser/genCentroidPlot.m	/^function genCentroidPlot(T, fh)$/;"	f
+genColVec	@vecManager/genColVec.m	/^function vec = genColVec(V, data, varargin)$/;"	f
+genFmt	@vecManager/genFmt.m	/^function fmt = genFmt(V, vtype, val)$/;"	f
+genFramePlot	@csFrameBrowser/genFramePlot.m	/^function genFramePlot(T, fh)$/;"	f
+genHSVVec	@vecManager/genHSVVec.m	/^function vec = genHSVVec(fh, varargin)$/;"	f
+genHistPlot	@csFrameBrowser/genHistPlot.m	/^function genHistPlot(T, fh)$/;"	f
+genHueVec	@vecManager/genHueVec.m	/^function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok$/;"	f
+genPrevPlot	@csFrameBrowser/genPrevPlot.m	/^function genPrevPlot(T, fh, varargin)$/;"	f
+genRGBVec	@vecManager/genRGBVec.m	/^function vec = genRGBVec(fh, varargin)$/;"	f
+genRowVec	@vecManager/genRowVec.m	/^function vec = genRowVec(V, data, varargin)$/;"	f
+genTrackingVec	@vecManager/genTrackingVec.m	/^function vec = genTrackingVec(V, fh)$/;"	f
+gui_axHitTest	GUI/gui_axHitTest.m	/^function [hit ah varargout] = gui_axHitTest(axHandles, figHandle, cPos, varargin)$/;"	f
+gui_calcEllipse	GUI/gui_calcEllipse.m	/^function [X Y] = gui_calcEllipse(x,y,a,b,ang,steps)$/;"	f
+gui_calcRect	GUI/gui_calcRect.m	/^function [left right top bottom] = gui_calcRect(xc, yc, width, height, ang, steps)$/;"	f
+gui_genImHist	GUI/gui_genImHist.m	/^function varargout = gui_genImHist(varargin)$/;"	f
+gui_getTraj	GUI/gui_getTraj.m	/^function [tVec varargout] = gui_getTraj(frameBuf, varargin)$/;"	f
+gui_ifaceEnable	GUI/gui_ifaceEnable.m	/^function nh = gui_ifaceEnable(handles, state)$/;"	f
+gui_loadFrames	GUI/gui_loadFrames.m	/^function [status nh varargout] = gui_loadFrames(handles, filename, numFrames)$/;"	f
+gui_plotParams	GUI/gui_plotParams.m	/^function status = gui_plotParams(fh, axHandle, varargin)$/;"	f
+gui_plotTraj	GUI/gui_plotTraj.m	/^function gui_plotTraj(axHandle, tVec, idx, varargin)$/;"	f
+gui_precompError	GUI/panels/csToolTrajBuf.m	/^function errBuf = gui_precompError(traj1, traj2, varargin) %#ok<DEFNU>$/;"	f
+gui_printParams	GUI/gui_printParams.m	/^function [status varargout] = gui_printParams(fh, varargin)$/;"	f
+gui_procLoop	GUI/gui_procLoop.m	/^function [status] = gui_procLoop(handles, varargin)$/;"	f
+gui_rPos2rRegion	GUI/gui_rPos2rRegion.m	/^function region = gui_rPos2rRegion(rPos, axHandle, varargin)$/;"	f
+gui_rectTest	GUI/gui_rectTest.m	/^function gui_rectTest()$/;"	f
+gui_renderErrorPlot	GUI/panels/csToolTrajBuf.m	/^function gui_renderErrorPlot(axHandle, traj, idx, varargin)$/;"	f
+gui_renderPreview	GUI/panels/csToolGenerate.m	/^function gui_renderPreview(axHandle, fh, prevMode, idx)$/;"	f
+gui_renderPreview	GUI/panels/csToolTrajBuf.m	/^function gui_renderPreview(axHandle, fh, idx, varargin)$/;"	f
+gui_renderText	GUI/panels/csToolTrajBuf.m	/^function stats = gui_renderText(pErr, pTraj) $/;"	f
+gui_renderTraj	GUI/panels/csToolTrajBuf.m	/^function gui_renderTraj(axHandle, traj, idx, col, varargin)$/;"	f
+gui_setHistTitle	GUI/gui_setHistTitle.m	/^function status = gui_setHistTitle(handles, varargin)$/;"	f
+gui_setHistograms	GUI/gui_setHistograms.m	/^function [status varargout] = gui_setHistograms(varargin)$/;"	f
+gui_setPreviewTitle	GUI/gui_setPreviewTitle.m	/^function gui_setPreviewTitle(fTitle, fHandle)$/;"	f
+gui_setWinParams	GUI/gui_setWinParams.m	/^function [str status] = gui_setWinParams(frameBuf, idx, varargin)$/;"	f
+gui_showPreview	GUI/gui_showPreview.m	/^function [status nh] = gui_showPreview(handles, varargin)$/;"	f
+gui_stepPreview	GUI/gui_stepPreview.m	/^function [newIndex nh] = gui_stepPreview(idx, handles, dir)$/;"	f
+gui_updatePreview	GUI/panels/csToolTrajBuf.m	/^function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)$/;"	f
+hbp_block	@csSegmenter/hbp_block.m	/^function [bpdata rhist] = hbp_block(T, img, mhist, varargin)$/;"	f
+hbp_block	mex/src/hbp_block.c	/^int hbp_block( unsigned int *img, $/;"	f
+hbp_img	@csSegmenter/hbp_img.m	/^function [bpdata rhist] = hbp_img(T, img, mhist, varargin)$/;"	f
+hbp_img	mex/src/hbp_img.c	/^int hbp_img(double *img, $/;"	f
+hbp_img_sp	@csSegmenter/hbp_img_sp.m	/^function [spvec rhist] = hbp_img_sp(T, img, mhist, varargin)$/;"	f
+hbp_row	@csSegmenter/hbp_row.m	/^function [bpdata rhist] = hbp_row(T, img, mhist)$/;"	f
+imbufPatternGen	util/imbufPattern.m	/^function [vec varargout] = imbufPatternGen(vtype, val, varargin)$/;"	f
+imbufPatternTest	util/imbufPatternTest.m	/^function [status varargout] = imbufPatternTest(vtype, val, vec, varargin)$/;"	f
+img2vec	util/img2vec.m	/^function vec = img2vec(img)$/;"	f
+imgAccum	@csTracker/imgAccum.m	/^function moments = imgAccum(T, bpimg)$/;"	f
+imgAccumVec	@csTracker/imgAccumVec.m	/^function moments = imgAccumVec(T, bpvec, varargin)$/;"	f
+initParam	@csTracker/initParam.m	/^function [wparam] = initParam(T, args)$/;"	f
+init_UIElements	GUI/init/init_UIElements.m	/^function handles = init_UIElements(handles)$/;"	f
+init_genBufferOpts	GUI/init/init_genBufferOpts.m	/^function bufOpts = init_genBufferOpts(DATA_DIR, ASSET_DIR, NO_LOAD)$/;"	f
+init_genRegionStruct	GUI/init/init_genRegionStruct.m	/^function regionStruct = init_genRegionStruct(DATA_DIR, NO_LOAD)$/;"	f
+init_genSegmenterOpts	GUI/init/init_genSegmenterOpts.m	/^function segOpts = init_genSegmenterOpts(DATA_DIR, NO_LOAD)$/;"	f
+init_genTrackerOpts	GUI/init/init_genTrackerOpts.m	/^function trackOpts = init_genTrackerOpts(DATA_DIR, NO_LOAD)$/;"	f
+init_genVecManagerOpts	GUI/init/init_genVecManagerOpts.m	/^function vecOpts = init_genVecManagerOpts(DATA_DIR, NO_LOAD)$/;"	f
+init_modelHist	GUI/init/init_modelHist.m	/^function [status nh varargout] = init_modelHist(handles, region, idx, varargin)$/;"	f
+init_parseOptionStructs	GUI/init/init_parseOptsStruct.m	/^function opts = init_parseOptionStructs(noLoad)$/;"	f
+init_restoreFrame	GUI/init/init_restoreFrame.m	/^function handles = init_restoreFrame(handles)$/;"	f
+interp	GUI/interp.m	/^function [token flag] = interp(cmd, varargin)$/;"	f
+lbBufContents_Callback	GUI/panels/csToolTrajResize.m	/^function lbBufContents_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+lbBufContents_CreateFcn	GUI/panels/csToolTrajResize.m	/^function lbBufContents_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+lbSegMethod_Callback	GUI/panels/csToolSegOpts.m	/^function lbSegMethod_Callback(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>$/;"	f
+lbSegMethod_CreateFcn	GUI/panels/csToolSegOpts.m	/^function lbSegMethod_CreateFcn(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
+lbTrackMethod_Callback	GUI/panels/csToolTrackOpts.m	/^function lbTrackMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+lbTrackMethod_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function lbTrackMethod_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+lbTrajStats_Callback	GUI/panels/csToolTrajBuf.m	/^function lbTrajStats_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+lbTrajStats_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function lbTrajStats_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+m16_getmhist	util/m16_getmhist.m	/^function [mhist] = m16_getmhist(img, region, varargin)$/;"	f
+main	mex/src/mdim_arr.c	/^int main(int argc, char *argv[])$/;"	f
+menu_Buffer_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_Buffer_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+menu_ClearWparam_Callback	GUI/panels/csToolGUI.m	/^function menu_ClearWparam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+menu_Data_Callback	GUI/panels/csToolGUI.m	/^function menu_Data_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+menu_DebugFrameStat_Callback	GUI/panels/csToolGUI.m	/^function menu_DebugFrameStat_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+menu_DebugShow_Callback	GUI/panels/csToolGUI.m	/^function menu_DebugShow_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>$/;"	f
+menu_Debug_Callback	GUI/panels/csToolGUI.m	/^function menu_Debug_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>$/;"	f
+menu_DumpTraj_Callback	GUI/panels/csToolGUI.m	/^function menu_DumpTraj_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>$/;"	f
+menu_FileLoad_Callback	GUI/panels/csToolGUI.m	/^function menu_FileLoad_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+menu_FileSave_Callback	GUI/panels/csToolGUI.m	/^function menu_FileSave_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+menu_File_Callback	GUI/panels/csToolGUI.m	/^function menu_File_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+menu_SaveFigures_Callback	GUI/panels/csToolGUI.m	/^function menu_SaveFigures_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+menu_Tracking_Callback	GUI/panels/csToolGUI.m	/^function menu_Tracking_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>$/;"	f
+menu_bufSize_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_bufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+menu_data_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_data_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+menu_debugShowHandles_Callback	GUI/panels/csToolGUI.m	/^function menu_debugShowHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+menu_enableHandles_Callback	GUI/panels/csToolGUI.m	/^function menu_enableHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+menu_formSubplot_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+menu_launchFigure_Callback	GUI/panels/csToolGUI.m	/^function menu_launchFigure_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+menu_load_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+menu_save_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_save_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+menu_trackOptions_Callback	GUI/panels/csToolGUI.m	/^function menu_trackOptions_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>$/;"	f
+menu_trajBuf_Callback	GUI/panels/csToolGUI.m	/^function menu_trajBuf_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU$/;"	f
+mexFunction	mex/src/mex_hbpBlock.c	/^void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])$/;"	f
+msProcLoop	@csTracker/msProcLoop.m	/^function status = msProcLoop(T, fh, trackWindow)$/;"	f
+optParser	@csFrameBuffer/optParser.m	/^function opt = optParser(options)$/;"	f
+optParser	@csImProc/optParser.m	/^function ipOpt = optParser(options)$/;"	f
+parseFmt	@vecManager/parseFmt.m	/^function [ftype val] = parseFmt(fmt)$/;"	f
+pmAnchorPoint_Callback	GUI/panels/csToolTrackOpts.m	/^function pmAnchorPoint_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmAnchorPoint_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function pmAnchorPoint_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmBufIdx_Callback	GUI/panels/csToolTrajBuf.m	/^function pmBufIdx_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmBufIdx_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function pmBufIdx_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmCompIdx_Callback	GUI/panels/csToolTrajBuf.m	/^function pmCompIdx_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmCompIdx_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function pmCompIdx_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmPredWin_Callback	GUI/panels/csToolTrackOpts.m	/^function pmPredWin_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmPredWin_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function pmPredWin_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmRMeth_Callback	GUI/panels/csToolTrackOpts.m	/^function pmRMeth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmRMeth_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function pmRMeth_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmSparseFac_Callback	GUI/panels/csToolTrackOpts.m	/^function pmSparseFac_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmSparseFac_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function pmSparseFac_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmVecFmt_Callback	GUI/panels/csToolVecOpts.m	/^function pmVecFmt_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+pmVecFmt_CreateFcn	GUI/panels/csToolVecOpts.m	/^function pmVecFmt_CreateFcn(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+pmVecOr_Callback	GUI/panels/csToolGenerate.m	/^function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmVecOr_Callback	GUI/panels/csToolVerify.m	/^function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmVecOr_CreateFcn	GUI/panels/csToolGenerate.m	/^function pmVecOr_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmVecOr_CreateFcn	GUI/panels/csToolVerify.m	/^function pmVecOr_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmVecSz_Callback	GUI/panels/csToolGenerate.m	/^function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmVecSz_Callback	GUI/panels/csToolVerify.m	/^function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmVecSz_CreateFcn	GUI/panels/csToolGenerate.m	/^function pmVecSz_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmVecSz_CreateFcn	GUI/panels/csToolVerify.m	/^function pmVecSz_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmWinMethod_Callback	GUI/panels/csToolTrackOpts.m	/^function pmWinMethod_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmWinMethod_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function pmWinMethod_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+rfig_keyPress	GUI/gui_rectTest.m	/^function rfig_keyPress(hObject, eventdata, handles)$/;"	f
+rfig_wbDown	GUI/gui_rectTest.m	/^function rfig_wbDown(hObject, eventdata, handles)$/;"	f
+rfig_wbUp	GUI/gui_rectTest.m	/^function rfig_wbUp(hObject, eventdata, handles)$/;"	f
+segDisplay	@csSegmenter/segDisplay.m	/^function segDisplay(T)$/;"	f
+segMethodList_Callback	GUI/panels/csToolGUI.m	/^function segMethodList_Callback(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
+segMethodList_CreateFcn	GUI/panels/csToolGUI.m	/^function segMethodList_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+sh_parse	GUI/sh_parse.m	/^function [cmd flags] = sh_parse(inp, varargin)$/;"	f
+slashkill	util/slashkill.m	/^function [str varargout] = slashkill(fstring, varargin)$/;"	f
+tDisplay	@csSegmenter/tDisplay.m	/^function tDisplay(T)$/;"	f
+tDisplay	@csTracker/tDisplay.m	/^function tDisplay(T)$/;"	f
+t_accumBasic	@csTracker/t_accumBasic.m	/^function [moments wparam] = t_accumBasic(varargin)$/;"	f
+t_imgAccum	@csTracker/t_imgAccum.m	/^function moments = t_imgAccum(T, bpimg)$/;"	f
+t_winAccum	@csTracker/t_winAccum.m	/^function [moments wparam] = t_winAccum(T, bpimg, varargin)$/;"	f
+trackMethodList_Callback	GUI/panels/csToolGUI.m	/^function trackMethodList_Callback(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
+trackMethodList_CreateFcn	GUI/panels/csToolGUI.m	/^function trackMethodList_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+tst_guiCursorTest	GUI/tst_guiCursorTest.m	/^function [cimg status]  = tst_guiCursorTest(axHandle, cursorPos, img, imSz, varargin)$/;"	f
+ut_genmhist	util/ut_genmhist.m	/^function [mhist varargout] = ut_genmhist(img, varargin)$/;"	f
+ut_getimg	util/ut_getimg.m	/^function [img hsvimg hueimg] = ut_getimg(fn, varargin)$/;"	f
+ut_hbp	util/ut_hbp.m	/^function [bpimg rhist] = ut_hbp(img, mhist)$/;"	f
+ut_maccum	util/ut_maccum.m	/^function [moments] = ut_maccum(bpimg, varargin)$/;"	f
+ut_mwinaccum	util/ut_mwinaccum.m	/^function [moments wparam] = ut_mwinaccum(bpimg, winregion)$/;"	f
+ut_vecaccum	util/ut_vecaccum.m	/^function moments = ut_vecaccum(bpvec)$/;"	f
+ut_vecloopaccum	util/ut_vecloopaccum.m	/^function moments = ut_vecloopaccum(bpvec, varargin)$/;"	f
+ut_vecwinaccum	util/ut_vecwinaccum.m	/^function [moments wparam] = ut_vecwinaccum(bpvec, winregion)$/;"	f
+vec2bpimg	util/vec2bpimg.m	/^function bpimg = vec2bpimg(vec, varargin)$/;"	f
+vecAccum	@csTracker/vecAccum.m	/^function [moments wparam] = vecAccum(T, bpdata, varargin)$/;"	f
+vecDiskRead	@vecManager/vecDiskRead.m	/^function [vector varargout] = vecDiskRead(V, fname, varargin)$/;"	f
+vecDiskRead	@vecManager/vecDiskRead.old.m	/^function vectors = vecDiskRead(V, file, varargin)$/;"	f
+vecDiskWrite	@vecManager/vecDiskWrite.m	/^function status = vecDiskWrite(V, data, varargin)$/;"	f
+vecDiskWrite	@vecManager/vecDiskWrite.old.m	/^function vecDiskWrite(V, data, varargin)$/;"	f
+verifyBPVec	@vecManager/verifyBPVec.m	/^function status = verifyBPVec(V, fh, vec, varargin)$/;"	f
+verifyHueVec	@vecManager/verifyHueVec.m	/^function [status varargout] = verifyHueVec(V, fh, vec, varargin)$/;"	f
+vname_parse	util/vname_parse.m	/^function [ef str varargout] = vname_parse(vstring, varargin)$/;"	f
+winAccum	@csTracker/winAccum.m	/^function [moments wparam] = winAccum(T, bpvec, wparam, dims)$/;"	f
+winAccumImg	@csTracker/winAccumImg.m	/^function [moments] = winAccumImg(T, bpimg, wparam, varargin)$/;"	f
+winAccumVec	@csTracker/winAccumVec.m	/^function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)$/;"	f
+winPredict	@csTracker/winPredict.m	/^function [wparam varargout] = winPredict(prevParams, varargin)$/;"	f
+win_accum	mex/src/win_accum.c	/^int win_accum(double *bpvec[], double moments[], int N)$/;"	f
+wparamComp	@csTracker/winparamComp.m	/^function wparam = wparamComp(T, moments, varargin)$/;"	f
+wparamComp	@csTracker/wparamComp.m	/^function wparam = wparamComp(T, moments, varargin)$/;"	f
+writeHueVec	@vecManager/writeHueVec.m	/^function vec = writeHueVec(V, fh, fmt, varargin)$/;"	f
+writeVecData	@vecManager/writeVecData.m	/^function status = writeVecData(V, data, varargin)$/;"	f

@@ -107,9 +107,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 
 	% UIWAIT makes csToolVerify wait for user response (see UIRESUME)
 	% uiwait(handles.csToolVerifyFig);
-
-
-
+	
 function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> 
     varargout{1} = handles.output;
 
@@ -124,7 +122,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%DEBUG:
 	fprintf('(DEBUG)filename - [%s]\n', filename);
     vtype        = get(handles.pmVecOr, 'String');
-    vidx         = get(handles.pmVecSz, 'Value');
+    vidx         = get(handles.pmVecOr, 'Value');
     vstr         = get(handles.pmVecSz, 'String');
     if(strncmpi(vstr, 'scalar', 6))
         vsize = 1;

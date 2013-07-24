@@ -298,7 +298,7 @@ function status = cstParam_ShowPreview(handles)
     fh = handles.frameBuf.getFrameHandle(handles.idx);
     bpvec = get(fh, 'bpVec');
     bpdims = get(fh, 'dims');
-    bpimg  = vec2bpimg(bpvec, bpdims);
+    bpimg  = vec2bpimg(bpvec, 'dims', bpdims);
     if(isempty(bpimg) || numel(bpimg) == 0)
         fprintf('ERROR: Incorrect bpvec conversion in cstParam_ShowPreview()\n');
         status = -1;

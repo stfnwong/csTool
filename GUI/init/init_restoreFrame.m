@@ -32,7 +32,7 @@ function handles = init_restoreFrame(handles)
 			if(dims(3) > 3)
 				img = img(:,:,1:3);		%still not sure why this happens...?
 			end
-			bpimg = handles.segOpts.dataSz ./ vec2bpimg(get(fh, 'bpvec'));
+			bpimg = handles.segOpts.dataSz ./ vec2bpimg(get(fh, 'bpvec'), 'dims', dims);
 			imshow(fig_framePreview, img);
 			imshow(fig_bpPreview, bpimg);
 		end
