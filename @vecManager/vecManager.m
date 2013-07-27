@@ -181,13 +181,12 @@ classdef vecManager
 				else
 					if(of > 0)
 						sfn = sprintf('%s%s%03d.%s', path, str, of, ext);
-						efn = sprintf('%s%s%03d.%s', path, str, (of+sz), ext);
 					else
 						%TODO : Might want to change the offset here so that they align 
 						%normally (although this would mean offset by -1 in generate)
 						sfn = sprintf('%s%s%03d.%s', path, str, of+1, ext);
-						efn = sprintf('%s%s%03d.%s', path, str, (of+sz), ext);
 					end
+                    efn = sprintf('%s%s%03d.%s', path, str, fix(of+str2double(sz)), ext);
 					if(exist(sfn, 'file') ~= 2)	
 						fprintf('ERROR: Can''t find start file [%s]\n', sfn);
 					end
@@ -203,16 +202,16 @@ classdef vecManager
 					end
 				end
 				%Allocate memory and read files in sequence
-				vecdata = cell(1,sz);
+				vecdata = cell(1,fix(str2double(sz)));
 				%offset  = of-1;
-				wb = waitbar(0, sprintf('Reading vector [0/%d]', length(vecdata)));
+				wb = waitbar(0, sprintf('Reading vector [0/%d]', length(vecdata)), 'Name', 'Reading vector data...');
 				for n = 1:length(vecdata)
 					fn = sprintf('%s%s%03d.%s', path, str, of+n, ext);
 					%debug
 					sprintf('filename : %s\n', fn);
 					[vecdata{n} ref] = vecDiskRead(V, fn, 'dtype', dtype);
 					if(ref == -1)
-						fprintf('(readVec) : error in element %d of vector array\n', n);
+						fprintf('(readVec) : error in vector stream %d\n', n);
 						delete(wb);
 						if(nargout > 1)
 							varargout{1} = -1;
@@ -222,6 +221,9 @@ classdef vecManager
 					waitbar(n/length(vecdata), wb, sprintf('Reading vector (%d/%d)', n, length(vecdata)));
 				end
 				delete(wb);
+				if(V.verbose)
+					fprintf('(readVec): Read %d vector streams from disk\n', length(vecdata));
+				end
 			else
 				[vecdata N] = vecDiskRead(V, fname, 'dtype', dtype);
 				if(isempty(vecdata))
@@ -587,15 +589,27 @@ classdef vecManager
 
 			if(~exist('imSz', 'var'))
 				imSz = [640 480];
+				if(V.verbose)
+					fprintf('imSz : [%d x %d]\n', imSz(1), imSz(2));
+				end
 			end
 			if(~exist('vecFmt', 'var'))
 				vecFmt = 'scalar';
+				if(V.verbose)
+					fprintf('vecFmt : %s\n', vecFmt);
+				end
 			end
 			if(~exist('vecSz', 'var'))
-				vecSz = 1;
+				vecSz = length(vec);
+				if(V.verbose)
+					fprintf('vecSz : %d\n', vecSz);
+				end
 			end
 			if(~exist('dataSz', 'var'))
 				DATASZ = 256;
+				if(V.verbose)
+					fprintf('DATASZ : %d\n', DATASZ);
+				end
 			end
 
 			%If variables not assigned, have assemVec() use internal defaults

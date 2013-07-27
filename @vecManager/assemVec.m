@@ -70,8 +70,11 @@ function img = assemVec(V, vectors, varargin)
 				img = [];
 				return;
 			end
+            % NOTE : We can probaby take advantage of the fact that we have
+            % all the vectors available to us in memory and just write the 
+            % pattern into the image array column-wise
 			% unused column entries until vectors{k+1} is read.
-			for k = 1:vecSz
+			for k = 1 : length(vectors)
 				vk   = vectors{k};
 				cidx = 0;
 				%TODO : Try get rid of double nested loop here
@@ -85,13 +88,17 @@ function img = assemVec(V, vectors, varargin)
 				img = [];
 				return;
 			end
-			for k = 1:vecSz
+            wb = waitbar(0, 'Assembling column vectors...', 'Name', 'Assembling column vectors');
+			for k = 1 : length(vectors)
 				vk   = vectors{k};
 				ridx = 0;
-				for n = 1:vecSz:(imSz(2) / vecSz)
+				for n = k:vecSz:imSz(2)
 					img(n,:) = vk(ridx*imSz(1)+1 : (ridx+1)*imSz(1));
+                    ridx = ridx + 1;
 				end
+                waitbar(k/length(vectors), wb, sprintf('Assembling column vector (%d/%d)', k, length(vectors)));
 			end
+            delete(wb);
 
 		case 'scalar'
 			%Take a serialised vector and lay it out in raster form, wrapping the 

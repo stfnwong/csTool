@@ -92,8 +92,8 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	%set(handles.pmVecType, 'String', typeStr);
 
     % Make default image size 640x480
-    set(handles.etImageWidth, 'String','640');
-    set(handles.etImageHeight, 'String', '480');
+    set(handles.etImageWidth, 'String', num2str(handles.imsz(1)));
+    set(handles.etImageHeight, 'String', num2str(handles.imsz(2)));
 
 	%Setup preview figure
 	set(handles.figPreview, 'XTick', [], 'XTickLabel', []);

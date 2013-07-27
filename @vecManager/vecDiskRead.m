@@ -14,16 +14,25 @@ function [vector varargout] = vecDiskRead(V, fname, varargin)
 
 % Stefan Wong 2012
 
-	debug = false;
+	%debug = false;
+	%if(~isempty(varargin))
+	%	for k = 1:length(varargin)
+	%		if(ischar(varargin{k}))
+	%			if(strncmpi(varargin{k}, 'debug', 5))
+	%				debug = true;
+	%			elseif(strncmpi(varargin{k}, 'dtype', 5))
+	%				dtype = varargin{k+1};
+	%				fprintf('(vecDiskRead) : dtype set as [%s]\n', dtype);
+	%			end
+	%		end
+	%	end
+	%end
+	
 	if(~isempty(varargin))
-		for k = 1:length(varargin)
-			if(ischar(varargin{k}))
-				if(strncmpi(varargin{k}, 'debug', 5))
-					debug = true;
-				elseif(strncmpi(varargin{k}, 'dtype', 5))
-					dtype = varargin{k+1};
-					fprintf('(vecDiskRead) : dtype set as [%s]\n', dtype);
-				end
+		if(strncmpi(varargin{1}, 'dtype', 5))
+			dtype = varargin{2};
+			if(V.verbose)
+				fprintf('(vecDiskRead) : dtype set as [%s]\n', dtype);
 			end
 		end
 	end
@@ -41,6 +50,7 @@ function [vector varargout] = vecDiskRead(V, fname, varargin)
 		if(nargout > 1)
 			varargout{1} = -1;
 		end
+		return
 	else	
 		%Read the file, taking care around the modelsim address character
 		c = fread(fh, 1, 'uint8=>char');
@@ -51,8 +61,10 @@ function [vector varargout] = vecDiskRead(V, fname, varargin)
 		end
 		%[vector N] = fread(fh, dtype);
 		[vector N] = textscan(fh, '%u8', 'Delimiter', ' ');
-		if(debug)
+		vector = cell2mat(vector);	%make sure we return a matrix
+		if(V.verbose)
 			fprintf('Read %d %s from [%s]\n', N, dtype, fname);
+			fprintf('Found %d non-zero elements\n', sum(vector > 0));
 		end
 		if(nargout > 1)
 			varargout{1} = N;

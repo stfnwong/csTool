@@ -79,7 +79,7 @@ function status = vecDiskWrite(V, data, varargin)
 		end
 	end
 	if(V.verbose)
-		fprintf('Number format set to %s\n', numFmt);
+		fprintf('(vecDiskWrite) : Number format set to %s\n', numFmt);
 	end
 
 	%Open file pointers

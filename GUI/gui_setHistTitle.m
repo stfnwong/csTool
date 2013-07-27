@@ -15,7 +15,7 @@ function status = gui_setHistTitle(handles, varargin)
 	if(isempty(varargin))
 		%Use defaults
 		title(handles.fig_mhistPreview, 'Model Histogram');
-		title(handles.fig_ihistPreview, 'Image Histogram');
+		%title(handles.fig_ihistPreview, 'Image Histogram');
 		status = 0;
 		return;
 	else
@@ -46,11 +46,11 @@ function status = gui_setHistTitle(handles, varargin)
 			end
 		end
 		% Set titles
-		if(~exist('iTitle', 'var'))
-			title(handles.fig_ihistPreview, 'Image Histogram');
-		else
-			title(handles.fig_ihistPreview, iTitle);
-		end
+		%if(~exist('iTitle', 'var'))
+		%	title(handles.fig_ihistPreview, 'Image Histogram');
+		%else
+		%	title(handles.fig_ihistPreview, iTitle);
+		%end
 		if(~exist('mTitle', 'var'))
 			title(handles.fig_mhistPreview, 'Model Histogram');
 		else

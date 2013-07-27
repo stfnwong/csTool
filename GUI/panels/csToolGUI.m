@@ -194,11 +194,11 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
     xlabel(handles.fig_mhistPreview, []);
 	ylabel(handles.fig_mhistPreview, 'Value');
 	%Image histogram
-	cla(handles.fig_ihistPreview);
-	title(handles.fig_ihistPreview, 'Image Histogram');
+	%cla(handles.fig_ihistPreview);
+	%title(handles.fig_ihistPreview, 'Image Histogram');
 	%xlabel(handles.fig_ihistPreview, 'Bin');
-    xlabel(handles.fig_ihistPreview, []);
-	ylabel(handles.fig_ihistPreview, 'Value');
+    %xlabel(handles.fig_ihistPreview, []);
+	%ylabel(handles.fig_ihistPreview, 'Value');
 
 	%Setup buttons, listboxes, etc
     handles = init_UIElements(handles);
@@ -299,11 +299,11 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end
-	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
-		                           'ihist'  , ihist);
-	if(exitflag == -1)
-		return;
-	end
+	%[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+	%	                           'ihist'  , ihist);
+	%if(exitflag == -1)
+	%	return;
+	%end
 	guidata(hObject, handles);
 
 end 	%bBack_Callback()
@@ -333,11 +333,11 @@ function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end
-	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
-		                           'ihist'  , ihist);
-	if(exitflag == -1)
-		return;
-	end
+	%[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+	%	                           'ihist'  , ihist);
+	%if(exitflag == -1)
+	%	return;
+	%end
 	guidata(hObject, handles);
 
 end 	%bForward_Callback()	
@@ -357,11 +357,11 @@ function bFrameFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end
-	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
-		                           'ihist'  , ihist);
-	if(exitflag == -1)
-		return;
-	end
+	%[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+	%	                           'ihist'  , ihist);
+	%if(exitflag == -1)
+	%	return;
+	%end
     %Dont forget to set frameIndex and param index
     frameIndex = 1;
 	%Initialise the param index to 1
@@ -386,15 +386,15 @@ function bFrameLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     if(exitflag == -1)
         return;
     end
-    [ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(N),'hsv');             
-	if(exitflag == -1)
-		return;
-	end
-	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
-		                           'ihist'  , ihist);
-	if(exitflag == -1)
-		return;
-	end
+    %[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(N),'hsv');             
+	%if(exitflag == -1)
+	%	return;
+	%end
+	%[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+	%	                           'ihist'  , ihist);
+	%if(exitflag == -1)
+	%	return;
+	%end
     %Dont forget to set frameIndex and param index
     %Initialise the param index to 1
 	fh = handles.frameBuf.getFrameHandle(frameIndex);
@@ -430,12 +430,12 @@ function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end
-	[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
-		                           'ihist'  , ihist);
-	if(exitflag == -1)
-		return;
-	end
-	frameIndex = idx;
+	%[exitflag] = gui_setHistograms('ihistAx', handles.fig_ihistPreview, ...
+	%	                           'ihist'  , ihist);
+	%if(exitflag == -1)
+	%	return;
+	%end
+	%frameIndex = idx;
 	%Update GUI
 	set(handles.etCurFrame, 'String', num2str(idx));
 	
@@ -1132,10 +1132,12 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				%Update histogram axes
 				[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex), 'hsv');
 				%ihist = [r g b];
-				gui_setHistograms('ihistAx', handles.fig_ihistPreview, ... 
-					              'ihist', ihist, ...
-								  'mhistAx', handles.fig_mhistPreview, ...
-								  'mhist', mhist);
+				%gui_setHistograms('ihistAx', handles.fig_ihistPreview, ... 
+				%	              'ihist', ihist, ...
+				%				  'mhistAx', handles.fig_mhistPreview, ...
+				%				  'mhist', mhist);
+				gui_setHistograms('mhistAx', handles.fig_mhistPreview, ...
+					              'mhist', mhist);
 				%Restore title
 				fh = handles.frameBuf.getFrameHandle(frameIndex);
 				title(handles.fig_framePreview, get(fh, 'filename'));
