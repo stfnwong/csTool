@@ -81,16 +81,16 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok
 			%Data enters the system serially, so row vectors need to be pulled out 
 			%along the row dimension of the image
 			rdim = img_w / val;
-			vec  = cell(1, rdim);
+			vec  = cell(val, 1);
 			t    = rdim * img_h;
 			wb   = waitbar(0, sprintf('Generating column vector (0/%d)', t), ...
                               'Name', 'Generating column vector');
 			p    = 1;		%Progress counter
 			%Extract row vectors
-			for n = 1:rdim
+			for n = 1 : val
 				row  = zeros(1, img_h * (img_w/rdim));
                 ridx = 1;
-				for y = 1:img_h
+				for y = 1 : img_h
                     %TODO: check this expression
 					%row(y:y+(img_h/rdim)) = hue_img(y, n:rdim:img_w);
                     row(ridx:ridx+numel(n:rdim:img_w)-1) = hue_img(y, n:rdim:img_w);
@@ -108,23 +108,23 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok
 		case 'col'
 			%Because data enters serially, we can just pull the whole row out, and 
 			%then move down the image by N rows, where N is the size of the vector.
-			cdim = img_h / val;
-			vec  = cell(1, cdim);
+			cdim = fix(img_h / val);
+			vec  = cell(val, 1);
 			t    = cdim * (img_h/cdim);
 			wb   = waitbar(0, sprintf('Generating row vector (0/%d)', t), ...
                               'Name', 'Generating row vector');
 			p     = 1;	%Progress counter
 			%Extract column vectors
-			for n = 1:cdim
-				col  = zeros(1, img_w * (img_h/cdim));
-                cidx = 1;       %column index
-				for y = n:cdim:img_h
+			for n = 1 : val
+				col = zeros(1, cdim * img_w);
+                idx = 0;
+				for y = n : val : img_h
 					%col(cidx:(cidx+img_w)) = hue_img(y, :);
-                    col(cidx : (cidx + img_w)-1) = hue_img(y, 1:img_w);
+					col(idx*img_w+1 : (idx+1)*img_w) = hue_img(n, 1:img_w);
 					waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
                                      p, t));
-					p = p + 1;
-                    cidx = cidx + img_w;
+					idx = idx + 1;
+					p   = p + 1;
 				end
 				vec{n} = col;
 			end
@@ -146,15 +146,6 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok
 					waitbar(p/t, wb, sprintf('Generating raster vector (%d/%d)', ...
                                      p, t));
 					p = p + 1;
-                    if(p > length(data)+1)      %DEBUG: see what happens with +1
-                        fprintf('ERROR: Pointer exceeds data\n');
-                        delete(wb);
-                        vec = [];
-						if(nargout > 1)
-							varargout{1} = -1;
-						end
-                        return;
-                    end
 				end
 			end
 			vec = data;

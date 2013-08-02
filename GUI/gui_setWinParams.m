@@ -63,7 +63,11 @@ function [str status] = gui_setWinParams(frameBuf, idx, varargin)
 	else
 		m = moments{1};
 	end
-	wp = get(fh, 'winParams');
+	wp     = get(fh, 'winParams');
+	% Collect statistics
+	dims   = get(fh, 'dims');
+	bpsum  = get(fh, 'bpSum');
+	nIters = get(fh, 'nIters');
 	
 	% Format string
 	if(length(m) == 6)
@@ -81,20 +85,22 @@ function [str status] = gui_setWinParams(frameBuf, idx, varargin)
 		axmin = wp(5);
 	end
 
+	ds  = sprintf('Dimensions : [%d x %d]\n', dims(1), dims(2));
+	bs  = sprintf('Backprojected pixels : %d\n', bpsum);	
 	%s1  = sprintf('xc    : %.1f\n', xc);
 	s1  = sprintf('xc : %.1f yc : %.1f\n', xc, yc);
 	s2  = sprintf('theta : %.1f\n', theta);
 	s3  = sprintf('axmaj : %.1f, axmin : %.1f\n', axmaj, axmin);
 	%Format title string
 	if(exist('param', 'var'))
-		st  = sprintf('wparam %d of %d\n', param, get(fh, 'nIters'));
+		st  = sprintf('wparam %d of %d\n', param, nIters);
 	else
-		st = sprintf('wparam 1 of %d\n', get(fh, 'nIters'));
+		st = sprintf('wparam 1 of %d\n', nIters);
 	end
 	%s4  = sprintf('axmin : %.1f\n', axmin); 
 	%str = strcat(s1, s2, s3, s4, s5);
     %str = sprintf('xc    : %d\nyc    ; %d\ntheta : %d\naxmaj : %d\naxmin : %d\n', xc, yc, theta, axmaj, axmin);
-    str = {st, s1, s2, s3};
+    str = {ds, bs, st, s1, s2, s3};
 	status = 0;
 
 end 	%gui_setWinParams()
