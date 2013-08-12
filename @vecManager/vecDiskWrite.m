@@ -115,9 +115,9 @@ function status = vecDiskWrite(V, data, varargin)
 		end
 		switch numFmt
 			case 'hex'
-				fprintf(fp(k), '%02X ', vec);
+				fprintf(fp(k), '%X ', vec);
 			case 'dec'
-				fprintf(fp(k), '%02d ', vec);
+				fprintf(fp(k), '%d ', vec);
 			otherwise 
 				fprintf('Not a supported number format, quitting...\n');
 				for m = 1:length(data)

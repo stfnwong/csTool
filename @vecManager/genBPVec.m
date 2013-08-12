@@ -95,7 +95,8 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 		case 'scalar'
 			%Linearise data into raster
 			data = zeros(1, img_w*img_h);
-			t    = img_w * img_h;
+			%t    = img_w * img_h;
+			t    = img_w;
 			wb   = waitbar(0, sprintf('Generating raster vector (0/%d)', t), ...
                               'Name', 'Generating raster vector');
 			p    = 1;		%Progress counter
@@ -106,15 +107,23 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 			% for y = 1:imh_h
 			% 	data(p*img_w : (p+1)*img_w) = bpimg(y,:);
 			% end
+
 			for y = 1:img_h
-				for x = 1:img_w
-					%data(y,x) = bpimg(y,x);
-					data(p) = bpimg(y,x);
-					waitbar(p/t, wb, sprintf('Generating raster vector (%d/%d)', ...
-                                     p, t));
-					p = p + 1;
-				end
+				data((y-1)*img_w+1:y*img_w) = bpimg(y,:);
+				waitbar(y/t, wb, sprintf('Generating raster vector (%d/%d)...', ...
+					   p, t));
 			end
+
+
+			%for y = 1:img_h
+			%	for x = 1:img_w
+			%		%data(y,x) = bpimg(y,x);
+			%		data(p) = bpimg(y,x);
+			%		waitbar(p/t, wb, sprintf('Generating raster vector (%d/%d)', ...
+            %                         p, t));
+			%		p = p + 1;
+			%	end
+			%end
 			vec    = cell(1,1);
 			vec{1} = data;
 			delete(wb);

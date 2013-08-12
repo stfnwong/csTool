@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 06-Jun-2013 23:35:50
+% Last Modified by GUIDE v2.5 11-Aug-2013 14:49:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,7 +53,7 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     %Parse 'optional' arguments
     if(~isempty(varargin))
         for k = 1:length(varargin)
-            if(ischar(varargin))
+            if(ischar(varargin{k}))
                 %These are the optional arguments
                 if(strncmpi(varargin{k}, 'debug', 5))
                     handles.debug = 1;
@@ -118,6 +118,10 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     %Make default selection 2c
     set(handles.pmVecSz, 'Value', 4);
     set(handles.pmVecOr, 'Value', 2);
+    %Set default range to be entire frameBuffer
+    set(handles.etLow, 'String', '1');
+    %set(handles.etHigh, 'String', num2str(get(handles.frameBuf.getNumFrames())));
+    set(handles.etHigh, 'String', '1');
 	%Check filenames in vecManager object, and load into filename field
 	if(strcmpi(vOpts.wfilename, ' '))
 		set(handles.etWriteFile, 'String', 'data/vectors/imvec.dat');
@@ -283,12 +287,64 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     else
         fmt = strcat(num2str(val), 'c');
     end
-    fh    = handles.frameBuf.getFrameHandle(handles.idx);
-    fname = get(handles.etWriteFile, 'String');
+    if(get(handles.chkGenRange, 'Value'))
+        lr    = fix(str2double(get(handles.etLow, 'String')));
+        hr    = fix(str2double(get(handles.etHigh, 'String')));
+        if(isnan(lr) || isnan(hr))
+            fprintf('Non-number value - getting all frames\n');
+            range = 0:handles.frameBuf.getNumFrames();
+        else
+            range = lr:hr;
+        end
+        fh = handles.frameBuf.getFrameHandle(range);
+        if(get(handles.chkUseFrameFilename, 'String'))
+            fname = cell(1, length(lr:hr));
+            n = lr;
+            for k = 1:length(fname)
+                fh = handles.frameBuf.getFrameHandle(n);
+                [ef str num ext path] = fname_parse(get(fh, 'filename'), 'n');   %#ok
+                if(ef == -1)
+                    fprintf('ERROR: parse error in filename [%s]\n', get(fh, 'filename'));
+                    return;
+                end
+                fname{k} = sprintf('%s%03d.dat', str, num);
+                n = n + 1;
+            end
+        elseif(get(handles.chkAppendNum, 'Value'))
+            fname = cell(1, length(lr:hr));
+            n = lr;
+            fh = get(handles.frameBuf.getFrameHandle(n));
+            [ef str num ext path] = fname_parse(get(fh, 'filename'), 'n'); %#ok
+            if(ef == -1)
+                return;
+            end
+            for k = 1:length(fname)
+                fname{k} = sprintf('%s-%03d.dat', str, k);
+            end
+        else
+            %Append numbers to the value in edit text field
+            fn = get(handles.etWriteFile, 'String');
+            [ef str num ext path] = fname_parse(fn, 'n'); %#ok
+            if(ef == -1)
+                return;
+            end
+            fname = cell(1, length(lr:hr));
+            n = lr;
+            for k = 1:length(fname)
+                fname{k} = sprintf('%s%s-%03.dat', path, str, n);
+                n = n + 1;
+            end
+        end
+    else
+        fh    = handles.frameBuf.getFrameHandle(handles.idx);
+        fname = get(handles.etWriteFile, 'String');
+    end
+
+
 	%Set the filename in the vecManager object as well 
 	%TODO: Update the internal file handling scheme to automatically generate 
 	%properly numbered files
-	handles.vecManager = handles.vecManager.setWLoc(fname);
+	%handles.vecManager = handles.vecManager.setWLoc(fname);
     
     if(get(handles.chkRGB, 'Value'))
         if(handles.debug)
@@ -312,8 +368,26 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         if(handles.debug)
             fprintf('Generating BPVec (%s) for frame %s\n', fmt, get(fh, 'filename'))
         end
-		fprintf('Backprojection filename : %s\n', fname);
+        if(iscell(fname))
+            fprintf('Backprojection filename : %s\n', fname{1});
+        else
+            fprintf('Backprojection filename : %s\n', fname); %#ok
+        end
         handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'file', fname);
+    end
+
+    %Write mhist to same location, appending -mhist.dat
+    if(get(handles.chkMhist, 'Value'))
+        [ef str num ext path] = fname_parse(get(handles.etWriteFile, 'String'), 'n'); %#ok
+        if(ef == -1)
+            fprintf('ERROR: parse error generating mhist\n');
+            return;
+        end
+        fn = sprintf('%s%s-mhist.%s', path, str, ext);
+        ef = write_mhist(fn, handles.mhist);
+        if(ef == -1)
+            return;
+        end
     end
 
     guidata(hObject, handles);
@@ -447,3 +521,23 @@ function bUIgetfile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etWriteFile, 'String', sprintf('%s%s', path, fname));
     guidata(hObject, handles);
+
+
+
+function chkGenRange_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function chkAppendNum_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function chkMhist_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
+function etLow_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+
+function etHigh_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+
+
