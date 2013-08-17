@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 20-May-2013 00:21:24
+% Last Modified by GUIDE v2.5 16-Aug-2013 23:12:25
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1676,3 +1676,15 @@ function menu_trajBuf_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
     
     guidata(hObject, handles);
 end 
+
+
+% --------------------------------------------------------------------
+function menu_Pattern_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+    ef = csToolPattern();
+    if(ef == -1)
+        fprintf('ERROR: Something went wrong in csToolPattern()\n');
+        return;
+    end
+
+end     %menu_Pattern_Callback()
