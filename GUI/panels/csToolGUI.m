@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 16-Aug-2013 23:12:25
+% Last Modified by GUIDE v2.5 17-Aug-2013 20:29:15
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1687,4 +1687,20 @@ function menu_Pattern_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         return;
     end
 
+    guidata(hObject, handles);
+
 end     %menu_Pattern_Callback()
+
+
+% --------------------------------------------------------------------
+function menu_ModelHistogram_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    % Write model histogram to disk
+    ef = wrModelHist(handles.frameBuf, 'mhist', handles.segmenter.getMhist());
+    if(ef == -1)
+        fprintf('Error writing model histogram to disk\n');
+        return;
+    end
+
+    guidata(hObject, handles);
+
+end     %menu_ModelHistogram()

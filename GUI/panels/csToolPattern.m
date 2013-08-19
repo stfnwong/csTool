@@ -97,7 +97,7 @@ function varargout = csToolPattern_OutputFcn(hObject, eventdata, handles) %#ok<I
 function bInputFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Get input filename
 	oldPath = get(handles.etInputFile, 'String');
-	[fname path] = uiputfile('*.dat', 'Select testbench input file...');
+	[fname path] = uigetfile('*.dat', 'Select testbench input file...');
 	if(isempty(fname))
 		fname = oldPath;
 		path  = '';
@@ -108,7 +108,7 @@ function bInputFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 function bOutputFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     % Get output filename
     oldPath = get(handles.etOutputFile, 'String');
-    [fname path] = uiputfile('*.dat', 'Select testbench output file...');
+    [fname path] = uigetfile('*.dat', 'Select testbench output file...');
     if(isempty(fname))
         fname = oldPath;
 		path  = '';
