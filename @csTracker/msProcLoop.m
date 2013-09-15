@@ -126,7 +126,8 @@ function status = msProcLoop(T, fh, trackWindow)
 		if(T.WSIZE_CONT)
 			%Save previous centroid
 			%cTemp = [trackWindow(1) trackWindow(2)];
-			trackWindow = wparamComp(T, moments);
+			%trackWindow = wparamComp(T, moments);
+			trackWindow = wparamCompB(T, moments);
 			switch(T.WSIZE_METHOD)
 				case T.ZERO_MOMENT
 					if(exist('spstat', 'var'))
@@ -189,7 +190,8 @@ function status = msProcLoop(T, fh, trackWindow)
 	end
 
 	%Compute new window parameters
-	wparam = wparamComp(T, moments);
+	%wparam = wparamComp(T, moments);
+	wparam = wparamCompB(T, moments);
 	%DEBUG: - Get rid of NaNs by force
 	wparam(isnan(wparam)) = 1;
 
@@ -204,8 +206,10 @@ function status = msProcLoop(T, fh, trackWindow)
 				wparam(5) = fix(sqrt(moments(1)));
 			end
 		case T.EIGENVEC
-			wparam(4) = sqrt(wparam(4));
-			wparam(5) = sqrt(wparam(5));
+			%wparam(4) = sqrt(wparam(4));
+			%wparam(5) = sqrt(wparam(5));
+			wparam(4) = wparam(4);
+			wparam(5) = wparam(5);
 			%Value are already correct in wparamComp
 		case T.HALF_EIGENVEC
 			%Make window size based on semi-major/semi-minor axes of ellipse

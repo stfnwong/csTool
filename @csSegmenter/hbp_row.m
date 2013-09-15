@@ -56,15 +56,16 @@ function [bpdata rhist] = hbp_row(T, img, mhist, varargin)
 			imRow = img(r, (n-1)*row_len+1:n*row_len);
 			for k = 1:length(bins)
 				if(k == 1)
-					pix      = bcomp(0, bins(k), imRow);
-					ihist(k) = sum(sum(pix));
+					pix          = bcomp(0, bins(k), imRow);
+					ihist_row(k) = sum(sum(pix));
 				else
-					pix      = bcomp(bins(k-1), bins(k), imRow);
-					ihist(k) = sum(sum(pix));
+					pix          = bcomp(bins(k-1), bins(k), imRow);
+					ihist_row(k) = sum(sum(pix));
 				end
 			end
 		end
 		%Backproject this row
+		rhist_row = mhist ./ ihist_row;
 	end
 
 	%for r = 1:img_h
