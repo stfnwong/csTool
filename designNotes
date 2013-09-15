@@ -122,3 +122,8 @@ We therefore might want to parse the name a second time, or add another section 
 
 MEAN SHIFT VECTOR
 Add a routine to display the computed meanshift vector in the preview area (as a red line, for example)
+
+
+
+IMAGE HISTOGRAM
+Make a small utility to fully verify (ie: A/B comparison) the regional image histogram property. This SHOULD be true. We SHOULD be able to compute the histogram for basically any arbitrary geometric region, as long as we correctly normalise the histogram bins to account for the number of pixels in that region

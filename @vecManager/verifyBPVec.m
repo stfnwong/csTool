@@ -87,7 +87,8 @@ function status = verifyBPVec(V, fh, vec, varargin)
 			%Format stats for output
 		end
 	elseif(strncmpi(vtype, 'scalar', 6))
-
+		% Get a reference vector
+		[refVec status dims] = genHueVec(V, fh, vtype, val, 'scale', S_FAC);
 	else
 		fprintf('ERROR: Not a valid vtype [%s]\n', vtype);
 		status = -1;

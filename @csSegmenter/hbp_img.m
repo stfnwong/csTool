@@ -33,6 +33,7 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 	%end
 	bins = T.N_BINS .* (1:T.N_BINS);
 
+	% Histogram computation
 	for x = 1:img_w
 		for y = 1:img_h
 			%Save some time by discarding 0 values, since 0 undefined in HSV space

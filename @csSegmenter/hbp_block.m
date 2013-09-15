@@ -45,6 +45,9 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 	% Save rhist blocks, compute an 'average' rhist at the end
 	rhistBlk = cell(BLOCKS_X, BLOCKS_Y);
 
+	%Normalise ratio histogram to fit block size
+	mhist = hist_norm(mhist, BLK_SZ*BLK_SZ);
+
 	for y = 0 : BLOCKS_Y - 1
 		for x = 0 : BLOCKS_X - 1
 			imhist = zeros(1, T.N_BINS);
