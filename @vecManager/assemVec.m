@@ -77,7 +77,7 @@ function img = assemVec(V, vectors, varargin)
 			for k = 1 : length(vectors)
 				vk   = vectors{k};
 				cidx = 0;
-				%TODO : Try get rid of double nested loop here
+				%TODO : There is an off-by-one error in this loop
 				for y = 1:imSz(2)
                     img(y, k:vecSz:imSz(1)) = vk((y-1)*(imSz(1)/vecSz)+1:y*(imSz(1)/vecSz));
 				end
