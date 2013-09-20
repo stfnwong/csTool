@@ -111,7 +111,7 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 
 	if(T.FPGA_MODE)
 		bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]
-		bpimg = fix(bpimg .* T.BPIMG_BIT_DEPTH);
+		bpimg = fix(bpimg .* T.kQuant);
 	end
 	bpdata = bpimg2vec(bpimg, 'bpval');
 	

@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 08-Jul-2013 04:27:24
+% Last Modified by GUIDE v2.5 20-Sep-2013 19:43:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,6 +62,8 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 					imsz = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'debug', 5))
 					handles.debug = true;
+                elseif(strncmpi(varargin{k}, 'opts', 4))
+                    handles.vfSettings = varargin{k+1};
 				end
 			else
 				if(isa(varargin{k}, 'vecManager'))
@@ -77,6 +79,18 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 		delete(handles.csToolVerifyFig);
 		return;
 	end
+    if(~isfield(handles, 'vfSettings'))
+        fprintf('WARNING: No settings parameter passed in - using defaults\n');
+        % NOTE: Valid values for vtype in this context are
+        % (backprojection, RGB, HSV, hue)
+        vfSettings = struct('filename', [], 'orientation', [], 'vsize', [], 'vtype', [], 'dims', []);
+        vfSettings.filename    = ' ';
+        vfSettings.orientation = 'scalar';
+        vfSettings.vsize       = 1;
+        vfSettings.vtype       = 'backprojection';
+        vfSettings.dims        = [640 480];
+        handles.vfSettings     = vfSettings;
+    end
 	if(~exist('imsz', 'var'))
 		handles.imsz = [640 480];
 	else
@@ -90,10 +104,57 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	set(handles.pmVecSz, 'String', fmtStr);
 	set(handles.pmVecOr, 'String', orStr);
 	%set(handles.pmVecType, 'String', typeStr);
+    vtStr = {'RGB', 'HSV', 'Hue', 'Backprojection'};
+    set(handles.pmVecType, 'String', vtStr);
+    % Set selections in GUI to match values in vfSettings
 
-    % Make default image size 640x480
-    set(handles.etImageWidth, 'String', num2str(handles.imsz(1)));
-    set(handles.etImageHeight, 'String', num2str(handles.imsz(2)));
+    % set filename
+    set(handles.etFileName, 'String', handles.vfSettings.filename);
+    
+    % set format string
+    switch(handles.vfSettings.vsize)
+        case 16
+            set(handles.pmVecSz, 'Value', 1);
+        case 8
+            set(handles.pmVecSz, 'Value', 2);
+        case 4
+            set(handles.pmVecSz, 'Value', 3);
+        case 2
+            set(handles.pmVecSz, 'Value', 4);
+        otherwise
+            set(handles.pmVecSz, 'Value', 5);
+    end
+
+    % set orientation string
+    switch(handles.vfSettings.orientation)
+        case 'row'
+            set(handles.pmVecOr, 'Value', 1);
+        case 'col' 
+            set(handles.pmVecOr, 'Value', 2);
+        otherwise
+            set(handles.pmVecOr, 'Value', 3);
+    end
+
+    % set vector type
+    switch(handles.vfSettings.vtype)
+        case 'RGB'
+            set(hnadles.pmVecType, 'Value', 1);
+        case 'HSV'
+            set(handles.pmVecType, 'Value', 2);
+        case 'Hue'
+            set(handles.pmVecType, 'Value', 3);
+        case 'backprojection'
+            set(handles.pmVecType, 'Value', 4);
+        otherwise
+            fprintf('Invalid vector type [%s]', handles.vfSettings.vtype);
+    end
+
+    % set image size
+    dims = handles.vfSettings.dims;
+    set(handles.etImageWidth,  'String', dims(1));
+    set(handles.etImageHeight, 'String', dims(2));
+    %set(handles.etImageWidth, 'String', num2str(handles.imsz(1)));
+    %set(handles.etImageHeight, 'String', num2str(handles.imsz(2)));
 
 	%Setup preview figure
 	set(handles.figPreview, 'XTick', [], 'XTickLabel', []);
@@ -109,11 +170,11 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	% uiwait(handles.csToolVerifyFig);
 	
 function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> 
-    varargout{1} = handles.output;
+    varargout{1} = handles.vfSettings;
 
-function bDone_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
-	delete(hObject);
+	delete(handles.csToolVerifyFig);
     
 function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Call VecManager options to read and re-format vector from file
@@ -132,11 +193,26 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		fprintf('ERROR: Failed to read vector in file [%s]\n', filename);
 		return;
 	end
+    % Set up data size based on vector type
+    % NOTE This should be settable - dont forget to redo
+    switch(handles.vfSettings.vtype)
+        case 'RGB'
+            dataSz = 1;
+        case 'HSV'
+            dataSz = 1;
+        case 'Hue'
+            dataSz = 1;
+        case 'backprojection'
+            dataSz = 256;
+        otherwise
+            dataSz = 256;
+    end
+
 	%img      = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
 	if(iscell(vectors) && strncmpi(vtype, 'scalar', 6))
-		img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar');
+		img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar', 'dataSz', dataSz, 'scale');
 	else
-		img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype);
+		img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale');
 	end
 
 	%Show image in preview area
@@ -169,6 +245,8 @@ function etImageWidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etFileName_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmVecType_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
 function etFileName_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
@@ -188,6 +266,11 @@ function etImageWidth_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     end
 
 function etImageHeight_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+
+function pmVecType_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end

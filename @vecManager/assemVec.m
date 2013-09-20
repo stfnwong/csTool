@@ -78,9 +78,8 @@ function img = assemVec(V, vectors, varargin)
 				vk   = vectors{k};
 				cidx = 0;
 				%TODO : Try get rid of double nested loop here
-				for y = k:vecSz:imSz(1)
-                    
-
+				for y = 1:imSz(2)
+                    img(y, k:vecSz:imSz(1)) = vk((y-1)*(imSz(1)/vecSz)+1:y*(imSz(1)/vecSz));
 				end
 			end
 		case 'col'

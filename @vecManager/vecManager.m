@@ -605,7 +605,7 @@ classdef vecManager
 					fprintf('vecSz : %d\n', vecSz);
 				end
 			end
-			if(~exist('dataSz', 'var'))
+			if(~exist('DATASZ', 'var'))
 				DATASZ = 256;
 				if(V.verbose)
 					fprintf('DATASZ : %d\n', DATASZ);
@@ -620,6 +620,7 @@ classdef vecManager
 			end
 
 			if(SCALE)
+				fprintf('Scaling by %d...\n', DATASZ);
 				img = img.*DATASZ;
 			end	
 

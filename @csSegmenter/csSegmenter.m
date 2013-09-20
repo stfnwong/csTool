@@ -57,6 +57,8 @@ classdef csSegmenter < handle
 		%Parameters for online discriminative tracking
 		BG_MODE;		% 0=normal, 1=online disriminative mode
 		BG_WIN_SZ;		%How much to expand window by to encompass window
+		% Parameters for prediction window
+		predWin;
 		%global settings
 		mGenVec;			%Methods generate vectors
 		verbose;
@@ -125,6 +127,7 @@ classdef csSegmenter < handle
 					S.XY_PREV         = zeros(1,2);
 					S.BG_MODE         = 0;
 					S.BG_WIN_SZ       = 0;
+					S.predWin         = zeros(1,4);
 					S.method          = 1;
 					S.mhist           = zeros(1, S.N_BINS);
 					S.imRegion        = zeros(2,2);
@@ -151,10 +154,14 @@ classdef csSegmenter < handle
 						S.kScale          = opts.kScale;
 						% Only copy LUT if it exists
 						if(isfield(opts, 'kwLut'))
-							S.KW_LUT          = opts.kwLut;
+							S.KW_LUT      = opts.kwLut;
 						end
+						
 						if(isfield(opts, 'xyPrev'))
-							S.XY_PREV         = opts.xyPrev;
+							S.XY_PREV     = opts.xyPrev;
+						end
+						if(isfield(opts, 'predWin'))
+							S.predWin     = opts.predWin;
 						end
 						S.BG_MODE         = opts.bgMode;
 						S.BG_WIN_SZ       = opts.bgWinSize;

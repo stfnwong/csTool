@@ -166,6 +166,15 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	handles.pData = p;		%param data
 	%Hold default figure name as a property
 	handles.csToolFigName = 'csTool - CAMSHIFT Simulation Tool';
+
+	% Create a structure to store settings for csToolVerify GUI
+	vfSettings = struct('filename', [], 'orientation', [], 'vsize', [], 'vtype', [], 'dims', []);
+	vfSettings.filename    = ' ';
+	vfSettings.orientation = 'scalar';
+	vfSettings.vsize       = 1;
+	vfSettings.vtype       = 'backprojection';
+	vfSettings.dims        = [640 480];
+	handles.vfSettings      = vfSettings;
 	
 	% =============================================================== %
 	%                          csTool setup                           %
@@ -1190,7 +1199,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			imsz = get(fh, 'dims');
 			ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
 			if(ef == -1)
-				fprintf('ERROR: Error in csTooVerify()\n');
+				fprintf('ERROR: Error in csToolVerify()\n');
 				return;
 			end
 
@@ -1465,13 +1474,15 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
 	fh   = handles.frameBuf.getFrameHandle(frameIndex);
 	imsz = get(fh, 'dims');
 	if(handles.debug)
-	    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug');
+	    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug', 'opts', handles.vfSettings);
 	else
-		ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
+		ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'opts', handles.vfSettings);
 	end
 	if(ef == -1)
 		fprintf('ERROR: csToolVerify returned status -1\n');
 		return;
+	else
+		handles.vfSettings = ef;
 	end
 	
 	guidata(hObject, handles);

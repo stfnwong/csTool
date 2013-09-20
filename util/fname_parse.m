@@ -102,8 +102,8 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 		num = [];
 	else
 		%Check that the number is sensible
-		if(num < 1 || num > 999)
-			fprintf('ERROR: csTool only supports the first 999 non-zero integers\n');
+		if(num < 0 || num > 999)
+			fprintf('ERROR: csTool only supports the first 999 integers\n');
 			str      = fstring(1:extIdx);
 			path     = fstring(1:fslsh-1);
 			num      = 0;
