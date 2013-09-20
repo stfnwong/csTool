@@ -127,3 +127,13 @@ Add a routine to display the computed meanshift vector in the preview area (as a
 
 IMAGE HISTOGRAM
 Make a small utility to fully verify (ie: A/B comparison) the regional image histogram property. This SHOULD be true. We SHOULD be able to compute the histogram for basically any arbitrary geometric region, as long as we correctly normalise the histogram bins to account for the number of pixels in that region
+
+
+HISTOGRAM WEIGHTS
+In the FPGA, we can weight the histogram only the extent offered by the size of the data word (i.e: if we have a 2-bit pixel word, we have 3 weights + zero weight, and so on). The FPGA_MODE option for the csSegmenter object should have a property (and associated GUI entry) that allows us to set the weight parameter for computation. The values here should correspond to the number of weights possible, including zero (so 1, 4, 8, and so on). This means that the pixel values in the backprojection image need to be quantised to the selected bit depth.
+
+% QUANTISATION STEP
+bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]
+bpimg = fix(bpimg .* T.BPIMG_BIT_DEPTH);
+
+

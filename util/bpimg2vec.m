@@ -9,7 +9,7 @@ function vec = bpimg2vec(bpimg, varargin)
 % bpimg - Backprojection image to generate vector from
 % (OPTIONAL ARGUMENTS)
 % 'idxonly'  - Only save the pixel positions (Default)
-% 'bpval'    - Save a third row with the backprojection value
+% 'bpval'    - Save a third row with the backprojection weight 
 % 'thresh'   - Discard pixels that fall below this value (default: 0)
 %
 

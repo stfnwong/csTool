@@ -77,7 +77,6 @@ function status = msProcLoop(T, fh, trackWindow)
 				status = -1;
 				return;
 			case T.SPARSE_WINDOW
-                %A BUG IS HERE  <- EDIT(04/07/13) - This may have been resolved
                 %To avoid crashing csTool, perform a more graceful exit if
                 %we dont have spvec by this point
                 if(~exist('spvec', 'var'))
@@ -202,14 +201,19 @@ function status = msProcLoop(T, fh, trackWindow)
 				wparam(4) = fix(sqrt(moments(1)) * spstat.fac);
 				wparam(5) = fix(sqrt(moments(1)) * spstat.fac);
 			else
-				wparam(4) = fix(sqrt(moments(1)));
-				wparam(5) = fix(sqrt(moments(1)));
+				wparam(4) = fix(sqrt(moments(1) * wparam(1)));
+				wparam(5) = fix(sqrt(moments(1) * wparam(2)));
 			end
 		case T.EIGENVEC
 			%wparam(4) = sqrt(wparam(4));
 			%wparam(5) = sqrt(wparam(5));
-			wparam(4) = wparam(4);
-			wparam(5) = wparam(5);
+			if(exist('spstat', 'var'))
+				wparam(4) = wparam(4) * spstat.fac;
+				wparam(5) = wparam(5) * spstat.fac;
+			else
+				wparam(4) = wparam(4);
+				wparam(5) = wparam(5);
+			end
 			%Value are already correct in wparamComp
 		case T.HALF_EIGENVEC
 			%Make window size based on semi-major/semi-minor axes of ellipse
@@ -220,6 +224,11 @@ function status = msProcLoop(T, fh, trackWindow)
 			fprintf('ERROR: No such window size method, using zero moment...\n');
 			wparam(4) = fix(sqrt(moments(1)));
 			wparam(5) = fix(sqrt(moments(1)));
+	end
+	if(T.verbose)
+		fprintf('wparam :');
+		disp(wparam);
+		fprintf('\n');
 	end
 	%Enforce minimum windw size contraint (2x2 minimum)
 	if(wparam(4) < 2 || isnan(wparam(4)))

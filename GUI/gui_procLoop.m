@@ -203,7 +203,6 @@ function [status] = gui_procLoop(handles, varargin)
 					handles.tracker.trackFrame(fh(k));
 				end
 			else
-				%TODO: Finish this branch
 				pParam = get(fh(k-1), 'winParams');
 				%Check parameters
 				if(get(fh(k-1), 'nIters') < 1)
@@ -248,6 +247,10 @@ function [status] = gui_procLoop(handles, varargin)
 					delete(wb);
 					return;
 				end
+				% Update target location in segmenter
+				curParam = get(fh(k), 'winParams');
+				xyPrev   = [curParam(1) curParam(2)];
+				handles.segmenter.setXYPrev(xyPrev);
 			end	 
 			if(DEBUG)
 				%Print more detailed error messages in debug mode

@@ -1249,6 +1249,7 @@ function bSegOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Update handles and UI elements
 	handles.segmenter = csSegmenter(ss);
 	handles.segOpts   = ss;
+	handles.segmenter.genKernelLUT();
 	set(handles.segMethodList, 'Value', ss.method);
 	guidata(hObject, handles);
 

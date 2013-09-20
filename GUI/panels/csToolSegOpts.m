@@ -22,7 +22,7 @@ function varargout = csToolSegOpts(varargin)
 
 % Edit the above text to modify the response to help csToolSegOpts
 
-% Last Modified by GUIDE v2.5 19-May-2013 21:04:44
+% Last Modified by GUIDE v2.5 19-Sep-2013 19:22:10
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -89,10 +89,83 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
     
     %Populate list
 	sOpts = handles.segopts;
-	if(~exist('mstr', 'var'))
+    if(~exist('mstr', 'var'))
 		fprintf('WARNING: No method string !\n');
 		mstr = {'m1', 'm2', 'm3'};
-	end
+    end
+    % Populate Drop-down menus
+    qStr = {'1', '4', '8', '16', '32', '64'};
+    set(handles.pmKernelQuant, 'String', qStr);
+    switch(sOpts.kQuant)
+        case 1
+            set(handles.pmKernelQuant, 'Value', 1);
+        case 4
+            set(handles.pmKernelQuant, 'Value', 2);
+        case 8
+            set(handles.pmKernelQuant, 'Value', 3);
+        case 16
+            set(handles.pmKernelQuant, 'Value', 4);
+        case 32 
+            set(handles.pmKernelQuant, 'Value', 5);
+        case 64
+            set(handles.pmKernelQuant, 'Value', 6);
+        otherwise
+            fprintf('Invalid kQuant value [%d], setting to 1\n', sOpts.kQuant);
+    end
+    sStr = {'1', '2', '4', '8', '16', '32', '64', 'kQuant'};
+    set(handles.pmKernelScale, 'String', sStr);
+    switch(sOpts.kScale)
+        case 1
+            set(handles.pmKernelScale, 'Value', 1);
+        case 2
+            set(handles.pmKernelScale, 'Value', 2);
+        case 4
+            set(handles.pmKernelScale, 'Value', 3);
+        case 8 
+            set(handles.pmKernelScale, 'Value', 4);
+        case 16
+            set(handles.pmKernelScale, 'Value', 5);
+        case 32
+            set(handles.pmKernelScale, 'Value', 6);
+        case 64
+            set(handles.pmKernelScale, 'Value', 7);
+        otherwise
+            set(handles.pmKernelScale, 'Value', 8);
+    end
+    bStr = {'16', '32', '64', '128', '256'};
+    set(handles.pmKernelBandwidth, 'String', bStr);
+    switch(sOpts.kBandwidth)
+        case 16
+            set(handles.pmKernelBandwidth, 'Value', 1);
+        case 32
+            set(handles.pmKernelBandwidth, 'Value', 2);
+        case 64
+            set(handles.pmKernelBandwidth, 'Value', 3);
+        case 128
+            set(handles.pmKernelBandwidth, 'Value', 4);
+        case 256
+            set(handles.pmKernelBandwidth, 'Value', 5);
+        otherwise
+            fprintf('Invalid bandwidth [%d], using 32\n',sOpts.kBandwidth);
+            set(handles.pmKernelBandwidth, 'Value', 1);
+    end
+    % NOTE : This parameter should be deprecated after testing
+    bdStr = {'1', '4', '8', '16'};
+    set(handles.pmBitDepth, 'String', bdStr);
+    %Select bit depth from object 
+    % TODO : Dont hard-code this if possible
+    if(sOpts.bitDepth == 1)
+        set(handles.pmBitDepth, 'Value', 1);
+    elseif(sOpts.bitDepth == 4)
+        set(handles.pmBitDepth, 'Value', 2);
+    elseif(sOpts.bitDepth == 8)
+        set(handles.pmBitDepth, 'Value', 3);
+    elseif(sOpts.bitDepth == 16)
+        set(handles.pmBitDepth, 'Value', 4);
+    else
+        fprintf('ERROR: Unsupported bit depth %d, setting to 1\n', sOpts.bitDepth);
+        set(handles.pmBitDepth, 'Value', 1);
+    end
     set(handles.lbSegMethod, 'String', mstr);
     set(handles.lbSegMethod, 'Value', 1);
     %Place current settings into editable text boxes
@@ -132,22 +205,47 @@ function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<I
 function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
 
     %Pull settings from GUI, write to csSegmenter handle
-    blkSz     = str2double(get(handles.etBlkSz, 'String'));
+    blkSz      = str2double(get(handles.etBlkSz, 'String'));
     if(isnan(blkSz) || isempty(blkSz) || isinf(blkSz))
         error('Incorrect value in block size');
     end
-    nBins     = str2double(get(handles.etNBins, 'String'));
+    nBins      = str2double(get(handles.etNBins, 'String'));
     if(isnan(nBins) || isempty(nBins) || isinf(nBins))
         error('Incorrect value in # bins');
     end
-    dataSz    = str2double(get(handles.etDataSz, 'String'));
+    dataSz     = str2double(get(handles.etDataSz, 'String'));
     if(isnan(dataSz) || isempty(dataSz) || isinf(dataSz))
         error('Incorrect value in data size');
     end
-    bpThresh  = str2double(get(handles.etBPTHRESH, 'String'));
-    segMethod = get(handles.lbSegMethod, 'Value');
-    fpgaMode  = get(handles.chkFPGA, 'Value');
-	verbose   = get(handles.chkVerbose, 'Value');
+    bpThresh   = str2double(get(handles.etBPTHRESH, 'String'));
+    % Get bpimg bit depth
+    bdSel      = get(handles.pmBitDepth, 'Value');
+    bdStr      = get(handles.pmBitDepth, 'String');
+    bitDepth   = fix(str2double(bdStr{bdSel}));
+    segMethod  = get(handles.lbSegMethod, 'Value');
+    fpgaMode   = get(handles.chkFPGA, 'Value');
+	verbose    = get(handles.chkVerbose, 'Value');
+    
+    % Get kernel weighting properties
+    kWeight    = get(handles.chkWeight, 'Value');
+    
+    kbwSel     = get(handles.pmKernelBandwidth, 'Value');
+    kbwString  = get(handles.pmKernelBandwidth, 'String');
+    kBandwidth = fix(str2double(kbwString{kbwSel}));
+    
+    kqSel      = get(handles.pmKernelQuant, 'Value');
+    kqString   = get(handles.pmKernelQuant, 'String');
+    kQuant     = fix(str2double(kqString{kqSel}));
+    
+    ksSel      = get(handles.pmKernelScale, 'Value');
+    ksString   = get(handles.pmKernelScale, 'String');
+    if(strncmpi(ksString{ksSel}, 'kQuant', 6))
+        kScale = kQuant;
+    else
+        kScale = fix(str2double(ksString{ksSel}));
+    end
+    
+    
 
     %Do any parameter massaging (ie: converting from cell array), copy mhist
 	%from old parameters, copy mhist
@@ -159,6 +257,11 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
                        'nBins',     nBins, ...
                        'fpgaMode',  fpgaMode, ...
                        'bpThresh',  bpThresh, ...
+                       'bitDepth',  bitDepth, ...
+                       'kBandwidth', kBandwidth, ...
+                       'kWeight',    kWeight, ...
+                       'kQuant',     kQuant, ...
+                       'kScale',     kScale, ...
                        'method',    segMethod, ...
                        'bgMode',    0, ...
                        'bgWinSize', 0, ...
@@ -193,30 +296,51 @@ function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFN
 %                         CREATE FUNCTIONS                      %
 %---------------------------------------------------------------%
 
-
-% --- Executes during object creation, after setting all properties.
 function etBlkSz_CreateFcn(hObject, eventdata, handles)  %#ok <INUSL>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
 	end
 
-% --- Executes during object creation, after setting all properties.
 function etDataSz_CreateFcn(hObject, eventdata, handles)    %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
-	end
+    end
 
-% --- Executes during object creation, after setting all properties.
 function etNBins_CreateFcn(hObject, eventdata, handles)    %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+    
+function etBPTHRESH_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
 
-% --- Executes during object creation, after setting all properties.
+function pmBitDepth_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+    
 function lbSegMethod_CreateFcn(hObject, eventdata, handles) %#ok <INUSL>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+    
+function pmKernelQuant_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+
+function pmKernelScale_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+
+function pmKernelBandwidth_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+        set(hObject,'BackgroundColor','white');
+    end
+
 
 %---------------------------------------------------------------%
 %                          EMPTY FUNCTIONS                      %
@@ -229,26 +353,11 @@ function etBlkSz_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>
 function etDataSz_Callback(hObject, eventdata, handles)     %#ok<INUSD,DEFNU>
 function etNBins_Callback(hObject, eventdata, handles)  %#ok <INUSD,DEFNU>
 function chkVerbose_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-
-
+function pmBitDepth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etBPTHRESH_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-% hObject    handle to etBPTHRESH (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of etBPTHRESH as text
-%        str2double(get(hObject,'String')) returns contents of etBPTHRESH as a double
+function chkWeight_Callback(hObject, eventdata, handles) %#ok>INUSD,DEFNU>
+function pmKernelQuant_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmKernelScale_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmKernelBandwidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 
-% --- Executes during object creation, after setting all properties.
-function etBPTHRESH_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-% hObject    handle to etBPTHRESH (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end

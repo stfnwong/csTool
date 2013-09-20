@@ -96,7 +96,7 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 		%Check bpvec type for bpval data
 		bpdim = size(bpvec);
 		if(bpdim(1) == 3)
-			%Use bpval instead of 1
+			%Use bpval (pixel weight) instead of 1
 			for k = 1:length(bpvec)
 				if(bpvec(1,k) >= xlim(1) && bpvec(1,k) <= xlim(2) && ...
                    bpvec(2,k) >= ylim(1) && bpvec(2,k) <= ylim(2))

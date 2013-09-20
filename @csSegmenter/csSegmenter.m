@@ -46,6 +46,14 @@ classdef csSegmenter < handle
 		FPGA_MODE;
 		BP_THRESH;		%if the bin value is less than this value, zero out pixel
 		GEN_BP_VEC;
+		BPIMG_BIT_DEPTH;
+		XY_PREV;
+		%Kernel Weighting parameters
+		kBandwidth;		%Bandwidth of kernel in pixels
+		kWeight;		% Whether or not to perform kernel weighting
+		kQuant;			%Quantisation of bandwith LUT (in bits)a
+		kScale;			%Scaling factor for kernel profile
+		KW_LUT;		%Kernel weighting lookup table
 		%Parameters for online discriminative tracking
 		BG_MODE;		% 0=normal, 1=online disriminative mode
 		BG_WIN_SZ;		%How much to expand window by to encompass window
@@ -80,8 +88,9 @@ classdef csSegmenter < handle
 		%
 		% ARGUMENTS:
 		%
-		% If no arguments are passed in, a csSegmenter is created with default 
-		% initialisations. To customise on creation, pass an options structure
+		% If no arguments are passed in, a csSegmenter is created with 
+		% default initialisations. To customise on creation, pass an 
+		% options structure
 		% as the only argument to csSegmeter() with the following fields:
 		%
 		% 		opts = {
@@ -99,18 +108,26 @@ classdef csSegmenter < handle
 			switch nargin
 				case 0
 					%Default histogram properties
-					S.DATA_SZ    = 256;
-					S.BLK_SZ     = 16;
-					S.N_BINS     = 16;
-					S.FPGA_MODE  = 0;
-					S.BP_THRESH  = 0;
+					S.DATA_SZ         = 256;
+					S.BLK_SZ          = 16;
+					S.N_BINS          = 16;
+					S.FPGA_MODE       = 0;
+					S.BP_THRESH       = 0;
 					%S.GEN_BP_VEC = 0;
 					%Default internals
-					S.BG_MODE      = 0;
-					S.BG_WIN_SZ    = 0;
-					S.method     = 1;
-					S.mhist      = zeros(1, S.N_BINS);
-					S.imRegion   = zeros(2,2);
+					S.BPIMG_BIT_DEPTH = 1;
+					% Kernel weighting properties
+					S.kBandwidth      = 1;
+					S.kWeight         = 1;
+					S.kQuant          = 1;
+					S.kScale          = 1;
+					S.KW_LUT          = zeros(1, S.kQuant);
+					S.XY_PREV         = zeros(1,2);
+					S.BG_MODE         = 0;
+					S.BG_WIN_SZ       = 0;
+					S.method          = 1;
+					S.mhist           = zeros(1, S.N_BINS);
+					S.imRegion        = zeros(2,2);
                 case 1
                     %Object copy case
                     if(isa(varargin{1}, 'csSegmenter'))
@@ -120,18 +137,31 @@ classdef csSegmenter < handle
 						if(~isa(varargin{1}, 'struct'))
 							error('Expecting options structure');
 						end
-						opts         = varargin{1};
-						S.DATA_SZ    = opts.dataSz;
-						S.BLK_SZ     = opts.blkSz;
-						S.FPGA_MODE  = opts.fpgaMode;
-						S.BP_THRESH  = opts.bpThresh;
+						opts              = varargin{1};
+						S.DATA_SZ         = opts.dataSz;
+						S.BLK_SZ          = opts.blkSz;
+						S.FPGA_MODE       = opts.fpgaMode;
+						S.BP_THRESH       = opts.bpThresh;
 						%S.GEN_BP_VEC = opts.gen_bpvec;
-						S.BG_MODE    = opts.bgMode;
-						S.BG_WIN_SZ  = opts.bgWinSize;
-						S.N_BINS     = opts.nBins;
-						S.method     = opts.method;
-						S.mhist      = opts.mhist;
-						S.imRegion   = opts.imRegion;
+						S.BPIMG_BIT_DEPTH = opts.bitDepth;
+						% Kernel weighting parameters
+						S.kBandwidth      = opts.kBandwidth;
+						S.kWeight         = opts.kWeight;
+						S.kQuant          = opts.kQuant;
+						S.kScale          = opts.kScale;
+						% Only copy LUT if it exists
+						if(isfield(opts, 'kwLut'))
+							S.KW_LUT          = opts.kwLut;
+						end
+						if(isfield(opts, 'xyPrev'))
+							S.XY_PREV         = opts.xyPrev;
+						end
+						S.BG_MODE         = opts.bgMode;
+						S.BG_WIN_SZ       = opts.bgWinSize;
+						S.N_BINS          = opts.nBins;
+						S.method          = opts.method;
+						S.mhist           = opts.mhist;
+						S.imRegion        = opts.imRegion;
                     end
                 otherwise
                     error('Incorrect arguments to constructor');
@@ -154,7 +184,24 @@ classdef csSegmenter < handle
 		function verbose = getVerbose(S)
 			verbose = S.verbose;
 		end
-	
+
+		% TODO : Deprecate this?
+		function bitDepth =  getBitDepth(S)
+			bitDepth =  S.BPIMG_BIT_DEPTH;
+		end
+
+		function kBandwidth = getKBandwidth(S)
+			kBandwidth = S.KERNEL_BANDWIDTH;
+		end
+
+		function xyPrev = getXYPrev(S)
+			xyPrev = S.XY_PREV;
+		end
+
+		function kwLut = getKernelLUT(S)
+			kwLut = S.KW_LUT;
+		end
+
 		% ---- disp(T) : DISPLAY METHOD
 		function disp(S)
 			csSegmenter.segDisplay(S);
@@ -162,17 +209,24 @@ classdef csSegmenter < handle
 
 		% ---- getOpts() : GET A COMPLETE OPTIONS STRUCT (for csToolGUI)
 		function opts = getOpts(S)
-			opts = struct('dataSz'  ,  S.DATA_SZ,   ...
-                          'blkSz'   ,  S.BLK_SZ,    ...
-                          'nBins'   ,  S.N_BINS,    ...
-                          'fpgaMode',  S.FPGA_MODE, ...
-                          'bpThresh',  S.BP_THRESH, ...
-                          'method'  ,  S.method,   ...
-                          'mhist'   ,  S.mhist,    ...
-                          'bgMode',    S.BG_MODE,  ...
-                          'bgWinSize', S.BG_WIN_SZ, ...
-                          'imRegion',  S.imRegion, ...
-                          'verbose' ,  S.verbose );
+			opts = struct('dataSz'  ,   S.DATA_SZ,   ...
+                          'blkSz'   ,   S.BLK_SZ,    ...
+                          'nBins'   ,   S.N_BINS,    ...
+                          'fpgaMode',   S.FPGA_MODE, ...
+                          'bpThresh',   S.BP_THRESH, ...
+						  'bitDepth',   S.BPIMG_BIT_DEPTH, ...
+						  'kBandwidth', S.kBandwidth, ...
+						  'kWeight',    S.kWeight, ...
+						  'kQuant',     S.kQuant, ...
+						  'kScale',     S.kScale, ...
+						  'kwLut',      S.KW_LUT, ...
+						  'xyPrev',     S.XY_PREV, ...
+                          'method'  ,   S.method,   ...
+                          'mhist'   ,   S.mhist,    ...
+                          'bgMode',     S.BG_MODE,  ...
+                          'bgWinSize',  S.BG_WIN_SZ, ...
+                          'imRegion',   S.imRegion, ...
+                          'verbose' ,   S.verbose );
 		end 	%getOpts()
 
 		% --- genMhist() : GENERATE NEW MODEL HISTOGRAM
@@ -327,6 +381,54 @@ classdef csSegmenter < handle
 			S.verbose = verbose;
 		end
 
+		function setXYPrev(S, xyPrev)
+			if(length(xyPrev) ~= 2)
+				fprintf('ERROR: xyPrev must be 2 element vector\n');
+				return;
+			end
+			S.XY_PREV = xyPrev;
+		end 	%setXYPrev()
+
+		% ---- Generate a new lookup table ---- %
+		function genKernelLUT(S, varargin)
+			% GENKERNELLUT
+			% Pass in parameters as name/value pairs to override internal
+			% values. If no values supplies, values in object used. If 
+			% some arguments are supplied but not others, the internal 
+			% object values are used for the unsupplied arguments
+
+			if(~isempty(varargin))
+				for k = 1 : length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'scale', 5))
+							scale = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'quant', 5))
+							quant = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'bw', 2))
+							bw    = varargin{k+1};
+						end
+					end
+				end
+
+				% Check what we have
+				if(~exist('scale', 'var'))
+					scale = S.kScale;
+				end
+				if(~exist('quant', 'var'))
+					quant = S.kQuant;
+				end
+				if(~exist('bw', 'var'))
+					bw    = S.kBandwidth;
+				end
+				S.KW_LUT = gen_kernel_lut(S, scale, bw, quant);
+			else
+				S.KW_LUT = gen_kernel_lut(S, S.kScale, S.kBandwidth, S.kQuant);
+			end
+
+		end 	% genKernelLUT
+
+		% ---- Lookup kernel weight in table --- %
+
 	end 		%csSegmenter METHODS (Public)
 
 
@@ -338,6 +440,8 @@ classdef csSegmenter < handle
 		[bpdata rhist] = hbp_block(S, img, mhist);
 		% ---- hbp_row()   : HISTOGRAM BACKPROJECTION PER ROW
 		[bpdata rhist] = hbp_row(S, img, mhist);
+		wpixel         = kernelLookup(S, pixel, varargin);
+		klut           = gen_kernel_lut(S, scale, bw, quant, varargin);
 	end 		%csSegmenter METHODS (Private)
 
 	methods (Static)

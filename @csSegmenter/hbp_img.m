@@ -18,6 +18,34 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 
 % Stefan Wong 2012
 
+	%Kernel range function
+	kbandw = @(x,y,bw) (x < bw) & (y < bw);
+
+	KDENS = false;
+	if(~isempty(varargin))
+		for k = 1:length(varargin)
+			if(ischar(varargin{k}))
+				if(strncmpi(varargin{k}, 'kdens', 5))
+					xy_prev = vararginn{k+1};
+					KDENS   = true;
+				elseif(strncmpi(varargin{k}, 'bw', 2))
+					kbw     = varargin{k+1};		%kernel bandwidth
+				end
+			end
+		end
+	end
+
+	% If no bandwidth specified, use this default value
+	if(KDENS && ~exist('kbw', 'var'))
+		kbw = T.KERNEL_BW;
+	end
+	if(exist('xy_prev', 'var'))
+		if(~isnumeric(xvy_prev))
+			fprintf('ERROR: Incorrect type for xy_prev, ignoring kernel weighting\n');
+			KDENS = false;
+		end
+	end
+
 	%Get image parameters and set up histogram bins
 	[img_h img_w d] = size(img);
 	if(T.FPGA_MODE)
@@ -62,17 +90,35 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 		for y = 1:img_h
 			%Reference against original pixel to get rid of zeros
 			if(img(y,x) ~= 0)
-				idx        = find(bins > img(y,x), 1, 'first');
-				if(rhist(idx) > T.BP_THRESH)
-					bpimg(y,x) = rhist(idx);
+				% Perform kernel weighting?
+				if(KDENS)
+					pixel  = [x y];
+					kw = kernelLookup(T, pixel);
+					%kw = kbw_lut(pixel, T.XY_PREV, 'quant', T.BPIMG_BIT_DEPTH, 'scale', log2(T.BPIMG_BIT_DEPTH));
+			 		if(kw > 0)
+						idx = find(bins > img(y,x), 1, 'first');
+						bpimg(y,x) = kw * rhist(idx);
+					end		
+				else
+					idx        = find(bins > img(y,x), 1, 'first');
+					if(rhist(idx) > T.BP_THRESH)
+						bpimg(y,x) = rhist(idx);
+					end
 				end
 			end
 		end
 	end
+
 	if(T.FPGA_MODE)
-		bpdata = bpimg2vec(bpimg);	
-	else
-		bpdata = bpimg2vec(bpimg, 'bpval');
+		bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]
+		bpimg = fix(bpimg .* T.BPIMG_BIT_DEPTH);
 	end
+	bpdata = bpimg2vec(bpimg, 'bpval');
+	
+	%if(T.FPGA_MODE)
+	%	bpdata = bpimg2vec(bpimg);	
+	%else
+	%	bpdata = bpimg2vec(bpimg, 'bpval');
+	%end
 
 end 		%hbp_img()
