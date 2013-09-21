@@ -276,7 +276,9 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %To avoid having two sets of parsers, just make strings that the
     %command line vecManager would accept out of the drop-down box
     %arguments
-    ftype = get(handles.pmVecOr, 'Value');
+    fstr  = get(handles.pmVecOr, 'String');
+    fidx  = get(handles.pmVecOr, 'Value');
+    ftype = fstr{fidx};
 	vstr  = get(handles.pmVecSz, 'String');
     %val   = vstr(get(handles.pmVecSz, 'Value'));
     val   = vstr{get(handles.pmVecSz, 'Value')};

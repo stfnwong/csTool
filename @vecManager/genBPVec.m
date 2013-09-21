@@ -47,21 +47,31 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 			%Bookkeeping for waitbar
 			t    = rdim * (img_h / rdim);
 			p    = 1;				%progress counter
-			wb   = waitbar(0, sprintf('Generating row vector (0/%d0', t));
-			for v = 1 : val
-				idx     = 0;
-                cur_row = zeros(1, rdim * img_w);
-				for n = 1:img_h
-					%vec{v, (idx*rdim+1 : (idx+1)*rdim)} = bpimg(n, v:val:img_w);
-                    cur_row(idx*img_w+1 : (idx+1)*img_w) = bpimg(n, v:val:img_w);
-					idx = idx + 1;
-					%Update waitbar
-					waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
-						    p, t));
-					p = p + 1;
+			wb   = waitbar(0, sprintf('Generating row vector (0/%d)', t));
+			for k = 1 : length(vec)
+				vk = zeros(1, rdim * img_h);
+				for y = 1 : img_h
+					vk((y-1)*(img_w/rdim)+1 : y*(img_w/rdim)) = bpimg(y, k:rdim:img_w);
 				end
-                vec{v} = cur_row;
+				vec{k} = vk;
+				%Update waitbar
+				waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', p, t));
+				p = p + 1;
 			end
+			%for v = 1 : val
+			%	idx     = 0;
+            %    cur_row = zeros(1, rdim * img_w);
+			%	for n = 1:img_h
+			%		%vec{v, (idx*rdim+1 : (idx+1)*rdim)} = bpimg(n, v:val:img_w);
+            %        cur_row(idx*img_w+1 : (idx+1)*img_w) = bpimg(n, v:val:img_w);
+			%		idx = idx + 1;
+			%		%Update waitbar
+			%		waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
+			%			    p, t));
+			%		p = p + 1;
+			%	end
+            %    vec{v} = cur_row;
+			%end
 			delete(wb);
 			if(nargout > 1)
 				varargout{1} = 0;
@@ -100,30 +110,11 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 			wb   = waitbar(0, sprintf('Generating raster vector (0/%d)', t), ...
                               'Name', 'Generating raster vector');
 			p    = 1;		%Progress counter
-			%Extract raster data
-			%TODO : Break the inner loop to make this process faster
-			%eg: 
-			% p = 0;
-			% for y = 1:imh_h
-			% 	data(p*img_w : (p+1)*img_w) = bpimg(y,:);
-			% end
-
 			for y = 1:img_h
 				data((y-1)*img_w+1:y*img_w) = bpimg(y,:);
 				waitbar(y/t, wb, sprintf('Generating raster vector (%d/%d)...', ...
 					   p, t));
 			end
-
-
-			%for y = 1:img_h
-			%	for x = 1:img_w
-			%		%data(y,x) = bpimg(y,x);
-			%		data(p) = bpimg(y,x);
-			%		waitbar(p/t, wb, sprintf('Generating raster vector (%d/%d)', ...
-            %                         p, t));
-			%		p = p + 1;
-			%	end
-			%end
 			vec    = cell(1,1);
 			vec{1} = data;
 			delete(wb);

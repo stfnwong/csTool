@@ -1478,12 +1478,17 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
 	else
 		ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'opts', handles.vfSettings);
 	end
-	if(ef == -1)
+	if(~isstruct(ef) && ef == -1)
 		fprintf('ERROR: csToolVerify returned status -1\n');
 		return;
 	else
 		handles.vfSettings = ef;
+        if(handles.debug)
+            fprintf('csToolVerify opts:\n');
+            disp(ef);
+        end
 	end
+
 	
 	guidata(hObject, handles);
 	

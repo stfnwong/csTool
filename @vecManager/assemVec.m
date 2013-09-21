@@ -64,7 +64,6 @@ function img = assemVec(V, vectors, varargin)
 
 	switch vecFmt
 		case 'row'
-			% NOTE : For row orientation, there is the problem of jumping over the (currently) 
 			if(~iscell(vectors))
 				fprintf('ERROR: vectors must be cell array\n');
 				img = [];
@@ -74,14 +73,15 @@ function img = assemVec(V, vectors, varargin)
             % all the vectors available to us in memory and just write the 
             % pattern into the image array column-wise
 			% unused column entries until vectors{k+1} is read.
+            wb = waitbar(0, 'Assembling row vectors...', 'Name', 'Assembling row vectors');
 			for k = 1 : length(vectors)
 				vk   = vectors{k};
-				cidx = 0;
-				%TODO : There is an off-by-one error in this loop
 				for y = 1:imSz(2)
                     img(y, k:vecSz:imSz(1)) = vk((y-1)*(imSz(1)/vecSz)+1:y*(imSz(1)/vecSz));
 				end
+                waitbar(k/length(vectors), wb, sprintf('Assembling row vector (%d/%d)', k, length(vectors)));
 			end
+            delete(wb);
 		case 'col'
 			if(~iscell(vectors))
 				fprintf('ERROR: vectors must be cell array\n');
