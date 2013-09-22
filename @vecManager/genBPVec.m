@@ -48,30 +48,19 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 			t    = rdim * (img_h / rdim);
 			p    = 1;				%progress counter
 			wb   = waitbar(0, sprintf('Generating row vector (0/%d)', t));
+			
 			for k = 1 : length(vec)
-				vk = zeros(1, rdim * img_h);
+				vk = zeros(1, rdim*img_h);
+				n  = 1;
 				for y = 1 : img_h
-					vk((y-1)*(img_w/rdim)+1 : y*(img_w/rdim)) = bpimg(y, k:rdim:img_w);
+					for x = k:val:img_w
+						vk(n) = bpimg(y,x);
+						n = n + 1;
+					end
 				end
 				vec{k} = vk;
-				%Update waitbar
 				waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', p, t));
-				p = p + 1;
 			end
-			%for v = 1 : val
-			%	idx     = 0;
-            %    cur_row = zeros(1, rdim * img_w);
-			%	for n = 1:img_h
-			%		%vec{v, (idx*rdim+1 : (idx+1)*rdim)} = bpimg(n, v:val:img_w);
-            %        cur_row(idx*img_w+1 : (idx+1)*img_w) = bpimg(n, v:val:img_w);
-			%		idx = idx + 1;
-			%		%Update waitbar
-			%		waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', ...
-			%			    p, t));
-			%		p = p + 1;
-			%	end
-            %    vec{v} = cur_row;
-			%end
 			delete(wb);
 			if(nargout > 1)
 				varargout{1} = 0;

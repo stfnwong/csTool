@@ -1,20 +1,11 @@
-function img = assemVec(V, vectors, varargin)
-% ASSEMVEC
-% img = assemVec(vectors, [..OPTIONS..])
-%
-% Assemble vector components back into image. 
-%
-% ARGUMENTS
-% vectors - Cell array containing vector file contents from disk. 
-%
-% (OPTIONAL ARGUMENTS)
-% vecFmt  - Format to use for vector. Legal values are 'row', 'col', and 'scalar'. If
-%           no format parameter specified, row is used as default.
-% imSz    - Size of image to recover. If no parameter is specified, 640x480 is used.
-%
+function img = assemTest(vectors, varargin)
+% ASSEMTEST
+% Test the vector assembly routine for csTool this is the same code as the assemVec
+% routine but unattached to the vecManager class.
 %
 
 % Stefan Wong 2013
+
 
 	DEBUG = false;
 	if(~isempty(varargin))
@@ -51,6 +42,11 @@ function img = assemVec(V, vectors, varargin)
 		imSz = [640 480];
 	end
 
+	% Show all options in console
+	fprintf('(assemTest) : vecSz : %d\n', vecSz);
+	fprintf('(assemTest) : vecFmt: %s\n', vecFmt);
+	fprintf('(assemTest) : imSz  : [%d x %d]\n', imSz(1), imSz(2));
+
 	%If the vectors parameter isn't a cell array, this must be an image stream, and
 	%therefore the vecFmt parameter should be scalar
 	if(~iscell(vectors))
@@ -74,11 +70,10 @@ function img = assemVec(V, vectors, varargin)
             % pattern into the image array column-wise
 			% unused column entries until vectors{k+1} is read.
             wb = waitbar(0, 'Assembling row vectors...', 'Name', 'Assembling row vectors');
-			
-			
+
 			for k = 1 : length(vectors)
 				vk = vectors{k};
-				n = 1;
+				n  = 1;
 				for y = 1:imSz(2)
 					for x = k:vecSz:imSz(1)
 						img(y,x) = vk(n);
@@ -87,8 +82,8 @@ function img = assemVec(V, vectors, varargin)
 				end
                 waitbar(k/length(vectors), wb, sprintf('Assembling row vector (%d/%d)', k, length(vectors)));
 			end
-			delete(wb);
-			
+            delete(wb);
+
 		case 'col'
 			if(~iscell(vectors))
 				fprintf('ERROR: vectors must be cell array\n');
@@ -130,6 +125,5 @@ function img = assemVec(V, vectors, varargin)
 			img = [];
 			return;	
 	end
-
 
 end 	%assemVec()
