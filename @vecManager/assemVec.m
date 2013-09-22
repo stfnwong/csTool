@@ -81,6 +81,12 @@ function img = assemVec(V, vectors, varargin)
 				n = 1;
 				for y = 1:imSz(2)
 					for x = k:vecSz:imSz(1)
+						% Prevent crashes
+						if(n > length(vk))
+							fprintf('ERROR: Attempted to access index %d (numel(vk) = %d)\n', n, numel(vk));
+							delete(wb);
+							return;
+						end
 						img(y,x) = vk(n);
 						n = n + 1;
 					end
