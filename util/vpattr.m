@@ -139,7 +139,7 @@ function [varargout] = vpattr(ifile, ofile, varargin)
 	fprintf('Output vector file - [%s]\n', ofile); 
 	fprintf('Vector length      - %d\n', length(ivec));
 	fprintf('Errors             - %d\n', nErr);
-	fprintf('%% Error            - %3.2f\n', 100 * (nErr / length(ivec)));
+	fprintf('%% Error           - %3.2f\n', 100 * (nErr / length(ivec)));
     %fprintf('Avg. Error         - %f\n', avErr);
     fprintf('First error at idx - %d\n', ePos);
 

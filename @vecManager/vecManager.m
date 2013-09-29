@@ -857,6 +857,7 @@ classdef vecManager
 			end
 		end 	%writeBPVec()
 
+		% -------- WRITE TRACKING VECTOR -------- %
 		function writeTrackingVec(V, fh, varargin)
 			%sanity check
 			if(~isa(fh, 'csFrame'))
@@ -891,6 +892,34 @@ classdef vecManager
 			end
 		end 	%writeTrackingVec()
 
+		% -------- VERIFY HUE VECTOR -------- %
+		function verifyHueVector(V, huevec, refvec, varargin)
+		% This method is a wrapper to the verifyVector() method, which selects
+		% the correct scale, orientation, and type settings
+			if(~iscell(huevec))
+				fprintf('ERROR: huevec must be cell array\n');
+				return;
+			end
+			if(~iscell(refvec))
+				fprintf('ERROR: refvec must be cell array\n');
+				return;
+			end
+		end 	%verifyHueVector()
+		
+		% -------- VERIFY BACKPROJECTION VECTOR -------- %
+		function verifyBPVec(V, bpvec, refvec, varargin)
+		% This method is a wrapper to the verifyVector() method, which selects
+		% the correct scale, orientation, and type settings.
+			if(~iscell(bpvec))
+				fprintf('ERROR: bpvec must be cell array\n');
+				return;
+			end
+			if(~iscell(refvec))
+				fprintf('ERROR: refvec must be cell array\n');
+				return;
+			end
+		end 	%verifyBPVec()
+
 	end 		%vecManager METHODS (Public)
 
 	methods (Access = 'private')
@@ -899,20 +928,22 @@ classdef vecManager
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
 		                  vecDiskWrite(V, data, varargin);	%commit data to disk
-		[vec varargout] = vecDiskRead(V, fname, varargin);
-		vec             = genTrackingVec(V, fh);
-		[vec varargout] = genBPVec(V ,fh, vtype, val);
-        [vec varargout] = genHueVec(V, fh, vtype, val, varargin);
-        vec             = genHSVVec(fh, varargin);
-		vec             = genRGBVec(fh, varargin);
-		vec             = genBpImgData(V, bpImg, varargin);
-		vec             = genBpVecData(V, bpVec, varargin);
+		[vec varargout]  = vecDiskRead(V, fname, varargin);
+		vec              = genTrackingVec(V, fh);
+		[vec varargout]  = genBPVec(V ,fh, vtype, val);
+        [vec varargout]  = genHueVec(V, fh, vtype, val, varargin);
+        vec              = genHSVVec(fh, varargin);
+		vec              = genRGBVec(fh, varargin);
+		vec              = genBpImgData(V, bpImg, varargin);
+		vec              = genBpVecData(V, bpVec, varargin);
 		% ----- TEST VECTOR VERIFICATION ---- %
-		status          = verifyTrackingVec(V, fh, vec);
-		status          = verifyHSVVec(V, fh, vec);
-		status          = verifyBPVec(V, fh, vec, varargin);
-		img             = assemVec(V, vectors, varargin);
-		[s varargout]   = verifyHueVec(V, fh, vec, varargin);
+		status           = verifyTrackingVec(V, fh, vec);
+		%status           = verifyHSVVec(V, fh, vec);
+		%status           = verifyBPVec(V, fh, vec, varargin);
+		[stat varargout] = genErrVec(V, vectors, refvec, varargin);
+		[stat varargout] = verifyVector(V, fh, vec, varargin);
+		img              = assemVec(V, vectors, varargin);
+		[s varargout]    = verifyHueVec(V, fh, vec, varargin);
 		
 	end 		%vecManager METHODS (Private)
 

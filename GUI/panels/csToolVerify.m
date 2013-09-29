@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 20-Sep-2013 19:43:09
+% Last Modified by GUIDE v2.5 23-Sep-2013 13:17:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,6 +62,8 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 					imsz = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'debug', 5))
 					handles.debug = true;
+                elseif(strncmpi(varargin{k}, 'fh', 2))
+                    handles.fh = varargin{k+1};
                 elseif(strncmpi(varargin{k}, 'opts', 4))
                     handles.vfSettings = varargin{k+1};
 				end
@@ -91,6 +93,12 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
         vfSettings.dims        = [640 480];
         handles.vfSettings     = vfSettings;
     end
+    % Check if we have a frame handle
+    if(~isfield(handles, 'fh'))
+        fprintf('WARNING: No frame handle specified\n');
+    end
+    % Make a field for vectors
+    handles.vectors = [];
 	if(~exist('imsz', 'var'))
 		handles.imsz = [640 480];
 	else
@@ -195,7 +203,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
     % Set up data size based on vector type
     % NOTE This should be settable - dont forget to redo
-    switch(handles.vfSettings.vtype)
+    switch(vtype)
         case 'RGB'
             dataSz = 1;
         case 'HSV'
@@ -214,18 +222,10 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	else
 		img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale');
 	end
-
+    handles.vectors = vectors;
 	%Show image in preview area
 	imshow(img, 'Parent', handles.figPreview);
-    %switch(vtype)
-    %    case 'row'
-    %    case 'col'
-    %    case 'scalar'
-    %    otherwise
-    %        %No real way to get here, but in case I do something while
-    %        %debugging or the like...
-    %        fprintf('Not a valid vector type (%s)\n', vtype);
-    %end
+    guidata(hObject, handles);
 
 function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Browse for file to read
@@ -237,6 +237,44 @@ function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);
+
+function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    % Run verification routine against frame currently displayed in main
+    % GUI.
+
+    % We cant check against nothing, make sure there is a frame handle
+    if(~isfield(handles, 'fh'))
+        fprintf('ERROR: No frame handle present, exiting\n');
+        return;
+    end
+    % Check that we have a vector
+    if(isempty(handles.vectors))
+        fprintf('ERROR: No vectors read into handles.vectors, exiting\n');
+        return;
+    end
+
+    vtlist       = get(handles.pmVecOr, 'String');
+    vtidx        = get(handles.pmVecOr, 'Value');
+    vtype        = vtlist{vtidx};
+    vslist       = get(handles.pmVecSz, 'String');
+    vsidx        = get(handles.pmVecSz, 'Value');
+    vsize        = vslist{vsidx};
+
+    switch(vtype)
+        case 'RGB'
+        case 'HSV'
+        case 'Hue'
+        case 'backprojection'
+            status = handles.vecManager.verifyBPVec(handles.fh, vectors, 'type', vtype, 'val', vsize);
+    end
+    if(status == -1)
+        % Since we got error status, discard results
+        fprintf('ERROR: status in verifyVec, exiting\n');
+        return;
+    end
+    
+    guidata(hObject, handles);
+    
 
 
 % -------- EMPTY FUNCTIONS -------- %
@@ -274,3 +312,8 @@ function pmVecType_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+
+
+
+
+

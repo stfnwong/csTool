@@ -74,8 +74,6 @@ function img = assemVec(V, vectors, varargin)
             % pattern into the image array column-wise
 			% unused column entries until vectors{k+1} is read.
             wb = waitbar(0, 'Assembling row vectors...', 'Name', 'Assembling row vectors');
-			
-			
 			for k = 1 : length(vectors)
 				vk = vectors{k};
 				n = 1;
