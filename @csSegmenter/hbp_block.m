@@ -24,8 +24,31 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 	bcomp = @(rl, rh, blk) (blk > rl) & (blk < rh);
 
 	%Check for dims parameter
+	KDENS = false;
 	if(~isempty(varargin))
-		dims = varargin{1};
+		for k = 1:length(varargin)
+			if(ischar(varargin{k}))
+				if(strncmpi(varargin{k}, 'kdens', 5))
+					xy_prev = vararginn{k+1};
+					KDENS   = true;
+				elseif(strncmpi(varargin{k}, 'bw', 2))
+					kbw     = varargin{k+1};		%kernel bandwidth
+				elseif(strncmpi(varargin{k}, 'dims', 4))
+					dims    = varargin{k+1};
+				end
+			end
+		end
+	end
+
+	% If no bandwidth specified, use this default value
+	if(KDENS && ~exist('kbw', 'var'))
+		kbw = T.KERNEL_BW;
+	end
+	if(exist('xy_prev', 'var'))
+		if(~isnumeric(xvy_prev))
+			fprintf('ERROR: Incorrect type for xy_prev, ignoring kernel weighting\n');
+			KDENS = false;
+		end
 	end
 
 	%Get image paramters
@@ -75,27 +98,37 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 			rhsit = T.DATA_SZ .* rhist;		%scale to data size
 			%Save this ratio histogram
 			rhistBlk{x+1, y+1} = rhist;
-			%TODO: Check if we need to normalise here
 			%Backproject this block
 			bpblk = zeros(size(iblk));
-			for k = 1:length(bins)
-				if(k == 1)
-					idx = bcomp(0, bins(k), img(y_pix, x_pix));
-				else
-					idx = bcomp(bins(k-1), bins(k), img(y_pix, x_pix));
+			for xpix = 1 : BLK_SZ
+				for ypix = 1 : BLK_SZ
+					% Reference original image pixel
+					if(iblk(ypix, xpix) ~= 0)
+						if(KDENS)
+						% TODO : This is copied direct from hbp_img()	
+							pixel  = [x y];
+							kw = kernelLookup(T, pixel);
+							%kw = kbw_lut(pixel, T.XY_PREV, 'quant', T.BPIMG_BIT_DEPTH, 'scale', log2(T.BPIMG_BIT_DEPTH));
+							if(kw > 0)
+								idx = find(bins > img(y,x), 1, 'first');
+								bpimg(y,x) = kw * rhist(idx);
+							end		
+						else
+							for k = 1:length(bins)
+								if(k == 1)
+									idx = bcomp(0, bins(k), img(y_pix, x_pix));
+								else
+									idx = bcomp(bins(k-1), bins(k), img(y_pix, x_pix));
+								end
+								bpblk(idx) = rhist(k);
+							end
+						end
+					end
 				end
-				bpblk(idx) = rhist(k);
 			end
 			bpimg(y_pix, x_pix) = bpblk;
 		end
 	end
-	%Perform vector conversion, if required
-	%if(T.GEN_BP_VEC)
-	%	bpdata = bpimg2vec(bpimg);
-	%else
-	%	bpdata = bpimg;
-	%end
-	bpdata = bpimg2vec(bpimg);	
 	%Compute overall ratio histogram
 	rhist = zeros(1, T.N_BINS);
 	for x = 1:BLOCKS_X
@@ -105,7 +138,15 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 	end
 	rhist = rhist ./ max(max(rhist));
 	if(T.FPGA_MODE)
-		rhist = rhist .* T.DATA_SZ;
+		bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]
+		bpimg = fix(bpimg .* T.kQuant);
+	end
+
+	% TODO : Check this
+	if(T.kQuant == 1)
+		bpdata = bpimg2vec(bpim);
+	else
+		bpdata = bpimg2vec(bpimg, 'bpval');
 	end
 	
 	

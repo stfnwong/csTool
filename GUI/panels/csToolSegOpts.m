@@ -175,16 +175,24 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
     set(handles.etBPTHRESH, 'String', num2str(sOpts.bpThresh));
     %This if/else construction is an attempt to suppress the 'checkbonx
     %control requires a scalar value' warning
-    if(sOpts.verbose)
+    if(sOpts.verbose == 1)
+        fprintf('segOpts.verbose checked\n');
         set(handles.chkVerbose, 'Value', 1);
     else
         set(handles.chkVerbose, 'Value', 0);
     end
     %Also set checkbox
-    if(sOpts.fpgaMode)
+    if(sOpts.fpgaMode == 1)
+        fprintf('segOpts.fpgaMode checked\n');
         set(handles.chkFPGA, 'Value', 1);
     else
         set(handles.chkFPGA, 'Value', 0);
+    end
+    if(sOpts.kWeight == 1)
+        fprintf('segOpts.kWeight checked\n');
+        set(handles.chkWeight, 'Value', 1);
+    else
+        set(handles.chkWeight, 'Value', 0);
     end
     %set(handles.chkFPGA, 'Value', sOpts.fpgaMode);
 
