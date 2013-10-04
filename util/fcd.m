@@ -24,13 +24,15 @@ function fcd(varargin)
 	BPM          = 117;		%This is correct BPM for original mix
 
 	%Check optional arguments
-	if(nargin > 0)
+	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
 				if(strncmpi(varargin{k}, 'flourish', 8))
 					END_FLOURISH = 1;
 				elseif(strncmpi(varargin{k}, 'chorus', 6))
 					NUM_CHORUS = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'echo', 4))
+					NUM_ECHOS = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'bpm', 3))
 					BPM = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'lyric', 5))

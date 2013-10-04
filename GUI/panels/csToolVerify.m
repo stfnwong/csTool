@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 23-Sep-2013 13:17:59
+% Last Modified by GUIDE v2.5 05-Oct-2013 04:22:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -209,7 +209,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         case 'HSV'
             dataSz = 1;
         case 'Hue'
-            dataSz = 1;
+            dataSz = 256;
         case 'backprojection'
             dataSz = 256;
         otherwise
@@ -233,7 +233,7 @@ function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     [fname path] = uigetfile('*.dat', 'Select vector file...');
     if(isempty(fname))
         fname = oldText;
-		path  = '.';
+		path  = '';
     end
     set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);
@@ -274,6 +274,12 @@ function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     
     guidata(hObject, handles);
+
+function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+    % Perform a pattern verification
+    % TODO : Put this in top menu bar (with a sub GUI)
+
+    guidata(hObject, handles);
     
 
 
@@ -312,7 +318,6 @@ function pmVecType_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
-
 
 
 
