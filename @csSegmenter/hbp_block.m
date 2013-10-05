@@ -77,6 +77,7 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 			x_pix  = (x*BLK_SZ)+1 : (x+1)*BLK_SZ;
 			y_pix  = (y*BLK_SZ)+1 : (y+1)*BLK_SZ;
 			iblk   = img(y_pix, x_pix);
+			% TODO : Does this need to be done for each row?
 			for k = 1:length(bins)
 				if(k == 1)
 					pix      = bcomp(0, bins(k), iblk);
@@ -89,43 +90,13 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 			rhist = mhist ./ ihist;
 			%Sanitise extreme values
 			rhist(isnan(rhist)) = 0;
-			%if(T.FPGA_MODE)
-			%	rhist(isinf(rhist)) = T.DATA_SZ-1;
-			%else
-			%	rhist(isinf(rhist)) = 1;
-			%end
 			rhist(isinf(rhist)) = T.DATA_SZ;
-			rhsit = T.DATA_SZ .* rhist;		%scale to data size
+			rhist = T.DATA_SZ .* rhist;		%scale to data size
 			%Save this ratio histogram
 			rhistBlk{x+1, y+1} = rhist;
-			%Backproject this block
-			bpblk = zeros(size(iblk));
-			for xpix = 1 : BLK_SZ
-				for ypix = 1 : BLK_SZ
-					% Reference original image pixel
-					if(iblk(ypix, xpix) ~= 0)
-						if(KDENS)
-						% TODO : This is copied direct from hbp_img()	
-							pixel  = [x y];
-							kw = kernelLookup(T, pixel);
-							%kw = kbw_lut(pixel, T.XY_PREV, 'quant', T.BPIMG_BIT_DEPTH, 'scale', log2(T.BPIMG_BIT_DEPTH));
-							if(kw > 0)
-								idx = find(bins > img(y,x), 1, 'first');
-								bpimg(y,x) = kw * rhist(idx);
-							end		
-						else
-							for k = 1:length(bins)
-								if(k == 1)
-									idx = bcomp(0, bins(k), img(y_pix, x_pix));
-								else
-									idx = bcomp(bins(k-1), bins(k), img(y_pix, x_pix));
-								end
-								bpblk(idx) = rhist(k);
-							end
-						end
-					end
-				end
-			end
+			%Backproject this block, write block results back to 
+			%corresponding location in original image.
+			bpblk = hbp(S, iblk, rhist, KDENS, 'offset', [x+1 y+1]); 
 			bpimg(y_pix, x_pix) = bpblk;
 		end
 	end

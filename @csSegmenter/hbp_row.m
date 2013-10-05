@@ -26,7 +26,32 @@ function [bpdata rhist] = hbp_row(T, img, mhist, varargin)
 
 	rcomp = @(rl, rh, blk) (blk > rl) & (blk < rh);
 
-	[img_h img_w d] = size(img);
+	KDENS = false;
+	if(~isempty(varargin))
+		for k = 1:length(varargin)
+			if(ischar(varargin{k}))
+				if(strncmpi(varargin{k}, 'kdens', 5))
+					xy_prev = vararginn{k+1};
+					KDENS   = true;
+				elseif(strncmpi(varargin{k}, 'bw', 2))
+					kbw     = varargin{k+1};		%kernel bandwidth
+				end
+			end
+		end
+	end
+
+	% If no bandwidth specified, use this default value
+	if(KDENS && ~exist('kbw', 'var'))
+		kbw = T.KERNEL_BW;
+	end
+	if(exist('xy_prev', 'var'))
+		if(~isnumeric(xvy_prev))
+			fprintf('ERROR: Incorrect type for xy_prev, ignoring kernel weighting\n');
+			KDENS = false;
+		end
+	end
+
+	[img_h img_w d] = size(img); %#ok
 	%See if we have a row option
 	if(~isempty(varargin))
 		row_len = varargin{1};
@@ -64,34 +89,17 @@ function [bpdata rhist] = hbp_row(T, img, mhist, varargin)
 				end
 			end
 		end
-		%Backproject this row
+		%Backproject this row, write backprojection back to image
 		rhist_row = mhist ./ ihist_row;
+		bprow = hbp(T, imRow, rhist_row, KDENS, 'offset', [n 0]);
+		bpimg(n, :) = bprow;
 	end
 
-	%for r = 1:img_h
-	%	ihist = zeros(1, T.N_BINS);
-	%	imRow = img(r, 1:row_len);
-	%	for k = 1:length(bins)
-	%		if(k == 1)
-	%			pix      = bcomp(0, bins(k), imRow);
-	%			ihist(k) = sum(sum(pix));
-	%		else
-	%			pix      = bcomp(bins(k-1), bins(k), imRow);
-	%			ihist(k) = sum(sum(pix));
-	%		end
-	%	end
-	%	%Backproject this row
-	%	rhrow = zeros(1, T.N_BINS);
-	%end
 
-	%Convert to bpvec, if required
-	if(GEN_BP_VEC)
-		bpdata = bpimg2vec(bpimg);
-	else
-		bpdata = bpimg;
+	if(T.FPGA_MODE)
+		bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]
+		bpimg = fix(bpimg .* T.kQuant);			%range - [0 kQuant]
 	end
-		
-
-
+	bpdata = bpimg2vec(bpimg, 'bpval');
 
 end 		%hbp_row()

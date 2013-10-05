@@ -86,32 +86,12 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 		rhist(isinf(rhist)) = 1;
 	end
 	% TODO: MEX this?
-	for x = 1:img_w
-		for y = 1:img_h
-			%Reference against original pixel to get rid of zeros
-			if(img(y,x) ~= 0)
-				% Perform kernel weighting?
-				if(KDENS)
-					pixel  = [x y];
-					kw = kernelLookup(T, pixel);
-					%kw = kbw_lut(pixel, T.XY_PREV, 'quant', T.BPIMG_BIT_DEPTH, 'scale', log2(T.BPIMG_BIT_DEPTH));
-			 		if(kw > 0)
-						idx = find(bins > img(y,x), 1, 'first');
-						bpimg(y,x) = kw * rhist(idx);
-					end		
-				else
-					idx        = find(bins > img(y,x), 1, 'first');
-					if(rhist(idx) > T.BP_THRESH)
-						bpimg(y,x) = rhist(idx);
-					end
-				end
-			end
-		end
-	end
+	
+	bpimg = hbp(T, img, rhist, KDENS);
 
 	if(T.FPGA_MODE)
 		bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]
-		bpimg = fix(bpimg .* T.kQuant);
+		bpimg = fix(bpimg .* T.kQuant);			%range - [0 kQuant]
 	end
 	bpdata = bpimg2vec(bpimg, 'bpval');
 	
