@@ -936,6 +936,7 @@ classdef vecManager
 		vec              = genRGBVec(fh, varargin);
 		vec              = genBpImgData(V, bpImg, varargin);
 		vec              = genBpVecData(V, bpVec, varargin);
+		filenames        = genVecFilenames(V, fh, fname, fmt);
 		% ----- TEST VECTOR VERIFICATION ---- %
 		status           = verifyTrackingVec(V, fh, vec);
 		%status           = verifyHSVVec(V, fh, vec);

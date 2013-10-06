@@ -46,17 +46,10 @@ function varargout = patternVerify(V, vec, refvece, varargin)
 		dtype = '%u8';
 	end
 
-	% Parse name
-	if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
-		[ef str num ext path] = fname_parse(fname, 'n'); %#ok
-		if(ef == -1)
-			fprintf('(patternVerify): Unable to parse [%s]\n', fname);
-			% Return a status code and empty vector here
-			return;
-		end
+	[pvector status] = vecDiskRead(V, fname);
 
-	% Read pattern vector(s) from disk
-	[pattrVec status] = vecDiskRead(V,
+
+
 
 
 end 	%patternVerify()
