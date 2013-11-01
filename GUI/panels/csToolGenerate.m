@@ -111,8 +111,8 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
 
     %Populate GUI elements 
     vOpts  = handles.vecManager.getOpts();
-    fmtStr = {'16', '8', '4', '2', 'scalar'};
-    orStr  = {'row', 'col'};
+    fmtStr = {'16', '8', '4', '2'};
+    orStr  = {'row', 'col', 'scalar'};
     set(handles.pmVecSz, 'String', fmtStr);
     set(handles.pmVecOr, 'String', orStr);
     %Make default selection 2c
@@ -185,7 +185,8 @@ function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     delete(handles.csToolGenerateFig);
 
 function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
-    %Swap preview mode
+ 
+ 	%Swap preview mode
     if(strncmpi(handles.previewMode, 'img', 3))
         %Check that there is backprojection data for this frame
         fh   = handles.frameBuf.getFrameHandle(handles.idx);
@@ -217,7 +218,8 @@ function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         
 
 function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
-    %Bounds check and increment frame index
+    
+	%Bounds check and increment frame index
     N = handles.frameBuf.getNumFrames();
     if(handles.idx < N)
         handles.idx = handles.idx + 1;
@@ -244,7 +246,8 @@ function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 
 function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
-    %Bounds check and decrement frame index
+    
+	%Bounds check and decrement frame index
     if(handles.idx > 1)
         handles.idx = handles.idx - 1;
         idx = handles.idx; %Just to make gui_renderPreview string shorter
@@ -276,14 +279,14 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %To avoid having two sets of parsers, just make strings that the
     %command line vecManager would accept out of the drop-down box
     %arguments
+	
     fstr  = get(handles.pmVecOr, 'String');
     fidx  = get(handles.pmVecOr, 'Value');
     ftype = fstr{fidx};
 	vstr  = get(handles.pmVecSz, 'String');
-    %val   = vstr(get(handles.pmVecSz, 'Value'));
     val   = vstr{get(handles.pmVecSz, 'Value')};
-    if(strncmpi(val, 'scalar', 6))
-        fmt = 'scalar';
+    if(strncmpi(ftype, 'scalar', 6))
+        fmt = 's';
     elseif(strncmpi(ftype, 'row', 3))
         fmt = strcat(num2str(val), 'r');
     else
@@ -342,30 +345,39 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         fname = get(handles.etWriteFile, 'String');
     end
 
-
-	%Set the filename in the vecManager object as well 
-	%TODO: Update the internal file handling scheme to automatically generate 
-	%properly numbered files
-	%handles.vecManager = handles.vecManager.setWLoc(fname);
+ 	% TODO : Add a control to vary the scale factor
+	scale = 256;
+	
+	opts = struct('vtype', ftype, 'val', fix(str2double(val)), 'scale', scale, 'fname', fname);
     
+	% --- RGB Vector --- %
     if(get(handles.chkRGB, 'Value'))
         if(handles.debug)
             fprintf('Generating RGB Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeRGBVec(fh, 'fmt', fmt, 'file', fname);
+		handles.vecManager.writeImgVec(fh, opts, 'rgb');
+        %handles.vecManager.writeRGBVec(fh, 'fmt', fmt, 'file', fname);
     end
+
+	% --- Hue Vector --- %
     if(get(handles.chkHue, 'Value'))
         if(handles.debug)
             fprintf('Generating Hue Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeHueVec(fh, 'fmt', fmt, 'file', fname);
+		handles.vecManager.writeImgVec(fh, opts, 'hue');
+        %handles.vecManager.writeHueVec(fh, 'fmt', fmt, 'file', fname);
     end
+
+	% ---- HSV Vector ---- %
     if(get(handles.chkHSV, 'Value'))
         if(handles.debug)
             fprintf('Generating HSV Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
         end
-        handles.vecManager.writeHSVVec(fh, 'fmt', fmt, 'file', fname);
+		handles.vecManager.writeImgVec(fh, opts, 'hsv');
+        %handles.vecManager.writeHSVVec(fh, 'fmt', fmt, 'file', fname);
     end
+
+	% ---- Backprojection Vector ---- %
     if(get(handles.chkBP, 'Value'))
         if(handles.debug)
             fprintf('Generating BPVec (%s) for frame %s\n', fmt, get(fh, 'filename'))
@@ -375,7 +387,8 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         else
             fprintf('Backprojection filename : %s\n', fname); %#ok
         end
-        handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'file', fname);
+		handles.vecManager.writeImgVec(fh, opts, 'bp');
+        %handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'file', fname);
     end
 
     %Write mhist to same location, appending -mhist.dat

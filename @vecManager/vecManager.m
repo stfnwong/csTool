@@ -492,33 +492,6 @@ classdef vecManager
 		% responsibility to stripe out the file handles is placed with the methods
 		% here 
 
-		%NOTES ON ARCHITECTURE
-		% Or 'why does are there so many similar functions?'
-		%
-		% I have though about consolidating the various vector functions here in the
-		% vecManager class into a single function that has all the common parsing and
-		% vector looping components, with some kind of parser or options system that
-		% selects the different vector types to write. However (at least for now) I've
-		% decided to leave these seperate, even though large parts of them are similar
-		% Before explaining why, let me just note that originally I wanted to have it
-		% so that the actual vector formatting was in a seperate file, partly to keep
-		% this class definition short, and partly so that the actual vector generation
-		% didn't have to deal with striping vectors, parsing arguments, and so on. 
-		% This implied that there should be one level of indireciton in the class 
-		% definition, which strips out all the frame handles, and deals with any
-		% options that are passed in, and then calls the 'dumb' vector generation 
-		% method with those options, possibly in a loop.
-		%
-		% I've decided for the time being that it is actually cleaner to have multiple
-		% similar methods because tracking vectors are actually a bit different to 
-		% RGB/HSV/Hue vectors. It could be that there is a writeColourVec() method at
-		% some point that takes a string argument that specifies the particular type
-		% of vector to use (but not a tracking vector), which basically has to do
-		% a switch before the loop unrolls the frame handle vector
-		%
-		% To some extent, this argument is undermined by the implementation of 
-		% vecDiskWrite()
-		
 		function [ftype val] = parseFmt(V, fmt) %#ok
 		% PARSEFMT
 		% [ftype val] = parseFmt(fmt)
@@ -565,7 +538,20 @@ classdef vecManager
 		% ---- Reassemble a vector into an image
 		function img = formatVecImg(V, vec, varargin)
 		% FORMATVECIMG
+		% img = formatVecImg(V, vec, [..OPTIONS..])
+		%
 		% This method is a wrapper for assemVec. 
+		%
+		% ARGUMENTS:
+		% V - vecManager object
+		% vec - vector to assemble
+		%
+		% OPTIONAL ARGUMENTS
+		% imsz - Size to generate output image for (default: 640x480)
+		% vecfmt - Orientation format of vector, (default: scalar)
+		% vecsz  - Size of vector (default: array size)
+		%
+		% see also assemVec, parseFmt
 	
 			SCALE = false;	
 			if(~isempty(varargin))
@@ -626,236 +612,117 @@ classdef vecManager
 
 		end 	%formatVecImg()
 
-		% -------- WRITERGBVEC() ------- %
-		function writeRGBVec(V, fh, varargin)
-			%sanity check
+
+
+		function status = writeImgVec(V, fh, opts, vecType)
+		% WRITEIMGVEC
+		% status = writeImgVec(V, fh, opts)
+		%
+		% Generic function for writing test vectors to disk
+		% 
+		% ARGUMENTS
+		%
+		% V    - vecManager object
+		% fh   - Frame handle or vector of frame handles to generate vector data for
+		% opts - Structure containing vector generation options. The opts structure
+		%        contains the following fields
+		%
+		%        vtype  : orientation of vector, one of 'row', 'col' or 'scalar'
+		%        val    : size of vector
+		%        scale  : scaling factor for image data
+		%        fname  : filename to write to disk
+		%
+		% OUTPUTS
+		% status - Returns -1 if operation fails, 0 otherwise
+		%
+
+		% Stefan Wong 2013
+
 			if(~isa(fh, 'csFrame'))
-				error('Invalid frame handle fh');
+				fprintf('ERROR (writeImgVec) : Invalid frame handle fh\n');
+				status = -1;
+				return;
 			end
-			
-			%Parse optional arguments
-			if(~isempty(varargin))
-				for k = 1:length(varargin)
-					if(ischar(varargin{k}))
-						if(strncmpi(varargin{k}, 'fmt', 3))
-							fmt = varargin{k+1};
-						elseif(strncmpi(varargin{k}, 'file', 4))
-							fname = varargin{k+1};
-						end
-					end
-				end
+			if(~ischar(vecType))
+				fprintf('ERROR (writeImgVec) : vecType must be string\n');
+				status = -1;
+				return;
 			end
-			
-			% Check what we have
-			if(exist('fmt', 'var'))
-				[opts.type opts.val] = parseFmt(V,fmt);
-			else
-				opts.type = 'scalar';
-				opts.val  = 0;
+
+			% Do sanity check on options
+			if(~isfield(opts, 'vtype') || isempty(opts.vtype))
+				opts.vtype = 'scalar';
+			end
+			if(~isfield(opts, 'val') || isempty(opts.val))
+				opts.val   = 0;
 			end	
-			
-			if(length(fh) > 1)
-				for k = 1:length(fh)
-					vec  = genRGBVec(V, fh(k), opts);
-					if(~exist('fname', 'var'))
-						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
-						fname = sprintf('%s%03d', str, num);
-					end
-					vecname = {sprintf('%s.dat', fname)};
-					vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
-				end	
-			else
-				vec = genRGBVec(V, fh, opts);
-				if(~exist('fname', 'var'))
-					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
-					fname = sprintf('%s%03d', str, num);
-				end
-				vecname{1} = sprintf('%s.dat', fname);
-                vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
+			if(~isfield(opts, 'scale') || isempty(opts.scale))
+				opts.scale = 256;
 			end
-		end 	%writeRGBVec()
+			% This check might be excessive
+			if(~isfield(opts, 'fname'))
+				opts.fname = [];
+			end
+				
+			% ---- Generate vector for each frame handle ---- %
+			for k = 1:length(fh)
 
-		% -------- WRITEHSVVEC() ------- %
-		function writeHSVVec(V, fh, varargin)
-			%sanity check
-			if(~isa(fh, 'csFrame'))
-				error('Invalid frame handle fh');
-			end
-
-			%TODO : Add options here for address generation, etc...
-			%Parse optional arguments 
-			if(~isempty(varargin))
-				for k = 1:length(varargin)
-					if(ischar(varargin{k}))
-						if(strncmpi(varargin{k}, 'fmt', 3))
-							fmt = varargin{k+1};
-						elseif(strncmpi(varargin{k}, 'file', 4))
-							fname = varargin{k+1};
-						end
-					end
-				end
-			end
-			
-			if(length(fh) > 1)	
-				for k = 1:length(fh)
-					vec  = genHSVVec(fh(k));
-					if(~exist('fname', 'var'))
-						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
-						fname = sprintf('%s%03d', str, num);
-					end
-                    vecnames    = cell(1,3);
-					vecnames{1} = sprintf('%s-hue-frame%02d.dat', fname, k);
-					vecnames{2} = sprintf('%s-sat-frame%02d.dat', fname, k);
-					vecnames{3} = sprintf('%s-val-frame%02d.dat', fname, k);
-					vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
-				end
-			else
-				vec = genHSVVec(fh);
-				if(~exist('fname', 'var'))
-					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
-					fname = sprintf('%s%03d', str, num);
-				end
-                vecname    = cell(1,3); %NOTE: M-Lint didn't complain about this line
-				vecname{1} = sprintf('%s-hue.dat', fname);
-				vecname{2} = sprintf('%s-sat.dat', fname);
-				vecname{3} = sprintf('%s-val.dat', fname);
-                vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
-			end
-					
-		end 	%writeHSVVec()
-
-		% -------- WRITEHUEVEC() ------- %
-		function writeHueVec(V, fh, varargin)
-			%sanity check
-			if(~isa(fh, 'csFrame'))
-				error('Invalid frame handle fh');
-			end
-
-			if(~isempty(varargin))
-				for k = 1:length(varargin)
-					if(ischar(varargin{k}))
-						if(strncmpi(varargin{k}, 'fmt', 3))
-							fmt = varargin{k+1};
-						elseif(strncmpi(varargin{k}, 'file', 4))
-							fname = varargin{k+1};
-						end
-					end
-				end
-			end
-	
-			if(exist('fmt', 'var'))
-				[vtype val] = parseFmt(V,fmt);
-			else
-				vtype = 'scalar';
-				val   = 0;
-			end
-
-			if(length(fh) > 1)
-				for k = 1:length(fh)
-					%DEBUG: Test with 256 scale factor
-					vec = genHueVec(fh(k), vtype, val, 'scale', 256);
-                    if(isempty(vec))
-                        fprintf('ERROR: genHueVec failed to generate well formed vector\n');
-                        return;
-                    end
-					if(~exist('fname', 'var'))
-						%Format a string based on filename of original frame
-						[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); %#ok
-						fname = sprintf('%s%03d', str, num);
-					end
-                    if(strcmpi(vtype, 'scalar'))
-                        vecDiskWrite(V, {vec}, 'fname', {fname}, 'vsim');
-                    else
-						for n = length(vec):-1:1
-							vecnames{n} = sprintf('%s-vec%02.dat', fname, n);
-						end
-                        vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
-                    end
-				end
-			else
-				%DEBUG: Test with 256 scale factor
-				vec  = genHueVec(V, fh, vtype, val, 'scale', 256);
-                if(isempty(vec))
-                    fprintf('ERROR: genHueVec failed to generate well formed vector\n');
-                    return;
-                end
-				if(~exist('fname', 'var'))
-					%Format a string from original filename
-					[ef str num] = fname_parse(get(fh, 'filename'), 'n');  %#ok
-					fname = sprintf('%s%03d', str, num);
-				end
-				%Don't bother creating a set of filenames if the vector type is scalar
-                if(strcmpi(vtype, 'scalar'))
-                    vecDiskWrite(V, {vec}, 'fname', {fname}, 'vsim');
-                else
-					for n = length(vec):-1:1
-						vecnames{n} = sprintf('%s-vec%03d.dat', fname, n);
-					end
-                    vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
-                end
-			end
-		end 	%writeHueVec()
-		
-		% -------- WRITEBPVEC() ------- %
-		function writeBPVec(V, fh, varargin)
-			%sanity check
-			if(~isa(fh, 'csFrame'))
-				error('Invalid frame handle fh');
-			end
-
-			if(~isempty(varargin))
-				for k = 1:length(varargin)
-					if(ischar(varargin{k}))
-						if(strncmpi(varargin{k}, 'fmt', 3))
-							fmt = varargin{k+1};
-						elseif(strncmpi(varargin{k}, 'file', 4))
-							fname = varargin{k+1};
-						end
-					end
-				end
-			end
-		
-			if(exist('fmt', 'var'))
-				[vtype val] = parseFmt(V,fmt);
-			else
-				vtype = 'scalar';
-				val   = 0;
-			end	
-			
-			if(length(fh) > 1)
-				for k = 1:length(fh)
-					vec  = genBPVec(V, fh(k), vtype, val);
-					if(~exist('fname', 'var'))
-						[ef str num] = fname_parse(get(fh(k), 'filename')); %#ok
-						fname = sprintf('%s%03d', str, num);
-					end
-					for n = length(vec):-1:1
-						vecnames{n} = sprintf('%s-vec%03d.dat', fname, n);
-					end					
-					vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', '1b');
-				end
-			else
-				vec = genBPVec(V, fh, vtype, val);
-				if(~exist('fname', 'var'))
-					[ef str num] = fname_parse(get(fh, 'filename'), 'n'); %#ok
-					fname = sprintf('%s%03d', str, num);
-				end
-				if(length(vec) > 1)
-					[ef str num ext path] = fname_parse(fname,'n');%#ok
+				% Check for filename 
+				if(isempty(opts.fname))
+					[ef str num] = fname_parse(get(fh(k), 'filename'), 'n'); 
 					if(ef == -1)
-						fprintf('(writeBPVec): Bad filename [%s], exiting...\n', get(fh, 'filename'));
+						fprintf('ERROR: bad filename [%s] in writeVec\n', get(fh(k), 'filename'));
+						status = -1;
 						return;
 					end
-					for n = length(vec):-1:1
-						vecnames{n} = sprintf('%s%s-vec%03d.%s', path, str, n, ext);
-					end
-				else
-					vecnames = cell(1,1);
-					vecnames{1} = fname;
+					opts.fname = sprintf('%d.dat', str, num);
 				end
-                vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', '1b');
+
+				% Generate correct vector for this type
+				switch vecType
+					% ==== RGB ==== %
+					case 'rgb'
+						vec = genRGVec(V, fh(k), opts.vtype, opts.val);
+						vecname = sprintf('%s.dat', opts.fname);
+						vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
+					% ==== HSV === %
+					case 'hsv'
+						vec = genHueVec(V, fh(k));
+						vecname{1} = sprintf('%s-hue.dat', opts.fname);
+						vecname{2} = sprintf('%s-sat.dat', opts.fname);
+						vecname{3} = sprintf('%s-val.dat', opts.fname);
+						vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
+					% ==== HUE ==== %
+					case 'hue'
+						vec = genHueVec(V, fh(k), opts.vtype, opts.val, 'scale', opts.scale);
+						if(strncmpi(opts.vtype, 'scalar', 6))
+							vecDiskWrite(V, {vec}, 'fname', {opts.fname}, 'vsim');
+						else
+							for n = length(vec):-1:1
+								vecnames{n} = sprintf('%s-vec%03d.dat', opts.fname);
+							end
+							vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
+						end
+					% ==== BACKPROJECTION ==== %
+					case 'bp'
+						vec = genBPVec(V, fh(k), opts.vtype, opts.val);
+						for n = length(vec):-1:1
+							vecnames{n} = sprintf('%s-vec%03d.dat', opts.fname, n);
+						end
+						vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', '1b');
+
+					otherwise
+						fprintf('ERROR: Not a supported vectype [%s]', vecType);
+						status = -1;
+						return;
+				end
 			end
-		end 	%writeBPVec()
+
+			status = 0;
+			return;
+
+		end 	%writeImgVec()
+
 
 		% -------- WRITE TRACKING VECTOR -------- %
 		function writeTrackingVec(V, fh, varargin)
@@ -927,13 +794,13 @@ classdef vecManager
 		%[ftype val] = parseFmt(V,fmt);
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
-		                  vecDiskWrite(V, data, varargin);	%commit data to disk
+		                   vecDiskWrite(V, data, varargin);	%commit data to disk
 		[vec varargout]  = vecDiskRead(V, fname, varargin);
 		vec              = genTrackingVec(V, fh);
 		[vec varargout]  = genBPVec(V ,fh, vtype, val);
         [vec varargout]  = genHueVec(V, fh, vtype, val, varargin);
-        vec              = genHSVVec(fh, varargin);
-		vec              = genRGBVec(fh, varargin);
+        vec              = genHSVVec(V, fh, varargin);
+		vec              = genRGBVec(V, fh, vtype, val, varargin);
 		vec              = genBpImgData(V, bpImg, varargin);
 		vec              = genBpVecData(V, bpVec, varargin);
 		filenames        = genVecFilenames(V, fh, fname, fmt);

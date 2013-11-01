@@ -1,4 +1,4 @@
-function vec = genRGBVec(fh, varargin)
+function vec = genRGBVec(V, fh, vtype, val, varargin)
 % GENRGBVEC
 % Generate RGB image vector (as a raster) from image reffered to by fh. This method
 % reads the image file referred to by fh.filename and creates a test vector consisting
@@ -6,6 +6,8 @@ function vec = genRGBVec(fh, varargin)
 %
 
 % Stefan Wong 2012
+
+% TODO : Incorporate row and column orientation into this function
 
 	if(~isempty(varargin))
 		DATA_SZ = varargin{1};
