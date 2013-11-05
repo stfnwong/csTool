@@ -24,6 +24,7 @@ function klut = gen_kernel_lut(S, scale, bw, quant, varargin)
 % OPTIONAL ARGUMENTS
 % kernel - Pass the string 'kernel' followed by one of 
 %          'ekov' - Epanechnikov Kernel
+%          'tri'  - Triangular Kernel
 %          'flat' - Flat kernel
 %
 

@@ -59,6 +59,7 @@ bParamBrowse_Callback	GUI/panels/csToolGUI.m	/^function bParamBrowse_Callback(hO
 bParamNext_Callback	GUI/panels/csToolGUI.m	/^function bParamNext_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 bParamPrev_Callback	GUI/panels/csToolGUI.m	/^function bParamPrev_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 bPatternFile_Callback	GUI/panels/csToolPattern.m	/^function bPatternFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bPatternVerify_Callback	GUI/panels/csToolVerify.m	/^function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bPattrVerify_Callback	GUI/panels/csToolPattern.m	/^function bPattrVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bPrevFrame_Callback	GUI/panels/csToolParamBrowser.m	/^function bPrevFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 bPrevParam_Callback	GUI/panels/csToolParamBrowser.m	/^function bPrevParam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
@@ -289,8 +290,12 @@ genHSVVec	@vecManager/genHSVVec.m	/^function vec = genHSVVec(fh, varargin)$/;"	f
 genHistPlot	@csFrameBrowser/genHistPlot.m	/^function genHistPlot(T, fh)$/;"	f
 genHueVec	@vecManager/genHueVec.m	/^function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok$/;"	f
 genPrevPlot	@csFrameBrowser/genPrevPlot.m	/^function genPrevPlot(T, fh, varargin)$/;"	f
-genRGBVec	@vecManager/genRGBVec.m	/^function vec = genRGBVec(fh, varargin)$/;"	f
+genRGBVec	@vecManager/genRGBVec.m	/^function vec = genRGBVec(V, fh, vtype, val, varargin)$/;"	f
+genRandBackprojection	@vecManager/genRandBackprojection.m	/^function bpdata = genRandBackprojection(varargin)$/;"	f
+genRandFrame	@csFrameBuffer/genRandFrame.m	/^function rFrame = genRandFrame(F, opts)$/;"	f
+genRandPos	@csFrameBuffer/genRandPos.m	/^function pos = genRandPos(F, prevPos, maxDist, imsz)$/;"	f
 genRowVec	@vecManager/genRowVec.m	/^function vec = genRowVec(V, data, varargin)$/;"	f
+genTestImg	@vecManager/genTestImg.m	/^function img = genTestImg(V, opts, varargin)$/;"	f
 genTrackingVec	@vecManager/genTrackingVec.m	/^function vec = genTrackingVec(V, fh)$/;"	f
 gen_kernel_lut	@csSegmenter/gen_kernel_lut.m	/^function klut = gen_kernel_lut(S, scale, bw, quant, varargin)$/;"	f
 gui_axHitTest	GUI/gui_axHitTest.m	/^function [hit ah varargout] = gui_axHitTest(axHandles, figHandle, cPos, varargin)$/;"	f
@@ -319,6 +324,7 @@ gui_setWinParams	GUI/gui_setWinParams.m	/^function [str status] = gui_setWinPara
 gui_showPreview	GUI/gui_showPreview.m	/^function [status nh] = gui_showPreview(handles, varargin)$/;"	f
 gui_stepPreview	GUI/gui_stepPreview.m	/^function [newIndex nh] = gui_stepPreview(idx, handles, dir)$/;"	f
 gui_updatePreview	GUI/panels/csToolTrajBuf.m	/^function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)$/;"	f
+hbp	@csSegmenter/hbp.m	/^function bpimg = hbp(S, img, rhist, KDENS, varargin)$/;"	f
 hbp_block	@csSegmenter/hbp_block.m	/^function [bpdata rhist] = hbp_block(T, img, mhist, varargin)$/;"	f
 hbp_block	mex/src/hbp_block.c	/^int hbp_block( unsigned int *img, $/;"	f
 hbp_img	@csSegmenter/hbp_img.m	/^function [bpdata rhist] = hbp_img(T, img, mhist, varargin)$/;"	f
@@ -388,6 +394,7 @@ msProcLoop	@csTracker/msProcLoop.m	/^function status = msProcLoop(T, fh, trackWi
 optParser	@csFrameBuffer/optParser.m	/^function opt = optParser(options)$/;"	f
 optParser	@csImProc/optParser.m	/^function ipOpt = optParser(options)$/;"	f
 parseFmt	@vecManager/parseFmt.m	/^function [ftype val] = parseFmt(fmt)$/;"	f
+patternVerify	@vecManager/patternVerify.m	/^function varargout = patternVerify(V, vec, refvece, varargin)$/;"	f
 pmAnchorPoint_Callback	GUI/panels/csToolTrackOpts.m	/^function pmAnchorPoint_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 pmAnchorPoint_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function pmAnchorPoint_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 pmBitDepth_Callback	GUI/panels/csToolSegOpts.m	/^function pmBitDepth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
@@ -455,7 +462,7 @@ vecDiskWrite	@vecManager/vecDiskWrite.old.m	/^function vecDiskWrite(V, data, var
 vecGen	uTest/vecGen.m	/^function vec = vecGen(img, varargin)$/;"	f
 verifyBPVec	@vecManager/verifyBPVec.m	/^function status = verifyBPVec(V, fh, vec, varargin)$/;"	f
 verifyHueVec	@vecManager/verifyHueVec.m	/^function [status varargout] = verifyHueVec(V, fh, vec, varargin)$/;"	f
-verifyVector	@vecManager/verifyVector.m	/^function [status varargout] = verifyVector(V, fh, vec, varargin)$/;"	f
+verifyVector	@vecManager/verifyVector.m	/^function [status varargout] = verifyVector(V, fh, vec, opts, varargin)$/;"	f
 vname_parse	util/vname_parse.m	/^function [ef str varargout] = vname_parse(vstring, varargin)$/;"	f
 vpattr	util/vpattr.m	/^function [varargout] = vpattr(ifile, ofile, varargin)$/;"	f
 vpattr_cstool	util/vpattr_cstool.m	/^function [varargout] = vpattr_cstool(ifile, ofile, opts, varargin)$/;"	f
@@ -472,5 +479,6 @@ wrModelHist	GUI/panels/wrModelHist.m	/^function varargout = wrModelHist(varargin
 wrModelHist_OpeningFcn	GUI/panels/wrModelHist.m	/^function wrModelHist_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL,DEFNU>$/;"	f
 wrModelHist_OutputFcn	GUI/panels/wrModelHist.m	/^function varargout = wrModelHist_OutputFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 writeHueVec	@vecManager/writeHueVec.m	/^function vec = writeHueVec(V, fh, fmt, varargin)$/;"	f
+writeImgVec	@vecManager/writeImgVec.m	/^function status = writeImgVec(V, fh, opts)$/;"	f
 writeVecData	@vecManager/writeVecData.m	/^function status = writeVecData(V, data, varargin)$/;"	f
 write_mhist	util/write_mhist.m	/^function [ef] = write_mhist(fname, mhist, varargin)$/;"	f

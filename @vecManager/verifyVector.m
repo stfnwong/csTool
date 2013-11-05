@@ -1,4 +1,4 @@
-function [status varargout] = verifyVector(V, fh, vec, varargin)
+function [status varargout] = verifyVector(V, fh, vec, opts, varargin)
 % VERIFYVECTOR
 % Generic routine to generate error vectors from testbench data.
 % [status (..OPTIONS..)] = verifyVector(V, fh, vec, [..OPTIONS..])
@@ -8,6 +8,10 @@ function [status varargout] = verifyVector(V, fh, vec, varargin)
 
 	debug   = false;
 	vsparse = false;
+
+
+
+	% TODO : Replace this with options structure
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
@@ -34,6 +38,30 @@ function [status varargout] = verifyVector(V, fh, vec, varargin)
 				end
 			end
 		end
+	end
+
+	% Check options contents
+	if(~isfield(opts, 'vtype') || isempty(opts.vtype))
+		opts.vtype = 'scalar';
+	end
+	if(~isfield(opts, 'val') || isempty(opts.val))
+		opts.val = length(vec);
+	end
+	if(~isfield(opts, 'scale') || isempty(opts.scale))
+		opts.scale = 256;
+	end
+	if(~isfield(opts, 'cp') || isempty(opts.cp))
+		opts.cp = 20;		%time in nanoseconds
+	end
+	if(~isfield(opts, 'filename') || isempty(opts.filename))
+		opts.filename = 'errvec-timing-report.txt';
+	end
+	if(~isfield(opts, 'vectype') || isempty(opts.vectype))
+		opts.vectype = 'backprojection';
+	end
+	% If no axis handle field, add an empty entry
+	if(~isfield(opts, 'ah'))
+		opts.ah = [];
 	end
 
 	%Check what we have

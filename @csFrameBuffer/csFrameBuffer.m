@@ -315,6 +315,22 @@ classdef csFrameBuffer
 		% ---------------------------------- %
 		% -------- SETTER FUNCTIONS -------- %
 		% ---------------------------------- %
+		
+		function [FB] = initFrameBuf(FB, bufSize)
+		% INITFRAMBUF
+		% Initialise framebuffer to the size bufSize. If no
+		% size is specified, frameBuffer is initialised to size 1
+
+			if(isempty(bufSize) || bufSize == 0)
+				bufSize = 1;
+			end
+			
+			for n = bufSize:-1:1
+				fr(n) = csFrame();
+			end
+			FB.frameBuf = fr;
+
+		end 	%initFrameBuf()
 
 		function [FB status] = clearImHist(FB, fIndex)
 		% CLEARIMHIST
@@ -550,6 +566,80 @@ classdef csFrameBuffer
 				end
 			end
 		end 	%clearImData()
+
+		function genRandSeq(F, varargin)
+		% GENRANDSEQ
+		% Generate a sequence of random backprojection data for testing
+
+			if(~isempty(varargin))
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'imsz', 4))
+							imsz = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'nframes', 7))
+							nframes = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'maxspd', 6))
+							maxspd = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'dist', 4))
+							dist = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'npoints', 7))
+							npoints = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'sfac', 4))
+							sfac = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'theta', 5))
+							theta = varargin{k+1};
+						end
+					end
+				end
+			end
+
+			%Check what we have
+			if(~exist('imsz', 'var'))
+				imsz = [640 480];
+			end
+			if(~exist('nframes', 'var'))
+				nframes = 64;
+			end
+			if(~exist('maxspd', 'var'))
+				maxspd = 64;		%max distance in pixels to next frame
+			end
+			if(~exist('dist', 'var'))
+				dist = 'normal';
+			end
+			if(~exist('npoints', 'var'))
+				npoints = 200;
+			end
+			if(~exist('sfac', 'var'))
+				sfac = 1;
+			end
+			if(~exist('theta', 'var'))
+				theta = 0;
+			end
+
+			if(F.verbose)
+				fprintf('WARNING: Initialising frame buffer contents\n');
+			end
+			initFrameBuf(F, nframes);
+
+			% generate options structure
+			opts = struct('imsz', imsz, ...
+				          'loc', loc, ...
+			              'tsize', tsize, ...
+				          'theta', theta, ...
+				          'npoints', npoints, ...
+				          'dist', dist, ...
+				          'dscale', sfac, ...
+				          'kernel', [] );
+
+			for N = 1:nframes
+				frame    = genRandFrame(opts);
+				set(FB.frameBuf(N), 'bpimg', frame);
+				% generate position for new frame
+				opts.loc = genRandPos(opts.loc, maxspd, opts.imsz);
+				
+			end
+
+		end 	%genRandSeq()
 
 		% -------- DISPLAY --------
 		function disp(fb)

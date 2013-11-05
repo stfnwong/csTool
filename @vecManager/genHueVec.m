@@ -51,11 +51,6 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok
 		end
 	end
 
-	%TODO: Investigate this change:
-	%if(~exist('scale', 'var'))
-	%	S_FAC = V.HUE_SCALE_FAC;
-	%end
-
 	%Check optional arguments
 	if(exist('scale', 'var'))
 		if(ischar(scale))

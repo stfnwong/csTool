@@ -771,6 +771,9 @@ classdef vecManager
 				fprintf('ERROR: refvec must be cell array\n');
 				return;
 			end
+
+			% TODO : wrap verifyVector() here
+
 		end 	%verifyHueVector()
 		
 		% -------- VERIFY BACKPROJECTION VECTOR -------- %

@@ -1,5 +1,9 @@
 VARIOUS DESIGN NOTES FOR CSTOOL
 
+
+CSFRAMEBUFFER
+Move random backprojection generator into csFrameBuffer?
+
 Unit testing harness for sparse tracker:
 
 This is to my mind one of the most important components in the system. I need to 
