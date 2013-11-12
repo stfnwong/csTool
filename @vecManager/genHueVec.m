@@ -1,4 +1,4 @@
-function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok
+function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok<INUSL>
 % GENHUEVEC
 % vec = genHueVec(fh, vtype, val)
 % Generate hue vector for the frame handle fh.

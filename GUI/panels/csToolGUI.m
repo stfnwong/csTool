@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 17-Aug-2013 20:29:15
+% Last Modified by GUIDE v2.5 10-Nov-2013 18:23:23
 
 
 % Begin initialization code - DO NOT EDIT
@@ -159,10 +159,15 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 		end
 	end
 
+    % Load region structure 
+    handles.rData = init_genRegionStruct(DATA_DIR, NO_LOAD);
+
+	% =============================================================== %
+	%                       Status and Settings                       %
+	% =============================================================== %
+
 	%Create structure for handling imregion
-	r = struct('rHandle', [], 'rExist', 0, 'rRegion', [], 'rPos', [], 'rFrame', []);
 	p = struct('paramIndex', 1);
-	handles.rData = r;		%region data
 	handles.pData = p;		%param data
 	%Hold default figure name as a property
 	handles.csToolFigName = 'csTool - CAMSHIFT Simulation Tool';
@@ -174,7 +179,15 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	vfSettings.vsize       = 1;
 	vfSettings.vtype       = 'backprojection';
 	vfSettings.dims        = [640 480];
-	handles.vfSettings      = vfSettings;
+	handles.vfSettings     = vfSettings;
+
+	% Create genOpts placeholder for random backprojection generation
+	handles.genOpts = [];
+    handles = init_UIElements(handles);
+
+	% Create structure to store filenames
+	fnameStruct     = struct('genPath', ' ', 'loadPath', ' ');
+	handles.fnames  = fnameStruct;
 	
 	% =============================================================== %
 	%                          csTool setup                           %
@@ -210,7 +223,7 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	%ylabel(handles.fig_ihistPreview, 'Value');
 
 	%Setup buttons, listboxes, etc
-    handles = init_UIElements(handles);
+
     %Setup window parameter text
     set(handles.etParam, 'Max', 6);
     set(handles.etParam, 'FontSize', 8);
@@ -1721,3 +1734,30 @@ function menu_ModelHistogram_Callback(hObject, eventdata, handles) %#ok<INUSL,DE
     guidata(hObject, handles);
 
 end     %menu_ModelHistogram()
+
+
+% --------------------------------------------------------------------
+function menu_Generate_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+    % Vector generation routines
+end     %menu_Generate()
+
+
+% --------------------------------------------------------------------
+function menu_genRandBp_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+	% Bring up csToolSeqGen GUI
+	if(handles.debug)
+		sgOpts = csToolSeqGen('genopts', handles.genOpts, 'debug');
+	else
+		sgOpts = csToolSeqGen('genopts', handles.genOpts);
+	end
+
+	if(sgOpts.status ~= -1)
+		handles.genOpts  = sgOpts.genOpts;
+		handles.frameBuf = sgOpts.frameBuf;
+	end
+
+	guidata(hObject, handles);
+
+end     %menu_genRandBp()
+

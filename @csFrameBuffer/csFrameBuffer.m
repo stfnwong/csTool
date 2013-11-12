@@ -332,7 +332,7 @@ classdef csFrameBuffer
 
 		end 	%initFrameBuf()
 
-		function [FB status] = clearImHist(FB, fIndex)
+		function [FB] = clearImHist(FB, fIndex)
 		% CLEARIMHIST
 		% Clear the image histogram property of the frame handle at index fIndex. If
 		% fIndex is a vector, all frame handles in the vector are cleared
@@ -363,7 +363,7 @@ classdef csFrameBuffer
 			else
 				vb = 'x';
 			end
-			[exitflag str num ext path] = fname_parse(fname, vb);
+			[exitflag str num fext fpath] = fname_parse(fname, vb);
 			%if(FB.verbose)
 			%	%[str num ext path exitflag] = fname_parse(fname, 'd')
 			%	[exitflag str num ext path] = fname_parse(fname, 'd');
@@ -373,17 +373,17 @@ classdef csFrameBuffer
 			%end
 			if(exitflag == -1)
 				%Check what fields we do have
-				if(isempty(ext))
+				if(isempty(fext))
 					status = -1;
 					%FB     = FB;
 					return;
 				end
 			else
-				FB.ext   = ext;
+				FB.ext   = fext;
 			end	
 			FB.fName = str;
 			FB.fNum  = num;
-			FB.path  = path;
+			FB.path  = fpath;
 			status   = 0;
 			return;
 
@@ -567,7 +567,7 @@ classdef csFrameBuffer
 			end
 		end 	%clearImData()
 
-		function genRandSeq(F, varargin)
+		function F = genRandSeq(F, varargin)
 		% GENRANDSEQ
 		% Generate a sequence of random backprojection data for testing
 
@@ -588,54 +588,68 @@ classdef csFrameBuffer
 							sfac = varargin{k+1};
 						elseif(strncmpi(varargin{k}, 'theta', 5))
 							theta = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'opts', 4))
+							opts = varargin{k+1};
 						end
 					end
 				end
 			end
 
 			%Check what we have
-			if(~exist('imsz', 'var'))
-				imsz = [640 480];
-			end
-			if(~exist('nframes', 'var'))
-				nframes = 64;
-			end
-			if(~exist('maxspd', 'var'))
-				maxspd = 64;		%max distance in pixels to next frame
-			end
-			if(~exist('dist', 'var'))
-				dist = 'normal';
-			end
-			if(~exist('npoints', 'var'))
-				npoints = 200;
-			end
-			if(~exist('sfac', 'var'))
-				sfac = 1;
-			end
-			if(~exist('theta', 'var'))
-				theta = 0;
+			if(~exist('opts', 'var'))
+				if(~exist('imsz', 'var'))
+					imsz = [640 480];
+				end
+				if(~exist('nframes', 'var'))
+					nframes = 64;
+				end
+				if(~exist('maxspd', 'var'))
+					maxspd = 64;		%max distance in pixels to next frame
+				end
+				if(~exist('dist', 'var'))
+					dist = 'normal';
+				end
+				if(~exist('npoints', 'var'))
+					npoints = 200;
+				end
+				if(~exist('sfac', 'var'))
+					sfac = 1;
+				end
+				if(~exist('theta', 'var'))
+					theta = 0;
+				end
+				if(~exist('loc', 'var'))
+					loc = fix(0.5.*[imsz(1) imsz(2)]);
+				end
+
+				if(F.verbose)
+					fprintf('WARNING: Initialising frame buffer contents\n');
+				end
+				% generate options structure
+				opts = struct('imsz', imsz, ...
+							  'loc', loc, ...
+							  'tsize', tsize, ...
+							  'theta', theta, ...
+					          'nframes', nframes, ...
+					          'maxspd', maxspd, ...
+							  'npoints', npoints, ...
+							  'dist', dist, ...
+							  'dscale', sfac, ...
+							  'kernel', [] );
+			else
+				nframes = opts.nframes;
 			end
 
-			if(F.verbose)
-				fprintf('WARNING: Initialising frame buffer contents\n');
-			end
 			initFrameBuf(F, nframes);
 
-			% generate options structure
-			opts = struct('imsz', imsz, ...
-				          'loc', loc, ...
-			              'tsize', tsize, ...
-				          'theta', theta, ...
-				          'npoints', npoints, ...
-				          'dist', dist, ...
-				          'dscale', sfac, ...
-				          'kernel', [] );
-
 			for N = 1:nframes
-				frame    = genRandFrame(opts);
-				set(FB.frameBuf(N), 'bpimg', frame);
+				frame    = genRandFrame(F, opts);
+				bpvec    = bpimg2vec(frame, 'bpval');
+				set(F.frameBuf(N), 'bpVec', bpvec);
+				set(F.frameBuf(N), 'dims', opts.imsz);
+				%set(F.frameBuf(N), 'bpImg', frame);
 				% generate position for new frame
-				opts.loc = genRandPos(opts.loc, maxspd, opts.imsz);
+				opts.loc = genRandPos(F, opts.loc, opts.maxspd, opts.imsz);
 				
 			end
 
@@ -692,10 +706,16 @@ classdef csFrameBuffer
 	end 		%csFrameBuffer METHODS (Public)
 	
 	% ---- METHODS IN FILES ---- %
+	methods (Access = 'private')
+		rFrame = genRandFrame(F, opts);
+		pos    = genRandPos(F, prevPos, maxDist, imsz);
+	end
+
 	methods (Static)
 		% ---- Check memory usage of frame buffer ---- %
 		status = bufMemCheck(nFrames, path, varargin);
 		tVec   = bufGetTraj(FB, varargin);
+
 		% ---- Display object properties ---- %
 		%fbufDisplay(fb);
 

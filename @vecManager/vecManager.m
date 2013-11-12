@@ -492,7 +492,7 @@ classdef vecManager
 		% responsibility to stripe out the file handles is placed with the methods
 		% here 
 
-		function [ftype val] = parseFmt(V, fmt) %#ok
+		function [ftype val] = parseFmt(V, fmt) %#ok<INUSL>
 		% PARSEFMT
 		% [ftype val] = parseFmt(fmt)
 		%

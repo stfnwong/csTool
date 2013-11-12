@@ -24,7 +24,7 @@ function rFrame = genRandFrame(F, opts)
 
 % Stefan Wong 2013
 
-
+	imsz = opts.imsz;
 	rFrame = zeros(imsz(2), imsz(1));
 	% clamp number of points
 	if(opts.npoints > (imsz(1) * imsz(2)) )
@@ -39,8 +39,8 @@ function rFrame = genRandFrame(F, opts)
 	end
 
 	if(strncmpi(opts.dist, 'uniform', 7))
-		r     = sqrt(rand(opts.npoints, 1));
-		theta = 2*pi*rand(opts.npoints,1);
+		r     = sqrt(abs(rand(opts.npoints, 1)));
+		theta = 2*pi*abs(rand(opts.npoints,1));
 	else
 		r     = sqrt(abs(randn(opts.npoints, 1)));
 		theta = 2*pi*abs(randn(opts.npoints, 1));
@@ -49,8 +49,11 @@ function rFrame = genRandFrame(F, opts)
 	ex    = fix((0.5 * opts.tsize(1))*r.*cos(theta) + opts.loc(1));
 	ey    = fix((0.5 * opts.tsize(2))*r.*sin(theta) + opts.loc(2));
 
+	% DEBUG
+	fprintf('ex: %f, ey: %f\n', ex, ey);
+
 	% map ellipse back to backprojection image
-	rFrame(ey, ex) = opts.dscale;
+	rFrame(ey, ex) = opts.sfac;
 
 
 end 	%genRandFrame()

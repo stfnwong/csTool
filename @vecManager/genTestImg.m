@@ -36,15 +36,21 @@ function img = genTestImg(V, opts, varargin)
 		case 'row'
 			rdim = imsz(1) / opts.val;
 			imPatch = repmat(bins, [1 opts.val]);
+			for xpix = 1:rdim
+				for ypix = 1:opts.val:imsz(2)
+					timg(ypix:(ypix+opts.val), xpix:(xpix+opts.val)) = imPatch;
+				end
+			end
 			
 		case 'col'
 			cdim = imsz(2) / opts.val;
 			
 			% Generate image patch
 			imPatch = repmat(bins, [opts.val 1]);
+			%TODO : repmat() the entire image
 			for ypix = 1:cdim
 				for xpix = 1:opts.val:imsz(1)
-					timg(xpix:(xpix+opts.val), ypix:(ypix+opts.val)) = imPatch;
+					timg(ypix:(ypix+opts.val),xpix:(xpix+opts.val)) = imPatch;
 				end
 			end
 

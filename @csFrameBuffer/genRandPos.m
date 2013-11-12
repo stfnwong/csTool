@@ -12,6 +12,9 @@ function pos = genRandPos(F, prevPos, maxDist, imsz)
 	end
 
 	% TODO : Smooth trajectory?
+	if(numel(maxDist) == 1)
+		maxDist = fix(maxDist .* randn(1,2));
+	end
 
 	rx = maxDist(1) * rand(1,1) + prevPos(1);
 	ry = maxDist(2) * rand(1,1) + prevPos(2);
