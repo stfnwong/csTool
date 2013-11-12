@@ -22,7 +22,7 @@ function varargout = csToolSeqGen(varargin)
 
 % Edit the above text to modify the response to help csToolSeqGen
 
-% Last Modified by GUIDE v2.5 12-Nov-2013 14:14:34
+% Last Modified by GUIDE v2.5 12-Nov-2013 15:05:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -82,9 +82,9 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 
 		genOpts = struct('imsz', [640 480], ...
 			             'nframes', 64, ...
-			             'maxspd', 64, ...
+			             'maxspd', 32, ...
 			             'dist', 'normal', ...
-			             'npoints', 200, ...
+			             'npoints', 128, ...
 			             'sfac', 1, ...
 			             'tsize', [64 64], ...
 			             'loc', 0.5*[640 480], ...
@@ -129,7 +129,7 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	handles.fbIdx = initFrame;
 	set(handles.etFrame, 'String', num2str(handles.fbIdx));
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
-
+	handles.cancelled = 0;
 	% Choose default command line output for csToolSeqGen
 	handles.output = hObject;
 
@@ -140,11 +140,21 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	uiwait(handles.csToolSeqGen);
 
 
-% --- Outputs from this function are returned to the command line.
 function varargout = csToolSeqGen_OutputFcn(hObject, eventdata, handles)%#ok<INUSL>
-	%handles.output = struct('frameBuf', handles.frameBuf, ...
-	%	                    'genOpts',  handles.genOpts );
+	handles.output = struct('status', handles.cancelled, ...
+		                    'frameBuf', handles.frameBuf, ...
+		                    'genOpts',  handles.genOpts );
 	varargout{1} = handles.output;
+
+function csToolSeqGen_CloseRequestFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+    if(isequal(get(hObject, 'waitstatus'), 'waiting'))
+        %Still waiting on GUI
+        uiresume(handles.csToolSeqGen);
+    else
+        %Ok to clean up
+        delete(handles.csToolSeqGen);
+    end
+
 
 % ======== RENDER GUI PREVIEW ======== %
 function gui_updatePreview(ah, fh)
@@ -264,15 +274,17 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 
 function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
-	handles.output = struct('status', 0, ...
-		                    'frameBuf', handles.frameBuf, ...
-		                    'genOpts', handles.genOpts );
+	%handles.output = struct('status', 0, ...
+	%	                    'frameBuf', handles.frameBuf, ...
+	%	                    'genOpts', handles.genOpts );
+	handles.cancelled = 0;
 	close(handles.csToolSeqGen);
 
 function bCancel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
-	handles.output = struct('status', -1, ...
-		                    'frameBuf', handles.frameBuf, ...
-		                    'genOpts', handles.genOpts);
+	%handles.output = struct('status', -1, ...
+	%	                    'frameBuf', handles.frameBuf, ...
+	%	                    'genOpts', handles.genOpts);
+	handles.cancelled = -1;
 	close(handles.csToolSeqGen);
 
 function figPreview_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
@@ -352,3 +364,6 @@ function etFrame_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etCurFrame_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etLocY_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etLocX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
+
+
