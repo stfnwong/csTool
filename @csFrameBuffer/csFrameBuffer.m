@@ -47,6 +47,9 @@ classdef csFrameBuffer
 		ext;			%File extension for frame data
 		fName;			%filename 
 		fNum;			%Which frame to start reading from 
+		renderMode;		% (ENUM) Read file from disk or genBP Img
+		% NOTE (renderMode) This effectively acts as an enum that 
+		% determines which kind of data getCurImg() will return
 		%verbose;		%Be verbose
 	end
 
@@ -63,13 +66,14 @@ classdef csFrameBuffer
 		% resulting csFrameBuffer object will be initialised to have the following 
 		% values:
 		%
-		% 	frameBuf = csFrame()
-		% 	nFrames  = 0
-		% 	path     = ' '
-		% 	ext      = 'tif'
-		% 	fNum     = 1;
-		% 	fName    = ' '
-		% 	verbose  = 0;
+		% 	frameBuf   = csFrame()
+		% 	nFrames    = 0
+		% 	path       = ' '
+		% 	ext        = 'tif'
+		% 	fNum       = 1;
+		% 	fName      = ' '
+		% 	renderMode = 0;
+		% 	verbose    = 0;
 		%
 		% To initialise the csFrameBuffer object with different options, pass in a 
 		% structure with members whose names match the properties of the csFrameBuffer
@@ -84,13 +88,14 @@ classdef csFrameBuffer
 			switch nargin
 				case 0
 					%Default initialisation
-					fb.frameBuf  = csFrame();
-					fb.nFrames   = 0;
-					fb.path      = ' ';
-					fb.ext       = 'tif';
-					fb.fNum      = 1;
-					fb.fName     = '';
-					fb.verbose   = 0;
+					fb.frameBuf   = csFrame();
+					fb.nFrames    = 0;
+					fb.path       = ' ';
+					fb.ext        = 'tif';
+					fb.fNum       = 1;
+					fb.fName      = '';
+					fb.renderMode = 0;
+					fb.verbose    = 0;
 				case 1
 					%Object copy case
 					if(isa(varargin{1}, 'csFrameBuffer'))
@@ -102,12 +107,13 @@ classdef csFrameBuffer
 						if(~isa(opts, 'struct'))
 							error('Expecting options structure');
 						end
-						fb.frameBuf = csFrame(); 
-						fb.nFrames  = opts.nFrames;
-						fb.path     = opts.path;
-						fb.fNum     = opts.fNum;
-						fb.fName    = opts.fName;
-						fb.verbose  = fb.verbose;
+						fb.frameBuf   = csFrame(); 
+						fb.nFrames    = opts.nFrames;
+						fb.path       = opts.path;
+						fb.fNum       = opts.fNum;
+						fb.fName      = opts.fName;
+						fb.renderMode = opts.renderMode;
+						fb.verbose    = fb.verbose;
 						if(fb.verbose)
 							fprintf('Verbose mode on\n');
 						end
@@ -131,6 +137,7 @@ classdef csFrameBuffer
 					else
 						fprintf('Got an options structure\n');
 					end
+					% TODO :  Drop this, it'll never happen
 				otherwise
 					error('Incorrect constructor options');
 			end
@@ -160,16 +167,21 @@ classdef csFrameBuffer
 			path = F.path;
 		end		%getPath()
 
+		function rMode = getRenderMode(F)
+			rMode = F.renderMode;
+		end 	%getRenderMode()
+
 		function opts = getOpts(F)
 		% GETOPTS
 		% Return an options structure. For csToolGUI.
-			opts = struct('frameBuf', F.frameBuf, ...
-                          'nFrames',  F.nFrames,  ...
-                          'path',     F.path,     ...
-                          'ext',      F.ext,      ...
-                          'fNum',     F.fNum,     ...
-                          'fName',    F.fName,    ...
-                          'verbose',  F.verbose );
+			opts = struct('frameBuf',   F.frameBuf, ...
+                          'nFrames',    F.nFrames,  ...
+                          'path',       F.path,     ...
+                          'ext',        F.ext,      ...
+                          'fNum',       F.fNum,     ...
+                          'fName',      F.fName,    ...
+				          'renderMode', F.renderMode, ...
+                          'verbose',    F.verbose );
 		end 	%getOpts();
 
 		function fh = getFrameHandle(F, N)
@@ -195,6 +207,57 @@ classdef csFrameBuffer
 				fh = F.frameBuf(N);
 			end
 		end 	%getFrameHandle()
+
+
+		function img = getCurImg(F, idx, varargin)
+		% GETCURIMG
+		% Return the image data for the frame at position idx consistent
+		% with the mode specified by renderMode.
+		%
+			RETURN_IMG = 1;
+
+			if(~isempty(varargin))
+				if(strncmpi(varargin{1}, 'vec', 3))
+					RETURN_IMG = 0;
+				end
+			end
+
+			% Bounds check idx
+			if(idx < 1 || idx > length(F.frameBuf))
+				img = [];
+				if(F.verbose)
+					fprintf('ERROR: idx %d out of bounds\n', idx);
+				end
+				return;
+			end
+			
+			fh = F.frameBuf(idx);
+			switch(F.renderMode)
+				case 0
+					% Read image from disk and return img file
+					img = imread(get(fh, 'filename'), get(fh, 'ext'));
+					dims = size(img);
+					if(dims(3) > 3)
+						img = img(:,:,1:3);
+					end
+					return;
+				case 1
+					% Read image from bpVec and return image file
+					img = get(fh, 'bpVec');
+					if(RETURN_IMG)
+						img = vec2bpimg(img, 'dims', get(fh, 'dims'));
+					end
+					return;
+				otherwise
+					if(F.verbose)
+						fprintf('ERROR: Invalid renderMode %d\n', F.renderMode);
+					end
+					img = [];
+					return;
+			end
+						
+			
+		end 	%getCurImg()
 
         function printFrameContents(F, varargin)
 		% PRINTFRAMECONTENTS
@@ -247,7 +310,8 @@ classdef csFrameBuffer
 
 		function filename = showFilename(FB, varargin)
 		% SHOWFILENAME
-		% Assemble the filename from the string components in the csFrameBuffer object
+		% Assemble the filename from the string components in the 
+		% csFrameBuffer object
 		% 
 		% The filename is reconstructed according to the pattern below:
 		%
@@ -255,8 +319,9 @@ classdef csFrameBuffer
 		%
 		% which is concatenated into the string filename.
 
-			%Parse path at the end. That way if the files are in the current directory
-			%we just don't bother concatenating the path on at the start
+			%Parse path at the end. That way if the files are in the 
+			%current directory we just don't bother concatenating the path 
+			%on at the start
 			filename = strcat(FB.fName, '_', FB.fNum, FB.ext);
 			if(~isempty(FB.path))
 				filename = strcat(FB.path, filename);
@@ -267,8 +332,9 @@ classdef csFrameBuffer
 		% -------- GETTRAJ -------- %
 		function traj = getTraj(F, varargin)
 		% GETTRAJ
-		% Get the trajectory for the frames in the specified range. If the no range is
-		% specified, get the trajectory for all frames in the buffer
+		% Get the trajectory for the frames in the specified range. 
+		% If the no range is specified, get the trajectory for all 
+		% frames in the buffer
 
 			if(~isempty(varargin))
 				range = varargin{1};
@@ -430,6 +496,10 @@ classdef csFrameBuffer
 			
 		end
 
+		function FB = setRenderMode(FB, rMode)
+			FB.renderMode = rMode;
+		end 	%setRenderMode()
+
 		function FB = setVerbose(FB, verbose)
 			FB.verbose = verbose;	
 		end 	%setVerbose()
@@ -539,8 +609,9 @@ classdef csFrameBuffer
 				fprintf('Read %d frames\n', k);
 			end
 			%write back data
-			FB.fNum = fnum;
-            status = 0;
+			FB.fNum       = fnum;
+			FB.renderMode = 0;
+            status        = 0;
 			return;
 
 		end 	%loadFrameData()
@@ -645,13 +716,14 @@ classdef csFrameBuffer
 			for N = 1:nframes
 				frame    = genRandFrame(F, opts);
 				bpvec    = bpimg2vec(frame, 'bpval');
+				% set parameter data for frame handle
 				set(F.frameBuf(N), 'bpVec', bpvec);
 				set(F.frameBuf(N), 'dims', opts.imsz);
 				%set(F.frameBuf(N), 'bpImg', frame);
 				% generate position for new frame
 				opts.loc = genRandPos(F, opts.loc, opts.maxspd, opts.imsz);
-				
 			end
+			F.renderMode = 1;
 
 		end 	%genRandSeq()
 

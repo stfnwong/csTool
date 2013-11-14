@@ -46,11 +46,12 @@ function rFrame = genRandFrame(F, opts)
 		theta = 2*pi*abs(randn(opts.npoints, 1));
 	end
 	% Stretch points into ellipse
-	ex    = fix((0.5 * opts.tsize(1))*r.*cos(theta) + opts.loc(1));
-	ey    = fix((0.5 * opts.tsize(2))*r.*sin(theta) + opts.loc(2));
+	ex = fix((0.5 * opts.tsize(1))*r.*cos(theta) + opts.loc(1));
+	ey = fix((0.5 * opts.tsize(2))*r.*sin(theta) + opts.loc(2));
 
-	% DEBUG
-	fprintf('ex: %f, ey: %f\n', ex, ey);
+	if(F.verbose)
+		fprintf('DEBUG: ex: %f, ey: %f\n', ex, ey);
+	end
 
 	% map ellipse back to backprojection image
 	rFrame(ey, ex) = opts.sfac;
