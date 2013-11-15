@@ -26,7 +26,10 @@ function varargout = gui_genImHist(varargin)
 % 'fpgaMode'       - Use naive histogram method in $CSTOOL_DIR/util (slow)
 % 
 
+
 % Stefan Wong 2013
+
+% TODO : Deprecate command line system?
 
 	%Set internal constants
 	FPGA_MODE = 0;
@@ -98,7 +101,15 @@ function varargout = gui_genImHist(varargin)
 			end
 			return;
 		end
+	elseif(~exist('img', 'var'))
+		fprintf('ERROR: No frame handle or image data specified\n');
+		varargout{1} = [];
+		return;
 	end
+
+
+	% TODO : Move this over to getCurImg() call ?
+	
 
 	if(FPGA_MODE)
 		fprintf('UNDER DEVELOPMENT (use util/gen_fpgaHist())\n');
@@ -125,6 +136,7 @@ function varargout = gui_genImHist(varargin)
 			if(exist('fh', 'var'))
 				set(fh, 'ihist', ihist);
 			end
+			varargout{1} = ihist;
 		end
 	end
 	

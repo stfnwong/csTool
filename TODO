@@ -4,6 +4,18 @@
 #
 ###############################################################
 
+GENRANDIMG
+Rather than call abs() on ellipse data, add offset and clip ranges to 
+fit within image bounds.
+
+VEC2BPIMG 
+Add routine to force output to have 3 channels for hsv conversion
+
+CSTOOLGUI
+We actually dont need to perform the segmentation if we generated synthetic
+backprojection data since it is by definition backprojected. Therefore the 
+gui_procLoop() routine should be re-written to reflect this
+
 VECMANAGER READ:
 Problem in read method getting correct filename (SOLVED)
 Need to strip out spaces in vecdata before we can assemble into frame

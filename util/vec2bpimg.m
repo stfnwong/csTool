@@ -23,9 +23,11 @@ function bpimg = vec2bpimg(vec, varargin)
 %               'trim' flag, and may have trailing zeros. Trim (in buf_spEncode) 
 %               requires a call to find(), and may be slower in a loop.
 
-	DISP_WAITBAR = false;
-	FORCE_CHECK  = false;
-	DEBUG        = false;
+	% TODO : Add mode to force 3 channel output
+	DISP_WAITBAR     = false;
+	FORCE_CHECK      = false;
+	FORCE_3_CHANNELS = false;
+	DEBUG            = false;
 
 	error(nargchk(1,5,nargin, 'struct'));
 
@@ -41,6 +43,8 @@ function bpimg = vec2bpimg(vec, varargin)
 					%Use this for sparse vectors that haven't had redundant zero
 					%elements trimmed out
 					FORCE_CHECK  = true;
+				elseif(strncmpi(varargin{k}, '3chan', 5))
+					FORCE_3_CHANNELS = true;
 				elseif(strncmpi(varargin{k}, 'debug', 5))
 					DEBUG = true;
 				end
@@ -94,6 +98,10 @@ function bpimg = vec2bpimg(vec, varargin)
 		end
 	else
 		error('Input vec illegal size (must be 2xN or 3xN)');
+	end
+
+	if(FORCE_3_CHANNELS)
+		bpimg = repmat(bpimg, [1 1 3]);
 	end
 
 

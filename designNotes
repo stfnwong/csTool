@@ -1,5 +1,10 @@
 VARIOUS DESIGN NOTES FOR CSTOOL
 
+GENERAL NOTE:
+The class interfaces in csTool are not that well defined. It is my opinion
+that porting the entire program to python (using SciPy) would be preferable,
+and as such I won't bother making significant changes in improving the 
+class interfaces.
 
 CSFRAMEBUFFER
 Move random backprojection generator into csFrameBuffer?

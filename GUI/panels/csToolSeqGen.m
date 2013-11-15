@@ -101,6 +101,7 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 			            'ext', 'TIF', ...
 			            'fNum', 1, ...
 			            'fName', [], ...
+			            'renderMode', 1, ...
 			            'verbose', handles.verbose );
 		handles.frameBuf = csFrameBuffer(fbOpts);	
 	end
@@ -204,7 +205,7 @@ function bFirst_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 function bLast_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	handles.fbIdx = handles.frameBuf.getNumFrames();
-	fh = handles.framBuf.getFrameHandle(handles.fbIdx);
+	fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
 	gui_updatePreview(handles.figPreview, fh);
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
@@ -212,7 +213,7 @@ function bLast_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Jump to specified frame 
-	fn = fix(str2double(handles.etFrame, 'String'));
+	fn = fix(str2double(get(handles.etFrame, 'String')));
 
 	if(fn < 1)
 		fn = 1;

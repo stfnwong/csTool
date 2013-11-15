@@ -39,22 +39,32 @@ function rFrame = genRandFrame(F, opts)
 	end
 
 	if(strncmpi(opts.dist, 'uniform', 7))
-		r     = sqrt(abs(rand(opts.npoints, 1)));
-		theta = 2*pi*abs(rand(opts.npoints,1));
+		r     = sqrt(rand(opts.npoints, 1));
+		theta = 2*pi*rand(opts.npoints, 1);
 	else
-		r     = sqrt(abs(randn(opts.npoints, 1)));
-		theta = 2*pi*abs(randn(opts.npoints, 1));
+		r     = sqrt(randn(opts.npoints, 1));
+		theta = 2*pi*randn(opts.npoints, 1);
 	end
-	% Stretch points into ellipse
-	ex = fix((0.5 * opts.tsize(1))*r.*cos(theta) + opts.loc(1));
-	ey = fix((0.5 * opts.tsize(2))*r.*sin(theta) + opts.loc(2));
+
+	% Stretch into ellipse
+	ex = fix(0.5 * opts.tsize(1) * r .* cos(theta) + opts.loc(1));
+	ey = fix(0.5 * opts.tsize(2) * r .* sin(theta) + opts.loc(2));
+
+	% TODO : Rather than just get non-negative points, actually shift 
+	% points ?
+	xidx = ex(ex > 0);
+	yidx = ey(ey > 0);
+	% for some reason this fails if written in one line (why..?)
+	xidx = real(xidx);
+	yidx = real(yidx);
 
 	if(F.verbose)
-		fprintf('DEBUG: ex: %f, ey: %f\n', ex, ey);
+		%fprintf('DEBUG: ex: %f, ey: %f\n', ex, ey);
 	end
 
 	% map ellipse back to backprojection image
-	rFrame(ey, ex) = opts.sfac;
+	%rFrame(ey, ex) = opts.sfac;
+	rFrame(yidx, xidx) = opts.sfac;
 
 
 end 	%genRandFrame()

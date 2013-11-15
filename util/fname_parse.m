@@ -45,6 +45,7 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 	DEBUG  = 0;		%dont print debug messages
 	STRING = true;		%return num value as a string 
 	SCALAR = false;
+	DSTR   = 'ERROR (fname_parse) :';
 	if(nargin > 1)
 		for k = 1:length(varargin)
 			if(strncmpi(varargin{k}, 'd', 1))
@@ -64,7 +65,7 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 	%Look for extension
 	extIdx = strfind(fstring, '.');
 	if(isempty(extIdx))
-		fprintf('ERROR: String does not contain ".", returning original string.\n');
+		fprintf('%s String does not contain ".", returning original string.\n', DSTR);
 		str      = fstring;
 		path     = [];
 		num      = 0;
@@ -103,7 +104,7 @@ function [exitflag str varargout] = fname_parse(fstring, varargin)
 	else
 		%Check that the number is sensible
 		if(num < 0 || num > 999)
-			fprintf('ERROR: csTool only supports the first 999 integers\n');
+			fprintf('%s csTool only supports the first 999 integers\n', DSTR);
 			str      = fstring(1:extIdx);
 			path     = fstring(1:fslsh-1);
 			num      = 0;

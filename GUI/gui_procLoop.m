@@ -174,7 +174,7 @@ function [status] = gui_procLoop(handles, varargin)
 			break;
 		end
 		waitbar(k/N, wb, sprintf('%s (%d/%d)...', fs, k, N));
-		if(SEG)
+		if(SEG && handles.frameBuf.getRenderMode == 0)
 			handles.segmenter.segFrame(fh(k));
 		end
 		%Check this frame has been segmented
@@ -187,7 +187,7 @@ function [status] = gui_procLoop(handles, varargin)
 		if(TRACK)
             %Check that there is backprojection data in this frame
             if(numel(get(fh(k), 'bpVec')) == 0 || sum(sum(get(fh(k), 'bpVec'))) == 0)
-                fprintf('No backprojection data in frame %s, exiting...\n', get(fh(k), 'filename'));
+                fprintf('[gui_procLoop()] : No backprojection data in frame %s, exiting...\n', get(fh(k), 'filename'));
                 delete(wb);
                 status = -1;
                 return;

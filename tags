@@ -24,6 +24,7 @@ bAccept_Callback	GUI/panels/csToolVecOpts.m	/^function bAccept_Callback(hObject,
 bBack_Callback	GUI/panels/csToolGUI.m	/^function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bCancel_Callback	GUI/panels/csToolGenerate.m	/^function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bCancel_Callback	GUI/panels/csToolSegOpts.m	/^function bCancel_Callback(hObject, eventdata, handles)   %#ok <INUSL>$/;"	f
+bCancel_Callback	GUI/panels/csToolSeqGen.m	/^function bCancel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bCancel_Callback	GUI/panels/csToolTrackOpts.m	/^function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bCancel_Callback	GUI/panels/csToolTrajResize.m	/^function bCancel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bCancel_Callback	GUI/panels/csToolVecOpts.m	/^function bCancel_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
@@ -32,8 +33,10 @@ bChangePrev_Callback	GUI/panels/csToolGenerate.m	/^function bChangePrev_Callback
 bCheckCurFrame_Callback	GUI/panels/csToolVerify.m	/^function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bCompare_Callback	GUI/panels/csToolTrajBuf.m	/^function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bDone_Callback	GUI/panels/csToolParamBrowser.m	/^function bDone_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bDone_Callback	GUI/panels/csToolSeqGen.m	/^function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bDone_Callback	GUI/panels/csToolTrajBuf.m	/^function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bDone_Callback	GUI/panels/csToolVerify.m	/^function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bFirst_Callback	GUI/panels/csToolSeqGen.m	/^function bFirst_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bFirst_Callback	GUI/panels/csToolTrajBuf.m	/^function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bForward_Callback	GUI/panels/csToolGUI.m	/^function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>$/;"	f
 bFrameFirst_Callback	GUI/panels/csToolGUI.m	/^function bFrameFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
@@ -43,16 +46,20 @@ bGenMhist_Callback	GUI/panels/csToolGenerate.m	/^function bGenMhist_Callback(hOb
 bGenerate_Callback	GUI/panels/csToolGUI.m	/^function bGenerate_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 bGenerate_Callback	GUI/panels/csToolGenerate.m	/^function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bGenerate_Callback	GUI/panels/csToolPattern.m	/^function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bGenerate_Callback	GUI/panels/csToolSeqGen.m	/^function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bGetFile_Callback	GUI/panels/csToolVerify.m	/^function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bGoto_Callback	GUI/panels/csToolGUI.m	/^function bGoto_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
+bGoto_Callback	GUI/panels/csToolSeqGen.m	/^function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bGoto_Callback	GUI/panels/csToolTrajBuf.m	/^function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bHistData_Callback	GUI/panels/csToolPattern.m	/^function bHistData_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bInputFile_Callback	GUI/panels/csToolPattern.m	/^function bInputFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bLast_Callback	GUI/panels/csToolSeqGen.m	/^function bLast_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bLast_Callback	GUI/panels/csToolTrajBuf.m	/^function bLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bLoad_Callback	GUI/panels/csToolGUI.m	/^function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bNextFrame_Callback	GUI/panels/csToolParamBrowser.m	/^function bNextFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 bNextParam_Callback	GUI/panels/csToolParamBrowser.m	/^function bNextParam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 bNext_Callback	GUI/panels/csToolGenerate.m	/^function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bNext_Callback	GUI/panels/csToolSeqGen.m	/^function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bNext_Callback	GUI/panels/csToolTrajBuf.m	/^function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bOutputFile_Callback	GUI/panels/csToolPattern.m	/^function bOutputFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bParamBrowse_Callback	GUI/panels/csToolGUI.m	/^function bParamBrowse_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
@@ -64,6 +71,7 @@ bPattrVerify_Callback	GUI/panels/csToolPattern.m	/^function bPattrVerify_Callbac
 bPrevFrame_Callback	GUI/panels/csToolParamBrowser.m	/^function bPrevFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 bPrevParam_Callback	GUI/panels/csToolParamBrowser.m	/^function bPrevParam_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 bPrev_Callback	GUI/panels/csToolGenerate.m	/^function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bPrev_Callback	GUI/panels/csToolSeqGen.m	/^function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bPrev_Callback	GUI/panels/csToolTrajBuf.m	/^function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bPrintParams_Callback	GUI/panels/csToolTrackOpts.m	/^function bPrintParams_Callback(hObject, eventdata, handles)	 %#ok<INUSL,DEFNU>$/;"	f
 bProcAll_Callback	GUI/panels/csToolGUI.m	/^function bProcAll_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>$/;"	f
@@ -150,6 +158,10 @@ csToolSaveState	GUI/panels/csToolSaveState.m	/^function csToolSaveState(handles,
 csToolSegOpts	GUI/panels/csToolSegOpts.m	/^function varargout = csToolSegOpts(varargin)$/;"	f
 csToolSegOpts_OpeningFcn	GUI/panels/csToolSegOpts.m	/^function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <INUSD>$/;"	f
 csToolSegOpts_OutputFcn	GUI/panels/csToolSegOpts.m	/^function varargout = csToolSegOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
+csToolSeqGen	GUI/panels/csToolSeqGen.m	/^function varargout = csToolSeqGen(varargin)$/;"	f
+csToolSeqGen_CloseRequestFcn	GUI/panels/csToolSeqGen.m	/^function csToolSeqGen_CloseRequestFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+csToolSeqGen_OpeningFcn	GUI/panels/csToolSeqGen.m	/^function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
+csToolSeqGen_OutputFcn	GUI/panels/csToolSeqGen.m	/^function varargout = csToolSeqGen_OutputFcn(hObject, eventdata, handles)%#ok<INUSL>$/;"	f
 csToolTrackOpts	GUI/panels/csToolTrackOpts.m	/^function varargout = csToolTrackOpts(varargin)$/;"	f
 csToolTrackOpts_OpeningFcn	GUI/panels/csToolTrackOpts.m	/^function csToolTrackOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
 csToolTrackOpts_OutputFcn	GUI/panels/csToolTrackOpts.m	/^function varargout = csToolTrackOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
@@ -188,8 +200,10 @@ etBufSize_CreateFcn	GUI/panels/csToolPattern.m	/^function etBufSize_CreateFcn(hO
 etBufSize_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function etBufSize_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etBufSize_CreateFcn	GUI/panels/csToolTrajResize.m	/^function etBufSize_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etCurFrame_Callback	GUI/panels/csToolGUI.m	/^function etCurFrame_Callback(hObject, eventdata, handles)	%#ok>INUSD,DEFNU>$/;"	f
+etCurFrame_Callback	GUI/panels/csToolSeqGen.m	/^function etCurFrame_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etCurFrame_Callback	GUI/panels/csToolTrajBuf.m	/^function etCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etCurFrame_CreateFcn	GUI/panels/csToolGUI.m	/^function etCurFrame_CreateFcn(hObject, eventdata, handles)  %#ok<INUSD,DEFNU>$/;"	f
+etCurFrame_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etCurFrame_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etCurFrame_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function etCurFrame_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etDataSz_Callback	GUI/panels/csToolSegOpts.m	/^function etDataSz_Callback(hObject, eventdata, handles)     %#ok<INUSD,DEFNU>$/;"	f
 etDataSz_Callback	GUI/panels/csToolVecOpts.m	/^function etDataSz_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
@@ -209,6 +223,8 @@ etFileName_CreateFcn	GUI/panels/csToolVerify.m	/^function etFileName_CreateFcn(h
 etFileName_CreateFcn	GUI/panels/wrModelHist.m	/^function etFileName_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etFilePath_Callback	GUI/panels/csToolGUI.m	/^function etFilePath_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etFilePath_CreateFcn	GUI/panels/csToolGUI.m	/^function etFilePath_CreateFcn(hObject, eventdata, handles) %#ok <INUSD,DEFNU>$/;"	f
+etFrame_Callback	GUI/panels/csToolSeqGen.m	/^function etFrame_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etFrame_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etFrame_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etGoto_Callback	GUI/panels/csToolGUI.m	/^function etGoto_Callback(hObject, eventdata, handles)		%#ok<INUSD,DEFNU>$/;"	f
 etGoto_Callback	GUI/panels/csToolTrajBuf.m	/^function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etGoto_CreateFcn	GUI/panels/csToolGUI.m	/^function etGoto_CreateFcn(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
@@ -223,22 +239,36 @@ etImageHeight_Callback	GUI/panels/csToolVerify.m	/^function etImageHeight_Callba
 etImageHeight_CreateFcn	GUI/panels/csToolVerify.m	/^function etImageHeight_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etImageWidth_Callback	GUI/panels/csToolVerify.m	/^function etImageWidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etImageWidth_CreateFcn	GUI/panels/csToolVerify.m	/^function etImageWidth_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etImgHeight_Callback	GUI/panels/csToolSeqGen.m	/^function etImgHeight_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etImgHeight_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etImgHeight_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etImgWidth_Callback	GUI/panels/csToolSeqGen.m	/^function etImgWidth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etImgWidth_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etImgWidth_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etInpDelim_Callback	GUI/panels/csToolPattern.m	/^function etInpDelim_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etInpDelim_CreateFcn	GUI/panels/csToolPattern.m	/^function etInpDelim_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etInputFile_Callback	GUI/panels/csToolPattern.m	/^function etInputFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etInputFile_CreateFcn	GUI/panels/csToolPattern.m	/^function etInputFile_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etLocX_Callback	GUI/panels/csToolSeqGen.m	/^function etLocX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etLocX_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etLocX_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etLocY_Callback	GUI/panels/csToolSeqGen.m	/^function etLocY_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etLocY_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etLocY_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etLowRange_Callback	GUI/panels/csToolGUI.m	/^function etLowRange_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etLowRange_CreateFcn	GUI/panels/csToolGUI.m	/^function etLowRange_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etLow_Callback	GUI/panels/csToolGenerate.m	/^function etLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etLow_CreateFcn	GUI/panels/csToolGenerate.m	/^function etLow_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etMaxIter_Callback	GUI/panels/csToolTrackOpts.m	/^function etMaxIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etMaxIter_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function etMaxIter_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etMaxSpeed_Callback	GUI/panels/csToolSeqGen.m	/^function etMaxSpeed_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etMaxSpeed_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etMaxSpeed_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etNBins_Callback	GUI/panels/csToolSegOpts.m	/^function etNBins_Callback(hObject, eventdata, handles)  %#ok <INUSD,DEFNU>$/;"	f
 etNBins_CreateFcn	GUI/panels/csToolSegOpts.m	/^function etNBins_CreateFcn(hObject, eventdata, handles)    %#ok<INUSD,DEFNU>$/;"	f
 etNbins_Callback	GUI/panels/csToolPattern.m	/^function etNbins_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etNbins_CreateFcn	GUI/panels/csToolPattern.m	/^function etNbins_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etNumFrames_Callback	GUI/panels/csToolGUI.m	/^function etNumFrames_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etNumFrames_Callback	GUI/panels/csToolSeqGen.m	/^function etNumFrames_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etNumFrames_CreateFcn	GUI/panels/csToolGUI.m	/^function etNumFrames_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+etNumFrames_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etNumFrames_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etNumPoints_Callback	GUI/panels/csToolSeqGen.m	/^function etNumPoints_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etNumPoints_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etNumPoints_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etOutDelim_Callback	GUI/panels/csToolPattern.m	/^function etOutDelim_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etOutDelim_CreateFcn	GUI/panels/csToolPattern.m	/^function etOutDelim_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etOutputFile_Callback	GUI/panels/csToolPattern.m	/^function etOutputFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
@@ -255,6 +285,8 @@ etReadFile_Callback	GUI/panels/csToolGenerate.m	/^function etReadFile_Callback(h
 etReadFile_CreateFcn	GUI/panels/csToolGenerate.m	/^function etReadFile_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etRfilename_Callback	GUI/panels/csToolVecOpts.m	/^function etRfilename_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
 etRfilename_CreateFcn	GUI/panels/csToolVecOpts.m	/^function etRfilename_CreateFcn(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
+etScaleFac_Callback	GUI/panels/csToolSeqGen.m	/^function etScaleFac_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etScaleFac_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etScaleFac_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etScale_Callback	GUI/panels/wrModelHist.m	/^function etScale_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etScale_CreateFcn	GUI/panels/wrModelHist.m	/^function etScale_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 etSparseFac_Callback	GUI/panels/csToolTrackOpts.m	/^function etSparseFac_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
@@ -274,6 +306,7 @@ fbrsDisplay	@csFrameBrowser/fbrsDisplay.m	/^function fbrsDisplay(F)$/;"	f
 fbufDisplay	@csFrameBuffer/fbufDisplay.m	/^function fbufDisplay(fb)$/;"	f
 fcd	util/fcd.m	/^function fcd(varargin)$/;"	f
 fifoStreamRead	util/fifoStreamRead.m	/^function [istream ostream] = fifoStreamRead(varargin)$/;"	f
+figPreview_ButtonDownFcn	GUI/panels/csToolSeqGen.m	/^function figPreview_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 figSegOpts_CloseRequestFcn	GUI/panels/csToolSegOpts.m	/^function figSegOpts_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 figTrackOpts_CloseRequestFcn	GUI/panels/csToolTrackOpts.m	/^function figTrackOpts_CloseRequestFcn(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 fig_trajBuf_CloseRequestFcn	GUI/panels/csToolTrajBuf.m	/^function fig_trajBuf_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
@@ -288,7 +321,9 @@ genFmt	@vecManager/genFmt.m	/^function fmt = genFmt(V, vtype, val)$/;"	f
 genFramePlot	@csFrameBrowser/genFramePlot.m	/^function genFramePlot(T, fh)$/;"	f
 genHSVVec	@vecManager/genHSVVec.m	/^function vec = genHSVVec(fh, varargin)$/;"	f
 genHistPlot	@csFrameBrowser/genHistPlot.m	/^function genHistPlot(T, fh)$/;"	f
-genHueVec	@vecManager/genHueVec.m	/^function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok$/;"	f
+genHueBars	@vecManager/genHueBars.m	/^function timg = genHueBars(V, opts) %#ok<INUSL>$/;"	f
+genHueBlocks	@vecManager/genHueBlocks.m	/^function timg = genHueBlocks(V, opts)$/;"	f
+genHueVec	@vecManager/genHueVec.m	/^function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok<INUSL>$/;"	f
 genPrevPlot	@csFrameBrowser/genPrevPlot.m	/^function genPrevPlot(T, fh, varargin)$/;"	f
 genRGBVec	@vecManager/genRGBVec.m	/^function vec = genRGBVec(V, fh, vtype, val, varargin)$/;"	f
 genRandBackprojection	@vecManager/genRandBackprojection.m	/^function bpdata = genRandBackprojection(varargin)$/;"	f
@@ -323,6 +358,7 @@ gui_setPreviewTitle	GUI/gui_setPreviewTitle.m	/^function gui_setPreviewTitle(fTi
 gui_setWinParams	GUI/gui_setWinParams.m	/^function [str status] = gui_setWinParams(frameBuf, idx, varargin)$/;"	f
 gui_showPreview	GUI/gui_showPreview.m	/^function [status nh] = gui_showPreview(handles, varargin)$/;"	f
 gui_stepPreview	GUI/gui_stepPreview.m	/^function [newIndex nh] = gui_stepPreview(idx, handles, dir)$/;"	f
+gui_updatePreview	GUI/panels/csToolSeqGen.m	/^function gui_updatePreview(ah, fh)$/;"	f
 gui_updatePreview	GUI/panels/csToolTrajBuf.m	/^function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)$/;"	f
 hbp	@csSegmenter/hbp.m	/^function bpimg = hbp(S, img, rhist, KDENS, varargin)$/;"	f
 hbp_block	@csSegmenter/hbp_block.m	/^function [bpdata rhist] = hbp_block(T, img, mhist, varargin)$/;"	f
@@ -345,7 +381,7 @@ imgGen	util/imgGen.m	/^function img = imgGen(varargin)$/;"	f
 initParam	@csTracker/initParam.m	/^function [wparam] = initParam(T, args)$/;"	f
 init_UIElements	GUI/init/init_UIElements.m	/^function handles = init_UIElements(handles)$/;"	f
 init_genBufferOpts	GUI/init/init_genBufferOpts.m	/^function bufOpts = init_genBufferOpts(DATA_DIR, ASSET_DIR, NO_LOAD)$/;"	f
-init_genRegionStruct	GUI/init/init_genRegionStruct.m	/^function regionStruct = init_genRegionStruct(DATA_DIR, NO_LOAD)$/;"	f
+init_genRegionStruct	GUI/init/init_genRegionStruct.m	/^function rStruct = init_genRegionStruct(DATA_DIR, NO_LOAD)$/;"	f
 init_genSegmenterOpts	GUI/init/init_genSegmenterOpts.m	/^function segOpts = init_genSegmenterOpts(DATA_DIR, NO_LOAD)$/;"	f
 init_genTrackerOpts	GUI/init/init_genTrackerOpts.m	/^function trackOpts = init_genTrackerOpts(DATA_DIR, NO_LOAD)$/;"	f
 init_genVecManagerOpts	GUI/init/init_genVecManagerOpts.m	/^function vecOpts = init_genVecManagerOpts(DATA_DIR, NO_LOAD)$/;"	f
@@ -375,6 +411,7 @@ menu_DumpTraj_Callback	GUI/panels/csToolGUI.m	/^function menu_DumpTraj_Callback(
 menu_FileLoad_Callback	GUI/panels/csToolGUI.m	/^function menu_FileLoad_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 menu_FileSave_Callback	GUI/panels/csToolGUI.m	/^function menu_FileSave_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 menu_File_Callback	GUI/panels/csToolGUI.m	/^function menu_File_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+menu_Generate_Callback	GUI/panels/csToolGUI.m	/^function menu_Generate_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 menu_ModelHistogram_Callback	GUI/panels/csToolGUI.m	/^function menu_ModelHistogram_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 menu_Pattern_Callback	GUI/panels/csToolGUI.m	/^function menu_Pattern_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 menu_SaveFigures_Callback	GUI/panels/csToolGUI.m	/^function menu_SaveFigures_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
@@ -384,6 +421,7 @@ menu_data_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_data_Callback(hObj
 menu_debugShowHandles_Callback	GUI/panels/csToolGUI.m	/^function menu_debugShowHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 menu_enableHandles_Callback	GUI/panels/csToolGUI.m	/^function menu_enableHandles_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
 menu_formSubplot_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+menu_genRandBp_Callback	GUI/panels/csToolGUI.m	/^function menu_genRandBp_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 menu_launchFigure_Callback	GUI/panels/csToolGUI.m	/^function menu_launchFigure_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 menu_load_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 menu_save_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_save_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
@@ -403,6 +441,8 @@ pmBufIdx_Callback	GUI/panels/csToolTrajBuf.m	/^function pmBufIdx_Callback(hObjec
 pmBufIdx_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function pmBufIdx_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 pmCompIdx_Callback	GUI/panels/csToolTrajBuf.m	/^function pmCompIdx_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 pmCompIdx_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function pmCompIdx_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmDistribution_Callback	GUI/panels/csToolSeqGen.m	/^function pmDistribution_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmDistribution_CreateFcn	GUI/panels/csToolSeqGen.m	/^function pmDistribution_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 pmKernelBandwidth_Callback	GUI/panels/csToolSegOpts.m	/^function pmKernelBandwidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 pmKernelBandwidth_CreateFcn	GUI/panels/csToolSegOpts.m	/^function pmKernelBandwidth_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 pmKernelQuant_Callback	GUI/panels/csToolSegOpts.m	/^function pmKernelQuant_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f

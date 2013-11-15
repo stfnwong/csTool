@@ -214,11 +214,18 @@ classdef csFrameBuffer
 		% Return the image data for the frame at position idx consistent
 		% with the mode specified by renderMode.
 		%
-			RETURN_IMG = 1;
+			RETURN_IMG       = true;
+			RETURN_3_CHANNEL = false;
 
 			if(~isempty(varargin))
-				if(strncmpi(varargin{1}, 'vec', 3))
-					RETURN_IMG = 0;
+				for k = 1 : length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{1}, 'vec', 3))
+							RETURN_IMG = false;
+						elseif(strncmpi(varargin{k}, '3chan', 5))
+							RETURN_3_CHANNEL = true;
+						end
+					end
 				end
 			end
 
@@ -235,7 +242,7 @@ classdef csFrameBuffer
 			switch(F.renderMode)
 				case 0
 					% Read image from disk and return img file
-					img = imread(get(fh, 'filename'), get(fh, 'ext'));
+					img = imread(get(fh, 'filename'), F.ext);
 					dims = size(img);
 					if(dims(3) > 3)
 						img = img(:,:,1:3);
@@ -245,7 +252,11 @@ classdef csFrameBuffer
 					% Read image from bpVec and return image file
 					img = get(fh, 'bpVec');
 					if(RETURN_IMG)
-						img = vec2bpimg(img, 'dims', get(fh, 'dims'));
+						if(RETURN_3_CHANNEL)
+							img = vec2bpimg(img, 'dims', get(fh, 'dims'), '3chan');
+						else
+							img = vec2bpimg(img, 'dims', get(fh, 'dims'));
+						end
 					end
 					return;
 				otherwise
@@ -711,13 +722,17 @@ classdef csFrameBuffer
 				nframes = opts.nframes;
 			end
 
-			initFrameBuf(F, nframes);
+			F = initFrameBuf(F, nframes);
 
 			for N = 1:nframes
+				% TODO : Put a waitbar here
 				frame    = genRandFrame(F, opts);
 				bpvec    = bpimg2vec(frame, 'bpval');
 				% set parameter data for frame handle
+				fname    = sprintf('bpgen-%03d.ext', N);
+				set(F.frameBuf(N), 'filename', fname);
 				set(F.frameBuf(N), 'bpVec', bpvec);
+				set(F.frameBuf(N), 'bpSum', opts.npoints);
 				set(F.frameBuf(N), 'dims', opts.imsz);
 				%set(F.frameBuf(N), 'bpImg', frame);
 				% generate position for new frame

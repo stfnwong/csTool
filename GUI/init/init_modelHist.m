@@ -63,8 +63,9 @@ function [status nh varargout] = init_modelHist(handles, region, idx, varargin)
 
 	%Once we have the correct number and type of arguments, set the model histogram
 	%parameters in the csSegmenter object, and update the GUI as required
-	fh      = handles.frameBuf.getFrameHandle(idx);
-	img     = imread(get(fh, 'filename'), 'TIFF');
+	%fh      = handles.frameBuf.getFrameHandle(idx);
+	% TODO : replace this with getCurImg() call
+	img     = handles.frameBuf.getCurImg(idx, '3chan');
 	hsv_img = rgb2hsv(img);
 	hue_img = DATA_SZ .* hsv_img(:,:,1);
 	if(rSet)

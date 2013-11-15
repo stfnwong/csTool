@@ -317,7 +317,9 @@ function bBack_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end	
-	[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex),'hsv');
+	%[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex),'hsv');
+	ihist = gui_genImHist('img', handles.frameBuf.getCurImg(frameIndex), 'hsv');	
+	set(fh, 'ihist', ihist);
 	if(exitflag == -1)
 		return;
 	end
@@ -351,7 +353,9 @@ function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
 	if(exitflag == -1)
 		return;
 	end
-	[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex),'hsv');             
+	%[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex),'hsv');             
+	ihist = gui_genImHist('img', handles.frameBuf.getCurImg(frameIndex), 'hsv');
+	set(fh, 'ihist', ihist);
 	if(exitflag == -1)
 		return;
 	end
@@ -375,7 +379,10 @@ function bFrameFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     if(exitflag == -1)
         return;
     end
-    [ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(1),'hsv');             
+    %[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(1),'hsv');             
+	ihist = gui_genImHist('img', handles.frameBuf.getCurImg(1));
+	fh    = handles.frameBuf.getFrameHandle(1);
+	set(fh, 'ihist', ihist);
 	if(exitflag == -1)
 		return;
 	end
@@ -409,6 +416,9 @@ function bFrameLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         return;
     end
     %[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(N),'hsv');             
+	ihist = gui_genImHist('img', handles.frameBuf.getCurImg(N), 'hsv');
+	fh    = handles.frameBuf.getFrameHandle(N);
+	set(fh, 'ihist', ihist);
 	%if(exitflag == -1)
 	%	return;
 	%end
@@ -1152,12 +1162,9 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
                     end
                 end
 				%Update histogram axes
-				[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex), 'hsv');
+				%[ihist] = gui_genImHist('fh', handles.frameBuf.getFrameHandle(frameIndex), 'hsv');
+				ihist = gui_genImHist('img', handles.frameBuf.getCurImg(frameIndex), 'hsv');
 				%ihist = [r g b];
-				%gui_setHistograms('ihistAx', handles.fig_ihistPreview, ... 
-				%	              'ihist', ihist, ...
-				%				  'mhistAx', handles.fig_mhistPreview, ...
-				%				  'mhist', mhist);
 				gui_setHistograms('mhistAx', handles.fig_mhistPreview, ...
 					              'mhist', mhist);
 				%Restore title
@@ -1755,6 +1762,10 @@ function menu_genRandBp_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(sgOpts.status ~= -1)
 		handles.genOpts  = sgOpts.genOpts;
 		handles.frameBuf = sgOpts.frameBuf;
+		if(handles.debug)
+			fprintf('(DEBUG) : Sequence options\n');
+			disp(sgOpts);
+		end
 	end
 
 	guidata(hObject, handles);

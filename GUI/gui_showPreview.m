@@ -40,6 +40,8 @@ function [status nh] = gui_showPreview(handles, varargin)
 			end
 		end
 	end
+
+	% TODO : deprecate passing in frame handle
 	
 	%Sanity check
 	if(~exist('idx', 'var') && ~exist('fh', 'var'))
@@ -48,56 +50,22 @@ function [status nh] = gui_showPreview(handles, varargin)
 		nh     = [];
 		return;
 	end
-	%Check what we have. If somehow we passed in both a frame handle and and index,
-	%give preference to the frame handle (and save a load)
-
 	
-	if(exist('fh', 'var'))
-		% TODO : Might need to re-write this entire routine to handl
-		img = imread(get(fh, 'filename'), 'TIFF');
-	elseif(exist('idx', 'var'))
-		%Bounds check idx, then get frame handle and read image
-		if(idx == 0)
-			fprintf('ERROR: idx not set (equal 0)\n');
-			status = -1;
-			nh     = [];
-			return;
-		end
-		if(isempty(idx))
-			fprintf('ERROR: idx not set (empty)\n');
-			status = -1;
-			nh     = [];
-			return;
-		end
-		% TODO : Need an option in here to select from bpVec or image
-		% read from disk. This should be set based on whether or not the 
-		% load method was called in the frameBuffer, or whether we have 
-		% generated some random backprojection data for testing
-		fh  = handles.frameBuf.getFrameHandle(idx);
-
-		if(isempty(get(fh, 'filename')) || strncmpi(get(fh, 'filename'), ' ', 1))
-			img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
-		elseif(~isempty(get(fh, 'bpVec')))
-			img = imread(get(fh, 'filename'), 'TIFF');
-			dims = size(img);
-			if(dims(3) > 3)
-				fprintf('WARNING: Truncating dims in gui_showPreview()\n');
-				img = img(:,:,1:3);
-			end
-		else
-			fprintf('ERROR: No data in this frame handle\n');
-			status = -1;
-			nh     = [];
-			return;
-		end
-		%if(~isempty(get(fh, 'filename')) || ~strncmpi(get(fh, 'filename'), ' ', 1))
-		%	img = imread(get(fh, 'filename'), 'TIFF');
-		%elseif(~isempty(get(fh, 'bpVec')))
-		%	img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
-		%end
+	% Bounds check idx and get frame handle.
+	if(idx == 0)
+		fprintf('ERROR: idx not set (equal 0)\n');
+		status = -1;
+		nh     = [];
+		return;
 	end
-	%Bounds check image and display in preview figure
-
+	if(isempty(idx))
+		fprintf('ERROR: idx no set (empty)\n');
+		status = -1;
+		nh     = [];
+		return;
+	end
+	fh  = handles.frameBuf.getFrameHandle(idx);
+	img = handles.frameBuf.getCurImg(idx);
 	%set(fh, 'dims', [dims(2) dims(1)]);
 	imshow(img, 'parent', handles.fig_framePreview);
 	gui_setPreviewTitle(get(fh, 'filename'), handles.fig_framePreview);
