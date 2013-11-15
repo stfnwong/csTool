@@ -129,8 +129,8 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<IN
 	end
 
 	%Place a frame on the preview region
-	fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
-	gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
+	img = handles.frameBuf.getCurImg(handles.fbIdx);
+	gui_renderPreview(handles.fig_trajPreview, img, handles.fbIdx, []);
     %Set the buffer size to be whatever size is currently in the vecManager
     %object
     set(handles.etBufSize, 'String', num2str(handles.vecManager.getTrajBufSize()));
@@ -164,7 +164,7 @@ function fig_trajBuf_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEF
 
 
 % -------- RENDERING FUNCTIONS -------- %
-function gui_renderPreview(axHandle, fh, idx, varargin)
+function gui_renderPreview(axHandle, img, idx, filename, varargin)
 	% Render the main preview screen (trajectory rendered seperately)
 	%img = imread(get(fh, 'filename'), get(fh, 'ext'));
 	if(~isempty(varargin))
@@ -172,20 +172,20 @@ function gui_renderPreview(axHandle, fh, idx, varargin)
 	else
 		prevMode = 'normal';
 	end
+	if(isempty(filename))
+		filename = sprintf('frame-%03d.file', idx);
+	end
 
-    img = imread(get(fh, 'filename'), 'TIFF');
-	dims = size(img);
-	if(dims(3) > 3)
-		img = img(:,:,1:3);
-	end
-	if(strncmpi(prevMode, 'bp', 2))
-		%Show backprojection
-		bpimg = vec2bpimg(get(fh, 'bpData'), 'dims', get(fh, 'dims'));
-		imshow(bpimg, 'Parent', axHandle);
-	else
-		imshow(img, 'Parent', axHandle);
-	end
-	[ef fname num] = fname_parse(get(fh, 'filename'));
+	%if(strncmpi(prevMode, 'bp', 2))
+	%	%Show backprojection
+	%	bpimg = vec2bpimg(get(fh, 'bpData'), 'dims', get(fh, 'dims'));
+	%	imshow(bpimg, 'Parent', axHandle);
+	%else
+	%	imshow(img, 'Parent', axHandle);
+	%end
+	imshow(img, 'Parent', axHandle);
+	%[ef fname num] = fname_parse(get(fh, 'filename'));
+	[ef fname num] = fname_parse(filename);
 	if(ef == -1)
 		return;
 	end
@@ -343,7 +343,7 @@ function stats = gui_renderText(pErr, pTraj)
             end
         end
 
-function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)
+function gui_updatePreview(axHandle, img, idx, traja, trajb, trajErr, varargin)
 
     if(~isempty(varargin))
         for k = 1:length(varargin)
@@ -352,6 +352,8 @@ function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)
                     lab = varargin{k+1};
                 elseif(strncmpi(varargin{k}, 'range', 5))
                     range = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'fname', 5))
+					filename = varargin{k+1};
                 end
             end
         end
@@ -368,6 +370,9 @@ function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)
             lab{2} = 'Trajectory B';
         end
     end
+	if(~exist('filename', 'var'))
+		filename = sprintf('frame-%03d.file', idx);
+	end
 	%Pass all 3 axes handles here to save having really long lines at the caller
 	if(length(axHandle) < 3)
 		fprintf('ERROR: Pass in all axes handles in the following order\n');
@@ -376,7 +381,7 @@ function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)
 		fprintf('axHandle(3) : fig_trajErrorY\n');
 	end
 	%Update the fig_trajPreview axes
-	gui_renderPreview(axHandle(1), fh, idx);
+	gui_renderPreview(axHandle(1), img, idx, filename);
 
     if(~isempty(traja))
         gui_renderTraj(axHandle(1), traja, idx, [0 1 0], 'tag', 'pTraj1');
@@ -386,6 +391,7 @@ function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)
     end
     %Heres a (somewhat complicated) way to get the legend to be correct
     %every time
+	%TODO : This actually doesnt work EVERY time
     axc = get(axHandle(1), 'Children');
     n   = 1;
     for k = 1:length(axc)
@@ -404,17 +410,6 @@ function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)
             legend(lgnd, lab{1});
         end
     end
-    %If we passed in a legend for the main window, add it here
-    %if(exist('lab', 'var'))
-    %    legend(axHandle(1), lab{1}, lab{2});
-    %end
-	%Update the error plots if we have two trajectories
-    %if(~isempty(trajErr))
-    %    if(~isempty(traja) && ~isempty(trajb))
-    %        t  = {traja, trajb};
-    %        gui_renderErrorPlot([axHandle(2) axHandle(3)], t, idx);
-    %    end
-    %end
     if(~isempty(trajErr))
         t = {trajErr(1,:), trajErr(2,:)};
         gui_renderErrorPlot([axHandle(2) axHandle(3)], t, idx);
@@ -428,13 +423,14 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	N = handles.frameBuf.getNumFrames();
 	if(handles.fbIdx < N)
 		handles.fbIdx = handles.fbIdx + 1;
-		fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
+		img = handles.frameBuf.getCurImg(handles.fbIdx);
+		%fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
 		%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
 		ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
 		ta  = handles.trajBuf;
 		tb  = handles.compBuf;
         err = handles.errBuf;
-		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+		gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 	else
 		handles.fbIdx = N;
 	end
@@ -451,13 +447,14 @@ function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Bounds check and decrement frame index
 	if(handles.fbIdx > 1)
 		handles.fbIdx = handles.fbIdx - 1;
-		fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
+		%fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
+		img = handles.frameBuf.getCurImg(handles.fbIdx);
 		%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
 		ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
 		ta  = handles.trajBuf;
 		tb  = handles.compBuf;
         err = handles.errBuf;
-		gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+		gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 	else
 		handles.fbIdx = 1;
 	end
@@ -475,12 +472,13 @@ function bLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Go straight to the last frame
     handles.fbIdx = handles.frameBuf.getNumFrames();
     %Update previews
-    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    %fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+	img = handles.frameBuf.getCurImg(handles.fbIdx);
     ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+    gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 
     %Update text position
     if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
@@ -494,12 +492,13 @@ function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Go straight to the first frame
     handles.fbIdx = 1;
     %Update previews
-    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    %fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+	img = handles.frameBuf.getCurImg(handles.fbIdx);
     ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+    gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 
     %Update text position
     if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
@@ -518,12 +517,12 @@ function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     handles.fbIdx = idx;
     %Update previews
-    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+	img = handles.frameBuf.getCurImg(handles.fbIdx);
     ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+    gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 
     %Update text position
     if(~isempty(handles.trajBuf) || ~isempty(handles.compBuf))
@@ -568,11 +567,11 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     fprintf('[csToolTrajBuf] : placed trajectory at index %d into compare buffer\n', handles.fbIdx);
     %Also update GUI
     ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
-    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+	img = handles.frameBuf.getCurImg(handles.fbIdx);
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+    gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
     %Update Text region
     if(~isempty(handles.trajBuf) && ~isempty(handles.compBuf))
         pErr = abs(handles.trajBuf - handles.compBuf);
@@ -602,12 +601,13 @@ function bTrajExtract_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	handles.trajBuf = handles.frameBuf.getTraj(range);
 
 	% Also show trajectory in preview
-    fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    %fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+	img = handles.frameBuf.getCurImg(handles.fbIdx);
     ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
     err = handles.errBuf;
-    gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+    gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 	%gui_renderTraj(handles.fig_trajPreview, handles.trajBuf);
     %Set the trajectory name
     trajLab = get(handles.etTrajLabel, 'String');
@@ -670,10 +670,11 @@ function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	end
 
 	%Pre compute error terms and render
-	fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+	%fh  = handles.frameBuf.getFrameHandle(handles.fbIdx);
+	img = handles.frameBuf.getCurImg(handles.fbIdx);
     ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
     err = abs(traja - trajb);
-    gui_updatePreview(ah, fh, handles.fbIdx, traja, trajb, err, 'label', handles.labBuf);
+    gui_updatePreview(ah, img, handles.fbIdx, traja, trajb, err, 'label', handles.labBuf);
 	handles.errBuf = err;
     % DEPRECATED
 	%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
@@ -789,8 +790,9 @@ function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
         fprintf('ERROR: high range > num frames (%d)\n', handles.frameBuf.getNumFrames());
         return;
     end
-    fh    = handles.frameBuf.getFrameHandle(handles.fbIdx);
-    img   = imread(get(fh, 'filename'), 'TIFF');
+    %fh    = handles.frameBuf.getFrameHandle(handles.fbIdx);
+    %img   = imread(get(fh, 'filename'), 'TIFF');
+	img   = handles.frameBuf.getCurImg(handles.fbIdx);
     traja = handles.trajBuf(:, rl:rh);
     trajb = handles.compBuf(:, rl:rh);
     err   = handles.errBuf(:, rl:rh);
@@ -840,13 +842,14 @@ function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			N = handles.frameBuf.getNumFrames();
 			if(handles.fbIdx < N)
 				handles.fbIdx = handles.fbIdx + 1;
-				fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
+				img = handles.frameBuf.getCurImg(handles.fbIdx);
+				%fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
 				%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
 				ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
 				ta  = handles.trajBuf;
 				tb  = handles.compBuf;
 				err = handles.errBuf;
-				gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+				gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 			else
 				handles.fbIdx = N;
 			end
@@ -861,13 +864,14 @@ function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			% Bounds check and decrement frame index
 			if(handles.fbIdx > 1)
 				handles.fbIdx = handles.fbIdx - 1;
-				fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
+				img = handles.frameBuf.getCurImg(handles.fbIdx);
+				%fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
 				%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
 				ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
 				ta  = handles.trajBuf;
 				tb  = handles.compBuf;
 				err = handles.errBuf;
-				gui_updatePreview(ah, fh, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+				gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
 			else
 				handles.fbIdx = 1;
 			end

@@ -208,6 +208,50 @@ classdef csFrameBuffer
 			end
 		end 	%getFrameHandle()
 
+		% ======== FRAME HANDLE WRAPPERS ======== %
+		function fname = getFilename(FB, idx)
+			fname = get(FB.frameBuf(idx), 'filename');
+		end 	%getFilename()
+
+		function params = getWinParams(FB, idx)
+			params = get(FB.frameBuf(idx), 'winParams');
+		end 	%getWinParams()
+
+		function dims = getDims(FB, idx)
+			dims = get(FB.frameBuf(idx), 'dims');
+		end 	%getDims()
+
+		function rhist = getRhist(FB, idx)
+			rhist = get(FB.frameBuf(idx), 'rhist');
+		end 	%getRhist()
+
+		function ihist = getIhist(FB, idx)
+			ihist = get(FB.frameBuf(idx), 'ihist');
+		end 	%getIhist()
+
+		function moments = getMoments(FB, idx)
+			moments = get(FB.frameBuf(idx), 'moments');
+		end 	%getMoments()
+
+		function sp = getSparse(FB, idx)
+			sp = get(FB.frameBuf(idx), 'isSparse');
+		end 	%getSparse()
+
+		function spfac = getSparseFac(FB, idx)
+			spfac = get(FB.frameBuf(idx), 'sparseFac');
+		end 	%getSparseFac()
+
+		function bpsum = getBpSum(FB, idx)
+			bpsum = get(FB.frameBuf(idx), 'bpSum');
+		end 	%getBpSum()
+
+		function status = hasBpData(FB, idx)
+			if(get(FB.frameBuf(idx), 'bpsum') > 0)
+				status = true;
+			else
+				status = false;
+			end
+		end 	%isBpData()
 
 		function img = getCurImg(F, idx, varargin)
 		% GETCURIMG
@@ -216,6 +260,8 @@ classdef csFrameBuffer
 		%
 			RETURN_IMG       = true;
 			RETURN_3_CHANNEL = false;
+			GET_BPIMG_ONLY   = false;
+			GET_IMG_ONLY     = false;
 
 			if(~isempty(varargin))
 				for k = 1 : length(varargin)
@@ -224,6 +270,10 @@ classdef csFrameBuffer
 							RETURN_IMG = false;
 						elseif(strncmpi(varargin{k}, '3chan', 5))
 							RETURN_3_CHANNEL = true;
+						elseif(strncmpi(varargin{k}, 'bpimg', 5))
+							GET_BP_IMG_ONLY = true;
+						elseif(strncmpi(varargin{k}, 'img', 3))
+							GET_IMG_ONLY = true;
 						end
 					end
 				end
@@ -237,8 +287,29 @@ classdef csFrameBuffer
 				end
 				return;
 			end
-			
+
 			fh = F.frameBuf(idx);
+
+			if(GET_IMG_ONLY)
+				img  = imread(get(fh, 'filename'), F.ext);
+				dims = size(img);
+				if(dims(3) > 3)
+					img = img(:,:,1:3);
+				end
+				return;
+			end
+
+			if(GET_BPIMG_ONLY && RETURN_3_CHANNEL)
+				img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'), '3chan');
+				return;
+			end
+
+			if(GET_BPIMG_ONLY)
+				img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
+				return;
+			end
+
+			% Get image based on renderMode
 			switch(F.renderMode)
 				case 0
 					% Read image from disk and return img file
@@ -392,7 +463,60 @@ classdef csFrameBuffer
 		% ---------------------------------- %
 		% -------- SETTER FUNCTIONS -------- %
 		% ---------------------------------- %
-		
+	
+		function FB = setFrameParams(FB, idx, varargin)
+		% SETFRAMEPARAMS
+		% Set parameters for the frame at location idx
+
+			% Bounds check idx
+			if(idx < 1 || idx > FB.nFrames)
+				fprintf('ERROR: idx outside range 1 - %d\n', FB.nFrames);
+				return;
+			end
+
+			if(isempty(varargin))
+				fprintf('(setFrameParams) : No param data\n');
+				return;
+			end
+
+			for k = 1 : length(varargin)
+				if(ischar(varargin{k}))
+					if(strncmpi(varargin{k}, 'img', 3))
+						set(FB.frameBuf(idx), 'img', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'bpimg', 5))
+						set(FB.frameBuf(idx), 'bpImg', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'bpvec', 5))
+						set(FB.frameBuf(idx), 'bpVec', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'bpsum', 5))
+						set(FB.frameBuf(idx), 'bpSum', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'rhist', 5))
+						set(FB.frameBuf(idx), 'rhist', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'ihist', 5))
+						set(FB.frameBuf(idx), 'ihist', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'winparam', 8))
+						set(FB.frameBuf(idx), 'winParams', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'wininit', 6))
+						set(FB.frameBuf(idx), 'winInit', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'moments', 7))
+						set(FB.frameBuf(idx), 'moments', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'niters', 5))
+						set(FB.frameBuf(idx), 'nIters', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'tvec', 4))
+						set(FB.frameBuf(idx), 'tVec', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'dims', 4))
+						set(FB.frameBuf(idx), 'dims', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'sparse', 6))
+						set(FB.frameBuf(idx), 'isSparse', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'spfac', 5))
+						set(FB.frameBuf(idx), 'sparseFac', varargin{k+1});
+					elseif(strncmpi(varargin{k}, 'filename', 8))
+						set(FB.frameBuf(idx), 'filename', varargin{k+1});
+					end
+				end
+			end
+
+		end 	%setFrameParams()
+
 		function [FB] = initFrameBuf(FB, bufSize)
 		% INITFRAMBUF
 		% Initialise framebuffer to the size bufSize. If no
@@ -722,8 +846,8 @@ classdef csFrameBuffer
 				nframes = opts.nframes;
 			end
 
-			F = initFrameBuf(F, nframes);
-
+			F  = initFrameBuf(F, nframes);
+			wb = waitbar(0, sprintf('Generating frame (%d/%d)', 0, nframes), 'title', 'Generating Backprojection Sequence...');
 			for N = 1:nframes
 				% TODO : Put a waitbar here
 				frame    = genRandFrame(F, opts);
@@ -737,7 +861,9 @@ classdef csFrameBuffer
 				%set(F.frameBuf(N), 'bpImg', frame);
 				% generate position for new frame
 				opts.loc = genRandPos(F, opts.loc, opts.maxspd, opts.imsz);
+				waitbar(N/nframes, wb, sprintf('Generating frame (%d/%d)', N, nframes));
 			end
+			delete(wb);
 			F.renderMode = 1;
 
 		end 	%genRandSeq()

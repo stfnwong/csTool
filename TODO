@@ -4,6 +4,9 @@
 #
 ###############################################################
 
+(FRAMEBUF INTERFACE BRANCH)
+Re-write csFrameBuffer class to properly wrap each csFrame 
+
 GENRANDIMG
 Rather than call abs() on ellipse data, add offset and clip ranges to 
 fit within image bounds.
