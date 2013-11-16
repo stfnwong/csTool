@@ -88,7 +88,7 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     if(~isfield(handles, 'vecManager'))
         fprintf('ERROR: No vecManager object in csToolGenerate()\n');
 		handles.output = -1;
-        delete(handles.csToolGenerateFig);
+        %delete(handles.csToolGenerateFig);
         return;
     end
     if(~isfield(handles, 'idx'))
@@ -116,6 +116,7 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     set(handles.pmVecSz, 'String', fmtStr);
     set(handles.pmVecOr, 'String', orStr);
     %Make default selection 2c
+	%TODO :  Check value in vOpts
     set(handles.pmVecSz, 'Value', 4);
     set(handles.pmVecOr, 'Value', 2);
     %Set default range to be entire frameBuffer
@@ -137,31 +138,17 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
         delete(handles.csToolGenerateFig);
         return;
     end
-    %Load preview of figure
-    fh   = handles.frameBuf.getFrameHandle(handles.idx);
-    img  = imread(get(fh, 'filename'), 'TIFF');
-    dims = size(img);
-    if(dims(3) > 3)
-        img = img(:,:,1:3);
-    end
+	img   = handles.frameBuf.getCurImg(handles.idx);
+	fname = handles.frameBuf.getFilename(handles.idx);
     imshow(img, 'Parent', handles.figPreview);
-    title(handles.figPreview, sprintf('Frame %d (%s)', handles.idx, get(fh, 'filename')));
+    title(handles.figPreview, sprintf('Frame %d (%s)', handles.idx, fname));
     %Clear tickmarks from axes
     set(handles.figPreview, 'XTick', [], 'XTickLabel', []);
     set(handles.figPreview, 'YTick', [], 'YTickLabel', []);
-
-    %Place current filnames on GUI
-    %TODO: Have a checkbox that toggles between using the filename with _vecdata.dat 
-    %appended, or using the filename in vecManager.rfilename, vecManager.filename
-    %[str num ext path exitflag] = fname_parse(get(fh, 'filename'));	%#ok
-	%set(handles.etReadFile, 'String', sprintf('%s_vecdata.dat', str));
-	%set(handles.etWriteFile, 'String', sprintf('%s_testdata.dat', str));
-    %set(handles.etReadFile, 'String', handles.vecManager.getRfilename());
     set(handles.etWriteFile, 'String', handles.vecManager.getWfilename());
 
     %Show preview of input frame
-    fh = handles.frameBuf.getFrameHandle(handles.idx);
-    gui_renderPreview(handles.figPreview, fh, handles.previewMode, handles.idx);
+    gui_renderPreview(handles.figPreview, img, handles.idx, fname);
 
     % Choose default command line output for csToolGenerate
     %handles.output = hObject;
@@ -175,9 +162,6 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
 function varargout = csToolGenerate_OutputFcn(hObject, eventdata, handles) %#ok<INUSD> 
 
     varargout{1} = 0;
-    %varargout{1} = handles.output;
-    %varargout{1} = handles.status;
-    %delete(handles.csToolGenerateFig);
 
 function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     handles.output = 0;
@@ -187,31 +171,28 @@ function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 function bChangePrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
  
  	%Swap preview mode
-    if(strncmpi(handles.previewMode, 'img', 3))
+	if(strncmpi(handles.previewMode, 'img', 3))
         %Check that there is backprojection data for this frame
-        fh   = handles.frameBuf.getFrameHandle(handles.idx);
-        if(get(fh, 'bpSum') == 0 || isempty(get(fh, 'bpVec')))
-            fprintf('ERROR: No bpData in frame %d\n', handles.idx);
-            return;
-        else
-            bpimg = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
-            imshow(bpimg, 'Parent', handles.figPreview);
-            str = sprintf('Frame %d (backprojection) (%s)\n', handles.idx, get(fh, 'filename'));
-            title(handles.figPreview, str);
-            handles.previewMode = 'img';
-        end
-        
-    else
-        fh   = handles.frameBuf.getFrameHandle(handles.idx);
-        img  = imread(get(fh, 'filename'), 'TIFF');
-        dims = size(img);
-        if(dims(3) > 3)
-            img = img(:,:,1:3);
-        end
-        imshow(img, 'Parent', handles.figPreview);
-        title(handles.figPreview, sprintf('Frame %d (%s)', handles.idx, get(fh, 'filename')));
-        handles.previewMode = 'bp';
-    end
+		if(~handles.frameBuf.hasBpData(handles.idx))
+			fprintf('ERROR: No bpData in frame %d\n', handles.idx);
+			return;
+		end
+		img = handles.frameBuf.getCurImg(handles.idx, 'bpimg');
+		imshow(img, 'Parent', handles.figPreview);
+		str = sprintf('Frame %d (backprojection) %s\n', idx, handles.frameBuf.getFilename(handles.idx));
+		title(handles.figPreview, str);
+		handles.previewMode = 'bp';
+	else
+		img = handles.frameBuf.getCurImg(handles.idx, 'img');
+		if(isempty(img))
+			fprintf('ERROR: No image data in frame %d\n', handles.idx);
+			return;
+		end
+		imshow(img, 'Parent', handles.figPreview);
+		str = sprintf('Frame %d (%s)', handles.idx, handles.frameBuf.getFilename(handles.idx));
+		title(handles.figPreview, str);
+		handles.previewMode = 'img';
+	end
 
     guidata(hObject, handles);
     uiresume(handles.csToolGenerateFig);
@@ -223,18 +204,22 @@ function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     N = handles.frameBuf.getNumFrames();
     if(handles.idx < N)
         handles.idx = handles.idx + 1;
-        idx = handles.idx;      %Just to make gui_renderPreview string shorter
-        fh  = handles.frameBuf.getFrameHandle(idx);
-        gui_renderPreview(handles.figPreview, fh, handles.previewMode, idx);    
+		if(strncmpi(handles.previewMode, 'img', 3))
+			img = handles.frameBuf.getCurImg(handles.idx, 'img');
+		else
+			img = handles.frameBuf.getCurImg(handles.idx, 'bpimg');
+		end
+		filename = handles.frameBuf.getFilename(handles.idx);
+        gui_renderPreview(handles.figPreview, img, handles.idx, filename);
 	else
         handles.idx = N;
     end
     %Update output filename if UseFrameFilename checked
     if(get(handles.chkUseFrameFilename, 'Value'))
-        fh = handles.frameBuf.getFrameHandle(handles.idx);
-        [ef str num] = fname_parse(get(fh, 'filename'));
+		filename = handles.frameBuf.getFilename(handles.idx);
+        [ef str num] = fname_parse(filename);
         if(ef == -1)
-            fprintf('ERROR: Couldnt parse filename (%s)\n', get(fh, 'filename'));
+            fprintf('ERROR: Couldnt parse filename (%s)\n', filename);
             return;
         end
         fname = sprintf('data/vectors/%s%02d', str, num);
@@ -250,18 +235,22 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Bounds check and decrement frame index
     if(handles.idx > 1)
         handles.idx = handles.idx - 1;
-        idx = handles.idx; %Just to make gui_renderPreview string shorter
-        fh  = handles.frameBuf.getFrameHandle(idx);
-        gui_renderPreview(handles.figPreview, fh, handles.previewMode, idx);
+		if(strncmpi(handles.previewMode, 'img', 3))
+			img = handles.frameBuf.getCurImg(handles.idx, 'img');
+		else
+			img = handles.frameBuf.getCurImg(handles.idx, 'bpimg');
+		end
+		filename = handles.frameBuf.getFilename(handles.idx);
+        gui_renderPreview(handles.figPreview, img, handles.idx, filename);
     else
         handles.idx = 1;
     end
     %Update output filename if UseFrameFilename checked
     if(get(handles.chkUseFrameFilename, 'Value'))
-        fh = handles.frameBuf.getFrameHandle(handles.idx);
-        [ef str num] = fname_parse(get(fh, 'filename'));
+		filename = handles.frameBuf.getFilename(handles.idx);
+        [ef str num] = fname_parse(filename);
         if(ef == -1)
-            fprintf('ERROR: Couldnt parse filename (%s)\n', get(fh, 'filename'));
+            fprintf('ERROR: Couldnt parse filename (%s)\n', filename);
             return;
         end
         fname = sprintf('data/vectors/%s%02d', str, num);
@@ -413,8 +402,8 @@ function bGenMhist_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Take Current model histogram and produce a vector that can be used in
     %a Verilog Testbench
     %TODO: have a seperate field for mhist name?
-    fh    = handles.frameBuf.getFrameHandle(handles.idx);
-    fname = sprintf('%s-mhist.dat', get(fh, 'filename'));
+    
+    fname = sprintf('%s-mhist.dat', handles.frameBuf.getFilename(handles.idx));
     fp    = fopen(fname);
     if(fp == -1)
        fprintf('ERROR: Unable to open file [%s]\n', fname);
@@ -449,39 +438,17 @@ function chkUseFrameFilename_Callback(hObject, eventdata, handles) %#ok<INUSL,DE
 %                          RENDER PREVIEW                         %
 % =============================================================== %
 
-function gui_renderPreview(axHandle, fh, prevMode, idx)
+function gui_renderPreview(axHandle, img, idx, filename)
 
-    if(strncmpi(prevMode, 'img', 3))
-        img  = imread(get(fh, 'filename'), 'TIFF');
-        dims = size(img);
-        if(dims(3) > 3)
-            img = img(:,:,1:3);
-        end
-        imshow(img, 'Parent', axHandle);
-        [exitflag fname num] = fname_parse(get(fh, 'filename'));
-        if(exitflag == -1)
-            return;
-        end
-        title(axHandle, sprintf('Frame %d (%s_%d) [%d x %d]', idx, fname, num, dims(2), dims(1)), 'Interpreter', 'None');
-    else
-        %Check that there is backprojection data for this frame
-        if(get(fh, 'bpSum') == 0 || isempty(get(fh, 'bpVec')))
-            fprintf('ERROR: No bpData in frame %d\n', idx);
-            return;
-        else
-            bpimg = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
-            imshow(bpimg, 'Parent', axHandle);
-            [exitflag fname num] = fname_parse(get(fh, 'filename'));
-            if(exitflag == -1)
-                return;
-            end
-            str = sprintf('Frame %d (backprojection) (%s_%d)\n', idx, fname, num);
-            title(axHandle, str, 'Interpreter', 'None');
-        end
-    end
-
-
-
+	imshow(img, 'Parent', axHandle);
+	[exitflag fname num] = fname_parse(filename);
+	if(exitflag == -1)
+		return;
+	end
+	
+	dims = size(img);
+	title(axHandle, sprintf('Frame %d (%s_%d) [%d x %d]', idx, fname, num, dims(2), dims(1), 'Interpreter', 'None'));
+	
 
 
 function pmVecSz_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -516,11 +483,6 @@ function chkRGB_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 % --- Executes when user attempts to close csToolGenerateFig.
 function csToolGenerateFig_CloseRequestFcn(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
-% hObject    handle to csToolGenerateFig (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: delete(hObject) closes the figure
 delete(hObject);
 
 

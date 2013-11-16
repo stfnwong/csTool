@@ -180,6 +180,7 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
+	uiresume(handles.csToolSeqGen);
 
 function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Bounds check and increment frame index
@@ -194,6 +195,7 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
+	uiresume(handles.csToolSeqGen);
 
 function bFirst_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	handles.fbIdx = 1;
@@ -202,6 +204,7 @@ function bFirst_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
+	uiresume(handles.csToolSeqGen);
 
 function bLast_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	handles.fbIdx = handles.frameBuf.getNumFrames();
@@ -210,6 +213,7 @@ function bLast_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
+	uiresume(handles.csToolSeqGen);
 
 function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Jump to specified frame 
@@ -227,6 +231,7 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
+	uiresume(handles.csToolSeqGen);
 
 function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Generate Random Sequence
@@ -273,12 +278,14 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	gui_updatePreview(handles.figPreview, fh);
 
 	guidata(hObject, handles);
+	uiresume(handles.csToolSeqGen);
 
 function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	%handles.output = struct('status', 0, ...
 	%	                    'frameBuf', handles.frameBuf, ...
 	%	                    'genOpts', handles.genOpts );
 	handles.cancelled = 0;
+	uiresume(handles.csToolSeqGen);
 	close(handles.csToolSeqGen);
 
 function bCancel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
@@ -286,6 +293,7 @@ function bCancel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	%	                    'frameBuf', handles.frameBuf, ...
 	%	                    'genOpts', handles.genOpts);
 	handles.cancelled = -1;
+	uiresume(handles.csToolSeqGen);
 	close(handles.csToolSeqGen);
 
 function figPreview_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>

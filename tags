@@ -348,8 +348,8 @@ gui_procLoop	GUI/gui_procLoop.m	/^function [status] = gui_procLoop(handles, vara
 gui_rPos2rRegion	GUI/gui_rPos2rRegion.m	/^function region = gui_rPos2rRegion(rPos, axHandle, varargin)$/;"	f
 gui_rectTest	GUI/gui_rectTest.m	/^function gui_rectTest()$/;"	f
 gui_renderErrorPlot	GUI/panels/csToolTrajBuf.m	/^function gui_renderErrorPlot(axHandle, traj, idx, varargin)$/;"	f
-gui_renderPreview	GUI/panels/csToolGenerate.m	/^function gui_renderPreview(axHandle, fh, prevMode, idx)$/;"	f
-gui_renderPreview	GUI/panels/csToolTrajBuf.m	/^function gui_renderPreview(axHandle, fh, idx, varargin)$/;"	f
+gui_renderPreview	GUI/panels/csToolGenerate.m	/^function gui_renderPreview(axHandle, img, idx, filename)$/;"	f
+gui_renderPreview	GUI/panels/csToolTrajBuf.m	/^function gui_renderPreview(axHandle, img, idx, filename, varargin)$/;"	f
 gui_renderText	GUI/panels/csToolTrajBuf.m	/^function stats = gui_renderText(pErr, pTraj) $/;"	f
 gui_renderTraj	GUI/panels/csToolTrajBuf.m	/^function gui_renderTraj(axHandle, traj, idx, col, varargin)$/;"	f
 gui_setHistTitle	GUI/gui_setHistTitle.m	/^function status = gui_setHistTitle(handles, varargin)$/;"	f
@@ -359,7 +359,7 @@ gui_setWinParams	GUI/gui_setWinParams.m	/^function [str status] = gui_setWinPara
 gui_showPreview	GUI/gui_showPreview.m	/^function [status nh] = gui_showPreview(handles, varargin)$/;"	f
 gui_stepPreview	GUI/gui_stepPreview.m	/^function [newIndex nh] = gui_stepPreview(idx, handles, dir)$/;"	f
 gui_updatePreview	GUI/panels/csToolSeqGen.m	/^function gui_updatePreview(ah, fh)$/;"	f
-gui_updatePreview	GUI/panels/csToolTrajBuf.m	/^function gui_updatePreview(axHandle, fh, idx, traja, trajb, trajErr, varargin)$/;"	f
+gui_updatePreview	GUI/panels/csToolTrajBuf.m	/^function gui_updatePreview(axHandle, img, idx, traja, trajb, trajErr, varargin)$/;"	f
 hbp	@csSegmenter/hbp.m	/^function bpimg = hbp(S, img, rhist, KDENS, varargin)$/;"	f
 hbp_block	@csSegmenter/hbp_block.m	/^function [bpdata rhist] = hbp_block(T, img, mhist, varargin)$/;"	f
 hbp_block	mex/src/hbp_block.c	/^int hbp_block( unsigned int *img, $/;"	f

@@ -255,8 +255,21 @@ classdef csFrameBuffer
 
 		function img = getCurImg(F, idx, varargin)
 		% GETCURIMG
+		% img = getCurImg(F, idx, [..OPTIONS..])
 		% Return the image data for the frame at position idx consistent
 		% with the mode specified by renderMode.
+		%
+		% ARGUMENTS:
+		%
+		% F - csFrameBuffer object
+		% idx - Index in buffer to retreive
+		%
+		% [OPTIONAL ARGUMENTS]
+		% 'vec'   - Return the image as a vector, if applicable
+		% '3chan' - Force the ouput to have 3 channels
+		% 'bpimg' - Return the backprojection image irrespective of 
+		%           renderMode
+		% 'img'   - Return the RGB image irrespective of renderMode
 		%
 			RETURN_IMG       = true;
 			RETURN_3_CHANNEL = false;
@@ -271,7 +284,7 @@ classdef csFrameBuffer
 						elseif(strncmpi(varargin{k}, '3chan', 5))
 							RETURN_3_CHANNEL = true;
 						elseif(strncmpi(varargin{k}, 'bpimg', 5))
-							GET_BP_IMG_ONLY = true;
+							GET_BPIMG_ONLY = true;
 						elseif(strncmpi(varargin{k}, 'img', 3))
 							GET_IMG_ONLY = true;
 						end
@@ -313,7 +326,12 @@ classdef csFrameBuffer
 			switch(F.renderMode)
 				case 0
 					% Read image from disk and return img file
-					img = imread(get(fh, 'filename'), F.ext);
+					if(strncmpi(get(fh, 'filename'), ' ', 1))
+						fprintf('[getCurImg()] : No file data in frame %d\n', idx);
+						img = [];
+						return;
+					end
+					img  = imread(get(fh, 'filename'), F.ext);
 					dims = size(img);
 					if(dims(3) > 3)
 						img = img(:,:,1:3);
@@ -530,6 +548,7 @@ classdef csFrameBuffer
 				fr(n) = csFrame();
 			end
 			FB.frameBuf = fr;
+			FB.nFrames  = length(fr);
 
 		end 	%initFrameBuf()
 

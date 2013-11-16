@@ -1222,6 +1222,34 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 				fprintf('ERROR: Error in csToolVerify()\n');
 				return;
 			end
+            % ================ LAUNCH TRAJECTORY BUFFER ================ %
+        case 't'
+            if(handles.debug)
+                tbstruct = csToolTrajBuf(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'debug');
+            else
+                tbstruct = csToolTrajBuf(handles.frameBuf, handles.vecManager, 'idx', frameIndex);
+            end
+            %Check structure fields
+            %NOTE: ANOTHER STUPID BUG!!!!
+            % Even though we can break here and manually evaluate the fields of the
+            % struct in the console, verifying that in fact, vecManager is a field
+            % of tbstruct, MATLAB insists in this script that it does not exist and
+            % therefore we cannot check that the struct actually did return what we
+            % said it would. Therfore, just assume that csToolTrajBuf() got it
+            % right (a feat a don't trust MATLAB to acheive) and assign the values
+            % directly.
+            if(handles.debug)
+                fprintf('Writing new frameBuf, vecManager...\n');
+            end
+            handles.frameBuf   = tbstruct.frameBuf;
+            handles.vecManager = tbstruct.vecManager;
+
+            if(handles.debug)
+                fprintf('Current vecManager options : \n');
+                disp(handles.vecManager.getOpts);
+            end
+
+        
 
 	end
 	
@@ -1687,25 +1715,7 @@ function menu_trajBuf_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
     end
     handles.frameBuf   = tbstruct.frameBuf;
     handles.vecManager = tbstruct.vecManager;
-%     if(~isfield('vecManager', tbstruct))
-%         fprintf('ERROR: No vecManager in return struct from csToolTrajBuf()\n');
-%         %return;
-%     elseif(~isa(tbstruct.vecManager, 'vecManager'))
-% 		fprintf('ERROR: tbstruct.vecManager not a vecManager object\n');
-% 		%return;
-% 	else
-% 		handles.vecManager = tbstruct.vecManager;
-% 	end
-% 
-%     if(~isfield('frameBuf', tbstruct))
-%         fprintf('ERROR: No csFrameBuffer in return struct from csToolTrajBuf()\n');
-%         %return;
-% 	elseif(~isa(tbstruct.frameBuf, 'csFrameBuffer'))
-% 		fprintf('ERROR: tbstruct.frameBuf not a csFrameBuffer object\n')
-% 		%return;
-% 	else
-% 		handles.frameBuf = tbstruct.frameBuf;
-% 	end
+
 	if(handles.debug)
 		fprintf('Current vecManager options : \n');
 		disp(handles.vecManager.getOpts);
@@ -1765,6 +1775,8 @@ function menu_genRandBp_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		if(handles.debug)
 			fprintf('(DEBUG) : Sequence options\n');
 			disp(sgOpts);
+			disp(sgOpts.frameBuf);
+			disp(sgOpts.genOpts);
 		end
 	end
 
