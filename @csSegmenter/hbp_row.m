@@ -81,10 +81,10 @@ function [bpdata rhist] = hbp_row(T, img, mhist, varargin)
 			imRow = img(r, (n-1)*row_len+1:n*row_len);
 			for k = 1:length(bins)
 				if(k == 1)
-					pix          = bcomp(0, bins(k), imRow);
+					pix          = rcomp(0, bins(k), imRow);
 					ihist_row(k) = sum(sum(pix));
 				else
-					pix          = bcomp(bins(k-1), bins(k), imRow);
+					pix          = rcomp(bins(k-1), bins(k), imRow);
 					ihist_row(k) = sum(sum(pix));
 				end
 			end

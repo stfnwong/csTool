@@ -585,11 +585,10 @@ function bSegRange_Callback(hObject, eventdata, handles)    %#ok<INUSL,DEFNU>
 		return;
 	end
     %Show preview of final frame
-	fh = handles.frameBuf.getFrameHandle(eFrame);
     if(handles.debug)
-        [status nh] = gui_showPreview(handles, 'fh', fh, 'seg', 'debug');
+        [status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg', 'debug');
     else
-        [status nh] = gui_showPreview(handles, 'fh', fh, 'seg');
+        [status nh] = gui_showPreview(handles, 'idx', eFrame, 'seg');
     end
 	if(status == -1)
 		handles = gui_ifaceEnable(handles, 'on');

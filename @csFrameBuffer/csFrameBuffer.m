@@ -233,6 +233,10 @@ classdef csFrameBuffer
 			moments = get(FB.frameBuf(idx), 'moments');
 		end 	%getMoments()
 
+		function niters = getNiters(FB, idx)
+			niters = get(FB.frameBuf(idx), 'nIters');
+		end 	%getNiters()
+
 		function sp = getSparse(FB, idx)
 			sp = get(FB.frameBuf(idx), 'isSparse');
 		end 	%getSparse()
@@ -246,12 +250,24 @@ classdef csFrameBuffer
 		end 	%getBpSum()
 
 		function status = hasBpData(FB, idx)
-			if(get(FB.frameBuf(idx), 'bpsum') > 0)
+			if(get(FB.frameBuf(idx), 'bpSum') > 0)
 				status = true;
 			else
 				status = false;
 			end
 		end 	%isBpData()
+
+		function isSparseVec = isSparseVec(FB, idx)
+			if(get(FB.frameBuf(idx), 'isSparse'))
+				isSparseVec = true;
+			else
+				isSparseVec = false;
+			end
+		end 	%isSparseVec()
+		
+		function zmtrue = getZeroMoment(FB, idx)
+			zmtrue = length(get(FB.frameBuf(idx), 'bpVec'));
+		end 	%getZeroMoment()
 
 		function img = getCurImg(F, idx, varargin)
 		% GETCURIMG
@@ -482,55 +498,58 @@ classdef csFrameBuffer
 		% -------- SETTER FUNCTIONS -------- %
 		% ---------------------------------- %
 	
-		function FB = setFrameParams(FB, idx, varargin)
+
+		function FB = setFrameParams(FB, idx, opts)
 		% SETFRAMEPARAMS
-		% Set parameters for the frame at location idx
+		% Set frame parameters for the frame at position idx. 
 
-			% Bounds check idx
-			if(idx < 1 || idx > FB.nFrames)
-				fprintf('ERROR: idx outside range 1 - %d\n', FB.nFrames);
-				return;
+			if(isfield(opts, 'img'))
+				set(FB.frameBuf(idx), 'img', opts.img);
 			end
-
-			if(isempty(varargin))
-				fprintf('(setFrameParams) : No param data\n');
-				return;
+			if(isfield(opts, 'bpimg'))
+				set(FB.frameBuf(idx), 'bpImg', opts.bpimg);	
 			end
-
-			for k = 1 : length(varargin)
-				if(ischar(varargin{k}))
-					if(strncmpi(varargin{k}, 'img', 3))
-						set(FB.frameBuf(idx), 'img', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'bpimg', 5))
-						set(FB.frameBuf(idx), 'bpImg', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'bpvec', 5))
-						set(FB.frameBuf(idx), 'bpVec', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'bpsum', 5))
-						set(FB.frameBuf(idx), 'bpSum', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'rhist', 5))
-						set(FB.frameBuf(idx), 'rhist', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'ihist', 5))
-						set(FB.frameBuf(idx), 'ihist', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'winparam', 8))
-						set(FB.frameBuf(idx), 'winParams', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'wininit', 6))
-						set(FB.frameBuf(idx), 'winInit', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'moments', 7))
-						set(FB.frameBuf(idx), 'moments', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'niters', 5))
-						set(FB.frameBuf(idx), 'nIters', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'tvec', 4))
-						set(FB.frameBuf(idx), 'tVec', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'dims', 4))
-						set(FB.frameBuf(idx), 'dims', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'sparse', 6))
-						set(FB.frameBuf(idx), 'isSparse', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'spfac', 5))
-						set(FB.frameBuf(idx), 'sparseFac', varargin{k+1});
-					elseif(strncmpi(varargin{k}, 'filename', 8))
-						set(FB.frameBuf(idx), 'filename', varargin{k+1});
-					end
-				end
+			if(isfield(opts, 'bpvec'))
+				set(FB.frameBuf(idx), 'bpVec', opts.bpvec);
+			end
+			if(isfield(opts, 'bpsum'))
+				set(FB.frameBuf(idx), 'bpSum', opts.bpsum);
+			end
+			if(isfield(opts, 'rhist'))
+				set(FB.frameBuf(idx), 'rhist', opts.rhist);
+			end
+			if(isfield(opts, 'ihist'))
+				set(FB.frameBuf(idx), 'ihist', opts.ihist);
+			end
+			if(isfield(opts, 'winparams'))
+				set(FB.frameBuf(idx), 'winParams', opts.winparams);
+			end
+			if(isfield(opts, 'wininit'))
+				set(FB.frameBuf(idx), 'winInit', opts.wininit);
+			end
+			if(isfield(opts, 'moments'))
+				set(FB.frameBuf(idx), 'moments', opts.moments);
+			end
+			if(isfield(opts, 'niters'))
+				set(FB.frameBuf(idx), 'nIters', opts.niters);
+			end
+			if(isfield(opts, 'tvec'))
+				set(FB.frameBuf(idx), 'tVec', opts.tvec);
+			end
+			if(isfield(opts, 'dims'))	
+				set(FB.frameBuf(idx), 'dims', opts.dims);
+			end
+			if(isfield(opts, 'issparsevec'))
+				set(FB.frameBuf(idx), 'isSparse', opts.issparsevec);
+			end
+			if(isfield(opts, 'sparsefac'))
+				set(FB.frameBuf(idx), 'sparseFac', opts.sparsefac);
+			end
+			if(isfield(opts, 'filename'))
+				set(FB.frameBuf(idx), 'filename', opts.filename);
+			end
+			if(isfield(opts, 'method'))
+				set(FB.frameBuf(idx), 'method', opts.method);
 			end
 
 		end 	%setFrameParams()
@@ -756,12 +775,23 @@ classdef csFrameBuffer
 						fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);
 					end
 					fnum = fnum + 1;
-			end
+				end
 			end
 			if(FB.verbose)
 				fprintf('\n File read complete\n');
 				fprintf('Read %d frames\n', k);
 			end
+			% Assume that all images are the same size, read an image 
+			% out and set all frame dimensions to match;
+			timg = imread(get(FB.frameBuf(1), 'filename'), FB.ext);
+			dims = size(timg);
+			if(dims(3) > 3)
+				dims(3) = 3;
+			end
+			for k = 1 : length(FB.frameBuf)
+				set(FB.frameBuf(k), 'dims', [dims(2) dims(1)]);
+			end
+
 			%write back data
 			FB.fNum       = fnum;
 			FB.renderMode = 0;

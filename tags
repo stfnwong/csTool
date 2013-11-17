@@ -340,11 +340,12 @@ gui_genImHist	GUI/gui_genImHist.m	/^function varargout = gui_genImHist(varargin)
 gui_getTraj	GUI/gui_getTraj.m	/^function [tVec varargout] = gui_getTraj(frameBuf, varargin)$/;"	f
 gui_ifaceEnable	GUI/gui_ifaceEnable.m	/^function nh = gui_ifaceEnable(handles, state)$/;"	f
 gui_loadFrames	GUI/gui_loadFrames.m	/^function [status nh varargout] = gui_loadFrames(handles, filename, numFrames)$/;"	f
-gui_plotParams	GUI/gui_plotParams.m	/^function status = gui_plotParams(fh, axHandle, varargin)$/;"	f
+gui_plotParams	GUI/gui_plotParams.m	/^function status = gui_plotParams(axHandle, params, moments, niters, varargin)$/;"	f
 gui_plotTraj	GUI/gui_plotTraj.m	/^function gui_plotTraj(axHandle, tVec, idx, varargin)$/;"	f
 gui_precompError	GUI/panels/csToolTrajBuf.m	/^function errBuf = gui_precompError(traj1, traj2, varargin) %#ok<DEFNU>$/;"	f
 gui_printParams	GUI/gui_printParams.m	/^function [status varargout] = gui_printParams(fh, varargin)$/;"	f
 gui_procLoop	GUI/gui_procLoop.m	/^function [status] = gui_procLoop(handles, varargin)$/;"	f
+gui_procLoop	GUI/gui_procLoop_old.m	/^function [status] = gui_procLoop(handles, varargin)$/;"	f
 gui_rPos2rRegion	GUI/gui_rPos2rRegion.m	/^function region = gui_rPos2rRegion(rPos, axHandle, varargin)$/;"	f
 gui_rectTest	GUI/gui_rectTest.m	/^function gui_rectTest()$/;"	f
 gui_renderErrorPlot	GUI/panels/csToolTrajBuf.m	/^function gui_renderErrorPlot(axHandle, traj, idx, varargin)$/;"	f
@@ -355,7 +356,7 @@ gui_renderTraj	GUI/panels/csToolTrajBuf.m	/^function gui_renderTraj(axHandle, tr
 gui_setHistTitle	GUI/gui_setHistTitle.m	/^function status = gui_setHistTitle(handles, varargin)$/;"	f
 gui_setHistograms	GUI/gui_setHistograms.m	/^function [status varargout] = gui_setHistograms(varargin)$/;"	f
 gui_setPreviewTitle	GUI/gui_setPreviewTitle.m	/^function gui_setPreviewTitle(fTitle, fHandle)$/;"	f
-gui_setWinParams	GUI/gui_setWinParams.m	/^function [str status] = gui_setWinParams(frameBuf, idx, varargin)$/;"	f
+gui_setWinParams	GUI/gui_setWinParams.m	/^function [str status] = gui_setWinParams(idx, wparam, moments, niters, dims, bpsum)$/;"	f
 gui_showPreview	GUI/gui_showPreview.m	/^function [status nh] = gui_showPreview(handles, varargin)$/;"	f
 gui_stepPreview	GUI/gui_stepPreview.m	/^function [newIndex nh] = gui_stepPreview(idx, handles, dir)$/;"	f
 gui_updatePreview	GUI/panels/csToolSeqGen.m	/^function gui_updatePreview(ah, fh)$/;"	f
@@ -428,7 +429,7 @@ menu_save_Callback	GUI/panels/csToolTrajBuf.m	/^function menu_save_Callback(hObj
 menu_trackOptions_Callback	GUI/panels/csToolGUI.m	/^function menu_trackOptions_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>$/;"	f
 menu_trajBuf_Callback	GUI/panels/csToolGUI.m	/^function menu_trajBuf_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU$/;"	f
 mexFunction	mex/src/mex_hbpBlock.c	/^void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])$/;"	f
-msProcLoop	@csTracker/msProcLoop.m	/^function status = msProcLoop(T, fh, trackWindow)$/;"	f
+msProcLoop	@csTracker/msProcLoop.m	/^function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)$/;"	f
 optParser	@csFrameBuffer/optParser.m	/^function opt = optParser(options)$/;"	f
 optParser	@csImProc/optParser.m	/^function ipOpt = optParser(options)$/;"	f
 parseFmt	@vecManager/parseFmt.m	/^function [ftype val] = parseFmt(fmt)$/;"	f

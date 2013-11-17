@@ -14,10 +14,24 @@ fit within image bounds.
 VEC2BPIMG 
 Add routine to force output to have 3 channels for hsv conversion
 
+
 CSTOOLGUI
 We actually dont need to perform the segmentation if we generated synthetic
 backprojection data since it is by definition backprojected. Therefore the 
 gui_procLoop() routine should be re-written to reflect this
+
+Also need to do this for gui_showPreview()
+
+
+CSSEGMENTER
+Change segmentation internals to hide information about frame contents.
+
+CSTRACKER
+Change tracking internals to hide information about frame contents
+
+
+========================================================================
+
 
 VECMANAGER READ:
 Problem in read method getting correct filename (SOLVED)

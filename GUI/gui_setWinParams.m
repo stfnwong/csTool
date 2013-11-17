@@ -1,4 +1,4 @@
-function [str status] = gui_setWinParams(frameBuf, idx, varargin)
+function [str status] = gui_setWinParams(idx, wparam, moments, niters, dims, bpsum)
 % GUI_SETWINPARAMS
 % [str status] = gui_setWinParams(frameBuf, idx, [...OPTIONS...])
 %
@@ -26,63 +26,22 @@ function [str status] = gui_setWinParams(frameBuf, idx, varargin)
 	%	end
 	%end
 	
-	if(~isempty(varargin))
-		for k = 1:length(varargin)
-			if(ischar(varargin{k}))
-				if(strncmpi(varargin{k}, 'p', 1))
-					param = varargin{k+1};
-				elseif(strncmpi(varargin{k}, 'fh', 2))
-					fh    = varargin{k+1};
-				end
-			end
-		end
-	end
-
-	% Sanity check arguments
-	if(~isa(frameBuf, 'csFrameBuffer'))
-		fprintf('ERROR: frameBuf incorrect type (should be csFrameBuffer)\n');
-		str    = [];
-		status = -1;
-		return;
-	end
-	
-	N = frameBuf.getNumFrames();
-	if(idx < 1 || idx > N)
-		fprintf('ERROR: idx out of bounds (must be within 0-%d)\n', N);
-		str    = [];
-		status = -1;
-		return;
-	end
-	
-	if(~exist('fh', 'var'))
-		fh = frameBuf.getFrameHandle(idx);
-	end
-	moments = get(fh, 'moments');
-	if(exist('param', 'var'))
-		m = moments{param};
-	else
-		m = moments{1};
-	end
-	wp     = get(fh, 'winParams');
-	% Collect statistics
-	dims   = get(fh, 'dims');
-	bpsum  = get(fh, 'bpSum');
-	nIters = get(fh, 'nIters');
+	m = moments{idx};
 	
 	% Format string
 	if(length(m) == 6)
 		xc    = m(2)/m(1);
 		yc    = m(3)/m(1);
-		theta = wp(3);
-		axmaj = wp(4);
-		axmin = wp(5);
+		theta = wparam(3);
+		axmaj = wparam(4);
+		axmin = wparam(5);
 	else
 		% Normalised moments - dont divide
 		xc    = m(1);
 		yc    = m(2);
-		theta = wp(3);
-		axmaj = wp(4);
-		axmin = wp(5);
+		theta = wparam(3);
+		axmaj = wparam(4);
+		axmin = wparam(5);
 	end
 
 	ds  = sprintf('Dimensions : [%d x %d]\n', dims(1), dims(2));
@@ -93,9 +52,9 @@ function [str status] = gui_setWinParams(frameBuf, idx, varargin)
 	s3  = sprintf('axmaj : %.1f, axmin : %.1f\n', axmaj, axmin);
 	%Format title string
 	if(exist('param', 'var'))
-		st  = sprintf('wparam %d of %d\n', param, nIters);
+		st  = sprintf('wparam %d of %d\n', param, niters);
 	else
-		st = sprintf('wparam 1 of %d\n', nIters);
+		st = sprintf('wparam 1 of %d\n', niters);
 	end
 	%s4  = sprintf('axmin : %.1f\n', axmin); 
 	%str = strcat(s1, s2, s3, s4, s5);

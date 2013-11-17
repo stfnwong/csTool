@@ -287,50 +287,29 @@ classdef csSegmenter < handle
 		end 	%genMhist()
 
 		% ---- INTERFACE METHODS ----- %
-		function segFrame(S, fh)
+		function [bpvec bpsum rhist] = segFrame(S, img)
 			% CSSEGMENTER.SEGFRAME
 			% segFrame(S, fh)
 			%
 			% Segment image specified in frame handle fh using the method specified in
 			% S.method.
 			%
-			% In the current version, the image is read from disk from within this
-			% method
-			if(S.verbose)
-				fprintf('Reading image from %s...\n', get(fh, 'filename'));
-			end
-            im = imread(get(fh, 'filename'), 'TIFF');
-			im = rgb2hsv(im);
-			im = fix(S.DATA_SZ .* im(:,:,1));
-			%Check for dims property, and set if empty
-			if(isempty(get(fh, 'dims')))
-				sz   = size(im);
-				dims = [sz(2) sz(1)];
-				set(fh, 'dims', dims);
-				if(S.verbose)
-					fprintf('Set dims as [%dx%d]\n', dims(1), dims(2));
-				end
-			else
-				dims = get(fh, 'dims');
-				if(S.verbose)
-					fprintf('Read dims as [%dx%d]\n', dims(1), dims(2));
-				end
-			end
+
 			switch S.method
 				case S.HIST_BP_IMG
-					[bpvec rhist] = hbp_img(S, im, S.mhist);
+					[bpvec rhist] = hbp_img(S, img, S.mhist);
 					if(S.BG_MODE)
-						[bgvec bg_rhist] = hbp_img(S, im, S.bghist);
+						[bgvec bg_rhist] = hbp_img(S, img, S.bghist);
 					end
 				case S.HIST_BP_BLOCK
-					[bpvec rhist] = hbp_block(S, im, S.mhist);
+					[bpvec rhist] = hbp_block(S, img, S.mhist);
 					if(S.BG_MODE)
-						[bgvec bg_rhist] = hbp_block(S, im, S.bghist);
+						[bgvec bg_rhist] = hbp_block(S, img, S.bghist);
 					end
 				case S.HIST_BP_ROW
-					[bpvec rhist] = hbp_row(S, im, S.mhist);
+					[bpvec rhist] = hbp_row(S, img, S.mhist);
 					if(S.BG_MODE)
-						[bgvec bg_rhist] = hbp_row(S, im, S.bghist);
+						[bgvec bg_rhist] = hbp_row(S, img, S.bghist);
 					end
 				case S.PCA
 					fprintf('Currently not implemented\n');
@@ -343,13 +322,10 @@ classdef csSegmenter < handle
 			end
        		%Write frame data
 			bpsum = sum(sum(bpvec)) / S.kQuant;
-            set(fh, 'bpSum', bpsum);
-            set(fh, 'bpVec', bpvec);
-            set(fh, 'rhist', rhist);	
 			if(S.verbose)
 				fprintf('bpSum : %f\n', bpsum);
 			end
-		end 	%frameSegment()
+		end 	%segFrame()
 
 		% ---- SETTER METHODS ----- %
 		function setImRegion(S, imregion)

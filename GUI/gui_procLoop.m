@@ -44,60 +44,52 @@ function [status] = gui_procLoop(handles, varargin)
 		end
 	end
 
-	%Do sanity check on arguments
+	% Sanity check arguments
 	if(~exist('initParam', 'var'))
 
-		%Take parameters from the frame before the first in our loop. If we are
-		%processing all the frames, generate a parameter from the region value in 
-		%handles.rData
-
 		if(exist('range', 'var') && range(1) > 1)
-			pFrame = handles.frameBuf.getFrameHandle(range(1) - 1);
-			%Go through and check the parameter is well formed
+			pIters = handles.frameBuf.getNiters(range(1) - 1);
 			if(FORCE)
-				%MAKE IT SO!
-				if(get(pFrame, 'nIters') < 1)
+				if(pIters < 1)
 					N = 1;
 				else
-					N = get(pFrame, 'nIters');
+					N = pIters;
 				end
-				p         = get(pFrame, 'winParams');
-				initParam = p{N};
+				pParams   = handles.frameBuf.getWinParams(range(1) - 1);
+				initParam = pParams(N);
 			else
-				%Actually check
 				if(TRACK)
-					if(get(pFrame, 'nIters') == 0)
+					if(pIters == 0)
 						fprintf('No iterations occured in param (frame %d)\n', range(1));
 						status = -1;
 						return;
 					end
-					if(isequal(get(pFrame, 'winParams'), zeros(1,5)))
-						fprintf('frame %d has zero param\n', range(1));
+					pParams = handles.frameBuf.getWinParams(range(1)-1);
+					if(isequal(pParams, zeros(1,length(pParams))));
+						fprintf('frame %d has zero params\n', range(1));
 						status = -1;
 						return;
 					end
-					initParam  = get(pFrame, 'winParams');
-					%p         = get(pFrame, 'winParams');
-					%initParam = p{get(pFrame, 'nIters')};
+					initParam = pParams;
 				end
-			end	
+			end
 		else
 			rData = handles.rData;
 			[status wparam] = handles.tracker.initWindow('region', rData.rRegion);
 			if(status == -1)
-				fprintf('ERROR: wparam not correctly set\n');
+				fprintf('ERROR (gui_procLoop) : wparam not correctly set\n');
 				return;
 			end
-			if(isequal(wparam, zeros(1,5)))
-				fprintf('ERROR: csTracker.initWindow() returned zero wparam\n');
+			if(isequal(wparam, zeros(1, length(wparam))))
+				fprintf('ERROR (gui_procLoop) : csTracker.initWindow() returned zero wparam\n');
 				status = -1;
 				return;
-			end	
-			fprintf('Setting initial wparam to :\n');
+			end
+			fprintf('Setting initial wparam to:\n');
 			disp(wparam);
-		end		
+		end
 	else
-		%Check that the specified param is well formed
+		% Check that the specified parameter is well formed
 		if(length(initParam) < 5)
 			fprintf('ERROR: value in initParam has < 5 elements, exiting...\n');
 			status = -1;
@@ -109,6 +101,7 @@ function [status] = gui_procLoop(handles, varargin)
 			return;
 		end
 	end
+
 
 	%Format a string for waitbar that represents the operation being performed
 	if(TRACK && SEG)
@@ -123,6 +116,10 @@ function [status] = gui_procLoop(handles, varargin)
 		return;
 	end
 
+	if(~exist('range', 'var'))
+		range = [1 handles.frameBuf.getNumFrames()];
+	end
+
 	if(DEBUG)
 		if(TRACK)
 			fprintf('%s got TRACK option\n', DSTR);
@@ -131,19 +128,6 @@ function [status] = gui_procLoop(handles, varargin)
 			fprintf('%s got SEG option\n', DSTR);
 		end
 	end
-
-	%If range variable doesn't exist, assume we want to process all frames
-	if(exist('range', 'var'))
-		if(~isequal(size(range), [1 2]))
-			fprintf('ERROR: Size must be 1x2 vector, exiting\n');
-			status = -1;
-			return;
-		end
-		fh = handles.frameBuf.getFrameHandle(range(1):range(2));
-	else
-		N  = handles.frameBuf.getNumFrames();
-		fh = handles.frameBuf.getFrameHandle(1:N);
-	end
 	
 	if(DEBUG)
 		if(exist('range', 'var'))
@@ -151,7 +135,6 @@ function [status] = gui_procLoop(handles, varargin)
 		end
 	end
 
-	N  = length(fh);
 	%Make sure our waitbar has the right text for the operation
 	if(exist('range', 'var'))
 		wb = waitbar(0, sprintf('%ss...', fs), ...
@@ -166,64 +149,79 @@ function [status] = gui_procLoop(handles, varargin)
 	end
 
 	status = 0;
+	N = range(2);		% for compatability
 	%Process frames in loop
-	for k = 1:N
+	for k = range(1) : N
 		if(getappdata(wb, 'canceling'))
 			fprintf('Cancelled %s at frame %d (%d left)\n', fs, k, N-k);
 			status = -1;
 			break;
 		end
 		waitbar(k/N, wb, sprintf('%s (%d/%d)...', fs, k, N));
+
+		% =============== SEGMENTATION ================ %
 		if(SEG && handles.frameBuf.getRenderMode == 0)
-			handles.segmenter.segFrame(fh(k));
+			img = handles.frameBuf.getCurImg(k, 'img');
+			[bpvec bpsum rhist] = handles.segmenter.segFrame(img);
+			params = struct('bpvec',bpvec,'bpsum',bpsum,'rhist',rhist);
+			handles.frameBuf = handles.frameBuf.setFrameParams(k, params);
 		end
 		%Check this frame has been segmented
-		if(get(fh(k), 'bpSum') == 0)
-			fprintf('ERROR: frame %d has no backprojected pixels.\n', k);
+		if(~handles.frameBuf.hasBpData(k))
+			fprintf('ERROR: frame %d has no backprojected pixels\n', k);
 			fprintf('gui_procLoop() exiting with %d frames unprocessed\n', N-k);
 			status = -1;
-			break;
+			return;
 		end
+
+		% =============== TRACKING ================ %
 		if(TRACK)
-            %Check that there is backprojection data in this frame
-            if(numel(get(fh(k), 'bpVec')) == 0 || sum(sum(get(fh(k), 'bpVec'))) == 0)
-                fprintf('[gui_procLoop()] : No backprojection data in frame %s, exiting...\n', get(fh(k), 'filename'));
+			if(~handles.frameBuf.hasBpData(k))
+                fprintf('[gui_procLoop()] : No backprojection data in frame %s, exiting...\n', handles.frameBuf.getFilename(k));
                 delete(wb);
                 status = -1;
                 return;
-            end
+			end
+
 			%Get frame parameters from previous frame
 			if(k == 1)
 				%If we didn't specify an initial parameter, gui_procLoop will have 
 				%placed a winparam in csTracker.fParams. If we specified a param, 
 				%pass that param into the trackFrame() method
+				bpimg = handles.frameBuf.getCurImg(k, 'bpimg');	
 				if(exist('initParam', 'var'))
-					handles.tracker.trackFrame(fh(k), initParam);
+					% TODO : Pass extra parameters for sparse tracking
+					[st tOpts] = handles.tracker.trackFrame(bpimg, 'wpos', initParam, 'zm', handles.frameBuf.getZeroMoment(k));
 				else
-					handles.tracker.trackFrame(fh(k));
+					[st tOpts] = handles.tracker.trackFrame(bpimg, 'zm', handles.frameBuf.getZeroMoment(k));
+				end
+				if(st == 0)
+					handles.frameBuf = handles.frameBuf.setFrameParams(k, tOpts);
 				end
 			else
-				pParam = get(fh(k-1), 'winParams');
+				pParam = handles.frameBuf.getWinParams(k-1);
+				pIters = handles.frameBuf.getNiters(k-1);
 				%Check parameters
-				if(get(fh(k-1), 'nIters') < 1)
+				if(pIters < 1)
 					if(FORCE)
 						fprintf('INFO: nIters < 1, forcing to 1\n');
 						M = 1;
 					else
-						fprintf('ERROR: nIters < 1 in frame %s\n', get(fh(k-1), 'filename'));
+						fprintf('ERROR: nIters < 1 in frame %s\n', handles.frameBuf.getFilename(k-1));
 						status = -1;
 						delete(wb);
 						return;
 					end
 				else
-					M = get(fh(k-1), 'nIters');
+					M = pIters;
 				end
 				
 				if(isequal(pParam, zeros(1,5)))
 					if(FORCE)
-						%Forcing this doesn't make that much sense, so just to the 
-						%most sensible thing in context - take the values from rRegion
-						%and compute with the initial window
+						%Forcing this doesn't make that much sense, so just 
+						%to the %most sensible thing in context - take the 
+						%values from rRegion %and compute with the initial 
+						%window
 						[status pParam] = handles.tracker.initWindow('region', handles.rData.rRegion);
 						if(status == -1)
 							fprintf('Even with force, no dice for wparam\n');
@@ -236,31 +234,32 @@ function [status] = gui_procLoop(handles, varargin)
 						return;
 					end
 				end
-				%All parameters checked - run the actual tracker on this
-				%frame
-				trFlag = handles.tracker.trackFrame(fh(k), pParam);
-				if(trFlag == -2)
+				bpimg      = handles.frameBuf.getCurImg(k, 'bpimg');
+				[st tOpts] = handles.tracker.trackFrame(bpimg, 'wpos', pParam, 'zm', handles.frameBuf.getZeroMoment(k));
+				if(st == -2)
 					%This error code indicates that we will quit the loop early,
 					%returning control to the GUI
 					fprintf('ERROR: Tracking returned status code -2\n');
-					status == -1;
+					status = -1;
 					delete(wb);
 					return;
 				end
+				% Update frame handles
+				handles.frameBuf = handles.frameBuf.setFrameParams(k, tOpts);
 				% Update target location in segmenter
-				curParam = get(fh(k), 'winParams');
+				curParam = handles.frameBuf.getWinParams(k);
 				xyPrev   = [curParam(1) curParam(2)];
 				handles.segmenter.setXYPrev(xyPrev);
 			end	 
 			if(DEBUG)
 				%Print more detailed error messages in debug mode
-				m = get(fh(k), 'moments');
+				m = handles.frameBuf.getMoments(k);
 				if(isempty(m{1}) || isequal(m{1}, zeros(1,5)))
 					fprintf('ERROR: moments for frame %d are zero\n', k);
 					status = -1;
 					break;
 				end
-				w = get(fh(k), 'winParams');
+				w = handles.frameBuf.getWinParams(k);
 				if(isempty(w) || isequal(w, zeros(1,5)))
 					fprintf('ERROR: winParams for frame %d are zero\n', k);
 					status = -1;

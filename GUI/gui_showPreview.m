@@ -31,7 +31,7 @@ function [status nh] = gui_showPreview(handles, varargin)
 				%elseif(strncmpi(varargin{k}, 'seg', 3))
 				%	seg = 1;
                 elseif(strncmpi(varargin{k}, 'param', 5))
-                    param = varargin{k+1};
+                    pidx = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'traj', 4))
 					PLOT_TRAJ = true;
 				elseif(strncmpi(varargin{k}, 'debug', 5))
@@ -71,19 +71,14 @@ function [status nh] = gui_showPreview(handles, varargin)
 	gui_setPreviewTitle(get(fh, 'filename'), handles.fig_framePreview);
 
 	%If there is segmentation data, show this as well
-	if(get(fh, 'bpSum') ~= 0)
-		bpvec  = get(fh, 'bpVec');
-		bpdims = get(fh, 'dims');
-        bpimg  = vec2bpimg(bpvec, 'dims', bpdims);
-		if(DEBUG)
-			sz = size(bpimg);
-			%fprintf('%s frame reports dims as [%d %d]\n', DSTR, bpdims(1), bpdims(2));
-			%fprintf('%s size from bpimg       [%d %d]\n', DSTR, sz(2), sz(1));
-		end
+	
+
+	if(handles.frameBuf.hasBpData(idx))
+		bpimg = handles.frameBuf.getCurImg(idx, 'bpimg');
 		if(get(handles.chkShowSparse, 'Value'))
             %Check if this is a sparse vector, and show as such in preview
-            if(get(fh, 'isSparse'))
-                [spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', get(fh, 'sparseFac'));
+            if(handles.frameBuf.isSparseVec(idx))
+                [spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', handles.frameBuf.getSparseFac(idx));
                 if(spstat.numZeros == 0)
                     bpimg = vec2bpimg(spvec, 'dims', bpdims);
                 end
@@ -104,29 +99,31 @@ function [status nh] = gui_showPreview(handles, varargin)
         tVec = gui_getTraj(handles.frameBuf, 'trim');
         gui_plotTraj(handles.fig_framePreview, tVec, frameIndex);
 	else
-		%If there is tracking data, overlay this onto segmentation data and place 
-		%window parameter data onto gui
-		%disp(get(fh));
-		params = get(fh, 'winParams');
+		%If there is tracking data, overlay this onto segmentation data 
+		%and place window parameter data onto gui
+		params = handles.frameBuf.getWinParams(idx);
 		%If the first element is empty, then the rest will also be empty
 		%(similarly for zero)
 		if(isempty(params) ||isequal(params, zeros(1,length(params))))
 			fprintf('No params set for this frame\n');
 			set(handles.etParam, 'String', 'No window parameters set for this frame');
 		else
-			gui_plotParams(fh, handles.fig_bpPreview);
-            %DEBUG: Got to this point in one tracking loop where idx wasn't
-            %defined - do a check here over a few runs to get an idea how
-            %common this might be
             if(~exist('idx', 'var'))
                 fprintf('WARNING: No idx parameter in gui_showPreview()!!!\n');
                 idx = 1;
             end
-			if(exist('param', 'var'))
-				[str status] = gui_setWinParams(handles.frameBuf, idx, 'p', param);
-			else
-				[str status] = gui_setWinParams(handles.frameBuf, idx);
+			moments = handles.frameBuf.getMoments(idx);
+			niters  = handles.frameBuf.getNiters(idx);
+			dims    = handles.frameBuf.getDims(idx);
+			bpsum   = handles.frameBuf.getBpSum(idx);
+			gui_plotParams(handles.fig_bpPreview, params, moments, niters);
+			if(exist('params', 'var'))
+				params = handles.frameBuf.getWinParams(idx);
 			end
+			if(~exist('pidx', 'var'))
+				pidx = 1;
+			end
+			[str status] = gui_setWinParams(pidx, params, moments, niters, dims, bpsum);
 			if(status == 0)
 				set(handles.etParam, 'String', str);
 			end

@@ -1,10 +1,10 @@
-function status = msProcLoop(T, fh, trackWindow)
+function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 % SELMETHOD
-% status = msProcLoop(T, fh, trackWindow)
+% status = msProcLoop(T, bpimg, trackWindow, opts)
 %
-% Perform specified tracking operation on the frame handle fh.
+% Perform specified tracking operation on the backprojection image bpimg.
 % csTracker.msProcLoop() performs the tracking method specified in T.method 
-% on the frame contained in the frame handle fh.
+% on the backprojection image bpimg.
 %
 % The value in T.FIXED_ITER determines the kind of tracking loop to use. If 
 % T.FIXED_ITER is 1, the tracking will perform T.MAX_ITER loops for every 
@@ -15,12 +15,10 @@ function status = msProcLoop(T, fh, trackWindow)
 
 % Stefan Wong 2013
 
-	%Do a quick sanity check on trackWindow
-	%if(isempty(trackWindow))
-	%	fprintf('ERROR: empty trackWindow in csTracker.msProcLoop()\n');
-	%	status = -1;
-	%	return;
-	%end
+
+	if(isfield(opts, 'dims'))
+		dims = opts.dims;
+	end
 
 	%Allocate memory to store all intermediate results
 	tVec     = zeros(2, T.MAX_ITER);
@@ -28,37 +26,32 @@ function status = msProcLoop(T, fh, trackWindow)
 
 	% ==== PRE-ALLOCATION STAGE ==== %
 	% Load any data needed in the loop here
-	if(T.method == T.MOMENT_WINACCUM || T.method == T.MOMENT_IMGACCUM)
-		bpimg = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
-	elseif(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
-		%if(get(fh, 'isSparse') == 0)
-			bpimg          = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
-			[spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', T.SPARSE_FAC);
-            if(isempty(spstat))
-                status = -1;
-                return;
-            end
-			if(T.verbose)
-				if(spstat.numZeros > 0)
-					fprintf('WARNING: Zeros in spvec\n');
-				end
-                if(spstat.fac > 1)
-                    fprintf('fac: %d (frame %s)\n', spstat.fac, get(fh, 'filename'));
-                end
-                fprintf('spvec has %d elements\n', spstat.bpsz);
+	if(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
+		[spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', T.SPARSE_FAC);
+		if(isempty(spstat))
+			status = -1;
+			return;
+		end
+		if(T.verbose)
+			if(spstat.numZeros > 0)
+				fprintf('WARNING: Zeros in spvec\n');
 			end
-			zmtrue         = length(get(fh, 'bpVec'));
-			%Check spvec
-			if(sum(sum(spvec)) == 0)
-				fprintf('ERROR: spvec has no bpdata\n');
-				status = -1;
-				return;
-			end
-		%end
-		dims = get(fh, 'dims');
+			fprintf('spvec has %d elements\n', spstat.bpsz);
+		end
+		%Check spvec
+		if(sum(sum(spvec)) == 0)
+			fprintf('ERROR: spvec has no bpdata\n');
+			status = -1;
+			return;
+		end
 	elseif(T.method == T.MOMENT_WINVEC)
-		bpvec = get(fh, 'bpVec'); 
-		dims  = get(fh, 'dims');
+
+		% TODO : Where to specify bpvec if no frame handle available?
+		if(opts.conv_vec)
+			bpvec = vec2bpimg(bpimg, 'dims', dims);
+		else
+			bpvec = bpimg;		% the vector was passed in as image param
+		end
 	end
 
 	% ======== MEANSHIFT PROCESSING LOOP ======== %
@@ -84,7 +77,7 @@ function status = msProcLoop(T, fh, trackWindow)
                     status = -1;
                     return;
                 end
-				moments = winAccumVec(T, spvec, trackWindow, dims, 'sp', spstat, 'zm', zmtrue);
+				moments = winAccumVec(T, spvec, trackWindow, dims, 'sp', spstat, 'zm', opts.zmtrue);
 			case T.SPARSE_IMG
 				moments = imgAccumVec(T, spvec, 'sp', spstat);
 			case T.MOMENT_WINVEC
@@ -98,17 +91,14 @@ function status = msProcLoop(T, fh, trackWindow)
 				status = -1;
 				return;
 		end
-		%DEBUGGING:
+
 		if(T.verbose)
             fprintf('Moments (loop %2d) : ', n);
             disp(moments);
-        end
+		end
 		%Store intermediate results
 		fmoments{n} = moments;
 		tVec(:,n)   = [moments(1) ; moments(2)];
-		% ========================================================================= %
-		% CONVERGENCE TEST: Test here to see if we should exit the loop
-		% ========================================================================= %
 		if(~T.FIXED_ITER && n > 1)
 			%If we converge early, quit the loop
 			cverge = abs(tVec(:,n) - tVec(:,n-1));
@@ -179,7 +169,6 @@ function status = msProcLoop(T, fh, trackWindow)
 	end
 
 	%Check that we did converge, and if not report
-	%if(abs(tVec(:,n) - tVec(:,n-1)) > T.EPSILON * ones(2,1))
 	cverge =  abs(tVec(:,n) - tVec(:,n-1));
 	%NOTE: For some reason, MATLAB reject the below test with a scalar AND
 	%operator (&&). This does not occur if the same test is run from
@@ -238,64 +227,62 @@ function status = msProcLoop(T, fh, trackWindow)
 		wparam(5) = 2;
 	end
 	%Check wparam
-	dims = get(fh, 'dims');
 	if(wparam(4) > dims(1))
 		wparam(4) = dims(2);
 		if(T.verbose)
-			fprintf('%s clipped wparam(4) to %d (%s)\n', T.pStr, dims(2), get(fh, 'filename'));
+			fprintf('%s clipped wparam(4) to %d\n', T.pStr, dims(2));
 		end
 	end
 	if(wparam(4) < 1)
 		wparam(4) = 1;
 		if(T.verbose)
-			fprintf('%s clipped wparam(4) to 1 (%s)\n', T.pStr, get(fh, 'filename'));
+			fprintf('%s clipped wparam(4) to 1 \n', T.pStr);
 		end
 	end
 	if(wparam(5) > dims(1))
 		wparam(5) = dims(1);
 		if(T.verbose)
-			fprintf('%s clipped wparam(5) to %d (%s)\n', T.pStr, dims(1), get(fh, 'filename'));
+			fprintf('%s clipped wparam(5) to %d \n', T.pStr, dims(1));
 		end
 	end
 	if(wparam(5) < 1)
 		wparam(5) = 1;
 		if(T.verbose)
-			fprintf('%s clipped wparam(5) to 1 (%s)\n', T.pStr, get(fh, 'filename'));
+			fprintf('%s clipped wparam(5) to 1 \n', T.pStr);
 		end
 	end
+
 	%If by this point there are zero, NaN, or infinities in the centroid, then use
 	%values from previous loop (so that window shrinks but stays in place)
-	
 	if(isnan(wparam(1)) || isnan(wparam(2)) || wparam(1) == 0 || wparam(2) == 0 || ...
        (wparam(1) == 1 && wparam(2) == 1))
 		wparam(1) = ctemp(1);
 		wparam(2) = ctemp(2);
 	end	
 	if(T.verbose)
-		fprintf('wparam for %s\n', get(fh, 'filename'));
+		fprintf('wparam:\n');
 		disp(wparam);
 	end
-	%Write data out to frame handle
-	set(fh, 'tVec', tVec);
-	set(fh, 'winParams', wparam);
-	set(fh, 'moments', fmoments);
-	set(fh, 'nIters', n);
-	set(fh, 'method', T.methodStr{T.method});
-	%Set sparse parameter
-    if(exist('spstat', 'var'))
+
+	if(exist('spstat', 'var'))
 		if(spstat.fac > 1)
-			set(fh ,'isSparse', 1);
-            set(fh, 'sparseFac', spstat.fac);
+			issparsevec = 1;
+			spfac       = spstat.fac;
 		else
-			set(fh ,'isSparse', 0);
+			issparsevec = 0;
 		end
 	else
-        %Set here in case the frame was previously tracked as sparse and is
-        %now tracked as windowed accumulation, etc
-        set(fh, 'isSparse', 0);
-        set(fh, 'sparseFac', 0);
-    end
-
+		issparsevec = 0;
+		spfac       = 0;
+	end
+	% Return structure with csFrame parameters
+	tOutput = struct('tvec', tVec, ...
+		             'winparams', wparam, ...
+		             'moments', {fmoments}, ...
+		             'niters', n, ...
+		             'method', T.methodStr{T.method}, ... 
+		             'issparsevec', issparsevec, ...
+		             'sparsefac', spfac );
 	status = 0;
 	
 end 	%msProcLoop()

@@ -208,35 +208,57 @@ classdef csTracker < handle
 		end
 
 		% ---- trackFrame() : PERFORM TRACKING ON FRAME
-		function status = trackFrame(T, fh, varargin)
+		function [status tOpts] = trackFrame(T, bpimg, varargin)
 		% TRACKFRAME
-		% Peform tracking computation on the frame handle contained in fh.
+		% Peform tracking computation on the backprojection image bpimg
 		%
-		% trackFrame(T, fh)
-		% trackFrame(T, fh, wpos)
+		% trackFrame(T, bpimg)
+		% trackFrame(T, bpimg, wpos)
 		%
 		% csTracker.trackFrame() performs the tracking method specified in T.method 
-		% on the frame contained in the frame handle fh. The window position is read
+		% on the backprojection image bpimgh. The window position is read
 		% out of T.fparams. To override this behaviour, pass an extra parameter to
 		% csTracker.trackFrame() containing the preferred window position. Note that
 		% it is the callers responsibility to ensure this argument is correct.
 
 		% Stefan Wong 2013
 
-			%Get initial tracking position
+			vec_conv = false;
+			% Check options
 			if(~isempty(varargin))
-				wpos = varargin{1};
-			else
-				%wpos = fh.winInit;
+				for k = 1 : length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'wpos', 4))
+							wpos = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'zm', 2))
+							zmtrue = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'vconv', 5))
+							vec_conv = true;
+						elseif(strncmpi(varargin{k}, 'dims', 4))
+							dims = varargin{k+1};
+						end
+					end
+				end
+			end
+
+			if(~exist('wpos', 'var'))
 				wpos = T.fParams;
-			end	
+			end
+			if(~exist('dims', 'var'))
+				dims = size(bpimg);
+				dims = [dims(2) dims(1)];	%make consistent with csFrame order
+			end
+			if(~exist('zmtrue', 'var'))
+				zmtrue = [];
+			end
 			%Warn about empty wpos and quit loop
 			if(isempty(wpos))
 				fprintf('ERROR: Empty window position vector\n');
 				return;
 			end
 			%Run tracking loop
-			plFlag = msProcLoop(T, fh, wpos);
+			procOpts = struct('zmtrue', zmtrue, 'conv_vec', vec_conv, 'dims', dims);
+			[plFlag tOpts] = msProcLoop(T, bpimg, wpos, procOpts);
 			if(plFlag == -1)
 				fprintf('WARNING: problem tracking frame %s\n', get(fh, 'filename'));
 			end	
@@ -303,7 +325,7 @@ classdef csTracker < handle
 		%[spvec varargout] = buf_spEncode(bpimg, varargin);
 		%[bpvec varargout] = buf_spDecode(spvec, varargin);
 		% --- PROCESSING LOOP ----
-		%status            = msProcLoop(T, fh, trackWindow);
+		%[status tOpts]    = msProcLoop(T, bpimg, trackWindow, zmtrue, varargin);
 	end 		%csTracker METHODS (Private)
 
 	methods (Static)
