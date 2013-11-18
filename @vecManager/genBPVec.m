@@ -1,8 +1,8 @@
-function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
+function [vec varargout] = genBPVec(V, bpimg, vtype, val, varargin) %#ok
 % GENBPVEC
-% vec = genBPVec(fh, vtype, val)
+% vec = genBPVec(bpimg, vtype, val)
 % Generate backprojection vector in either row or column format with variable vector
-% size. This function takes the backprojection data stored in the frame handle fh
+% size. This function takes the backprojection data from the parameter bpimg 
 % and generates a set of backprojection vectors suitable for use with CSoC Verilog 
 % testbenches. The style of vector can be specified by passing a vecManager format 
 % string (i.e: '16c', '8r', etc). 
@@ -15,8 +15,8 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 % the formatting string fmt.
 %
 % ARGUMENTS:
-% fh - Frame handle to generate backprojection data for
-% fmt - Formatting string
+% bpimg - Backprojection image to generate vector from
+% fmt   - Formatting string
 %
 % FORMATTING ARGUMENTS
 % Pass the string 'fmt' followed by a string containing one of the following 
@@ -35,7 +35,7 @@ function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok
 % Stefan Wong 2013
 
 	%Get data for vector
-	bpimg         = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
+	%bpimg         = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
 	[img_h img_w] = size(bpimg);		%should be 1 channel, so don't need extra d
 	
 	switch(vtype)

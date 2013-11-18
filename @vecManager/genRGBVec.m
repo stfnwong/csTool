@@ -1,8 +1,6 @@
-function vec = genRGBVec(V, fh, vtype, val, varargin)
+function vec = genRGBVec(V, img, vtype, val, varargin)
 % GENRGBVEC
-% Generate RGB image vector (as a raster) from image reffered to by fh. This method
-% reads the image file referred to by fh.filename and creates a test vector consisting
-% of a raster pattern stream of RED, GREEN, and BLUE values for each pixel.
+% Generate RGB image vector (as a raster) from image img. 
 %
 
 % Stefan Wong 2012
@@ -15,12 +13,11 @@ function vec = genRGBVec(V, fh, vtype, val, varargin)
 		DATA_SZ = 256;
 	end
 
-	img = imread(get(fh, 'filename'));
 	if(range(range(img)) <= 1.0)
 		img = img .* DATA_SZ;
 	end
 
-	[h w d] = size(img);
+	[h w d] = size(img); %#ok
 	red     = zeros(1, h*w);
 	grn     = zeros(1, h*w);
 	blu     = zeros(1, h*w);
@@ -41,7 +38,7 @@ function vec = genRGBVec(V, fh, vtype, val, varargin)
 	end
 	delete(wb);
 	vec{1,1} = red;
-	vec{2,1) = grn;
+	vec{2,1} = grn;
 	vec{3,1} = blu;
 
 end 	%genRGBVec

@@ -29,7 +29,8 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 	if(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
 		[spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', T.SPARSE_FAC);
 		if(isempty(spstat))
-			status = -1;
+			status  = -1;
+			tOutput = [];
 			return;
 		end
 		if(T.verbose)
@@ -41,7 +42,8 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 		%Check spvec
 		if(sum(sum(spvec)) == 0)
 			fprintf('ERROR: spvec has no bpdata\n');
-			status = -1;
+			status  = -1;
+			tOutput = [];
 			return;
 		end
 	elseif(T.method == T.MOMENT_WINVEC)
@@ -67,14 +69,16 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 				moments = imgAccum(T, bpimg);
 			case T.KERNEL_DENSITY
 				fprintf('Not yet implemented\n');
-				status = -1;
+				status  = -1;
+				tOutput = [];
 				return;
 			case T.SPARSE_WINDOW
                 %To avoid crashing csTool, perform a more graceful exit if
                 %we dont have spvec by this point
                 if(~exist('spvec', 'var'))
                     fprintf('ERROR: spvec panic!\n');
-                    status = -1;
+                    status  = -1;
+					tOutput = [];
                     return;
                 end
 				moments = winAccumVec(T, spvec, trackWindow, dims, 'sp', spstat, 'zm', opts.zmtrue);
@@ -88,7 +92,8 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 				fprintf('UNDER CONSTRUCTION\n');
 			otherwise
 				fprintf('Not yet implemented\n');
-				status = -1;
+				status  = -1;
+				tOutput = [];
 				return;
 		end
 

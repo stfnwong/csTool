@@ -50,11 +50,16 @@ classdef csFrameBuffer
 		renderMode;		% (ENUM) Read file from disk or genBP Img
 		% NOTE (renderMode) This effectively acts as an enum that 
 		% determines which kind of data getCurImg() will return
-		%verbose;		%Be verbose
 	end
 
 	properties (SetAccess = 'private', GetAccess = 'public')
 		verbose;		%Be verbose (show debug messages)
+	end
+
+	properties (Constant = true, GetAccess = 'public')
+		% Enumerations for renderMode
+		IMG_FILE  = 0;
+		GEN_BPIMG = 1;
 	end
 
 	% ---- PUBLIC METHODS ---- %
@@ -340,7 +345,7 @@ classdef csFrameBuffer
 
 			% Get image based on renderMode
 			switch(F.renderMode)
-				case 0
+				case F.IMG_FILE
 					% Read image from disk and return img file
 					if(strncmpi(get(fh, 'filename'), ' ', 1))
 						fprintf('[getCurImg()] : No file data in frame %d\n', idx);
@@ -353,7 +358,7 @@ classdef csFrameBuffer
 						img = img(:,:,1:3);
 					end
 					return;
-				case 1
+				case F.GEN_BPIMG
 					% Read image from bpVec and return image file
 					img = get(fh, 'bpVec');
 					if(RETURN_IMG)
@@ -794,7 +799,7 @@ classdef csFrameBuffer
 
 			%write back data
 			FB.fNum       = fnum;
-			FB.renderMode = 0;
+			FB.renderMode = F.IMG_FILE;
             status        = 0;
 			return;
 

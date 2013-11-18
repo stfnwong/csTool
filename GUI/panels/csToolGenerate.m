@@ -115,9 +115,9 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     orStr  = {'row', 'col', 'scalar'};
     set(handles.pmVecSz, 'String', fmtStr);
     set(handles.pmVecOr, 'String', orStr);
-    %Make default selection 2c
+    %Make default selection 16c
 	%TODO :  Check value in vOpts
-    set(handles.pmVecSz, 'Value', 4);
+    set(handles.pmVecSz, 'Value', 1);
     set(handles.pmVecOr, 'Value', 2);
     %Set default range to be entire frameBuffer
     set(handles.etLow, 'String', '1');
@@ -269,130 +269,118 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %command line vecManager would accept out of the drop-down box
     %arguments
 	
-    fstr  = get(handles.pmVecOr, 'String');
-    fidx  = get(handles.pmVecOr, 'Value');
-    ftype = fstr{fidx};
-	vstr  = get(handles.pmVecSz, 'String');
-    val   = vstr{get(handles.pmVecSz, 'Value')};
-    if(strncmpi(ftype, 'scalar', 6))
+    vstr   = get(handles.pmVecOr, 'String');
+    vidx   = get(handles.pmVecOr, 'Value');
+    vtype  = vstr{vidx};
+	valstr = get(handles.pmVecSz, 'String');
+    val    = valstr{get(handles.pmVecSz, 'Value')};
+    if(strncmpi(vtype, 'scalar', 6))
         fmt = 's';
-    elseif(strncmpi(ftype, 'row', 3))
+    elseif(strncmpi(vtype, 'row', 3))
         fmt = strcat(num2str(val), 'r');
     else
         fmt = strcat(num2str(val), 'c');
     end
-    if(get(handles.chkGenRange, 'Value'))
-        lr    = fix(str2double(get(handles.etLow, 'String')));
-        hr    = fix(str2double(get(handles.etHigh, 'String')));
-        if(isnan(lr) || isnan(hr))
-            fprintf('Non-number value - getting all frames\n');
-            range = 0:handles.frameBuf.getNumFrames();
-        else
-            range = lr:hr;
-        end
-        fh = handles.frameBuf.getFrameHandle(range);
-        if(get(handles.chkUseFrameFilename, 'String'))
-            fname = cell(1, length(lr:hr));
-            n = lr;
-            for k = 1:length(fname)
-                fh = handles.frameBuf.getFrameHandle(n);
-                [ef str num ext path] = fname_parse(get(fh, 'filename'), 'n');   %#ok
-                if(ef == -1)
-                    fprintf('ERROR: parse error in filename [%s]\n', get(fh, 'filename'));
-                    return;
-                end
-                fname{k} = sprintf('%s%03d.dat', str, num);
-                n = n + 1;
-            end
-        elseif(get(handles.chkAppendNum, 'Value'))
-            fname = cell(1, length(lr:hr));
-            n = lr;
-            fh = get(handles.frameBuf.getFrameHandle(n));
-            [ef str num ext path] = fname_parse(get(fh, 'filename'), 'n'); %#ok
-            if(ef == -1)
-                return;
-            end
-            for k = 1:length(fname)
-                fname{k} = sprintf('%s-%03d.dat', str, k);
-            end
-        else
-            %Append numbers to the value in edit text field
-            fn = get(handles.etWriteFile, 'String');
-            [ef str num ext path] = fname_parse(fn, 'n'); %#ok
-            if(ef == -1)
-                return;
-            end
-            fname = cell(1, length(lr:hr));
-            n = lr;
-            for k = 1:length(fname)
-                fname{k} = sprintf('%s%s-%03.dat', path, str, n);
-                n = n + 1;
-            end
-        end
-    else
-        fh    = handles.frameBuf.getFrameHandle(handles.idx);
-        fname = get(handles.etWriteFile, 'String');
-    end
+	val = fix(str2double(val));
 
- 	% TODO : Add a control to vary the scale factor
+	if(get(handles.chkGenRange, 'Value'))
+		lr = fix(str2double(get(handles.etLow,  'String')));
+		hr = fix(str2double(get(handles.etHigh, 'String')));
+		if(isnan(lr) || isnan(hr))
+			fprintf('ERROR: Non-number value in range\n');
+			range = [1 1];
+		else
+			range = [lr hr];
+		end
+	else
+		range = [1 1];
+	end
+
+	% Generate filename(s)
+	filename = handles.frameBuf.getFilename(range(1));
+	[ef str num ext path] = fname_parse(filename, 'n'); %#ok
+	if(ef == -1)
+		fprintf('ERROR: parse error in filename %s\n', filename);
+		return;
+	end
+	if(range(2) > 1)
+		fname = cell(1, range(2));
+		for k = range(1) : range(2)
+			fname{k} = sprintf('%s-%03d.dat', str, k);
+		end
+	else
+		fname{1} = sprintf('%s.dat', str);
+	end
+
+	% TODO : For now hard code scale at 256 - add GUI control for this
 	scale = 256;
-	
-	opts = struct('vtype', ftype, 'val', fix(str2double(val)), 'scale', scale, 'fname', fname);
-    
-	% --- RGB Vector --- %
-    if(get(handles.chkRGB, 'Value'))
-        if(handles.debug)
-            fprintf('Generating RGB Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
-        end
-		handles.vecManager.writeImgVec(fh, opts, 'rgb');
-        %handles.vecManager.writeRGBVec(fh, 'fmt', fmt, 'file', fname);
-    end
 
-	% --- Hue Vector --- %
-    if(get(handles.chkHue, 'Value'))
-        if(handles.debug)
-            fprintf('Generating Hue Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
-        end
-		handles.vecManager.writeImgVec(fh, opts, 'hue');
-        %handles.vecManager.writeHueVec(fh, 'fmt', fmt, 'file', fname);
-    end
+	% Generate vectors as required
+	for idx = range(1) : range(2)
 
-	% ---- HSV Vector ---- %
-    if(get(handles.chkHSV, 'Value'))
-        if(handles.debug)
-            fprintf('Generating HSV Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
-        end
-		handles.vecManager.writeImgVec(fh, opts, 'hsv');
-        %handles.vecManager.writeHSVVec(fh, 'fmt', fmt, 'file', fname);
-    end
+		% Format options structure
+		opts = struct('vtype', vtype, ...
+			          'val', val, ...
+			          'scale', scale, ...
+			          'fname', fname{idx});
+		
+		% --- RGB Vector --- %
+		if(get(handles.chkRGB, 'Value'))
+			if(handles.debug)
+				fprintf('Generating RGB Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
+			end
+			img = handles.frameBuf.getCurImg(idx, 'img');
+			handles.vecManager.writeImgVec(img, opts, 'rgb');
+			%handles.vecManager.writeRGBVec(fh, 'fmt', fmt, 'file', fname);
+		end
 
-	% ---- Backprojection Vector ---- %
-    if(get(handles.chkBP, 'Value'))
-        if(handles.debug)
-            fprintf('Generating BPVec (%s) for frame %s\n', fmt, get(fh, 'filename'))
-        end
-        if(iscell(fname))
-            fprintf('Backprojection filename : %s\n', fname{1});
-        else
-            fprintf('Backprojection filename : %s\n', fname); %#ok
-        end
-		handles.vecManager.writeImgVec(fh, opts, 'bp');
-        %handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'file', fname);
-    end
+		% --- Hue Vector --- %
+		if(get(handles.chkHue, 'Value'))
+			if(handles.debug)
+				fprintf('Generating Hue Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
+			end
+			img = handles.frameBuf.getCurImg(idx, 'img');
+			img = rgb2hsv(img);
+			img = img(:,:,1);
+			handles.vecManager.writeImgVec(img, opts, 'hue');
+			%handles.vecManager.writeHueVec(fh, 'fmt', fmt, 'file', fname);
+		end
 
-    %Write mhist to same location, appending -mhist.dat
-    if(get(handles.chkMhist, 'Value'))
-        [ef str num ext path] = fname_parse(get(handles.etWriteFile, 'String'), 'n'); %#ok
-        if(ef == -1)
-            fprintf('ERROR: parse error generating mhist\n');
-            return;
-        end
-        fn = sprintf('%s%s-mhist.%s', path, str, ext);
-        ef = write_mhist(fn, handles.mhist);
-        if(ef == -1)
-            return;
-        end
-    end
+		% ---- HSV Vector ---- %
+		if(get(handles.chkHSV, 'Value'))
+			if(handles.debug)
+				fprintf('Generating HSV Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
+			end
+			img = handles.frameBuf.getCurImg(idx, 'img');
+			img = rgb2hsv(img);
+			handles.vecManager.writeImgVec(img, opts, 'hsv');
+			%handles.vecManager.writeHSVVec(fh, 'fmt', fmt, 'file', fname);
+		end
+
+		% ---- Backprojection Vector ---- %
+		if(get(handles.chkBP, 'Value'))
+			if(handles.debug)
+				fprintf('Generating BPVec (%s) for frame %s\n', fmt, get(fh, 'filename'))
+			end
+			img = handles.frameBuf.getCurImg(idx, 'bpimg');
+			handles.vecManager.writeImgVec(img, opts, 'bp');
+			%handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'file', fname);
+		end
+
+		%Write mhist to same location, appending -mhist.dat
+		if(get(handles.chkMhist, 'Value'))
+			[ef str num ext path] = fname_parse(get(handles.etWriteFile, 'String'), 'n'); %#ok
+			if(ef == -1)
+				fprintf('ERROR: parse error generating mhist\n');
+				return;
+			end
+			fn = sprintf('%s%s-mhist.%s', path, str, ext);
+			ef = write_mhist(fn, handles.mhist);
+			if(ef == -1)
+				return;
+			end
+		end
+	end
 
     guidata(hObject, handles);
     uiresume(handles.csToolGenerateFig);

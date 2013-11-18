@@ -1,10 +1,10 @@
-function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok<INUSL>
+function [vec varargout] = genHueVec(V, img, vtype, val, varargin) %#ok<INUSL>
 % GENHUEVEC
-% vec = genHueVec(fh, vtype, val)
-% Generate hue vector for the frame handle fh.
+% vec = genHueVec(img, vtype, val)
+% Generate hue vector for the image img
 %
-% This function takes the frame stored in frame handle fh and generates a hue vector 
-% for use in CSoC Verilog testbenches. The orientation and size of the hue vectors is
+% This function takes the img and generates a hue vector for use in CSoC Verilog 
+% testbenches. The orientation and size of the hue vectors is
 % determined by the formatting string fmt, where fmt is a vecManager formatting string
 % (see section FORMATTING ARGUMENTS)
 %
@@ -16,7 +16,7 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok<INUSL>
 % the formatting string fmt.
 %
 % ARGUMENTS:
-% fh - Frame handle to generate backprojection data for
+% img - Image to generate vector from
 % fmt - Formatting string
 %
 % FORMATTING ARGUMENTS
@@ -62,8 +62,9 @@ function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok<INUSL>
 		end
 	end
 
-	%Get data for vector
-	hsv_img = rgb2hsv(imread(get(fh, 'filename'), 'TIFF'));
+	%TODO : Get rid of this line
+	%hsv_img = rgb2hsv(imread(get(fh, 'filename'), 'TIFF'));
+	hsv_img = rgb2hsv(img);
 	hue_img = hsv_img(:,:,1);
 	if(exist('S_FAC', 'var'))
 		%hue_img = hue_img .* S_FAC;

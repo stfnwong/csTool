@@ -260,7 +260,7 @@ classdef csTracker < handle
 			procOpts = struct('zmtrue', zmtrue, 'conv_vec', vec_conv, 'dims', dims);
 			[plFlag tOpts] = msProcLoop(T, bpimg, wpos, procOpts);
 			if(plFlag == -1)
-				fprintf('WARNING: problem tracking frame %s\n', get(fh, 'filename'));
+				fprintf('WARNING: problem tracking frame \n');
 			end	
 			if(~T.FORCE_TRACK && plFlag == -1)
 				status = -2;

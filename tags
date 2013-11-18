@@ -312,7 +312,7 @@ figTrackOpts_CloseRequestFcn	GUI/panels/csToolTrackOpts.m	/^function figTrackOpt
 fig_trajBuf_CloseRequestFcn	GUI/panels/csToolTrajBuf.m	/^function fig_trajBuf_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 fig_trajBuf_KeyPressFcn	GUI/panels/csToolTrajBuf.m	/^function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 fname_parse	util/fname_parse.m	/^function [exitflag str varargout] = fname_parse(fstring, varargin)$/;"	f
-genBPVec	@vecManager/genBPVec.m	/^function [vec varargout] = genBPVec(V, fh, vtype, val, varargin) %#ok$/;"	f
+genBPVec	@vecManager/genBPVec.m	/^function [vec varargout] = genBPVec(V, bpimg, vtype, val, varargin) %#ok$/;"	f
 genBpImgData	@vecManager/genBpImgData.m	/^function data = genBpImgData(V, bpImg, varargin)$/;"	f
 genCentroidPlot	@csFrameBrowser/genCentroidPlot.m	/^function genCentroidPlot(T, fh)$/;"	f
 genColVec	@vecManager/genColVec.m	/^function vec = genColVec(V, data, varargin)$/;"	f
@@ -323,9 +323,9 @@ genHSVVec	@vecManager/genHSVVec.m	/^function vec = genHSVVec(fh, varargin)$/;"	f
 genHistPlot	@csFrameBrowser/genHistPlot.m	/^function genHistPlot(T, fh)$/;"	f
 genHueBars	@vecManager/genHueBars.m	/^function timg = genHueBars(V, opts) %#ok<INUSL>$/;"	f
 genHueBlocks	@vecManager/genHueBlocks.m	/^function timg = genHueBlocks(V, opts)$/;"	f
-genHueVec	@vecManager/genHueVec.m	/^function [vec varargout] = genHueVec(V, fh, vtype, val, varargin) %#ok<INUSL>$/;"	f
+genHueVec	@vecManager/genHueVec.m	/^function [vec varargout] = genHueVec(V, img, vtype, val, varargin) %#ok<INUSL>$/;"	f
 genPrevPlot	@csFrameBrowser/genPrevPlot.m	/^function genPrevPlot(T, fh, varargin)$/;"	f
-genRGBVec	@vecManager/genRGBVec.m	/^function vec = genRGBVec(V, fh, vtype, val, varargin)$/;"	f
+genRGBVec	@vecManager/genRGBVec.m	/^function vec = genRGBVec(V, img, vtype, val, varargin)$/;"	f
 genRandBackprojection	@vecManager/genRandBackprojection.m	/^function bpdata = genRandBackprojection(varargin)$/;"	f
 genRandFrame	@csFrameBuffer/genRandFrame.m	/^function rFrame = genRandFrame(F, opts)$/;"	f
 genRandPos	@csFrameBuffer/genRandPos.m	/^function pos = genRandPos(F, prevPos, maxDist, imsz)$/;"	f

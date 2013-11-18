@@ -125,8 +125,11 @@ function img = assemVec(V, vectors, varargin)
 			n = 1;
 			for y = 1:imSz(2)
 				for x = 1:imSz(1)
-					img(y,x) = vectors(n);
-					n = n +1;
+					% TODO : Fix this hack
+					if(n < numel(vectors))
+						img(y,x) = vectors(n);
+						n = n +1;
+					end
 				end
 			end
 		otherwise

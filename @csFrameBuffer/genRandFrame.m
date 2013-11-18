@@ -24,7 +24,7 @@ function rFrame = genRandFrame(F, opts)
 
 % Stefan Wong 2013
 
-	imsz = opts.imsz;
+	imsz   = opts.imsz;
 	rFrame = zeros(imsz(2), imsz(1));
 	% clamp number of points
 	if(opts.npoints > (imsz(1) * imsz(2)) )

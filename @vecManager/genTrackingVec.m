@@ -4,6 +4,9 @@ function vec = genTrackingVec(V, fh)
 % of frame handles, vec will be returned as a cell array of frame parameters.
 %
 
+
+% TODO : Completely re-write this component
+
 % Stefan Wong 2012
 
 	if(length(fh) > 1)
