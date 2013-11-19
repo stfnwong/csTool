@@ -24,13 +24,13 @@ function [status nh varargout] = gui_loadFrames(handles, filename, numFrames)
 
 	if(LOAD_ALL)
 		%Parse filename to get format
-		[ef str num ext path] = fname_parse(filename);
-		if(ef == -1)
+		fs = fname_parse(filename);
+		if(fs.exitflag == -1)
 			fprintf('ERROR: Couldnt parse filename %s\n', filename);
 			status = -1;
 			return;
 		end
-		fs = sprintf('%s%s_%03d.%s', path, str, num, ext);
+		fs = sprintf('%s%s_%03d.%s', fs.path, fs.filename, fs.vecNum, fs.ext);
 		fprintf('Loading all files from %s onwards...\n', fs);
 		handles.frameBuf = handles.frameBuf.parseFilename(filename);
 		[handles.frameBuf exitflag nf] = handles.frameBuf.loadFrameData('all');

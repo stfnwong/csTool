@@ -94,6 +94,8 @@ function csToolParamBrowser_OpeningFcn(hObject, eventdata, handles, varargin)	%#
 	handles.output = hObject;
 	guidata(hObject, handles);
 
+	% TODO : Re-write to use frameBuffer accessors
+
 	uiwait(handles.csToolParamBrowser);
 
 
@@ -132,12 +134,12 @@ function bPrevFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
     end
     str = cstParam_FmtParamString(handles);
     set(handles.etParamData, 'String', str);
-    [exitflag fname num] = fname_parse(get(fh, 'filename'));
-    if(exitflag == -1)
+	fs = fname_parse(get(fh, 'filename'));
+	if(fs.exitflag == -1)
         return;
-    end
+	end
     %set(handles.figPreview, 'Title', fname, 'Interpreter', 'None');
-    title(handles.figPreview, sprintf('%s_%d', fname, num), 'Interpreter', 'None');
+    title(handles.figPreview, sprintf('%s_%d', fs.filename, fs.vecNum), 'Interpreter', 'None');
 	guidata(hObject, handles);
 	
 
@@ -161,12 +163,12 @@ function bNextFrame_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
     end
     str = cstParam_FmtParamString(handles);
     set(handles.etParamData, 'String', str);
-    [exitflag fname num] = fname_parse(get(fh, 'filename'));
-    if(exitflag == -1)
-        return;
-    end
+	fs = fname_parse(get(fh, 'filename'));
+	if(fs.exitflag == -1)
+		return;
+	end
     %set(handles.figPreview, 'Title', fname, 'Interpreter', 'None');
-    title(handles.figPreview, sprintf('%s_%d', fname, num), 'Interpreter', 'None');
+    title(handles.figPreview, sprintf('%s_%d', fs.filename, fs.vecNum), 'Interpreter', 'None');
 	guidata(hObject,handles);
 
 	uiresume(handles.csToolParamBrowser);

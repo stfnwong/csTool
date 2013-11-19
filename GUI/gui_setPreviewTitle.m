@@ -9,9 +9,11 @@ function gui_setPreviewTitle(fTitle, fHandle)
 	if(isempty(fTitle))
 		t = title(fHandle, 'No segmentation data for this frame');
 	else
-		%[str num ext p f] = fname_parse(fTitle, 'n');	%#ok
-		[exitflag str num ext p] = fname_parse(fTitle, 'n'); %#ok
-		t = title(fHandle, sprintf('%s_%03d.%s', str, num, ext));
+		fs = fname_parse(fTitle);
+		if(fs.exitflag == -1)
+			t = title(fHandle, 'Unable to parse filename [%s]', fTitle);
+		else
+		t = title(fHandle, sprintf('%s_%03d.%s', fs.filename, fs.vecNum, fs.ext));
 	end
 	set(t, 'Interpreter', 'None');
 

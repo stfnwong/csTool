@@ -184,12 +184,11 @@ function gui_renderPreview(axHandle, img, idx, filename, varargin)
 	%	imshow(img, 'Parent', axHandle);
 	%end
 	imshow(img, 'Parent', axHandle);
-	%[ef fname num] = fname_parse(get(fh, 'filename'));
-	[ef fname num] = fname_parse(filename);
-	if(ef == -1)
+	fs = fname_parse(filename);
+	if(fs.exitflag == -1)
 		return;
 	end
-	title(axHandle, sprintf('frame %d (%s_%d)', idx, fname, num), 'Interpreter', 'None');
+	title(axHandle, sprintf('frame %d (%s_%d)', idx, fs.filename, fs.vecNum), 'Interpreter', 'None');
 
 function gui_renderErrorPlot(axHandle, traj, idx, varargin)
 	% Render the error plot of the provided trajectories. traj must be cell array

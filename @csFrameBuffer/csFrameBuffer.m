@@ -602,32 +602,20 @@ classdef csFrameBuffer
 			if(~ischar(fname))
 				error('Filename must be string');
 			end
-			if(FB.verbose)
-				vb = 'd';
-			else
-				vb = 'x';
-			end
-			[exitflag str num fext fpath] = fname_parse(fname, vb);
-			%if(FB.verbose)
-			%	%[str num ext path exitflag] = fname_parse(fname, 'd')
-			%	[exitflag str num ext path] = fname_parse(fname, 'd');
-			%else
-			%	%[str num ext path exitflag] = fname_parse(fname)
-			%	[exitflag str num ext path] = fname_parse(fname);
-			%end
-			if(exitflag == -1)
+			ps = fname_parse(fname);
+			if(ps.exitflag == -1)
 				%Check what fields we do have
-				if(isempty(fext))
+				if(isempty(fs.ext))
 					status = -1;
 					%FB     = FB;
 					return;
 				end
 			else
-				FB.ext   = fext;
+				FB.ext   = fs.ext;
 			end	
-			FB.fName = str;
-			FB.fNum  = num;
-			FB.path  = fpath;
+			FB.fName = fs.filename;
+			FB.fNum  = fs.vecNum;
+			FB.path  = fs.path;
 			status   = 0;
 			return;
 

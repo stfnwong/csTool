@@ -217,12 +217,12 @@ function bNext_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Update output filename if UseFrameFilename checked
     if(get(handles.chkUseFrameFilename, 'Value'))
 		filename = handles.frameBuf.getFilename(handles.idx);
-        [ef str num] = fname_parse(filename);
-        if(ef == -1)
+		fs = fname_parse(filename);
+		if(fs.exitflag == -1)
             fprintf('ERROR: Couldnt parse filename (%s)\n', filename);
             return;
-        end
-        fname = sprintf('data/vectors/%s%02d', str, num);
+		end
+        fname = sprintf('data/vectors/%s%02d', fs.filename, fs.vecNum);
         %fname = get(fh, 'filename');
         set(handles.etWriteFile, 'String', fname);
     end
@@ -248,12 +248,12 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Update output filename if UseFrameFilename checked
     if(get(handles.chkUseFrameFilename, 'Value'))
 		filename = handles.frameBuf.getFilename(handles.idx);
-        [ef str num] = fname_parse(filename);
-        if(ef == -1)
+		fs = fname_parse(filename);
+		if(fs.exitflag == -1)
             fprintf('ERROR: Couldnt parse filename (%s)\n', filename);
             return;
-        end
-        fname = sprintf('data/vectors/%s%02d', str, num);
+		end
+        fname = sprintf('data/vectors/%s%02d', fs.filename, fs.vecNum);
         %fname = get(fh, 'filename');
         set(handles.etWriteFile, 'String', fname);
     end
@@ -298,18 +298,18 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	% Generate filename(s)
 	filename = handles.frameBuf.getFilename(range(1));
-	[ef str num ext path] = fname_parse(filename, 'n'); %#ok
-	if(ef == -1)
+	fs = fname_parse(filename);
+	if(fs.exitflag == -1)
 		fprintf('ERROR: parse error in filename %s\n', filename);
 		return;
 	end
 	if(range(2) > 1)
 		fname = cell(1, range(2));
 		for k = range(1) : range(2)
-			fname{k} = sprintf('%s-%03d.dat', str, k);
+			fname{k} = sprintf('%s-%03d.dat', fs.filename, k);
 		end
 	else
-		fname{1} = sprintf('%s.dat', str);
+		fname{1} = sprintf('%s.dat', fs.filename);
 	end
 
 	% TODO : For now hard code scale at 256 - add GUI control for this
@@ -369,8 +369,8 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 		%Write mhist to same location, appending -mhist.dat
 		if(get(handles.chkMhist, 'Value'))
-			[ef str num ext path] = fname_parse(get(handles.etWriteFile, 'String'), 'n'); %#ok
-			if(ef == -1)
+			fs = fname_parse(get(handles.etWriteFile, 'String'));
+			if(fs.exitflag == -1)
 				fprintf('ERROR: parse error generating mhist\n');
 				return;
 			end
@@ -429,8 +429,8 @@ function chkUseFrameFilename_Callback(hObject, eventdata, handles) %#ok<INUSL,DE
 function gui_renderPreview(axHandle, img, idx, filename)
 
 	imshow(img, 'Parent', axHandle);
-	[exitflag fname num] = fname_parse(filename);
-	if(exitflag == -1)
+	fs = fname_parse(filename);
+	if(fs.exitflag == -1)
 		return;
 	end
 	

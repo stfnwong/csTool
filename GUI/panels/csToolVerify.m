@@ -70,6 +70,8 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 			else
 				if(isa(varargin{k}, 'vecManager'))
 					handles.vecManager = varargin{k};
+				elseif(isa(varargin{k}, 'csFrameBuffer'))
+					handles.refFrameBuf = varargin{k};
 				end
 			end
 		end
@@ -93,6 +95,17 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
         vfSettings.dims        = [640 480];
         handles.vfSettings     = vfSettings;
     end
+	if(~isfield(handles, 'refFrameBuf'))
+		fprintf('WARNING: No reference frame buffer supplied - verification not possible\n');
+		% TODO : what to do about this?
+		
+	end
+
+	%  TODO : Generate a new local frame buffer here for data read from disk
+	fbOpts = struct('thing', [], 'other_thing', []);
+	handles.testFrameBuf = csFrameBuffer(fbOpts);
+
+	% TODO : Update this for new csFrameBuffer calls
     % Check if we have a frame handle
     if(~isfield(handles, 'fh'))
         fprintf('WARNING: No frame handle specified\n');
@@ -106,7 +119,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	end
 
 	%Populate GUI elements
-    fmtStr  = {'16', '8', '4', '2', 'scalar'};
+    fmtStr  = {'16', '8', '4', '2'};
     orStr   = {'row', 'col', 'scalar'};
     %typeStr = {'HSV', 'Hue', 'BP'};
 	set(handles.pmVecSz, 'String', fmtStr);
@@ -195,6 +208,8 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     vslist       = get(handles.pmVecSz, 'String');
     vsidx        = get(handles.pmVecSz, 'Value');
     vsize        = vslist{vsidx};
+
+	% TODO : Read in a loop
     
 	[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize, 'vtype', vtype);
 	if(ef == -1)

@@ -157,8 +157,8 @@ classdef vecManager
 
 			if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
 				%Parse filename and read multiple files
-				[ef str num ext path] = fname_parse(fname, 'n'); %#ok
-				if(ef == -1)
+				ps = fname_parse(fname);
+				if(ps.exitflag == -1)
 					fprintf('(readVec) : Unable to parse [%s]\n', fname);
 					vecdata = [];
 					if(nargout > 1)
@@ -166,10 +166,6 @@ classdef vecManager
 					end
 					return;
 				end
-				%Check that the first and last files in the sequence exist
-				%sfn = sprintf('%s%s-vec%03d.%s', path, str, of, ext);
-				%efn = sprintf('%s%s-vec%03d.%s', path, str, (of+sz), ext);
-				%NOTE : Dont need this check for scalar case
 				if(strncmpi(vtype, 'scalar', 6))
 					if(exist(fname, 'file') ~= 2)
 						fprintf('ERROR: Can''t find file [%s]\n', fname);
@@ -180,13 +176,11 @@ classdef vecManager
 					end
 				else
 					if(of > 0)
-						sfn = sprintf('%s%s%03d.%s', path, str, of, ext);
+						sfn = sprintf('%s%s%03d.%s', ps.path, ps.filename, of, ps.ext);
 					else
-						%TODO : Might want to change the offset here so that they align 
-						%normally (although this would mean offset by -1 in generate)
-						sfn = sprintf('%s%s%03d.%s', path, str, of+1, ext);
+						sfn = sprintf('%s%s%03d.%s', ps.path, ps.filename, of+1, ps.ext);
 					end
-                    efn = sprintf('%s%s%03d.%s', path, str, fix(of+str2double(sz)), ext);
+                    efn = sprintf('%s%s%03d.%s', ps.path, ps.filename, fix(of+str2double(sz)), ext);
 					if(exist(sfn, 'file') ~= 2)	
 						fprintf('ERROR: Can''t find start file [%s]\n', sfn);
 					end
@@ -206,7 +200,7 @@ classdef vecManager
 				%offset  = of-1;
 				wb = waitbar(0, sprintf('Reading vector [0/%d]', length(vecdata)), 'Name', 'Reading vector data...');
 				for n = 1:length(vecdata)
-					fn = sprintf('%s%s%03d.%s', path, str, of+n, ext);
+					fn = sprintf('%s%s%03d.%s', ps.path, ps.filename, of+n, fs.ext);
 					%debug
 					sprintf('filename : %s\n', fn);
 					[vecdata{n} ref] = vecDiskRead(V, fn, 'dtype', dtype);
