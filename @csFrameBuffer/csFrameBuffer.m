@@ -611,11 +611,11 @@ classdef csFrameBuffer
 					return;
 				end
 			else
-				FB.ext   = fs.ext;
+				FB.ext   = ps.ext;
 			end	
-			FB.fName = fs.filename;
-			FB.fNum  = fs.vecNum;
-			FB.path  = fs.path;
+			FB.fName = ps.filename;
+			FB.fNum  = ps.vecNum;
+			FB.path  = ps.path;
 			status   = 0;
 			return;
 
@@ -787,7 +787,7 @@ classdef csFrameBuffer
 
 			%write back data
 			FB.fNum       = fnum;
-			FB.renderMode = F.IMG_FILE;
+			FB.renderMode = FB.IMG_FILE;
             status        = 0;
 			return;
 

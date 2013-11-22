@@ -203,7 +203,7 @@ classdef csFrame < hgsetget
 		% Format handle contents for display in console
 			
 			%if(strncmpi(cf.filename, ' ', 1))
-			if(strncmpi(cf.filename, ' ', 1))
+			if(strncmpi(cf.filename, ' ', 1) || isempty(cf.filename))
 				fprintf('Image data not read yet\n');
 			else
 				fprintf('Image : %s\n', cf.filename);

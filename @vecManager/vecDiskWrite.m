@@ -85,9 +85,6 @@ function status = vecDiskWrite(V, data, varargin)
 	%Open file pointers
 	for k = length(data):-1:1
 		fp(k) = fopen(filename{k}, 'w');
-		if(DEBUG)
-			fprintf('Opening file %s...\n',filename{k});
-		end
 		if(fp(k) == -1)
 			fprintf('(vecDiskWrite): Couldn''t open file [%s]\n', filename{k});
 			status = -1;
@@ -132,9 +129,6 @@ function status = vecDiskWrite(V, data, varargin)
 	delete(wb);
 	for k = 1:length(data)
 		fclose(fp(k));
-		if(DEBUG)
-			fprintf('Closing file %s...\n', filename{k});
-		end
 	end
 
 	status = 0;

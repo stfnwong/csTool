@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 05-Oct-2013 04:22:49
+% Last Modified by GUIDE v2.5 20-Nov-2013 01:29:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -77,6 +77,9 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 		end
     end
 
+	% TODO : There should probably be a method in here to save results to 
+	% disk (need a sub-gui to visualise results?)
+
 	%Check what we have
 	if(~isfield(handles, 'vecManager'))
 		fprintf('ERROR: No vecManager object in csToolVerify\n');
@@ -97,13 +100,14 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     end
 	if(~isfield(handles, 'refFrameBuf'))
 		fprintf('WARNING: No reference frame buffer supplied - verification not possible\n');
-		% TODO : what to do about this?
+		return;		%TODO : Modify this outcome?
 		
 	end
 
-	%  TODO : Generate a new local frame buffer here for data read from disk
-	fbOpts = struct('thing', [], 'other_thing', []);
-	handles.testFrameBuf = csFrameBuffer(fbOpts);
+	% Copy the parameters out of the reference frame buffer and use those
+	% until we are provided with more information about verification
+	tOpts = handles.refFrameBuf.getOpts();
+	handles.testFrameBuf = csFrameBuffer(tOpts);
 
 	% TODO : Update this for new csFrameBuffer calls
     % Check if we have a frame handle
@@ -117,6 +121,8 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	else
 		handles.imsz = imsz;
 	end
+	% Set internal frame index variable
+	handles.idx = 1;
 
 	%Populate GUI elements
     fmtStr  = {'16', '8', '4', '2'};
@@ -143,7 +149,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
         case 2
             set(handles.pmVecSz, 'Value', 4);
         otherwise
-            set(handles.pmVecSz, 'Value', 5);
+            set(handles.pmVecSz, 'Value', 1);
     end
 
     % set orientation string
@@ -168,78 +174,176 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
             set(handles.pmVecType, 'Value', 4);
         otherwise
             fprintf('Invalid vector type [%s]', handles.vfSettings.vtype);
+			fprintf('Setting to backprojection\n');
+			set(handles.pmVecType, 'Value', 4);
     end
 
     % set image size
     dims = handles.vfSettings.dims;
     set(handles.etImageWidth,  'String', dims(1));
     set(handles.etImageHeight, 'String', dims(2));
-    %set(handles.etImageWidth, 'String', num2str(handles.imsz(1)));
-    %set(handles.etImageHeight, 'String', num2str(handles.imsz(2)));
 
-	%Setup preview figure
-	set(handles.figPreview, 'XTick', [], 'XTickLabel', []);
-	set(handles.figPreview, 'YTick', [], 'YTickLabel', []);
+	% Setup reference preview figure
+	set(handles.figPreviewTest, 'XTick', [], 'XTickLabel', []);
+	set(handles.figPreviewTest, 'YTick', [], 'YTickLabel', []);
+	title(handles.figPreviewTest, 'Preview');
+	% Setup test preview figure
+	% Setup error figure
+	set(handles.figError,   'XTick', [], 'XTickLabel', []);
+	set(handles.figError,   'YTick', [], 'YTickLabel', []);
+	title(handles.figError, 'Error');
 
     % Choose default command line output for csToolVerify
     handles.output = hObject;
 
     % Update handles structure
     guidata(hObject, handles);
-
-	% UIWAIT makes csToolVerify wait for user response (see UIRESUME)
-	% uiwait(handles.csToolVerifyFig);
+	uiwait(handles.csToolVerifyFig);
 	
 function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> 
-    varargout{1} = handles.vfSettings;
+    %varargout{1} = handles.vfSettings;
+	varargout{1} = handles.output;
 
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
 	delete(handles.csToolVerifyFig);
-    
-function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
-	%Call VecManager options to read and re-format vector from file
-	filename     = get(handles.etFileName, 'String');
-	filename     = slashkill(filename);		%get rid of slashes
+	uiresume(handles.csToolVerifyFig);
 
-    vtlist       = get(handles.pmVecOr, 'String');
-    vtidx        = get(handles.pmVecOr, 'Value');
-    vtype        = vtlist{vtidx};
-    vslist       = get(handles.pmVecSz, 'String');
-    vsidx        = get(handles.pmVecSz, 'Value');
-    vsize        = vslist{vsidx};
 
-	% TODO : Read in a loop
-    
-	[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize, 'vtype', vtype);
-	if(ef == -1)
-		fprintf('ERROR: Failed to read vector in file [%s]\n', filename);
+% ---------- TRANSPORT CONTROLS -------- %	
+function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+	
+	handles.idx = handles.idx - 1;
+	if(handles.idx < 1)
+		handles.idx = 1;
+	end
+	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
+	testImg = handles.testFrameBuf.getCurImg(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, []);
+	gui_updatePreview(handles.figPreviewTest, testImg, []);
+	gui_updatePreview(handles.figError, abs(refImg - testImg), []);
+
+	guidata(hObject, handles);
+	uiresume(handles.csToolVerifyFig);
+
+function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	handles.idx = handles.idx + 1;
+	% Clip to test buffer limit since we dont care about frames we can't
+	% verify in this context
+	if(handles.idx > handles.testFrameBuf.getNumFrames())
+		handles.idx = handles.testFrameBuf.getNumFrames();
+	end
+	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
+	testImg = handles.testFrameBuf.getCurImg(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, []);
+	gui_updatePreview(handles.figPreviewTest, testImg, []);
+	gui_updatePreview(handles.figError, abs(refImg - testImg), []);
+
+	guidata(hObject, handles);	
+	uiresume(handles.csToolVerifyFig);
+
+function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+	destIdx = fix(str2double(get(handles.etGoto, 'String')));
+	% Clamp at buffer limits
+	if(isnan(destIdx) || isempty(desIdx))
+		fprintf('ERROR: Invalid index %s\n', get(handles.etGoto, 'String'));
 		return;
 	end
-    % Set up data size based on vector type
-    % NOTE This should be settable - dont forget to redo
-    switch(vtype)
-        case 'RGB'
-            dataSz = 1;
-        case 'HSV'
-            dataSz = 1;
-        case 'Hue'
-            dataSz = 256;
-        case 'backprojection'
-            dataSz = 256;
-        otherwise
-            dataSz = 256;
-    end
+	if(destIdx < 1)
+		destIdx = 1;
+	end
+	if(destIdx > handles.refFrameBuf.getNumFrames())
+		destIdx = handles.refFrameBuf.getNumFrames();
+	end
+	handles.idx = destIdx;
 
-	%img      = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
-	if(iscell(vectors) && strncmpi(vtype, 'scalar', 6))
-		img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar', 'dataSz', dataSz, 'scale');
-	else
-		img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale');
+	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
+	testImg = handles.testFrameBuf.getCurImg(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, []);
+	gui_updatePreview(handles.figPreviewTest, testImg, []);
+	gui_updatePreview(handles.figError, abs(refImg - testImg), []);
+
+	guidata(hObject, handles);
+	uiresume(handles.csToolVerifyFig);
+
+% -------- GUI RENDERING FUNCTIONS -------- %
+function gui_updatePreview(axHandle, img, figTitle)
+	% axHandle should be vector of axis handles
+	
+	imshow(img, 'Parent', axHandle);
+	if(~isempty(figTitle))
+		title(axHandle, figTitle);
+	end
+
+
+% -------- PROCESSING / VERIFICATION -------- 5
+
+function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+	%Call VecManager options to read and re-format vector from file
+	filename = get(handles.etFileName, 'String');
+	filename = slashkill(filename);		%get rid of slashes
+    vtlist   = get(handles.pmVecOr, 'String'); %list of vector types
+    vtidx    = get(handles.pmVecOr, 'Value');
+    vtype    = vtlist{vtidx};
+    vslist   = get(handles.pmVecSz, 'String'); %list of vector sizes
+    vsidx    = get(handles.pmVecSz, 'Value');
+    vsize    = vslist{vsidx};
+	numFiles = fix(str2double(get(handles.etNumFiles, 'String')));
+	
+	if(isnan(numFiles))
+		fprintf('ERROR: Cant interpret number of files [%s]\n', get(handles.etNumFiles, 'String'));
+		return;
+	end
+	% TOOD : Write a routine to make sure the files are on disk
+	[ef errNum errFile] = numFilesCheck(numFiles, filename);
+	if(ef == -1)
+		fprintf('ERROR: Unable to find file %d of %d [%s]\n', errNum, numFiles, errFile);
+		return;
+	end
+
+	% Read files in loop
+	for N = 1 : numFiles
+		% TODO : Need to adjust filename here for frame param	
+		
+		[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize, 'vtype', vtype);
+		if(ef == -1)
+			fprintf('ERROR: Failed to read vector in file [%s]\n', filename);
+			return;
+		end
+		% Set up data size based on vector type
+		% NOTE This should be settable - dont forget to redo
+		switch(vtype)
+			case 'RGB'
+				dataSz = 1;
+			case 'HSV'
+				dataSz = 1;
+			case 'Hue'
+				dataSz = 256;
+			case 'backprojection'
+				dataSz = 256;
+			otherwise
+				dataSz = 256;
+		end
+
+		%img      = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
+		if(iscell(vectors) && strncmpi(vtype, 'scalar', 6))
+			img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar', 'dataSz', dataSz, 'scale');
+		else
+			img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale');
+		end
 	end
     handles.vectors = vectors;
-	%Show image in preview area
-	imshow(img, 'Parent', handles.figPreview);
+	
+	% Preview final image
+	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
+	testImg = handles.testFrameBuf.getCurImg(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, []);
+	gui_updatePreview(handles.figPreviewTest, testImg, []);
+	gui_updatePreview(handles.figError, abs(refImg - testImg), []);
+
+
+	%imshow(img, 'Parent', handles.figPreviewTest);
     guidata(hObject, handles);
 
 function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -268,12 +372,12 @@ function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         return;
     end
 
-    vtlist       = get(handles.pmVecOr, 'String');
-    vtidx        = get(handles.pmVecOr, 'Value');
-    vtype        = vtlist{vtidx};
-    vslist       = get(handles.pmVecSz, 'String');
-    vsidx        = get(handles.pmVecSz, 'Value');
-    vsize        = vslist{vsidx};
+    vtlist = get(handles.pmVecOr, 'String');
+    vtidx  = get(handles.pmVecOr, 'Value');
+    vtype  = vtlist{vtidx};
+    vslist = get(handles.pmVecSz, 'String');
+    vsidx  = get(handles.pmVecSz, 'Value');
+    vsize  = vslist{vsidx};
 
     switch(vtype)
         case 'RGB'
@@ -296,6 +400,18 @@ function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
     guidata(hObject, handles);
     
+function [ef errNum errFile] = numFilesCheck(numFiles, filenamr)
+
+	% Check the files to be read actually exist
+	ps = fname_parse(filename);
+	if(ps.exitflag == -1)
+		fprintf('ERROR: Unable to parse filename %s\n', filename);
+		ef      = -1;
+		errNum  = 1;
+		errFile = filename;
+		return;
+	end
+
 
 
 % -------- EMPTY FUNCTIONS -------- %
@@ -305,7 +421,10 @@ function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etFileName_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecType_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etNumFiles_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
+% -------- CREATE FUNCTIONS -------- %
 function etFileName_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
@@ -334,6 +453,12 @@ function pmVecType_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
+function etNumFiles_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 
-
-
+function etGoto_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end

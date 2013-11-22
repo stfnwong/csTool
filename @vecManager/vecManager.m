@@ -157,6 +157,7 @@ classdef vecManager
 
 			if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
 				%Parse filename and read multiple files
+				% TODO : also need to take account of frame number here
 				ps = fname_parse(fname);
 				if(ps.exitflag == -1)
 					fprintf('(readVec) : Unable to parse [%s]\n', fname);
@@ -175,12 +176,22 @@ classdef vecManager
 						return;
 					end
 				else
+					% TODO :  Cant remember why I originally wrote it this way...
 					if(of > 0)
-						sfn = sprintf('%s%s%03d.%s', ps.path, ps.filename, of, ps.ext);
+						offset = of;
 					else
-						sfn = sprintf('%s%s%03d.%s', ps.path, ps.filename, of+1, ps.ext);
+						offset = of + 1;
 					end
-                    efn = sprintf('%s%s%03d.%s', ps.path, ps.filename, fix(of+str2double(sz)), ext);
+					if(~isempty(fs.frameNum))
+
+						sfn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, ps.frameNum, offset, ps.ext);
+						efn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, ps.frameNum,  fix(of+str2double(sz)), ps.ext);
+					else
+						% TODO : This part might fail (because it probably needs a re-write)
+						sfn = sprintf('%s%s%03d.%s', ps.path, ps.filename, offset, ps.ext);
+						efn = sprintf('%s%s%03d.%s', ps.path, ps.filename, fix(of+str2double(sz)), ext);
+					end
+
 					if(exist(sfn, 'file') ~= 2)	
 						fprintf('ERROR: Can''t find start file [%s]\n', sfn);
 					end
@@ -546,7 +557,8 @@ classdef vecManager
 		% vecsz  - Size of vector (default: array size)
 		%
 		% see also assemVec, parseFmt
-	
+
+		% TODO : Re-write this method to be simpler	
 			SCALE = false;	
 			if(~isempty(varargin))
 				for k = 1:length(varargin)
@@ -592,6 +604,7 @@ classdef vecManager
 				end
 			end
 
+			% TODO : Re-factor assemVec() to take options structure or similar
 			%If variables not assigned, have assemVec() use internal defaults
 			if(exist('imSz', 'var') && exist('vecFmt', 'var') && exist('vecSz', 'var'))
 				img = assemVec(V, vec, 'imsz', imSz, 'vecfmt', vecFmt, 'vecsz', vecSz);
@@ -671,8 +684,8 @@ classdef vecManager
 				% ==== RGB ==== %
 				case 'rgb'
 					vec = genRGBVec(V, img, opts.vtype, opts.val);
-					vecname = sprintf('%s.dat', opts.fname);
-					vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
+					%vecname = sprintf('%s.dat', opts.fname);
+					vecDiskWrite(V, vec, 'fname', {opts.fname}, 'vsim');
 				% ==== HSV === %
 				case 'hsv'
 					vec = genHueVec(V, img);

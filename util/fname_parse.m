@@ -11,16 +11,13 @@ function parseStruct = fname_parse(fstring, varargin)
 % fname_parse() generates an output structure that contains the following
 % fields:
 %
-% path     - Path to file, if it isn't in current directory
 % exitflag - Status of operation. 0 if all fields parse correctly, -1 if some fields
+% path     - Path to file, if it isn't in current directory
 % filaname - String containing filename
 % ext      - File extension of file 
 % vecNum   - Which vector of a sequence this file is
 % frameNum - Which frame of a sequence this file is
 
-
-%            are missing.
-%
 
 % Stefan Wong 2013
 
@@ -40,7 +37,7 @@ function parseStruct = fname_parse(fstring, varargin)
 				STRING = false;		%return num value as numeric constant
 			end
 		end
-	e
+	end
 	if(DEBUG)
 		fprintf('DEBUG: fstring: %s\n', fstring);
 	end
@@ -116,7 +113,7 @@ function parseStruct = fname_parse(fstring, varargin)
 		                 'ext', ext, ...
 		                 'vecNum', vecNum, ... 
 		                 'frameNum', frameNum );
-	return;
+	
 
 
 end     %fname_parse()

@@ -138,6 +138,10 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
         delete(handles.csToolGenerateFig);
         return;
     end
+	% Check that we have an index variable
+	if(isempty(handles.idx))
+		handles.idx = 1;
+	end
 	img   = handles.frameBuf.getCurImg(handles.idx);
 	fname = handles.frameBuf.getFilename(handles.idx);
     imshow(img, 'Parent', handles.figPreview);
@@ -306,10 +310,10 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(range(2) > 1)
 		fname = cell(1, range(2));
 		for k = range(1) : range(2)
-			fname{k} = sprintf('%s-%03d.dat', fs.filename, k);
+			fname{k} = sprintf('%s%s-%03d.dat', fs.path, fs.filename, k);
 		end
 	else
-		fname{1} = sprintf('%s.dat', fs.filename);
+		fname{1} = sprintf('%s%s.dat', fs.path, fs.filename);
 	end
 
 	% TODO : For now hard code scale at 256 - add GUI control for this
@@ -327,7 +331,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		% --- RGB Vector --- %
 		if(get(handles.chkRGB, 'Value'))
 			if(handles.debug)
-				fprintf('Generating RGB Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
+				fprintf('Generating RGB Vec (%s) for frame %d\n', fmt, idx);
 			end
 			img = handles.frameBuf.getCurImg(idx, 'img');
 			handles.vecManager.writeImgVec(img, opts, 'rgb');
@@ -337,7 +341,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		% --- Hue Vector --- %
 		if(get(handles.chkHue, 'Value'))
 			if(handles.debug)
-				fprintf('Generating Hue Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
+				fprintf('Generating Hue Vec (%s) for frame %d\n', fmt, idx);
 			end
 			img = handles.frameBuf.getCurImg(idx, 'img');
 			img = rgb2hsv(img);
@@ -349,7 +353,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		% ---- HSV Vector ---- %
 		if(get(handles.chkHSV, 'Value'))
 			if(handles.debug)
-				fprintf('Generating HSV Vec (%s) for frame %s\n', fmt, get(fh, 'filename'));
+				fprintf('Generating HSV Vec (%s) for frame %d\n', fmt, idx);
 			end
 			img = handles.frameBuf.getCurImg(idx, 'img');
 			img = rgb2hsv(img);
@@ -360,7 +364,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		% ---- Backprojection Vector ---- %
 		if(get(handles.chkBP, 'Value'))
 			if(handles.debug)
-				fprintf('Generating BPVec (%s) for frame %s\n', fmt, get(fh, 'filename'))
+				fprintf('Generating BPVec (%s) for frame %d\n', fmt, idx);
 			end
 			img = handles.frameBuf.getCurImg(idx, 'bpimg');
 			handles.vecManager.writeImgVec(img, opts, 'bp');
@@ -433,9 +437,14 @@ function gui_renderPreview(axHandle, img, idx, filename)
 	if(fs.exitflag == -1)
 		return;
 	end
+	if(isempty(fs.vecNum))
+		num = 0;
+	else
+		num = fs.vecNum;
+	end
 	
 	dims = size(img);
-	title(axHandle, sprintf('Frame %d (%s_%d) [%d x %d]', idx, fname, num, dims(2), dims(1), 'Interpreter', 'None'));
+	title(axHandle, sprintf('Frame %d (%s_%d) [%d x %d]', idx, filename, num, dims(2), dims(1), 'Interpreter', 'None'));
 	
 
 
