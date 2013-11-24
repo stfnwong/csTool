@@ -112,6 +112,7 @@ classdef vecManager
 		% out of Verilog testbenches back from disk. This is done to prevent 
 		% this class definition from becoming overly long.
 
+			DSTR = '[vecManager.readVec()] : ';
 			if(~isempty(varargin))
 				for k = 1:length(varargin)
 					if(ischar(varargin{k}))
@@ -152,98 +153,67 @@ classdef vecManager
 			end
 			if(~exist('dtype', 'var'))
 				dtype = '%u8';
-				fprintf('(readVec) : set dtype to [%s]\n', dtype);
+				fprintf('%s set dtype to [%s]\n', DSTR, dtype);
 			end
 
+			% TODO : Need to check that files exist, and then generate those filenames
+			% in a loop for vecDiskRead()
+
+			% Check that files exist
 			if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
-				%Parse filename and read multiple files
-				% TODO : also need to take account of frame number here
-				ps = fname_parse(fname);
-				if(ps.exitflag == -1)
-					fprintf('(readVec) : Unable to parse [%s]\n', fname);
+				chk = checkFiles(fname, 'nvec', sz);
+				if(chk.exitflag == -1)
+					fprintf('%s cant find file [%s] (%d/%d)\n', DSTR, chk.errFile, chk.errVec, sz);
 					vecdata = [];
 					if(nargout > 1)
 						varargout{1} = -1;
 					end
 					return;
-				end
-				if(strncmpi(vtype, 'scalar', 6))
-					if(exist(fname, 'file') ~= 2)
-						fprintf('ERROR: Can''t find file [%s]\n', fname);
-						if(nargout > 1)
-							varargout{1} = -1;
-						end
-						return;
-					end
-				else
-					% TODO :  Cant remember why I originally wrote it this way...
-					if(of > 0)
-						offset = of;
-					else
-						offset = of + 1;
-					end
-					if(~isempty(fs.frameNum))
-
-						sfn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, ps.frameNum, offset, ps.ext);
-						efn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, ps.frameNum,  fix(of+str2double(sz)), ps.ext);
-					else
-						% TODO : This part might fail (because it probably needs a re-write)
-						sfn = sprintf('%s%s%03d.%s', ps.path, ps.filename, offset, ps.ext);
-						efn = sprintf('%s%s%03d.%s', ps.path, ps.filename, fix(of+str2double(sz)), ext);
-					end
-
-					if(exist(sfn, 'file') ~= 2)	
-						fprintf('ERROR: Can''t find start file [%s]\n', sfn);
-					end
-					if(exist(efn, 'file') ~= 2)
-						fprintf('ERROR: Can''t find end file [%s]\n', efn);
-					end
-					if(exist(sfn, 'file') ~= 2 || exist(efn, 'file') ~= 2)
-						vecdata = [];
-						if(nargout > 1)
-							varargout{1} = -1;
-						end
-						return;
-					end
-				end
-				%Allocate memory and read files in sequence
-				vecdata = cell(1,fix(str2double(sz)));
-				%offset  = of-1;
-				wb = waitbar(0, sprintf('Reading vector [0/%d]', length(vecdata)), 'Name', 'Reading vector data...');
-				for n = 1:length(vecdata)
-					fn = sprintf('%s%s%03d.%s', ps.path, ps.filename, of+n, fs.ext);
-					%debug
-					sprintf('filename : %s\n', fn);
-					[vecdata{n} ref] = vecDiskRead(V, fn, 'dtype', dtype);
-					if(ref == -1)
-						fprintf('(readVec) : error in vector stream %d\n', n);
-						delete(wb);
-						if(nargout > 1)
-							varargout{1} = -1;
-						end
-						return;
-					end
-					waitbar(n/length(vecdata), wb, sprintf('Reading vector (%d/%d)', n, length(vecdata)));
-				end
-				delete(wb);
-				if(V.verbose)
-					fprintf('(readVec): Read %d vector streams from disk\n', length(vecdata));
 				end
 			else
-				[vecdata N] = vecDiskRead(V, fname, 'dtype', dtype);
-				if(isempty(vecdata))
-					fprintf('(readVec) : Unable to read file [%s]\n', fname);
+				% Assume scalar
+				chk = checkFiles(fname, 'nvec', 1);
+				if(chk.exitflag == -1)
+					fprintf('%s cant find file [%s]\n', DSTR, chk.errFile);
 					vecdata = [];
 					if(nargout > 1)
 						varargout{1} = -1;
 					end
 					return;
-				else
-					fprintf('Read %d %s from [%s]\n', N, dtype, fname);
 				end
 			end
-			
-			%If we get to here status is fine
+
+			% Allocate memory and read files in sequence
+			vecdata = cell(1, sz);
+			wb = waitbar(0, sprintf('Reading vector (0/%d)', length(vecdata)), 'Name', 'Reading vector data...');
+
+			% Parse filename
+			ps = fname_parse(fname, 'veconly');
+			if(ps.exitflag)
+				fprintf('%s unable to parse filename [%s], exiting...\n', DSTR, fname);
+				vecdata = [];
+				if(nargout > 1)
+					varargout{1} = -1;
+				end
+				return;
+			end
+
+			for n = 1 : length(vecdata)
+				fn = sprintf('%s%s-vec%03d.%s', ps.path, ps.filename, n, ps.ext);
+				[vecdata{n} ref] = vecDiskRead(V, fn, 'dtype', dtype);
+				if(ref == -1)
+					fprintf('%s error in vector stream %d\n', DSTR, n);
+					delete(wb);
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
+					return;
+				end
+				waitbar(n/length(vecdata), wb, sprintf('Reading vector (%d/%d)', n, length(vecdata)));
+			end
+			delete(wb);
+
+			% If we get to here status is fine
 			if(nargout > 1)
 				varargout{1} = 0;
 			end

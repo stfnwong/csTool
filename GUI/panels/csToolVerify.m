@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 22-Nov-2013 15:48:05
+% Last Modified by GUIDE v2.5 24-Nov-2013 15:19:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -131,9 +131,9 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     %typeStr = {'HSV', 'Hue', 'BP'};
 	set(handles.pmVecSz, 'String', fmtStr);
 	set(handles.pmVecOr, 'String', orStr);
-	%set(handles.pmVecType, 'String', typeStr);
+	%set(handles.pmVecClass, 'String', typeStr);
     vtStr = {'RGB', 'HSV', 'Hue', 'Backprojection'};
-    set(handles.pmVecType, 'String', vtStr);
+    set(handles.pmVecClass, 'String', vtStr);
     % Set selections in GUI to match values in vfSettings
 	set(handles.etGoto, 'String', num2str(handles.idx));
 	set(handles.etNumFiles, 'String', num2str(handles.vfSettings.vsize));
@@ -169,15 +169,15 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
         case 'RGB'
             set(hnadles.pmVecType, 'Value', 1);
         case 'HSV'
-            set(handles.pmVecType, 'Value', 2);
+            set(handles.pmVecClass, 'Value', 2);
         case 'Hue'
-            set(handles.pmVecType, 'Value', 3);
+            set(handles.pmVecClass, 'Value', 3);
         case 'backprojection'
-            set(handles.pmVecType, 'Value', 4);
+            set(handles.pmVecClass, 'Value', 4);
         otherwise
             fprintf('Invalid vector type [%s]', handles.vfSettings.vtype);
 			fprintf('Setting to backprojection\n');
-			set(handles.pmVecType, 'Value', 4);
+			set(handles.pmVecClass, 'Value', 4);
     end
 
     % set image size
@@ -229,8 +229,8 @@ function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL
 
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
-	delete(handles.csToolVerifyFig);
 	uiresume(handles.csToolVerifyFig);
+	delete(handles.csToolVerifyFig);
 
 
 % ---------- TRANSPORT CONTROLS -------- %	
@@ -312,6 +312,9 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     vslist   = get(handles.pmVecSz, 'String'); %list of vector sizes
     vsidx    = get(handles.pmVecSz, 'Value');
     vsize    = fix(str2double(vslist{vsidx}));
+	vclist   = get(handles.pmVecClass, 'String');
+	vcidx    = get(handles.pmVecClass, 'Value');
+	vclass   = vclist{vcidx};
 	numFiles = fix(str2double(get(handles.etNumFiles, 'String')));
 	
 	if(isnan(numFiles))
@@ -344,7 +347,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 				dataSz = 1;
 			case 'Hue'
 				dataSz = 256;
-			case 'backprojection'
+			case 'Backprojection'
 				dataSz = 256;
 			otherwise
 				dataSz = 256;
@@ -355,15 +358,14 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		else
 			img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale');
 		end
-		% Format dims
+		% Format dims and place vector into buffer
 		dims = size(img);
-		dims = [dims(2) dims(1)];	%put into csFrame format	
-		% Load this vector into test frame buffer
+		dims = [dims(2) dims(1)];	
 		if(strncmpi(vtype, 'backprojection', 14))
 			bpvec = bpimg2vec(img, 'bpval');
-			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(bpvec, N, vtype, 'dims', dims);
+			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(bpvec, N, vclass, 'dims', dims);
 		else
-			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(img, N, vtype, 'dims', dims);
+			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(img, N, vclass, 'dims', dims);
 		end
 	end
 	% TODO : Need to place vectors into frame buffer - this might require a 
@@ -371,9 +373,27 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	
 	% Convert to bpvec and save into test buffer
     handles.vectors = vectors;
+
+	% DEBUG 
+	fprintf('testFrameBuf rendermode :\n');
+	disp(handles.testFrameBuf.getRenderMode);	
+
+	% Also get all frame handles and print dims
 	
+	% ======== DEBUG ======== %
+	N = handles.testFrameBuf.getNumFrames();
+	fhArr = handles.testFrameBuf.getFrameHandle(1:N);
+	for k = 1 : length(fhArr)
+		fprintf('dims for frame %d\n', k);
+		disp(get(fhArr(k), 'dims'));
+		size(get(fhArr(k), 'dims'));
+	end
+
+
+
 	% Preview final image
 	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
+	% TODO : STILL PROBLEMS HERE
 	testImg = handles.testFrameBuf.getCurImg(handles.idx);
 	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference');
 	gui_updatePreview(handles.figPreviewTest, testImg, 'Test Data');
@@ -459,7 +479,7 @@ function etImageWidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etFileName_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function pmVecType_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmVecClass_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etNumFiles_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
@@ -487,7 +507,7 @@ function etImageHeight_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
-function pmVecType_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmVecClass_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end

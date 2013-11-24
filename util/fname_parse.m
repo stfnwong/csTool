@@ -21,20 +21,18 @@ function parseStruct = fname_parse(fstring, varargin)
 
 % Stefan Wong 2013
 
+% TODO : Add a component that allows frame *.mat files to be parsed easily
 	
-	DEBUG  = false;		%dont print debug messages
-	STRING = true;		%return num value as a string 
-	SCALAR = false;
+	DEBUG          = false;		%dont print debug messages
+	PARSE_VEC_ONLY = false;
 	DSTR   = 'ERROR (fname_parse) :';
 	% TODO : Properly deprecate these options
 	if(nargin > 1)
 		for k = 1:length(varargin)
 			if(strncmpi(varargin{k}, 'd', 1))
 				DEBUG = true;
-			elseif(strncmpi(varargin{k}, 'scalar', 6))
-				SCALAR = true;
-			elseif(strncmpi(varargin{k}, 'n', 1))
-				STRING = false;		%return num value as numeric constant
+			elseif(strncmpi(varargin{k}, 'veconly', 7))
+				PARSE_VEC_ONLY = true;
 			end
 		end
 	end
@@ -67,6 +65,7 @@ function parseStruct = fname_parse(fstring, varargin)
 	dashIdx  = strfind(fstring, '-');
 	vecNum   = [];
 	frameNum = [];
+
 	if(~isempty(dashIdx))
 		if(isempty(extIdx))
 			vecNum = str2double(fstring(end-3 : end));
@@ -96,13 +95,21 @@ function parseStruct = fname_parse(fstring, varargin)
 		if(isempty(dashIdx))
 			filename = fstring(1 : extIdx-1); %this -1 is offset by +1 if isempty(extIdx)
 		else
-			filename = fstring(1 : dashIdx(1)-1);
+			if(PARSE_VEC_ONLY && length(dashIdx) == 2)
+				filename = fstring(1 : dashIdx(2)-1);
+			else
+				filename = fstring(1 : dashIdx(1)-1);
+			end
 		end
 	else
 		if(isempty(dashIdx))
 			filename = fstring(slashes(end)+1 : extIdx-1);
 		else
-			filename = fstring(slashes(end)+1 : dashIdx(1)-1);
+            if(PARSE_VEC_ONLY && length(dashIdx) == 2)
+                filename = fstring(slashes(end)+1 : dashIdx(2)-1);
+            else
+                filename = fstring(slashes(end)+1 : dashIdx(1)-1);
+            end
 		end
 	end
 
