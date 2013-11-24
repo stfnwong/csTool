@@ -1214,12 +1214,31 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			end
 			% ================ LAUNCH VERIFY SCREEN ================ %
 		case 'v'
-			fh   = handles.frameBuf.getFrameHandle(frameIndex);
-			imsz = get(fh, 'dims');
-			ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
+			%imsz = handles.frameBuf.getDims(frameIndex);
+			% TODO : Add options strucutre
+			ef = csToolVerify(handles.vecManager, handles.frameBuf);
+			%ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
 			if(ef == -1)
 				fprintf('ERROR: Error in csToolVerify()\n');
 				return;
+			end
+
+            % ================ LAUNCH RANDOM SEQUENCE SCREEN ================ %
+		case 'y'
+			if(handles.debug)
+				sgOpts = csToolSeqGen('genopts', handles.genOpts, 'debug');
+			else
+				sgOpts = csToolSeqGen('genopts', handles.genOpts);
+			end
+			if(sgOpts.status ~= -1)
+				handles.genOpts  = sgOpts.genOpts;
+				handles.frameBuf = sgOpts.frameBuf;
+				if(handles.debug)
+					fprintf('(DEBUG) : Sequence options\n');
+					disp(sgOpts);
+					disp(sgOpts.frameBuf);
+					disp(sgOpts.genOpts);
+				end
 			end
             % ================ LAUNCH TRAJECTORY BUFFER ================ %
         case 't'
@@ -1517,14 +1536,14 @@ end
 function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
     %TODO: Call the verify panel
     global frameIndex;
-	
-	fh   = handles.frameBuf.getFrameHandle(frameIndex);
-	imsz = get(fh, 'dims');
-	if(handles.debug)
-	    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug', 'opts', handles.vfSettings);
-	else
-		ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'opts', handles.vfSettings);
-	end
+
+	imsz = handles.frameBuf.getDims(frameIndex);
+	ef = csToolVerify(handles.vecManager, handles.frameBuf);	
+	%if(handles.debug)
+	%    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug', 'opts', handles.vfSettings);
+	%else
+	%	ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'opts', handles.vfSettings);
+	%end
 	if(~isstruct(ef) && ef == -1)
 		fprintf('ERROR: csToolVerify returned status -1\n');
 		return;

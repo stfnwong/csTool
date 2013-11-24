@@ -136,8 +136,6 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 
 	% Update handles structure
 	guidata(hObject, handles);
-
-	% UIWAIT makes csToolSeqGen wait for user response (see UIRESUME)
 	uiwait(handles.csToolSeqGen);
 
 
@@ -236,6 +234,7 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Generate Random Sequence
 
+	handles = gui_disable(handles, 'off');
 	% Format options structure
 	npoints = fix(str2double(get(handles.etNumPoints, 'String')));
 	nframes = fix(str2double(get(handles.etNumFrames, 'String')));
@@ -263,6 +262,7 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		             'kernel', [] );
 	
 	handles.frameBuf = handles.frameBuf.genRandSeq('opts', opts);
+	handles = gui_disable(handles, 'on');
 	
 	%handles.framBuf.genRandSeq('imsz', opts.imsz, ...
 	%	                       'nframes', opts.nframes, ...
@@ -300,7 +300,39 @@ function figPreview_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Generate new location on button click
 	img_w = fix(str2double(get(handles.etImgWidth, 'String')));
 	img_h = fix(str2double(get(handles.etImgHeight, 'String')));
+
+% ======== DISABLE GUI WHILE RENDERING ======== %
+
+function nh = gui_disable(handles, state)
+	% Disable GUI elements (for example, during processing)
 	
+	if(ischar(state))
+		if(strncmpi(state, 'on', 2))
+			ENABLE = true;
+		else
+			ENABLE = false;
+		end
+	else
+		if(state > 0)
+			ENABLE = true;
+		else
+			ENABLE = false;
+		end
+	end
+
+	if(ENABLE)
+		ifaceObj = findobj(handles.csToolSeqGen, 'Enable', 'off');
+		set(ifaceObj, 'Enable', 'on');
+		set(handles.csToolSeqGen, 'Name', 'csToolSeqGen');
+	else
+		ifaceObj = findobj(handles.csToolSeqGen, 'Enable', 'on');
+		set(ifaceObj, 'Enable', 'off');
+		set(handles.csToolSeqGen, 'Name', 'Processing...');
+	end
+
+	nh = handles;
+
+
 
 % ======== CREATE FUNCTIONS ======== %
 % --- Executes during object creation, after setting all properties.

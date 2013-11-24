@@ -16,11 +16,11 @@ function chkStruct = checkFiles(filename, varargin)
 	if(~isempty(varargin))
 		for k = 1 : length(varargin)
 			if(ischar(varargin{k}))
-				if(strncmpi(varargin{k}, 'frame', 5))
+				if(strncmpi(varargin{k}, 'nframe', 5))
 					NUM_FRAMES = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'sframe', 6))
 					START_FRAME = varargin{k+1};
-				elseif(strncmpi(varargin{k}, 'vec', 3))
+				elseif(strncmpi(varargin{k}, 'nvec', 3))
 					NUM_VEC    = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'svec', 4))
 					START_VEC  = varargin{k+1};
@@ -59,7 +59,7 @@ function chkStruct = checkFiles(filename, varargin)
 	end
 
 	% Check that options match parser output
-	if(NUM_FRAMES > 1 && NUM_VEC > 1)	
+	if((NUM_FRAMES > 1) && (NUM_VEC > 1))
 		if(isempty(ps.frameNum))
 			fprintf('ERROR: No frame field in filename [%s]\n',filename);
 			exitflag = -1;
@@ -89,28 +89,61 @@ function chkStruct = checkFiles(filename, varargin)
 		end
 	end
 
-	% Check file existence
+	% Check file existence, or fall through to output
+	%if(exitflag ~= -1)
+	%	exitflag  = 0;
+	%	errFrame  = [];
+	%	errVec    = [];
+	%	errFile   = [];
+	%	terminate = false;
+	%	% Check files 
+	%	for frameFile = START_FRAME : NUM_FRAMES
+	%		for vecFile = START_VEC : NUM_VEC
+	%			fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, frameFile, vecFile, ps.ext);
+	%			if(exist(fn, 'file') ~= 2)
+	%				exitflag  = -1;
+	%				errFrame  = frameFile;
+	%				errVec    = vecFile;
+	%				errFile   = fn;
+	%				terminate = true;
+	%			end
+	%			if(terminate)
+	%				break;
+	%			end
+	%		end
+	%		if(terminate)
+	%			break;
+	%		end
+	%	end
+	%end
+
+	% With two while loops
 	if(exitflag ~= -1)
-		% Check files 
-		for frameFile = START_FRAME : NUM_FRAMES
-			for vecFile = START_VEC : NUM_VEC
-				fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, START_FRAME, ps.vecNum, ps.ext);
+		exitflag  = 0;
+		errFrame  = [];
+		errVec    = [];
+		errFile   = [];
+		frameFile = START_FRAME;
+		noErr     = true;
+
+		while(frameFile <= NUM_FRAMES && noErr)
+            vecFile = START_VEC;
+			while(vecFile <= NUM_VEC && noErr)
+				fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, frameFile, vecFile, ps.ext);
 				if(exist(fn, 'file') ~= 2)
 					exitflag = -1;
 					errFrame = frameFile;
 					errVec   = vecFile;
-					errFile  = fn;
-					break;
+                    errFile  = fn;
+					noErr    = false;
 				end
+				vecFile = vecFile + 1;
 			end
+			frameFile = frameFile + 1;
 		end
 	end
 
-	exitflag = 0;
-	errFrame = [];
-	errVec   = [];
-	errFile  = [];
-
+	% Generate output structure
 	chkStruct = struct('exitflag', exitflag, ...
 					   'errFrame', errFrame, ...
 					   'errVec',   errVec, ...

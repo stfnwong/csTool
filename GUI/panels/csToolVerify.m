@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 20-Nov-2013 01:29:48
+% Last Modified by GUIDE v2.5 22-Nov-2013 15:48:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -113,6 +113,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     % Check if we have a frame handle
     if(~isfield(handles, 'fh'))
         fprintf('WARNING: No frame handle specified\n');
+		fprintf('Frame handle input is now deprecated\n');
     end
     % Make a field for vectors
     handles.vectors = [];
@@ -134,7 +135,8 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     vtStr = {'RGB', 'HSV', 'Hue', 'Backprojection'};
     set(handles.pmVecType, 'String', vtStr);
     % Set selections in GUI to match values in vfSettings
-
+	set(handles.etGoto, 'String', num2str(handles.idx));
+	set(handles.etNumFiles, 'String', num2str(handles.vfSettings.vsize));
     % set filename
     set(handles.etFileName, 'String', handles.vfSettings.filename);
     
@@ -180,18 +182,26 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 
     % set image size
     dims = handles.vfSettings.dims;
+	
     set(handles.etImageWidth,  'String', dims(1));
     set(handles.etImageHeight, 'String', dims(2));
 
 	% Setup reference preview figure
+	set(handles.figPreviewRef,  'XTick', [], 'XTickLabel', []);
+	set(handles.figPreviewRef,  'YTick', [], 'YTickLabel', []);
+	title(handles.figPreviewRef, 'Reference');
+	% Setup test preview figure
 	set(handles.figPreviewTest, 'XTick', [], 'XTickLabel', []);
 	set(handles.figPreviewTest, 'YTick', [], 'YTickLabel', []);
 	title(handles.figPreviewTest, 'Preview');
-	% Setup test preview figure
 	% Setup error figure
 	set(handles.figError,   'XTick', [], 'XTickLabel', []);
 	set(handles.figError,   'YTick', [], 'YTickLabel', []);
 	title(handles.figError, 'Error');
+
+	% Show first reference figure in GUI
+	refImg = handles.refFrameBuf.getCurImg(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference');
 
     % Choose default command line output for csToolVerify
     handles.output = hObject;
@@ -199,10 +209,23 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     % Update handles structure
     guidata(hObject, handles);
 	uiwait(handles.csToolVerifyFig);
-	
-function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL> 
+
+% ======== OUTPUT FUNCTION  ======== %	
+function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSD>
     %varargout{1} = handles.vfSettings;
-	varargout{1} = handles.output;
+	varargout{1} = 0;	%TODO :  temporary - THIS MUST BE FIXED
+
+	% ======== CLOSE REQUEST FUNCTION ======== %
+function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+    if(isequal(get(hObject, 'waitstatus'), 'waiting'))
+        %Still waiting on GUI
+        uiresume(handles.csToolVerifyFig);
+    else
+        %Ok to clean up
+        delete(handles.csToolverifyFig);
+    end
+
 
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
@@ -288,7 +311,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     vtype    = vtlist{vtidx};
     vslist   = get(handles.pmVecSz, 'String'); %list of vector sizes
     vsidx    = get(handles.pmVecSz, 'Value');
-    vsize    = vslist{vsidx};
+    vsize    = fix(str2double(vslist{vsidx}));
 	numFiles = fix(str2double(get(handles.etNumFiles, 'String')));
 	
 	if(isnan(numFiles))
@@ -296,16 +319,17 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		return;
 	end
 	% TOOD : Write a routine to make sure the files are on disk
-	[ef errNum errFile] = numFilesCheck(numFiles, filename);
-	if(ef == -1)
-		fprintf('ERROR: Unable to find file %d of %d [%s]\n', errNum, numFiles, errFile);
+	chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize);
+	if(chk.exitflag == -1)
+		fprintf('ERROR: In file (%d/%d), vector (%d/%d) [%s]\n', chk.errFrame, numFiles, chk.errVec, vsize, filename);
 		return;
 	end
 
+	% Setup test frame buffer
+	handles.testFrameBuf = handles.testFrameBuf.initFrameBuf(numFiles);
 	% Read files in loop
 	for N = 1 : numFiles
 		% TODO : Need to adjust filename here for frame param	
-		
 		[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize, 'vtype', vtype);
 		if(ef == -1)
 			fprintf('ERROR: Failed to read vector in file [%s]\n', filename);
@@ -326,21 +350,34 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 				dataSz = 256;
 		end
 
-		%img      = handles.vecManager.assemVec(vectors, 'vecfmt', 'scalar'); 
 		if(iscell(vectors) && strncmpi(vtype, 'scalar', 6))
 			img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar', 'dataSz', dataSz, 'scale');
 		else
 			img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale');
 		end
+		% Format dims
+		dims = size(img);
+		dims = [dims(2) dims(1)];	%put into csFrame format	
+		% Load this vector into test frame buffer
+		if(strncmpi(vtype, 'backprojection', 14))
+			bpvec = bpimg2vec(img, 'bpval');
+			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(bpvec, N, vtype, 'dims', dims);
+		else
+			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(img, N, vtype, 'dims', dims);
+		end
 	end
+	% TODO : Need to place vectors into frame buffer - this might require a 
+	% new method in the csFrameBuffer class
+	
+	% Convert to bpvec and save into test buffer
     handles.vectors = vectors;
 	
 	% Preview final image
 	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
 	testImg = handles.testFrameBuf.getCurImg(handles.idx);
-	gui_updatePreview(handles.figPreviewRef, refImg, []);
-	gui_updatePreview(handles.figPreviewTest, testImg, []);
-	gui_updatePreview(handles.figError, abs(refImg - testImg), []);
+	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference');
+	gui_updatePreview(handles.figPreviewTest, testImg, 'Test Data');
+	gui_updatePreview(handles.figError, abs(refImg - testImg), 'Error Image');
 
 
 	%imshow(img, 'Parent', handles.figPreviewTest);
@@ -393,24 +430,26 @@ function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     
     guidata(hObject, handles);
+	uiresume(csToolVerifyFig);
 
 function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     % Perform a pattern verification
     % TODO : Put this in top menu bar (with a sub GUI)
 
     guidata(hObject, handles);
+	uiresume(csToolVerifyFig);
     
-function [ef errNum errFile] = numFilesCheck(numFiles, filenamr)
-
-	% Check the files to be read actually exist
-	ps = fname_parse(filename);
-	if(ps.exitflag == -1)
-		fprintf('ERROR: Unable to parse filename %s\n', filename);
-		ef      = -1;
-		errNum  = 1;
-		errFile = filename;
-		return;
-	end
+%function [ef errNum errFile] = numFilesCheck(numFiles, filenamr)
+%
+%	% Check the files to be read actually exist
+%	ps = fname_parse(filename);
+%	if(ps.exitflag == -1)
+%		fprintf('ERROR: Unable to parse filename %s\n', filename);
+%		ef      = -1;
+%		errNum  = 1;
+%		errFile = filename;
+%		return;
+%	end
 
 
 

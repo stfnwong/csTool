@@ -60,6 +60,8 @@ classdef csFrameBuffer
 		% Enumerations for renderMode
 		IMG_FILE  = 0;
 		GEN_BPIMG = 1;
+		IMG_DATA  = 2;
+		BP_IMG    = 3;
 	end
 
 	% ---- PUBLIC METHODS ---- %
@@ -296,6 +298,7 @@ classdef csFrameBuffer
 			RETURN_3_CHANNEL = false;
 			GET_BPIMG_ONLY   = false;
 			GET_IMG_ONLY     = false;
+			DSTR             = '[getCurImg()] : ';
 
 			if(~isempty(varargin))
 				for k = 1 : length(varargin)
@@ -313,15 +316,19 @@ classdef csFrameBuffer
 				end
 			end
 
+			% TODO : Adjust renderMode and calling mechanism 
+			% TODO : Test csToolVerify read and write calls
+
 			% Bounds check idx
 			if(idx < 1 || idx > length(F.frameBuf))
 				img = [];
 				if(F.verbose)
-					fprintf('ERROR: idx %d out of bounds\n', idx);
+					fprintf('%s idx %d out of bounds\n', DSTR, idx);
 				end
 				return;
 			end
 
+			% Get frmae handle
 			fh = F.frameBuf(idx);
 
 			if(GET_IMG_ONLY)
@@ -348,7 +355,7 @@ classdef csFrameBuffer
 				case F.IMG_FILE
 					% Read image from disk and return img file
 					if(strncmpi(get(fh, 'filename'), ' ', 1))
-						fprintf('[getCurImg()] : No file data in frame %d\n', idx);
+						fprintf('%s No file data in frame %d\n', DSTR, idx);
 						img = [];
 						return;
 					end
@@ -369,9 +376,17 @@ classdef csFrameBuffer
 						end
 					end
 					return;
+				case F.IMG_DATA
+					if(isempty(get(fh, 'img')))
+						fprintf('%s no image data in frame %d\n', DSTR, idx);
+						img = [];
+					else
+						img = get(fh, 'img');
+					end
+					return;
 				otherwise
 					if(F.verbose)
-						fprintf('ERROR: Invalid renderMode %d\n', F.renderMode);
+						fprintf('%s Invalid renderMode %d\n', DSTR, F.renderMode);
 					end
 					img = [];
 					return;
@@ -792,6 +807,90 @@ classdef csFrameBuffer
 			return;
 
 		end 	%loadFrameData()
+
+		function FB = loadVectorData(F, vecdata, idx, vtype, varargin)
+		% LOADVECTORDATA
+		% FB = loadVectorData(F, vecdata, idx, vtype, [..OPTIONS..]
+		%
+		% Load vector data directly into frame buffer at position idx. 
+		% For reading image files into frame buffer from disk, see 
+		% loadFrameData().
+		%
+		% ARGUMENTS
+		% F - csFrameBuffer object
+		% vecdata - Data to load into buffer
+		% idx     - Index in buffer to write data
+		% vtype   - String specifying type of data to write. Can be 
+		%           one of:
+		%
+		%           'RGB' - Write an RGB image [set(fh, 'img', vecdata)]
+		%           'HSV' - Write HSV image [set(fh, 'img', vecdata)]
+		%           'Hue' - Write 1-channel hue image [set(fh, 'img', vecdata)]
+		%           'bp'  - Write bpvec [set(fh, 'bpvec', vecdata)]
+		%           
+		% OPTIONAL ARGUMENTS
+		% 'dims', dims - Pass this to specify the dimensions of the image data
+		% 'filename', filename - Add filename to this frame handle
+		% 'bpSum', bpsum - Add bpsum to this frame handle
+		%
+	
+			DSTR = 'ERROR [csFrameBuffer.loadVectorData()] :';
+			if(~isempty(varargin))
+				for k = 1 : length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'dims', 4))
+							dims = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'filename', 8))
+							filename = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'bpsum', 5))
+							bpsum = varargin{k+1};
+						end
+					end
+				end
+			end
+
+			% Check index range
+			if(idx < 1 || idx > length(F.frameBuf))
+				fprintf('%s idx (%d) out of range\n', DSTR, idx);
+				FB = F;
+				return;
+			end
+
+			% Check what we have
+			if(~exist('dims', 'var'))
+				dims = [640 480];
+			end
+			if(~exist('filename', 'var'))
+				filename = ' ';
+			end
+			if(~exist('bpsum', 'var'))
+				bpsum = [];
+			end
+
+			switch(vtype)
+				case 'rgb'
+				case 'hsv'
+				case 'hue'
+					set(F.frameBuf(idx), 'img', vecdata);
+					F.renderMode = F.IMG_DATA;
+				case 'backprojection'
+				case 'bp'
+					set(F.frameBuf(idx), 'bpvec', vecdata);
+					F.renderMode = F.GEN_BPIMG;	%or maybe F.BP_IMG?
+				otherwise
+					fprintf('%s not a valid vtype [%s]\n', DSTR, vtype);
+					FB = F;
+					return;
+			end
+			
+			% Set other parmeters
+			set(F.frameBuf(idx), 'dims', dims);
+			set(F.frameBuf(idx), 'filename', filename);
+			set(F.frameBuf(idx), 'bpSum', bpsum);
+
+			FB = F;
+
+		end 	%loadVectorData()
 
 		function clearImData(F, varargin)
 		% CLEARIMDATA

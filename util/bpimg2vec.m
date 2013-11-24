@@ -57,4 +57,4 @@ function vec = bpimg2vec(bpimg, varargin)
 		end
 	end
 	
-end 	%img2vec()
+end 	%bpimg2vec()

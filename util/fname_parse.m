@@ -11,7 +11,7 @@ function parseStruct = fname_parse(fstring, varargin)
 % fname_parse() generates an output structure that contains the following
 % fields:
 %
-% exitflag - Status of operation. 0 if all fields parse correctly, -1 if some fields
+% exitflag - Status of operation. 0 if all fields parse correctly, -1 if some fields failed
 % path     - Path to file, if it isn't in current directory
 % filaname - String containing filename
 % ext      - File extension of file 
@@ -55,7 +55,7 @@ function parseStruct = fname_parse(fstring, varargin)
 	% Find final '.' for extension
 	extIdx = strfind(fstring, '.');
 	if(isempty(extIdx))
-		extIdx = fstring(end);
+		extIdx = length(fstring)+1;	%+1 here to offset -1 in filename section
 		ext    = [];
 	else
 		% In case of multiple '.'in filename
@@ -94,7 +94,7 @@ function parseStruct = fname_parse(fstring, varargin)
 	% File in local directory
 	if(isempty(slashes))
 		if(isempty(dashIdx))
-			filename = fstring(1 : extIdx-1);
+			filename = fstring(1 : extIdx-1); %this -1 is offset by +1 if isempty(extIdx)
 		else
 			filename = fstring(1 : dashIdx(1)-1);
 		end
@@ -111,6 +111,7 @@ function parseStruct = fname_parse(fstring, varargin)
 		                 'path', path, ...
 		                 'filename', filename, ...
 		                 'ext', ext, ...
+		                 'extIdx', extIdx, ...
 		                 'vecNum', vecNum, ... 
 		                 'frameNum', frameNum );
 	

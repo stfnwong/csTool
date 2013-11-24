@@ -36,8 +36,6 @@ function status = vecDiskWrite(V, data, varargin)
 					BIT_1   = true;
 				elseif(strncmpi(varargin{k}, '2b', 2))
 					BIT_2   = true;
-				elseif(strncmpi(varargin{k}, 'debug', 5))
-					DEBUG = true;
 				end
 			end
 		end
@@ -63,13 +61,6 @@ function status = vecDiskWrite(V, data, varargin)
 		end
 	end
 	
-	if(V.verbose)
-		fprintf('Filenames :\n');
-		for k = 1 : length(filename)
-			fprintf('filename{%d} : [%s]\n', k, filename{k});
-		end
-	end
-		
 	if(~exist('numFmt', 'var'))
 		numFmt = 'hex';
 	else
@@ -77,9 +68,6 @@ function status = vecDiskWrite(V, data, varargin)
 			fprintf('ERROR: numFmt must be char, using default (hex)\n');
 			numFmt = 'hex';
 		end
-	end
-	if(V.verbose)
-		fprintf('(vecDiskWrite) : Number format set to %s\n', numFmt);
 	end
 
 	%Open file pointers

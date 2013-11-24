@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 11-Aug-2013 14:49:47
+% Last Modified by GUIDE v2.5 22-Nov-2013 14:17:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -162,10 +162,25 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
     uiwait(handles.csToolGenerateFig);
 
 
+function csToolGenerateFig_CloseRequestFcn(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
+delete(hObject);
 
 function varargout = csToolGenerate_OutputFcn(hObject, eventdata, handles) %#ok<INUSD> 
 
     varargout{1} = 0;
+
+function bUIgetfile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+    %Take filename and path from uigetfile, and place into etWriteFile
+    %String field
+    oldPath = get(handles.etWriteFile, 'String');
+    [fname path] = uiputfile('*.dat', 'Save Vector As...');
+    if(isempty(fname))
+        fname = oldPath;
+    end
+    set(handles.etWriteFile, 'String', sprintf('%s%s', path, fname));
+    guidata(hObject, handles);
+
 
 function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     handles.output = 0;
@@ -287,33 +302,41 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
 	val = fix(str2double(val));
 
-	if(get(handles.chkGenRange, 'Value'))
-		lr = fix(str2double(get(handles.etLow,  'String')));
-		hr = fix(str2double(get(handles.etHigh, 'String')));
-		if(isnan(lr) || isnan(hr))
-			fprintf('ERROR: Non-number value in range\n');
-			range = [1 1];
-		else
-			range = [lr hr];
-		end
-	else
-		range = [1 1];
+	% Get range values, force to sensible numbers if needed	
+	lr = fix(str2double(get(handles.etLow,  'String')));
+	hr = fix(str2double(get(handles.etHigh, 'String')));
+	if(isnan(lr) || isempty(lr) || lr == 0)
+		lr = 1;
 	end
+	if(isnan(hr) || isempty(hr) || hr == 0)
+		hr = 1;
+	end
+	range = [lr hr];
 
 	% Generate filename(s)
-	filename = handles.frameBuf.getFilename(range(1));
-	fs = fname_parse(filename);
+	%filename = handles.frameBuf.getFilename(range(1));
+	filename = get(handles.etWriteFile, 'String');
+	fs       = fname_parse(filename);
+
 	if(fs.exitflag == -1)
 		fprintf('ERROR: parse error in filename %s\n', filename);
 		return;
 	end
+	if(~isempty(fs.ext))
+		% Need to strip off file extension before calling writeImgVec()
+		filename = filename(1 : fs.extIdx-1);
+	end
+	
+	% Add -frame%03d to filenames that are part of series of images
 	if(range(2) > 1)
 		fname = cell(1, range(2));
 		for k = range(1) : range(2)
-			fname{k} = sprintf('%s%s-%03d.dat', fs.path, fs.filename, k);
+			%fname{k} = sprintf('%s%s-%03d.dat', fs.path, fs.filename, k);
+			fname{k} = sprintf('%s-frame%03d', filename, k);
 		end
 	else
-		fname{1} = sprintf('%s%s.dat', fs.path, fs.filename);
+		% Make alias to simplify later sections
+		fname{1} = sprintf('%s', filename);
 	end
 
 	% TODO : For now hard code scale at 256 - add GUI control for this
@@ -448,6 +471,7 @@ function gui_renderPreview(axHandle, img, idx, filename)
 	
 
 
+% ======== CREATE FUNCTIONS ======== %
 function pmVecSz_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
@@ -468,42 +492,6 @@ function etReadFile_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
-function chkHSV_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function chkHue_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function chkBP_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function etReadFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function etWriteFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function chkRGB_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-
-% --- Executes when user attempts to close csToolGenerateFig.
-function csToolGenerateFig_CloseRequestFcn(hObject, eventdata, handles) %#ok <INUSL,DEFNU>
-delete(hObject);
-
-
-% --- Executes on button press in bUIgetfile.
-function bUIgetfile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
-
-    %Take filename and path from uigetfile, and place into etWriteFile
-    %String field
-    oldPath = get(handles.etWriteFile, 'String');
-    [fname path] = uiputfile('*.dat', 'Save Vector As...');
-    if(isempty(fname))
-        fname = oldPath;
-    end
-    set(handles.etWriteFile, 'String', sprintf('%s%s', path, fname));
-    guidata(hObject, handles);
-
-
-
-function chkGenRange_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function chkAppendNum_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function etLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function etHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function chkMhist_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
 function etLow_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
@@ -513,5 +501,20 @@ function etHigh_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+
+
+% ======== EMPTY FUNCTIONS ======== %
+function chkHSV_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function chkHue_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function chkBP_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etReadFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etWriteFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function chkRGB_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function chkAppendNum_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function chkMhist_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 
