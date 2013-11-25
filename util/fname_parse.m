@@ -66,6 +66,12 @@ function parseStruct = fname_parse(fstring, varargin)
 	vecNum   = [];
 	frameNum = [];
 
+	% NOTE : If we're parsing a filename for frame data, then there should be
+	% only 1 dash and it should be immediately followed by a number which 
+	% specifies the index in the buffer where the data should be placed
+	% If we just want to parse frame buffer *.mat files, do that here then
+	% exit early.
+	
 	if(~isempty(dashIdx))
 		if(isempty(extIdx))
 			vecNum = str2double(fstring(end-3 : end));

@@ -153,6 +153,11 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
         otherwise
             set(handles.pmVecSz, 'Value', 1);
     end
+	% Also make sure that etNumFiles has same value as vsize
+	vstr = get(handles.pmVecSz, 'String');
+	vidx = get(handles.pmVecSz, 'Value');
+	vsz  = vstr{vidx};
+	set(handles.etNumFiles, 'String', vsz);
 
     % set orientation string
     switch(handles.vfSettings.orientation)
@@ -240,11 +245,15 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(handles.idx < 1)
 		handles.idx = 1;
 	end
-	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
-	testImg = handles.testFrameBuf.getCurImg(handles.idx);
-	gui_updatePreview(handles.figPreviewRef, refImg, []);
-	gui_updatePreview(handles.figPreviewTest, testImg, []);
-	gui_updatePreview(handles.figError, abs(refImg - testImg), []);
+	refImg    = handles.refFrameBuf.getCurImg(handles.idx);
+	testImg   = handles.testFrameBuf.getCurImg(handles.idx);
+	errImg    = abs(refImg - testImg);
+	refTitle  = sprintf('Reference frame %d', handles.idx);
+	testTitle = sprintf('Test frame %d', handles.idx);
+	errTitle  = sprintf('Error frame %d', handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, refTitle);
+	gui_updatePreview(handles.figPreviewTest, testImg, testTitle);
+	gui_updatePreview(handles.figError, errImg, errTitle);
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolVerifyFig);
@@ -257,11 +266,15 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(handles.idx > handles.testFrameBuf.getNumFrames())
 		handles.idx = handles.testFrameBuf.getNumFrames();
 	end
-	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
-	testImg = handles.testFrameBuf.getCurImg(handles.idx);
-	gui_updatePreview(handles.figPreviewRef, refImg, []);
-	gui_updatePreview(handles.figPreviewTest, testImg, []);
-	gui_updatePreview(handles.figError, abs(refImg - testImg), []);
+	refImg    = handles.refFrameBuf.getCurImg(handles.idx);
+	testImg   = handles.testFrameBuf.getCurImg(handles.idx);
+	errImg    = abs(refImg - testImg);
+	refTitle  = sprintf('Reference frame %d', handles.idx);
+	testTitle = sprintf('Test frame %d', handles.idx);
+	errTitle  = sprintf('Error frame %d', handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, refTitle);
+	gui_updatePreview(handles.figPreviewTest, testImg, testTitle);
+	gui_updatePreview(handles.figError, errImg, errTitle);
 
 	guidata(hObject, handles);	
 	uiresume(handles.csToolVerifyFig);
@@ -269,7 +282,7 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	destIdx = fix(str2double(get(handles.etGoto, 'String')));
 	% Clamp at buffer limits
-	if(isnan(destIdx) || isempty(desIdx))
+	if(isnan(destIdx) || isempty(destIdx))
 		fprintf('ERROR: Invalid index %s\n', get(handles.etGoto, 'String'));
 		return;
 	end
@@ -281,11 +294,15 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	end
 	handles.idx = destIdx;
 
-	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
-	testImg = handles.testFrameBuf.getCurImg(handles.idx);
-	gui_updatePreview(handles.figPreviewRef, refImg, []);
-	gui_updatePreview(handles.figPreviewTest, testImg, []);
-	gui_updatePreview(handles.figError, abs(refImg - testImg), []);
+	refImg    = handles.refFrameBuf.getCurImg(handles.idx);
+	testImg   = handles.testFrameBuf.getCurImg(handles.idx);
+	errImg    = abs(refImg - testImg);
+	refTitle  = sprintf('Reference frame %d', handles.idx);
+	testTitle = sprintf('Test frame %d', handles.idx);
+	errTitle  = sprintf('Error frame %d', handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, refTitle);
+	gui_updatePreview(handles.figPreviewTest, testImg, testTitle);
+	gui_updatePreview(handles.figError, errImg, errTitle);
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolVerifyFig);
@@ -330,12 +347,18 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	% Setup test frame buffer
 	handles.testFrameBuf = handles.testFrameBuf.initFrameBuf(numFiles);
+	ps = fname_parse(filename);
+	if(ps.exitflag == -1)
+		fprintf('ERROR: unable to parse file [%s]\n', filename);
+		return;
+	end
+
 	% Read files in loop
 	for N = 1 : numFiles
-		% TODO : Need to adjust filename here for frame param	
-		[vectors ef] = handles.vecManager.readVec('fname', filename, 'sz', vsize, 'vtype', vtype);
+		fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, N, 1, ps.ext);
+		[vectors ef] = handles.vecManager.readVec('fname', fn, 'sz', vsize, 'vtype', vtype);
 		if(ef == -1)
-			fprintf('ERROR: Failed to read vector in file [%s]\n', filename);
+			fprintf('ERROR: Failed to read vector in file [%s]\n', fn);
 			return;
 		end
 		% Set up data size based on vector type
@@ -361,7 +384,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		% Format dims and place vector into buffer
 		dims = size(img);
 		dims = [dims(2) dims(1)];	
-		if(strncmpi(vtype, 'backprojection', 14))
+		if(strncmpi(vclass, 'backprojection', 14))
 			bpvec = bpimg2vec(img, 'bpval');
 			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(bpvec, N, vclass, 'dims', dims);
 		else
@@ -472,12 +495,14 @@ function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 %	end
 
 
+function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
+	% Update the numFiles edit text box whenever this property changes
 
 % -------- EMPTY FUNCTIONS -------- %
 function etImageHeight_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etImageWidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etFileName_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecClass_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etNumFiles_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>

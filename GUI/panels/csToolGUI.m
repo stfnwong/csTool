@@ -173,13 +173,20 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	handles.csToolFigName = 'csTool - CAMSHIFT Simulation Tool';
 
 	% Create a structure to store settings for csToolVerify GUI
-	vfSettings = struct('filename', [], 'orientation', [], 'vsize', [], 'vtype', [], 'dims', []);
-	vfSettings.filename    = ' ';
-	vfSettings.orientation = 'scalar';
-	vfSettings.vsize       = 1;
-	vfSettings.vtype       = 'backprojection';
-	vfSettings.dims        = [640 480];
+	vfSettings = struct('filename', ' ', ... 
+		                'orientation', 'scalar', ... 
+		                'vsize',       1, ... 
+		                'vtype',       'backprojection', ... 
+		                'dims',        [640 480] );
 	handles.vfSettings     = vfSettings;
+
+	% Create a structure to store settings for csTooBufPreview GUI
+	pvSettings = struct('loadFilename', 'data/settings/bufdata/frame-001.mat', ...
+		                'saveFilename', 'data/settings/bufdata/frame-001.mat', ...
+		                'loadRange',     [1 1], ...
+		                'saveRange',     [1 1] );
+	
+	handles.pvSettings      = pvSettings;
 
 	% Create genOpts placeholder for random backprojection generation
 	handles.genOpts = [];
@@ -255,6 +262,7 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 		frameIndex = 1;
 	end
 	set(handles.etCurFrame, 'String', num2str(frameIndex));
+	set(handles.etGoto, 'String', '1');
 	
  	% Choose default command line output for csToolGUI
 	handles.output    = hObject;
@@ -1266,6 +1274,14 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
                 fprintf('Current vecManager options : \n');
                 disp(handles.vecManager.getOpts);
             end
+
+            % ================ LAUNCH BUFFER PREVIEW ================ %
+		case 'p'
+			prStr = csToolBufPreview(handles.frameBuf, 'opts', handles.pvSettings, 'idx', frameIndex);
+			if(prStr.exitflag ~= -1)
+				handles.pvSettings = prStr.pvSettings;
+				handles.frameBuf   = prStr.frameBuf;
+			end
 
         
 

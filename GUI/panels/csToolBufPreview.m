@@ -53,15 +53,15 @@ function csToolBufPreview_OpeningFcn(hObject, eventdata, handles, varargin)
 
 	if(~isempty(varargin))
 		for k = 1 : length(varargin)
-			if(isa('csFrameBuffer', varargin{k}))
+			if(isa(varargin{k}, 'csFrameBuffer'))
 				handles.frameBuf = varargin{k};
 			elseif(ischar(varargin{k}))
 				if(strncmpi(varargin{k}, 'idx', 3))
 					handles.idx = varargin{k+1};
-				elseif(strncmpi(varargin{k}, 'lfile', 5))
-					handles.loadFilename = varargin{k+1};
-				elseif(strncmpi(varargin{k}, 'sfile', 5))
-					handles.saveFilename = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'opts', 4))
+					opts = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'verbose', 7))
+					handles.verbose = true;
 				end
 			end
 		end
@@ -76,6 +76,21 @@ function csToolBufPreview_OpeningFcn(hObject, eventdata, handles, varargin)
 	if(~isfield(handles, 'idx'))
 		handles.idx = 1;
 	end
+	if(~isfield(handles, 'verbose'))
+		handles.verbose = false;
+	end
+
+	% Check for options structure
+	if(~exist('opts', 'var'))
+		%Generate new pvSettings structure
+		opts = struct('loadFilename', 'data/settings/bufdata/frame-001.mat', ...
+			          'saveFilename', 'data/settings/bufdata/frame-001.mat', ...
+			          'loadRange', [1 1], ...
+			          'saveRange', [1 1] );
+	end
+	handles.pvSettings = opts;
+
+
 	if(~isfield(handles, 'loadFilename'))
 		handles.loadFilename = 'loadfile.mat';
 	end
@@ -107,33 +122,18 @@ function csToolBufPreview_OpeningFcn(hObject, eventdata, handles, varargin)
 	imshow(img, 'Parent', handles.figPreview);
 
 	% Choose default command line output for csToolBufPreview
-	handles.output = hObject;
+	handles.output = struct('pvSettings', handles.pvSettings, ...
+		                    'frameBuf',   handles.frameBuf );
 
-	% Update handles structure
 	guidata(hObject, handles);
-
-	% UIWAIT makes csToolBufPreview wait for user response (see UIRESUME)
-	% uiwait(handles.csToolBufPreview);
+	uiwait(handles.csToolBufPreview);
 
 
-function varargout = csToolBufPreview_OutputFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function varargout = csToolBufPreview_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 	varargout{1} = handles.output;
+	delete(hObject);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function bSave_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function bSave_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	lr = fix(str2double(get(handles.etSaveLow,  'String')));
 	hr = fix(str2double(get(handles.etSaveHigh, 'String')));
@@ -144,36 +144,43 @@ function bSave_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 		hr = handles.frameBuf.getNumFrames();
 	end
 
-	range = [lr hr];
-	%filename = get(handles.etSaveFilename, 'String');
-	handles.frameBuf = handles.frameBuf.saveBufData(range);
+	range    = [lr hr];
+	filename = get(handles.etSaveFilename, 'String');
+	handles.frameBuf = handles.frameBuf.saveBufData(range, filename);
 
 	guidata(hObject, handles);
 	uiresume(csToolBufPreview);
 
-function bSaveFile_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function bSaveFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% TODO : Add a uigetfile here
 
+	guidata(hObject,handles);
+	uiresume(csToolBufPreview);	
 
 
+function bLoad_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	lr = fix(str2double(get(handles.etLoadLow, 'String')));
+	hr = fix(str2double(get(handles.etLoadHigh, 'String')));
+	if(lr < 1)
+		lr = 1;
+	end
+	if(hr > handles.frameBuf.getNumFrames())
+		hr = handles.frameBuf.getNumFrames();
+	end
+
+	filename = get(handles.etLoadFilename, 'String');
+	handles.frameBuf = handles.frameBuf.loadBufData(lr, hr, filename);
+
+	guidata(hObject, handles);
+	uiresume(csToolBufPreview);
 
 
-
-
-
-function bLoad_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-	
-	
-
-
-
-
-
-
-
-function bLoadFile_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function bLoadFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% TODO : Add a uigetfile here
 
+	guidata(hObject,handles);
+	uiresume(csToolBufPreview);	
 
 % ======== TRANSPORT PANEL ======== %
 

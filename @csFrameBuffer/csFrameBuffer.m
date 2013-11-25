@@ -368,9 +368,6 @@ classdef csFrameBuffer
 				case F.GEN_BPIMG
 					% Read image from bpVec and return image file
 					img = get(fh, 'bpVec');
-					% ======== DEBUG ======== %
-					fprintf('DEBUG (getCurImg) : dims : \n');
-					disp(get(fh, 'dims'));
 					if(RETURN_IMG)
 						if(RETURN_3_CHANNEL)
 							img = vec2bpimg(img, 'dims', get(fh, 'dims'), '3chan');
@@ -870,15 +867,22 @@ classdef csFrameBuffer
 				bpsum = [];
 			end
 
+			% ARGH! MATLAB CANT FALL THROUGH CASES!!!!!
 			switch(vclass)
 				case 'RGB'
+					set(F.frameBuf(idx), 'img', vecdata);
+					F.renderMode = F.IMG_DATA;
 				case 'HSV'
+					set(F.frameBuf(idx), 'img', vecdata);
+					F.renderMode = F.IMG_DATA;
 				case 'Hue'
 					set(F.frameBuf(idx), 'img', vecdata);
 					F.renderMode = F.IMG_DATA;
 				case 'Backprojection'
+					set(F.frameBuf(idx), 'bpVec', vecdata);
+					F.renderMode = F.GEN_BPIMG;	%or maybe F.BP_IMG?
 				case 'bp'
-					set(F.frameBuf(idx), 'bpvec', vecdata);
+					set(F.frameBuf(idx), 'bpVec', vecdata);
 					F.renderMode = F.GEN_BPIMG;	%or maybe F.BP_IMG?
 				otherwise
 					fprintf('%s not a valid vtype [%s]\n', DSTR, vclass);
@@ -895,7 +899,7 @@ classdef csFrameBuffer
 
 		end 	%loadVectorData()
 
-		function saveBufData(F, range, varargin)
+		function saveBufData(F, range, filename)
 		% SAVEBUFDATA
 		% FB = saveBufData(F, range)
 		%
@@ -903,12 +907,6 @@ classdef csFrameBuffer
 			
 			DATA_DIR = 'data/settings';
 			DSTR     = '[csFrameBuffer.saveBufData()] : ';
-
-			if(~isempty(varargin))
-				if(strncmpi(varargin{1}, 'fname', 5))
-					filename = varargin{k+1};
-				end
-			end
 
 			if(isempty(range))
 				range = [1 length(F.frameBuf)];
@@ -924,8 +922,14 @@ classdef csFrameBuffer
 			n  = 1;
 			t  = range(2) - range(1);
 			wb = waitbar(0, sprintf('Saving frame data (%d/%d)', n, t));
+			ps = fname_parse(filename);
+			if(ps.exitflag == -1)
+				fprintf('%s unable to parse file [%s]\n', DSTR, filename);
+				return;
+			end
+
 			for k = range(1) : range(2)
-				filename = sprintf('%s/frame-%03.mat', DATA_DIR, k);
+				filename = sprintf('%s/%s-%03d.%s', ps.path, ps.filename, k, ps.ext);
 				bufDiskWrite(F, F.frameBuf(k), filename);
 				waitbar(n/t, wb, sprintf('Saving frame data (%d/%d)', n, t));
 				n = n + 1;
@@ -934,27 +938,27 @@ classdef csFrameBuffer
 
 		end 	%saveBufData()
 
-		function FB = loadBufData(F, numFiles, startFile)
+		function FB = loadBufData(F, startRange, endRange, filename)
 		% LOADBUFDATA
 		% FB = loadBufData(F, numFiles, startFile);
 		%
 		% Load buffer data from disk 
 
 			DSTR     = '[csFrameBuffer.loadBufData] : ';	
-			DATA_DIR = 'data/settings';
-			if((numFiles + startFile) > length(F.frameBuf))
-				total = length(F.frameBuf) - startFile;
-			else
-				total = numFiles + startFile;
-			end	
 
 			n = 1;
 			wb = waitbar(0, sprintf('Reading frame data (%d/%d)', n, total));
-			for k = startFile : total;
-				filename = sprintf('%s/frame-%03d.mat', DATA_DIR, k);
-				status   = bufDiskRead(F, F.frameBuf(k), filename);
+			ps = fname_parse(filename);
+			if(ps.exitflag == -1)
+				fprintf('%s unable to parse file [%s]\n', DSTR, filename);
+				return;
+			end
+
+			for k = startRange : endRange
+				fn = sprintf('%s/%s-%03d.%s', ps.path, ps.filename, k, ps.ext);
+				status   = bufDiskRead(F, F.frameBuf(k), fn);
 				if(status == -1)
-					fprintf('%s cant find file [%s]\n', DSTR, filename);
+					fprintf('%s cant find file [%s]\n', DSTR, fn);
 					delete(wb);
 					FB = F;
 					return;
