@@ -12,12 +12,18 @@ function csToolSaveState(handles, DATA_DIR, frameIndex)
 	trackOpts    = handles.trackOpts;				%#ok
 	vecOpts      = handles.vecManager;              %#ok
 	rStruct      = handles.rData;                   %#ok
+	pvOpts       = handles.pvOpts;                  %#ok
+	vfOpts       = handles.vfOpts;                  %#ok
+	sqOpts       = handles.sqOpts;                  %#ok
 
 	save(sprintf('%s/bufOpts.mat', DATA_DIR),      'bufOpts');
 	save(sprintf('%s/segOpts.mat', DATA_DIR),      'segOpts');
 	save(sprintf('%s/trackOpts.mat', DATA_DIR),    'trackOpts');
 	save(sprintf('%s/vecOpts.mat', DATA_DIR),      'vecOpts');
 	save(sprintf('%s/regionStruct.mat', DATA_DIR), 'rStruct');
+	save(sprintf('%s/pvOpts.mat', DATA_DIR),       'pvOpts');
+	save(sprintf('%s/vfOpts.mat', DATA_DIR),       'vfOpts');
+	save(sprintf('%s/sqOpts.mat', DATA_DIR),       'sqOpts');
 
 	%Save ui variables
 	ui.highRange = get(handles.etHighRange, 'String');

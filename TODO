@@ -4,6 +4,17 @@
 #
 ###############################################################
 
+
+SEQUENCE GENERATOR:
+Add options to generate multiple targets
+
+CSTOOLVERIFY
+Need to properly rescale images that are read into buffer
+
+There should be a way to get summary statistics over the entire tracking
+run, for example the average number of iterations until convergence
+
+=======================================================================
 (FRAMEBUF INTERFACE BRANCH)
 Re-write csFrameBuffer class to properly wrap each csFrame 
 

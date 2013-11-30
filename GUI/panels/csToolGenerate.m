@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 22-Nov-2013 14:17:03
+% Last Modified by GUIDE v2.5 27-Nov-2013 14:02:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -181,6 +181,15 @@ function bUIgetfile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     set(handles.etWriteFile, 'String', sprintf('%s%s', path, fname));
     guidata(hObject, handles);
 
+function bGetTrajFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	oldPath = get(handles.etTrajFile, 'String');
+	[fname path] = uiputfile('*.dat', 'Save Trajectory as...');
+	if(isempty(fname))
+		fname = oldPath;
+	end
+	set(handles.etTrajFile, 'String', sprintf('%s%s', path, fname));
+	guidata(hObject, handles);
 
 function bCancel_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     handles.output = 0;
@@ -287,7 +296,9 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %To avoid having two sets of parsers, just make strings that the
     %command line vecManager would accept out of the drop-down box
     %arguments
-	
+
+	% TODO : Disable GUI here during vector generate
+
     vstr   = get(handles.pmVecOr, 'String');
     vidx   = get(handles.pmVecOr, 'Value');
     vtype  = vstr{vidx};
@@ -413,6 +424,31 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     uiresume(handles.csToolGenerateFig);
     delete(handles.csToolGenerateFig);
 
+
+function bGenTraj_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+	% Pull trajectory out of buffer and generate output file
+	
+	lr = fix(str2double(get(handles.etLow, 'String')));
+	hr = fix(str2double(get(handles.etHigh, 'String')));
+
+	traj     = handles.frameBuf.getTraj([lr hr]);
+	filename = get(handles.etTrajFile, 'String');
+	fp       = fopen(filename, 'w');
+	if(fp == -1)
+		fprintf('ERROR: Unable to open file [%s]\n', filename);
+		return;
+	end
+	fprintf(fp, 'xpos ypos');
+	for k = 1 : length(traj)
+		fprintf(fp, '%f %f\n', traj(1,k), traj(2,k));
+	end
+	fprintf(fp, '\n');
+	fclose(fp);
+
+	
+	guidata(hObject, handles);
+	uiresume(handles.csToolGenerateFig);
+
 function bGenMhist_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Take Current model histogram and produce a vector that can be used in
     %a Verilog Testbench
@@ -502,6 +538,10 @@ function etHigh_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
+function etTrajFile_CreateFcn(hObject, eventdata, handles)
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 
 % ======== EMPTY FUNCTIONS ======== %
 function chkHSV_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -516,5 +556,8 @@ function chkAppendNum_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkMhist_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etTrajFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
+
 
 

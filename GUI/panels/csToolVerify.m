@@ -381,6 +381,9 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		else
 			img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale');
 		end
+		% Rescale image
+		sc   = range(range(handles.refFrameBuf.getCurImg(handles.idx)));
+		img  = imgRescale(img, sc);
 		% Format dims and place vector into buffer
 		dims = size(img);
 		dims = [dims(2) dims(1)];	
@@ -391,37 +394,16 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(img, N, vclass, 'dims', dims);
 		end
 	end
-	% TODO : Need to place vectors into frame buffer - this might require a 
-	% new method in the csFrameBuffer class
-	
 	% Convert to bpvec and save into test buffer
     handles.vectors = vectors;
 
-	% DEBUG 
-	fprintf('testFrameBuf rendermode :\n');
-	disp(handles.testFrameBuf.getRenderMode);	
-
-	% Also get all frame handles and print dims
-	
-	% ======== DEBUG ======== %
-	N = handles.testFrameBuf.getNumFrames();
-	fhArr = handles.testFrameBuf.getFrameHandle(1:N);
-	for k = 1 : length(fhArr)
-		fprintf('dims for frame %d\n', k);
-		disp(get(fhArr(k), 'dims'));
-		size(get(fhArr(k), 'dims'));
-	end
-
-
-
 	% Preview final image
 	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
-	% TODO : STILL PROBLEMS HERE
+    % TODO :  Still a problem here with size(vec) in vec2bpimg()
 	testImg = handles.testFrameBuf.getCurImg(handles.idx);
 	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference');
 	gui_updatePreview(handles.figPreviewTest, testImg, 'Test Data');
 	gui_updatePreview(handles.figError, abs(refImg - testImg), 'Error Image');
-
 
 	%imshow(img, 'Parent', handles.figPreviewTest);
     guidata(hObject, handles);
@@ -482,18 +464,6 @@ function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     guidata(hObject, handles);
 	uiresume(csToolVerifyFig);
     
-%function [ef errNum errFile] = numFilesCheck(numFiles, filenamr)
-%
-%	% Check the files to be read actually exist
-%	ps = fname_parse(filename);
-%	if(ps.exitflag == -1)
-%		fprintf('ERROR: Unable to parse filename %s\n', filename);
-%		ef      = -1;
-%		errNum  = 1;
-%		errFile = filename;
-%		return;
-%	end
-
 
 function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 

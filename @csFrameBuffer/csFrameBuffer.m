@@ -513,6 +513,41 @@ classdef csFrameBuffer
 			end
 
 		end 	%getTraj()
+
+		function avgIter = getAvgIter(FB, varargin)
+		% GETAVGITER
+		% avgIter = getAvgIter(F, [..OPTIONS..])
+		%
+		% Get the average number of iterations required to converge for
+		% the currently stored sequence.
+
+			if(~isempty(varargin))
+				if(strncmpi(varargin{1}, 'range', 5))
+					bRange = varargin{2};
+				end
+			end
+			if(~exist('range', 'var'))
+				bRange = [1 length(FB.frameBuf)];
+			end
+
+			% Check that the nIters params is set in the first frame
+			% (for the time being, we assume that if one frame is set,
+			% all the frames in range are set)
+			
+			% TODO : something odd here, according to mlint...	
+			if(isempty(get(FB.frameBuf(bRange(1)), 'nIters')))
+				fprintf('%s nIters not set in frame %d, exiting\n', DSTR, bRange(1));
+				avgIter = [];
+				return;
+			end
+
+			avgIter = 0;
+			for n = bRange(1) : bRange(2)
+				avgIter = avgIter + get(FB.frameBuf(n), 'nIters');
+			end
+			avgIter = avgIter / (bRange(2) - bRange(1)) + 1;	%need +1 due to MATLAB
+
+		end 	%getAvgIter()
 		
 		% ---------------------------------- %
 		% -------- SETTER FUNCTIONS -------- %

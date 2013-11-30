@@ -172,24 +172,18 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	%Hold default figure name as a property
 	handles.csToolFigName = 'csTool - CAMSHIFT Simulation Tool';
 
-	% Create a structure to store settings for csToolVerify GUI
-	vfSettings = struct('filename', ' ', ... 
-		                'orientation', 'scalar', ... 
-		                'vsize',       1, ... 
-		                'vtype',       'backprojection', ... 
-		                'dims',        [640 480] );
-	handles.vfSettings     = vfSettings;
-
-	% Create a structure to store settings for csTooBufPreview GUI
-	pvSettings = struct('loadFilename', 'data/settings/bufdata/frame-001.mat', ...
-		                'saveFilename', 'data/settings/bufdata/frame-001.mat', ...
-		                'loadRange',     [1 1], ...
-		                'saveRange',     [1 1] );
-	
-	handles.pvSettings      = pvSettings;
-
-	% Create genOpts placeholder for random backprojection generation
-	handles.genOpts = [];
+	% Create or load previous options structure for sub-GUIs	
+	handles.vfOpts = init_genVfOpts(DATA_DIR, NO_LOAD);
+	handles.pvOpts = init_genPvOpts(DATA_DIR, NO_LOAD);
+	handles.sqOpts = init_genSqOpts(DATA_DIR, NO_LOAD);
+	if(DEBUG)
+		fprintf('vfOpts : \n');
+		disp(handles.vfOpts);
+		fprintf('pvOpts :\n');
+		disp(handles.pvOpts);
+		fprintf('sqOpts :\n');
+		disp(handles.sqOpts);
+	end
     handles = init_UIElements(handles);
 
 	% Create structure to store filenames
@@ -1234,12 +1228,13 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
             % ================ LAUNCH RANDOM SEQUENCE SCREEN ================ %
 		case 'y'
 			if(handles.debug)
-				sgOpts = csToolSeqGen('genopts', handles.genOpts, 'debug');
+				sgOpts = csToolSeqGen('genopts', handles.sqOpts, 'debug');
 			else
-				sgOpts = csToolSeqGen('genopts', handles.genOpts);
+				sgOpts = csToolSeqGen('genopts', handles.sqOpts);
 			end
 			if(sgOpts.status ~= -1)
-				handles.genOpts  = sgOpts.genOpts;
+                % TODO : Re-write structure names on csToolSeqGen side
+				handles.sqOpts  = sgOpts.genOpts;
 				handles.frameBuf = sgOpts.frameBuf;
 				if(handles.debug)
 					fprintf('(DEBUG) : Sequence options\n');
@@ -1277,10 +1272,15 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 
             % ================ LAUNCH BUFFER PREVIEW ================ %
 		case 'p'
-			prStr = csToolBufPreview(handles.frameBuf, 'opts', handles.pvSettings, 'idx', frameIndex);
+			prStr = csToolBufPreview(handles.frameBuf, 'opts', handles.pvOpts, 'idx', frameIndex);
 			if(prStr.exitflag ~= -1)
-				handles.pvSettings = prStr.pvSettings;
+				handles.pvOpts = prStr.pvOpts;
 				handles.frameBuf   = prStr.frameBuf;
+				if(handles.debug)
+					fprintf('csToolBufPreview settings :\n');
+					disp(handles.pvOpts);
+					disp(handles.frameBuf);
+				end
 			end
 
         
@@ -1556,15 +1556,15 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
 	imsz = handles.frameBuf.getDims(frameIndex);
 	ef = csToolVerify(handles.vecManager, handles.frameBuf);	
 	%if(handles.debug)
-	%    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug', 'opts', handles.vfSettings);
+	%    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug', 'opts', handles.vfOpts);
 	%else
-	%	ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'opts', handles.vfSettings);
+	%	ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'opts', handles.vfOpts);
 	%end
 	if(~isstruct(ef) && ef == -1)
 		fprintf('ERROR: csToolVerify returned status -1\n');
 		return;
 	else
-		handles.vfSettings = ef;
+		handles.vfOpts = ef;
         if(handles.debug)
             fprintf('csToolVerify opts:\n');
             disp(ef);
@@ -1798,13 +1798,13 @@ function menu_genRandBp_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	% Bring up csToolSeqGen GUI
 	if(handles.debug)
-		sgOpts = csToolSeqGen('genopts', handles.genOpts, 'debug');
+		sgOpts = csToolSeqGen('genopts', handles.sqOpts, 'debug');
 	else
-		sgOpts = csToolSeqGen('genopts', handles.genOpts);
+		sgOpts = csToolSeqGen('genopts', handles.sqOpts);
 	end
 
 	if(sgOpts.status ~= -1)
-		handles.genOpts  = sgOpts.genOpts;
+		handles.sqOpts  = sgOpts.genOpts;
 		handles.frameBuf = sgOpts.frameBuf;
 		if(handles.debug)
 			fprintf('(DEBUG) : Sequence options\n');
