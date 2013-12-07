@@ -23,6 +23,7 @@ function status = vecDiskWrite(V, data, varargin)
 	BIT_2    = false;
 	%DEBUG    = false;
 	DEBUG    = true;
+	SPACE_DELIMIT = true;	%TODO : add this option to GUI, etc
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
@@ -31,7 +32,7 @@ function status = vecDiskWrite(V, data, varargin)
 				elseif(strncmpi(varargin{k}, 'num', 3))
 					numFmt = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'vsim', 4) || strncmpi(varargin{k}, 'adr', 3))
-					VSIM_ADR = true;
+					VSIM_ADR = varargin{k+1};
 				elseif(strncmpi(varargin{k}, '1b', 2))
 					BIT_1   = true;
 				elseif(strncmpi(varargin{k}, '2b', 2))
@@ -85,18 +86,23 @@ function status = vecDiskWrite(V, data, varargin)
 		        'Name', sprintf('Writing %s...', filename{k}));
 	for k = 1:length(data)
 		vec = data{k};
+
 		%Normalise data if required
-		if(BIT_1)
-			vec = vec./(max(max(vec)));
-			vec = round(vec);
-		elseif(BIT_2)
-			vec = vec ./ (max(max(vec)));
-			vec = vec .* 4;
-			vec = round(vec);
-		end
+% 		if(BIT_1)
+% 			vec = vec./(max(max(vec)));
+% 			vec = round(vec);
+% 		elseif(BIT_2)
+% 			vec = vec ./ (max(max(vec)));
+% 			vec = vec .* 4;
+% 			vec = round(vec);
+% 		end
 		if(VSIM_ADR)
 			%Write address for modelsim
 			fprintf(fp(k), '@0 ');
+		end
+		% DEBUG:
+		if(sum(isnan(vec)) > 0)
+			fprintf('WARNING: [%s]  vector data has %d NaN\n', filename{k}, sum(isnan(vec)));
 		end
 		switch numFmt
 			case 'hex'

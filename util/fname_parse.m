@@ -25,7 +25,9 @@ function parseStruct = fname_parse(fstring, varargin)
 	
 	DEBUG          = false;		%dont print debug messages
 	PARSE_VEC_ONLY = false;
-	DSTR   = 'ERROR (fname_parse) :';
+	DSTR           = 'ERROR (fname_parse) :';
+	PARAMS         = false;
+	LAST_NUM       = false;
 	% TODO : Properly deprecate these options
 	if(nargin > 1)
 		for k = 1:length(varargin)
@@ -33,6 +35,11 @@ function parseStruct = fname_parse(fstring, varargin)
 				DEBUG = true;
 			elseif(strncmpi(varargin{k}, 'veconly', 7))
 				PARSE_VEC_ONLY = true;
+			elseif(strncmpi(varargin{k}, 'lnum', 4))
+				LAST_NUM = true;
+			% TODO : May not need to figure out params or moments here....
+			%elseif(strncmpi(varargin{k}, 'params', 6))
+			%	PARAMS = true;
 			end
 		end
 	end
@@ -117,6 +124,14 @@ function parseStruct = fname_parse(fstring, varargin)
                 filename = fstring(slashes(end)+1 : dashIdx(1)-1);
             end
 		end
+	end
+
+	if(isempty(vecNum) && LAST_NUM)
+		% Try to parse vecNum as the final part of the string in 
+		% filename. This implies that we need to drop the last 3 
+		% charaecters in the filename parameter
+		vecNum   = str2double(fstring(extIdx-3 : extIdx-1));
+		filename = filename(1:end-3);
 	end
 
 	% Return properly formed structure

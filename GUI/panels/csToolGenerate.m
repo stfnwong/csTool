@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 27-Nov-2013 14:02:35
+% Last Modified by GUIDE v2.5 05-Dec-2013 19:39:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -313,6 +313,13 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
 	val = fix(str2double(val));
 
+	% Do we want to generate vsim address header?
+	if(get(handles.chkVsim, 'Value'))
+		vsim = true;
+	else
+		vsim = false;
+	end
+
 	% Get range values, force to sensible numbers if needed	
 	lr = fix(str2double(get(handles.etLow,  'String')));
 	hr = fix(str2double(get(handles.etHigh, 'String')));
@@ -360,7 +367,8 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		opts = struct('vtype', vtype, ...
 			          'val', val, ...
 			          'scale', scale, ...
-			          'fname', fname{idx});
+			          'fname', fname{idx}, ...
+			          'vsim', vsim);
 		
 		% --- RGB Vector --- %
 		if(get(handles.chkRGB, 'Value'))
@@ -418,6 +426,13 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 				return;
 			end
 		end
+
+		% Write parameter data to disk
+        if(get(handles.chkGenParams, 'Value'))
+        end
+
+
+		% Write moment sum data to disk
 	end
 
     guidata(hObject, handles);
@@ -428,8 +443,8 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 function bGenTraj_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Pull trajectory out of buffer and generate output file
 	
-	lr = fix(str2double(get(handles.etLow, 'String')));
-	hr = fix(str2double(get(handles.etHigh, 'String')));
+	lr       = fix(str2double(get(handles.etLow, 'String')));
+	hr       = fix(str2double(get(handles.etHigh, 'String')));
 
 	traj     = handles.frameBuf.getTraj([lr hr]);
 	filename = get(handles.etTrajFile, 'String');
@@ -538,7 +553,7 @@ function etHigh_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
-function etTrajFile_CreateFcn(hObject, eventdata, handles)
+function etTrajFile_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
@@ -557,7 +572,6 @@ function etLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkMhist_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etTrajFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-
-
-
-
+function chkVsim_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function chkGenParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function chkGenMoments_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>

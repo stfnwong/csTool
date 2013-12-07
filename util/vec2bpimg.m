@@ -72,6 +72,7 @@ function bpimg = vec2bpimg(vec, varargin)
 
 	vsz = size(vec);
 	if(vsz(1) == 3)
+        % Add a check here for vectors with < 3 elements?
 		for k = 1:length(vec)
 			bpimg(vec(2,k), vec(1,k)) = vec(3,k);
 		end

@@ -284,8 +284,8 @@ classdef csFrameBuffer
 		%
 		% ARGUMENTS:
 		%
-		% F - csFrameBuffer object
-		% idx - Index in buffer to retreive
+		% F       - csFrameBuffer object
+		% idx     - Index in buffer to retreive
 		%
 		% [OPTIONAL ARGUMENTS]
 		% 'vec'   - Return the image as a vector, if applicable
@@ -332,6 +332,10 @@ classdef csFrameBuffer
 			fh = F.frameBuf(idx);
 
 			if(GET_IMG_ONLY)
+				if(strncmpi(get(fh, 'filename'), ' ', 1))
+					img = [];
+					return;
+				end
 				img  = imread(get(fh, 'filename'), F.ext);
 				dims = size(img);
 				if(dims(3) > 3)
@@ -341,12 +345,20 @@ classdef csFrameBuffer
 			end
 
 			if(GET_BPIMG_ONLY && RETURN_3_CHANNEL)
-				img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'), '3chan');
+				if(isempty(get(fh, 'dims')) || isempty(get(fh, 'bpVec')))
+					img = [];
+				else
+					img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'), '3chan');
+				end
 				return;
 			end
 
 			if(GET_BPIMG_ONLY)
-				img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
+				if(isempty(get(fh, 'dims')) || isempty(get(fh, 'bpVec')))
+					img = [];
+				else
+					img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
+				end
 				return;
 			end
 
@@ -641,7 +653,7 @@ classdef csFrameBuffer
 
 		end 	%clearImHist
 
-		function [FB status] = parseFilename(FB, fname, varargin)
+		function [FBout status] = parseFilename(FB, fname, varargin)
 		% PARSEFILENAME
 		% This method parses the filename specified by fname and sets the correct
 		% values in FB.path, FB.fName, FB.fNum, and FB.ext. The returned status flag
@@ -652,12 +664,12 @@ classdef csFrameBuffer
 			if(~ischar(fname))
 				error('Filename must be string');
 			end
-			ps = fname_parse(fname);
+			ps = fname_parse(fname, 'lnum');
 			if(ps.exitflag == -1)
 				%Check what fields we do have
 				if(isempty(fs.ext))
 					status = -1;
-					%FB     = FB;
+                    FBout  = FB;
 					return;
 				end
 			else
@@ -667,6 +679,7 @@ classdef csFrameBuffer
 			FB.fNum  = ps.vecNum;
 			FB.path  = ps.path;
 			status   = 0;
+            FBout    = FB;
 			return;
 
 		end 	%parseFilename()
@@ -812,7 +825,7 @@ classdef csFrameBuffer
 			else
 				%Load data into buffer
 				for k = 1:FB.nFrames
-					fn   = sprintf('%s%s%03d.%s', fpath, FB.fName, fnum, FB.ext); 
+					fn   = sprintf('%s%s%03d.%s', fpath, FB.fName, fnum+k-1, FB.ext); 
 					set(FB.frameBuf(k), 'filename', fn);
 					if(FB.verbose)
 						fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);
@@ -1029,9 +1042,10 @@ classdef csFrameBuffer
 			end
 		end 	%clearImData()
 
-		function F = genRandSeq(F, varargin)
+		function Fout = genRandSeq(F, varargin)
 		% GENRANDSEQ
-		% Generate a sequence of random backprojection data for testing
+		% Generate a sequence of random backprojection data for testing.
+		% 
 
 			if(~isempty(varargin))
 				for k = 1:length(varargin)
@@ -1066,7 +1080,7 @@ classdef csFrameBuffer
 					nframes = 64;
 				end
 				if(~exist('maxspd', 'var'))
-					maxspd = 64;		%max distance in pixels to next frame
+					maxspd = 64; %max distance in pixels to next frame
 				end
 				if(~exist('dist', 'var'))
 					dist = 'normal';
@@ -1105,11 +1119,15 @@ classdef csFrameBuffer
 			F  = initFrameBuf(F, nframes);
 			wb = waitbar(0, sprintf('Generating frame (%d/%d)', 0, nframes), 'title', 'Generating Backprojection Sequence...');
 			for N = 1:nframes
+				% DEBUG:
+				if(isempty(opts.imsz))
+					fprintf('WARNING: empty dimensions in generated frame %d\n', N);
+				end
 				% TODO : Put a waitbar here
-				frame    = genRandFrame(F, opts);
-				bpvec    = bpimg2vec(frame, 'bpval');
+				frame = genRandFrame(F, opts);
+				bpvec = bpimg2vec(frame, 'bpval');
 				% set parameter data for frame handle
-				fname    = sprintf('bpgen-%03d.ext', N);
+				fname = sprintf('bpgen-%03d.ext', N);
 				set(F.frameBuf(N), 'filename', fname);
 				set(F.frameBuf(N), 'bpVec', bpvec);
 				set(F.frameBuf(N), 'bpSum', opts.npoints);
@@ -1121,6 +1139,7 @@ classdef csFrameBuffer
 			end
 			delete(wb);
 			F.renderMode = 1;
+			Fout         = F;
 
 		end 	%genRandSeq()
 

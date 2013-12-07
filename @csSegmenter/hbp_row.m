@@ -1,4 +1,4 @@
-function [bpdata rhist] = hbp_row(T, img, mhist, varargin)
+function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)
 % HBP_ROW
 %
 % [bpdata rhist] = hbp_row(T, img, mhist)

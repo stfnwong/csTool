@@ -643,11 +643,10 @@ classdef vecManager
 			if(~isfield(opts, 'fname') || isempty(opts.fname))
 				opts.fname = 'genvec.dat';
 			end
-			% TODO : Just during debugging phase
-			if(iscell(opts.fname))
-				fprintf('WARNING: opts.fname is cell, selecting first element\n');
-				opts.fname = opts.fname{1};
+			if(~isfield(opts, 'vsim'))
+				opts.vsim = false;
 			end
+			% TODO : Add vsim option to GUI and update structures as required
 
 			% Generate correct vector for this type
 			switch vecType
@@ -655,24 +654,24 @@ classdef vecManager
 				case 'rgb'
 					vec = genRGBVec(V, img, opts.vtype, opts.val);
 					%vecname = sprintf('%s.dat', opts.fname);
-					vecDiskWrite(V, vec, 'fname', {opts.fname}, 'vsim');
+					vecDiskWrite(V, vec, 'fname', {opts.fname}, 'vsim', opts.vsim);
 				% ==== HSV === %
 				case 'hsv'
 					vec = genHueVec(V, img);
 					vecname{1} = sprintf('%s-hue.dat', opts.fname);
 					vecname{2} = sprintf('%s-sat.dat', opts.fname);
 					vecname{3} = sprintf('%s-val.dat', opts.fname);
-					vecDiskWrite(V, vec, 'fname', vecname, 'vsim');
+					vecDiskWrite(V, vec, 'fname', vecname, 'vsim', opts.vsim);
 				% ==== HUE ==== %
 				case 'hue'
 					vec = genHueVec(V, img, opts.vtype, opts.val, 'scale', opts.scale);
 					if(strncmpi(opts.vtype, 'scalar', 6))
-						vecDiskWrite(V, {vec}, 'fname', {opts.fname}, 'vsim');
+						vecDiskWrite(V, {vec}, 'fname', {opts.fname}, 'vsim', opts.vsim);
 					else
 						for n = length(vec):-1:1
 							vecnames{n} = sprintf('%s-vec%03d.dat', opts.fname, n);
 						end
-						vecDiskWrite(V, vec, 'fname', vecnames, 'vsim');
+						vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', opts.vsim);
 					end
 				% ==== BACKPROJECTION ==== %
 				case 'bp'
@@ -683,7 +682,7 @@ classdef vecManager
 						for n = length(vec):-1:1
 							vecnames{n} = sprintf('%s-vec%03d.dat', opts.fname, n);
 						end
-						vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', '1b');
+						vecDiskWrite(V, vec, 'fname', vecnames, 'vsim', opts.vsim, '1b');
 					end
 
 				otherwise

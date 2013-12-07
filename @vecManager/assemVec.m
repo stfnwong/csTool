@@ -17,6 +17,7 @@ function img = assemVec(V, vectors, varargin)
 % Stefan Wong 2013
 
 	DEBUG = false;
+	DSTR  = 'ERROR [assemVec()] : ';
 	if(~isempty(varargin))
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
@@ -47,7 +48,7 @@ function img = assemVec(V, vectors, varargin)
 		vecFmt = 'row';
 	end
 	if(~exist('imSz', 'var'))
-		fprintf('WARNING: Using default image size of 640x480\n');
+		fprintf('%s Using default image size of 640x480\n', DSTR);
 		imSz = [640 480];
 	end
 
@@ -65,10 +66,21 @@ function img = assemVec(V, vectors, varargin)
 	switch vecFmt
 		case 'row'
 			if(~iscell(vectors))
-				fprintf('ERROR: vectors must be cell array\n');
+				fprintf('%s vectors must be cell array\n', DSTR);
 				img = [];
 				return;
 			end
+
+			% Pre-check dimensions of vector data
+			for k = 1 : length(vectors)
+				veclen = length(vectors{k});
+				if(veclen < (imSz(1) / vecSz))
+					fprintf('%s vector length (%d) < image dimension (%d)\n', DSTR, veclen, (imSz(2) / vecSz));
+					img = [];
+					return;
+				end
+			end
+
             % NOTE : We can probaby take advantage of the fact that we have
             % all the vectors available to us in memory and just write the 
             % pattern into the image array column-wise
@@ -81,7 +93,7 @@ function img = assemVec(V, vectors, varargin)
 					for x = k:vecSz:imSz(1)
 						% Prevent crashes
 						if(n > length(vk))
-							fprintf('ERROR: Attempted to access index %d (numel(vk) = %d)\n', n, numel(vk));
+							fprintf('%s Attempted to access index %d (numel(vk) = %d)\n', DSTR, n, numel(vk));
 							delete(wb);
 							return;
 						end
@@ -95,10 +107,22 @@ function img = assemVec(V, vectors, varargin)
 			
 		case 'col'
 			if(~iscell(vectors))
-				fprintf('ERROR: vectors must be cell array\n');
+				fprintf('%s vectors must be cell array\n', DSTR);
 				img = [];
 				return;
 			end
+
+			% Pre-check that dimensions of vector data will generate
+			% an image of the specified size.
+			for k = 1 : length(vectors)
+				veclen = length(vectors{k});
+				if(veclen < (imSz(2) / vecSz))
+					fprintf('%s vector length (%d) < image dimension (%d)\n', DSTR, veclen, (imSz(2) / vecSz));
+					img = [];
+					return;
+				end
+			end
+
             wb = waitbar(0, 'Assembling column vectors...', 'Name', 'Assembling column vectors');
 			for k = 1 : length(vectors)
 				vk   = vectors{k};
@@ -112,13 +136,13 @@ function img = assemVec(V, vectors, varargin)
             delete(wb);
 
 		case 'scalar'
-			%Take a serialised vector and lay it out in raster form, wrapping the 
-			%dimensions based on imSz parameter. If we get to there and the vectors
-			%parameter is a cell array, then exit early (we could extract the first
-			%thing in the cell array and try it, but we have no idea what the contents
-			%would be.)
+			%Take a serialised vector and lay it out in raster form, 
+			%wrapping the dimensions based on imSz parameter. If we get to 
+			%there and the vectors parameter is a cell array, then exit 
+			%early (we could extract the first thing in the cell array and 
+			%try it, but we have no idea what the contents would be.)
 			if(iscell(vectors))
-				fprintf('ERROR: scalar option requires non-cell array argument\n');
+				fprintf('%s scalar option requires non-cell array argument\n', DSTR);
 				img = [];
 				return;
 			end	
@@ -133,7 +157,7 @@ function img = assemVec(V, vectors, varargin)
 				end
 			end
 		otherwise
-			fprintf('ERROR: Invalid vector format %s\n', vecFmt);
+			fprintf('%s Invalid vector format %s\n', DSTR, vecFmt);
 			img = [];
 			return;	
 	end

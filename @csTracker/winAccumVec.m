@@ -102,8 +102,8 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
                    bpvec(2,k) >= ylim(1) && bpvec(2,k) <= ylim(2))
 					%Pixel is in window
 					M00 = M00 + bpvec(3,k);
-					M10 = M10 + bpvec(1,k)  * bpvec(3,k);
-					M01 = M01 + bpvec(2,k)  * bpvec(3,k);
+					M10 = M10 + bpvec(1,k)   * bpvec(3,k);
+					M01 = M01 + bpvec(2,k)   * bpvec(3,k);
 					M11 = M11 + (bpvec(1,k) .* bpvec(2,k)) * bpvec(3,k);
 					M20 = M20 + (bpvec(1,k) .* bpvec(1,k)) * bpvec(3,k);
 					M02 = M02 + (bpvec(2,k) .* bpvec(2,k)) * bpvec(3,k);

@@ -14,20 +14,6 @@ function [vector varargout] = vecDiskRead(V, fname, varargin)
 
 % Stefan Wong 2012
 
-	%debug = false;
-	%if(~isempty(varargin))
-	%	for k = 1:length(varargin)
-	%		if(ischar(varargin{k}))
-	%			if(strncmpi(varargin{k}, 'debug', 5))
-	%				debug = true;
-	%			elseif(strncmpi(varargin{k}, 'dtype', 5))
-	%				dtype = varargin{k+1};
-	%				fprintf('(vecDiskRead) : dtype set as [%s]\n', dtype);
-	%			end
-	%		end
-	%	end
-	%end
-	
 	if(~isempty(varargin))
 		if(strncmpi(varargin{1}, 'dtype', 5))
 			dtype = varargin{2};

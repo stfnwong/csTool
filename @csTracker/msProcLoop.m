@@ -121,7 +121,8 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 			%Save previous centroid
 			%cTemp = [trackWindow(1) trackWindow(2)];
 			%trackWindow = wparamComp(T, moments);
-			trackWindow = wparamCompB(T, moments);
+			%trackWindow = wparamCompB(T, moments);
+			trackWindow = wparamCompCS(T, moments);
 			switch(T.WSIZE_METHOD)
 				case T.ZERO_MOMENT
 					if(exist('spstat', 'var'))
@@ -184,7 +185,8 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 
 	%Compute new window parameters
 	%wparam = wparamComp(T, moments);
-	wparam = wparamCompB(T, moments);
+	%wparam = wparamCompB(T, moments);
+	wparam = wparamCompCS(T, moments);
 	%DEBUG: - Get rid of NaNs by force
 	wparam(isnan(wparam)) = 1;
 

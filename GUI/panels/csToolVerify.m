@@ -205,8 +205,10 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	title(handles.figError, 'Error');
 
 	% Show first reference figure in GUI
-	refImg = handles.refFrameBuf.getCurImg(handles.idx);
-	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference');
+	refImg   = handles.refFrameBuf.getCurImg(handles.idx);
+	rParams  = handles.refFrameBuf.getWinParams(handles.idx);
+	rMoments = handles.refFrameBuf.getMoments(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference', rParams, rMoments);
 
     % Choose default command line output for csToolVerify
     handles.output = hObject;
@@ -238,6 +240,7 @@ function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	delete(handles.csToolVerifyFig);
 
 
+
 % ---------- TRANSPORT CONTROLS -------- %	
 function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	
@@ -251,9 +254,13 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	refTitle  = sprintf('Reference frame %d', handles.idx);
 	testTitle = sprintf('Test frame %d', handles.idx);
 	errTitle  = sprintf('Error frame %d', handles.idx);
-	gui_updatePreview(handles.figPreviewRef, refImg, refTitle);
-	gui_updatePreview(handles.figPreviewTest, testImg, testTitle);
-	gui_updatePreview(handles.figError, errImg, errTitle);
+	tParams   = handles.testFrameBuf.getWinParams(handles.idx);
+	tMoments  = handles.testFrameBuf.getMoments(handles.idx);
+	rParams   = handles.refFrameBuf.getWinParams(handles.idx);
+	rMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
+	gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
+	gui_updatePreview(handles.figError, errImg, errTitle, [], []);
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolVerifyFig);
@@ -272,9 +279,13 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	refTitle  = sprintf('Reference frame %d', handles.idx);
 	testTitle = sprintf('Test frame %d', handles.idx);
 	errTitle  = sprintf('Error frame %d', handles.idx);
-	gui_updatePreview(handles.figPreviewRef, refImg, refTitle);
-	gui_updatePreview(handles.figPreviewTest, testImg, testTitle);
-	gui_updatePreview(handles.figError, errImg, errTitle);
+	tParams   = handles.testFrameBuf.getWinParams(handles.idx);
+	tMoments  = handles.testFrameBuf.getMoments(handles.idx);
+	rParams   = handles.refFrameBuf.getWinParams(handles.idx);
+	rMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
+	gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
+	gui_updatePreview(handles.figError, errImg, errTitle, [], []);
 
 	guidata(hObject, handles);	
 	uiresume(handles.csToolVerifyFig);
@@ -300,20 +311,40 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	refTitle  = sprintf('Reference frame %d', handles.idx);
 	testTitle = sprintf('Test frame %d', handles.idx);
 	errTitle  = sprintf('Error frame %d', handles.idx);
-	gui_updatePreview(handles.figPreviewRef, refImg, refTitle);
-	gui_updatePreview(handles.figPreviewTest, testImg, testTitle);
-	gui_updatePreview(handles.figError, errImg, errTitle);
+	tParams   = handles.testFrameBuf.getWinParams(handles.idx);
+	tMoments  = handles.testFrameBuf.getMoments(handles.idx);
+	rParams   = handles.refFrameBuf.getWinParams(handles.idx);
+	rMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
+	gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
+	gui_updatePreview(handles.figError, errImg, errTitle, [], []);
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolVerifyFig);
 
 % -------- GUI RENDERING FUNCTIONS -------- %
-function gui_updatePreview(axHandle, img, figTitle)
+function gui_updatePreview(axHandle, img, figTitle, params, moments)
 	% axHandle should be vector of axis handles
 	
 	imshow(img, 'Parent', axHandle);
 	if(~isempty(figTitle))
 		title(axHandle, figTitle);
+	end
+
+	if(~isequal(params, zeros(1,5)) || ~isempty(params) && ...
+	   ~isequal(moments, zeros(1,6)) || ~isempty(moments))
+		% Plot parameters
+		%vstr = get(handles.pmVecSz, 'String');
+		%vidx = get(handles.pmVecSz, 'Value');
+		%vsz  = vstr{vidx};
+		vsz  = 16;			% TODO : Change this!!!!
+		ef   = gui_plotParams(axHandle, params, moments, vsz);
+		if(ef == -1)
+			%fprintf('ERROR: Couldnt plot params in frame %d\n', handles.idx);
+			return;
+		end
+		%[l r t b] = gui_calcRect(params(1), params(2), params(4), params(5), params(3), 20);
+		%plot(axHandle, 
 	end
 
 
@@ -338,7 +369,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		fprintf('ERROR: Cant interpret number of files [%s]\n', get(handles.etNumFiles, 'String'));
 		return;
 	end
-	% TOOD : Write a routine to make sure the files are on disk
+	% TODO : Write a routine to make sure the files are on disk
 	chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize);
 	if(chk.exitflag == -1)
 		fprintf('ERROR: In file (%d/%d), vector (%d/%d) [%s]\n', chk.errFrame, numFiles, chk.errVec, vsize, filename);
@@ -393,17 +424,48 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		else
 			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(img, N, vclass, 'dims', dims);
 		end
+
+		% Automatically check for param or moment files
+		paramFname = sprintf('%s%s-frame%03d-params.dat', ps.path, ps.filename, ps.frameNum);
+		if(exist(paramFname, 'file') == 2)
+			fp = fopen(paramFname, 'w');
+			if(fp == -1)
+				fprintf('ERROR: Cant open file %s...\n', paramFname);
+			else
+				params = fread(fp, 5, 'uint32');
+				opts   = struct('winparams', params);
+				handles.testFrameBuf = handles.testFrameBuf.setFrameParams(handles.idx, opts);
+				fclose(fp);
+			end
+		end
+		momentFname = sprintf('%s%s-frame%03d-moments.dat', ps.path, ps.filename, ps.frameNum);
+		if(exist(momentFname, 'file') == 2)
+			fp = fopen(momentFname, 'w');
+			if(fp == -1)
+				fprintf('ERROR: Cant open file %s\n', momentFname);
+			else
+				moments = fread(fp, 6, 'uint32');
+				opts    = struct('moments', moments);
+				handles.testFrameBuf = handles.testFrameBuf.setFrameParams(handles.idx, opts);
+				fclose(fp);
+			end
+		end
+
 	end
 	% Convert to bpvec and save into test buffer
     handles.vectors = vectors;
 
 	% Preview final image
-	refImg  = handles.refFrameBuf.getCurImg(handles.idx);
+	refImg   = handles.refFrameBuf.getCurImg(handles.idx);
+	rParams  = handles.refFrameBuf.getWinParams(handles.idx);
+	rMoments = handles.regFrameBuf.getMoments(handles.idx);
     % TODO :  Still a problem here with size(vec) in vec2bpimg()
-	testImg = handles.testFrameBuf.getCurImg(handles.idx);
-	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference');
-	gui_updatePreview(handles.figPreviewTest, testImg, 'Test Data');
-	gui_updatePreview(handles.figError, abs(refImg - testImg), 'Error Image');
+	testImg  = handles.testFrameBuf.getCurImg(handles.idx);
+	tParams  = handles.testFrameBuf.getWinParams(handles.idx);
+	tMoments = handles.testFrameBuf.getMoments(handles.idx);
+	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference', rParams, rMoments);
+	gui_updatePreview(handles.figPreviewTest, testImg, 'Test Data', tParams, tMoments);
+	gui_updatePreview(handles.figError, abs(refImg - testImg), 'Error Image', [], []);
 
 	%imshow(img, 'Parent', handles.figPreviewTest);
     guidata(hObject, handles);
