@@ -61,6 +61,8 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
                     handles.idx   = varargin{k+1};
                 elseif(strncmpi(varargin{k}, 'mhist', 5))
                     handles.mhist = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'initpos', 7))
+					handles.initpos = varargin{k+1};
                 end
             else
                 %These are the mandatory arguments
@@ -102,6 +104,10 @@ function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<I
         fprintf('WARNING; no mhist parameter, setting to 16 zeros\n');
         handles.mhist = zeros(1,16);
     end
+	if(~isfield(handles, 'initpos'))
+		fprintf('WARNING: No initpos, setting to zeros\n');
+		handles.initpos = zeros(1,5);
+	end
 
     if(handles.debug)
         %Show the current values of input parameters
@@ -360,6 +366,29 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% TODO : For now hard code scale at 256 - add GUI control for this
 	scale = 256;
 
+	if(get(handles.chkGenParams, 'Value'))
+		% TODO >  Generate inital parameter here
+		winparam    = zeros(1,5);
+		winparam(1) = fix(handles.initpos(1));
+		winparam(2) = fix(handles.initpos(2));
+		winparam(3) = 0;		% This could change in future...
+		winparam(4) = fix(handles.initpos(3));
+		winparam(5) = fix(handles.initpos(4));
+		ipf = sprintf('%swparam_init.dat', fs.path);
+		fp  = fopen(ipf, 'w');
+		if(fp == -1)
+			fprintf('ERROR: Cant open wparam_init file, skipping...\n');
+		else
+			fprintf('Writing parameter data :\n');
+			disp(winparam)
+			fprintf('Writing to file [%s]\n', ipf);
+			for k = 1 : length(winparam)
+				fprintf(fp, '%x ', winparam(k));
+			end
+			fclose(fp);
+		end
+	end
+
 	% Generate vectors as required
 	for idx = range(1) : range(2)
 
@@ -429,10 +458,13 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 		% Write parameter data to disk
         if(get(handles.chkGenParams, 'Value'))
+
         end
 
 
 		% Write moment sum data to disk
+		if(get(handles.chkGenMoments, 'Value'))
+		end
 	end
 
     guidata(hObject, handles);

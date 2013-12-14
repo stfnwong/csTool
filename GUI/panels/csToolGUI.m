@@ -865,10 +865,13 @@ function bGenerate_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>
 	
 	global frameIndex;
 	mhist = handles.segmenter.getMhist();
+	fprintf('Current rRegion data : \n');
+	disp(handles.rData.rRegion);
 	if(handles.debug)
-		status = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'debug', 'mhist', mhist);
+
+		status = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'debug', 'mhist', mhist, 'initpos', handles.rData.rPos);
 	else	
-		status = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'mhist', mhist);
+		status = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'mhist', mhist, 'initpos', handles.rData.rPos);
 	end
 	if(status == -1)
 		return;
@@ -1209,7 +1212,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			% ================ LAUNCH GENERATE SCREEN ================ %
 		case 'g'
 			mhist = handles.segmenter.getMhist();
-			ef = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'mhist', mhist);
+			ef = csToolGenerate(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'mhist', mhist, 'initpos', handles.rData.rPos);
 			if(ef == -1)
 				fprintf('ERROR: Error in csToolGenerate()\n');
 				return;

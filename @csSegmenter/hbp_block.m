@@ -96,7 +96,7 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 			rhistBlk{x+1, y+1} = rhist;
 			%Backproject this block, write block results back to 
 			%corresponding location in original image.
-			bpblk = hbp(S, iblk, rhist, KDENS, 'offset', [x+1 y+1]); 
+			bpblk = hbp(T, iblk, rhist, KDENS, 'offset', [x+1 y+1]); 
 			bpimg(y_pix, x_pix) = bpblk;
 		end
 	end

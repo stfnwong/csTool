@@ -9,7 +9,7 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 % ARGUMENTS:
 %
 % T     - csSegmented object
-% img   - Matrix containing image pixels
+% img   - Matrix containing hue pixels
 % mhist - Model histogram
 %
 % If the option GEN_BP_VEC is set in the csSegmenter object, bpdata will be returned
@@ -26,7 +26,7 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 		for k = 1:length(varargin)
 			if(ischar(varargin{k}))
 				if(strncmpi(varargin{k}, 'kdens', 5))
-					xy_prev = vararginn{k+1};
+					xy_prev = varargin{k+1};
 					KDENS   = true;
 				elseif(strncmpi(varargin{k}, 'bw', 2))
 					kbw     = varargin{k+1};		%kernel bandwidth
@@ -73,18 +73,19 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 	end
 	%Compute ratio histogram and backprojection
 	rhist = mhist ./ imhist;
-	rhist = rhist ./ (max(max(rhist)));
 	%NOTE: This should be upgraded in the future to handle multi-bit segmentation
 	if(T.FPGA_MODE)
 		rhist = rhist .* T.DATA_SZ;
 	end
 	%clean up garbage values
 	rhist(isnan(rhist)) = 0;
-	if(T.FPGA_MODE)
-		rhist(isinf(rhist)) = T.DATA_SZ;
-	else
-		rhist(isinf(rhist)) = 1;
-	end
+    rhist(isinf(rhist)) = 0;
+	%if(T.FPGA_MODE)
+	%	rhist(isinf(rhist)) = T.DATA_SZ;
+	%else
+	%	rhist(isinf(rhist)) = 1;
+	%end
+    rhist = rhist ./ (max(max(rhist))); %TODO : DO this last
 	% TODO: MEX this?
 	
 	bpimg = hbp(T, img, rhist, KDENS);

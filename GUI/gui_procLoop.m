@@ -161,15 +161,18 @@ function [status] = gui_procLoop(handles, varargin)
 
 		% =============== SEGMENTATION ================ %
 		if(SEG && handles.frameBuf.getRenderMode == 0)
-			img = handles.frameBuf.getCurImg(k, 'img');
-			[bpvec bpsum rhist] = handles.segmenter.segFrame(img);
-			params = struct('bpvec',bpvec,'bpsum',bpsum,'rhist',rhist);
+			img     = handles.frameBuf.getCurImg(k, 'img');
+			hsv_img = rgb2hsv(img);
+			hue_img = hsv_img(:,:,1);
+			[bpvec bpsum rhist] = handles.segmenter.segFrame(hue_img);
+			params  = struct('bpvec',bpvec,'bpsum',bpsum,'rhist',rhist);
 			handles.frameBuf = handles.frameBuf.setFrameParams(k, params);
 		end
 		%Check this frame has been segmented
 		if(~handles.frameBuf.hasBpData(k))
 			fprintf('ERROR: frame %d has no backprojected pixels\n', k);
 			fprintf('gui_procLoop() exiting with %d frames unprocessed\n', N-k);
+			delete(wb);
 			status = -1;
 			return;
 		end

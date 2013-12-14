@@ -291,8 +291,8 @@ classdef csSegmenter < handle
 			% CSSEGMENTER.SEGFRAME
 			% segFrame(S, fh)
 			%
-			% Segment image specified in frame handle fh using the method specified in
-			% S.method.
+			% Segment the hue image img using the method specified in
+			% S.method
 			%
 
 			switch S.method

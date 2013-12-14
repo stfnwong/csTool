@@ -133,6 +133,8 @@ chkFPGA_Callback	GUI/panels/csToolSegOpts.m	/^function chkFPGA_Callback(hObject,
 chkFixedIter_Callback	GUI/panels/csToolTrackOpts.m	/^function chkFixedIter_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 chkForceTrack_Callback	GUI/panels/csToolTrackOpts.m	/^function chkForceTrack_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 chkForce_Callback	GUI/panels/csToolPattern.m	/^function chkForce_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+chkGenMoments_Callback	GUI/panels/csToolGenerate.m	/^function chkGenMoments_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+chkGenParams_Callback	GUI/panels/csToolGenerate.m	/^function chkGenParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 chkHSV_Callback	GUI/panels/csToolGenerate.m	/^function chkHSV_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 chkHue_Callback	GUI/panels/csToolGenerate.m	/^function chkHue_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 chkKeep_Callback	GUI/panels/csToolTrajBuf.m	/^function chkKeep_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
@@ -403,14 +405,14 @@ gui_showPreview	GUI/gui_showPreview.m	/^function [status nh] = gui_showPreview(h
 gui_stepPreview	GUI/gui_stepPreview.m	/^function [newIndex nh] = gui_stepPreview(idx, handles, dir)$/;"	f
 gui_updatePreview	GUI/panels/csToolSeqGen.m	/^function gui_updatePreview(ah, fh)$/;"	f
 gui_updatePreview	GUI/panels/csToolTrajBuf.m	/^function gui_updatePreview(axHandle, img, idx, traja, trajb, trajErr, varargin)$/;"	f
-gui_updatePreview	GUI/panels/csToolVerify.m	/^function gui_updatePreview(axHandle, img, figTitle)$/;"	f
+gui_updatePreview	GUI/panels/csToolVerify.m	/^function gui_updatePreview(axHandle, img, figTitle, params, moments)$/;"	f
 hbp	@csSegmenter/hbp.m	/^function bpimg = hbp(S, img, rhist, KDENS, varargin)$/;"	f
 hbp_block	@csSegmenter/hbp_block.m	/^function [bpdata rhist] = hbp_block(T, img, mhist, varargin)$/;"	f
 hbp_block	mex/src/hbp_block.c	/^int hbp_block( unsigned int *img, $/;"	f
 hbp_img	@csSegmenter/hbp_img.m	/^function [bpdata rhist] = hbp_img(T, img, mhist, varargin)$/;"	f
 hbp_img	mex/src/hbp_img.c	/^int hbp_img(double *img, $/;"	f
 hbp_img_sp	@csSegmenter/hbp_img_sp.m	/^function [spvec rhist] = hbp_img_sp(T, img, mhist, varargin)$/;"	f
-hbp_row	@csSegmenter/hbp_row.m	/^function [bpdata rhist] = hbp_row(T, img, mhist, varargin)$/;"	f
+hbp_row	@csSegmenter/hbp_row.m	/^function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)$/;"	f
 hist_norm	util/hist_norm.m	/^function [ohist] = hist_norm(ihist, scale)$/;"	f
 ihist_generate	util/ihist_generate.m	/^function [ihist varargout] = ihist_generate(data, varargin)$/;"	f
 ihist_verify	util/ihist_verify.m	/^function [ihist varargout] = ihist_verify(ifile, bufsize, varargin)$/;"	f
@@ -561,6 +563,7 @@ win_accum	mex/src/win_accum.c	/^int win_accum(double *bpvec[], double moments[],
 wparamComp	@csTracker/winparamComp.m	/^function wparam = wparamComp(T, moments, varargin)$/;"	f
 wparamComp	@csTracker/wparamComp.m	/^function wparam = wparamComp(T, moments, varargin)$/;"	f
 wparamCompB	@csTracker/wparamCompB.m	/^function wparam = wparamCompB(T, moments, varargin)$/;"	f
+wparamCompCS	@csTracker/wparamCompCS.m	/^function wparam = wparamCompCS(T, moments, varargin) %#ok$/;"	f
 wrModelHist	GUI/panels/wrModelHist.m	/^function varargout = wrModelHist(varargin)$/;"	f
 wrModelHist_OpeningFcn	GUI/panels/wrModelHist.m	/^function wrModelHist_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL,DEFNU>$/;"	f
 wrModelHist_OutputFcn	GUI/panels/wrModelHist.m	/^function varargout = wrModelHist_OutputFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f

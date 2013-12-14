@@ -36,5 +36,4 @@ function wparam = wparamCompCS(T, moments, varargin) %#ok
 
 	wparam = [xc yc theta w h];
 
-
 end 	%wparamCompCS()

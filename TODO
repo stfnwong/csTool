@@ -4,10 +4,16 @@
 #
 ###############################################################
 
-NOTE : Is the file read function working correctly?
+GENERATE:
+If param files are generated as well, make sure to include the file wparam_init
+with the initial window parameters, which will be loaded at the start of the 
+simulation
+
+LOADFRAMEDATA
+Do files check first
 
 SEQUENCE GENERATOR:
-Add options to generate multiple targets
+Add options to generate multiple targets.
 
 CSTOOLVERIFY
 Need to properly rescale images that are read into buffer
