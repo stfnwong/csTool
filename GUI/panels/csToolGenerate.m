@@ -458,12 +458,32 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 		% Write parameter data to disk
         if(get(handles.chkGenParams, 'Value'))
-
+			fn = sprintf('%s%s-frame%03d-wparam.dat', fs.path, fs.filename, idx);
+			fp = fopen(fn, 'w');
+			if(fp == -1)
+				fprintf('ERROR: Cant open file [%s]\n', fn);
+			else
+				wparam = handles.frameBuf.getWinParams(idx);
+				for k = 1:length(wparam)
+					fprintf(fp, '%x ', fix(wparam(k)));
+				end
+				fclose(fp);
+			end	
         end
-
 
 		% Write moment sum data to disk
 		if(get(handles.chkGenMoments, 'Value'))
+			fn = sprintf('%s%s-frame%03d-moments.dat', fs.path, fs.filename, idx);
+			fp = fopen(fn, 'w');
+			if(fp == -1)
+				fprintf('ERROR: Cant open file [%s]\n', fn);
+			else
+				moments = handles.frameBuf.getWinParams(idx);
+				for k = 1:length(moments)
+					fprintf(fp, '%x ', fix(moments(k)));
+				end
+				fclose(fp);
+			end
 		end
 	end
 

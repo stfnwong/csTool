@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 24-Nov-2013 15:19:28
+% Last Modified by GUIDE v2.5 15-Dec-2013 20:16:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -240,7 +240,6 @@ function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	delete(handles.csToolVerifyFig);
 
 
-
 % ---------- TRANSPORT CONTROLS -------- %	
 function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	
@@ -261,6 +260,8 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
 	gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
 	gui_updatePreview(handles.figError, errImg, errTitle, [], []);
+	nh = gui_updateParams(handles);
+	handles = nh;
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolVerifyFig);
@@ -286,11 +287,14 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
 	gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
 	gui_updatePreview(handles.figError, errImg, errTitle, [], []);
+	nh = gui_updateParams(handles);
+	handles = nh;
 
 	guidata(hObject, handles);	
 	uiresume(handles.csToolVerifyFig);
 
 function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
 	destIdx = fix(str2double(get(handles.etGoto, 'String')));
 	% Clamp at buffer limits
 	if(isnan(destIdx) || isempty(destIdx))
@@ -318,6 +322,8 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
 	gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
 	gui_updatePreview(handles.figError, errImg, errTitle, [], []);
+	nh = gui_updateParams(handles);
+	handles = nh;
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolVerifyFig);
@@ -346,6 +352,50 @@ function gui_updatePreview(axHandle, img, figTitle, params, moments)
 		%[l r t b] = gui_calcRect(params(1), params(2), params(4), params(5), params(3), 20);
 		%plot(axHandle, 
 	end
+
+function nh = gui_updateParams(handles)
+	% This function is only responsible for writing the parameter text
+	% to the GUI. There should be a seperate function for formatting the 
+	% parameter data correctly
+	
+	%handles.etRefParams / handles.etTestParams
+
+	refParams   = handles.refFrameBuf.getWinParams(handles.idx);
+	refMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	testParams  = handles.testFrameBuf.getWinParams(handles.idx);
+	testMoments = handles.testFrameBuf.getMoments(handles.idx);
+
+	% Format text
+	paramTitle    = sprintf('Window parameters :');
+	momentTitle   = sprintf('Frame Moments :');
+	if(~isempty(refParams))
+		refParamStr = sprintf('%f ', refParams);
+	else
+		refParamStr = [];
+	end
+	if(~isempty(refMoments))
+		refMomentStr = sprintf('%f ', refMoments);
+	else
+		refMomentStr = [];
+	end
+	if(~isempty(testParams))
+		testParamStr = sprintf('%f ', testParams);
+	else
+		testParamStr = [];
+	end
+	if(~isempty(testMoments))
+		testMomentStr = sprintf('%f ', testMoments);
+	else
+		testMomentStr = [];
+	end
+
+	refText       = {paramTitle, refParamStr,  momentTitle, refMomentStr};
+	testText      = {paramTitle, testParamStr, momentTitle, testMomentStr};
+	set(handles.etRefParams, 'String', refText);
+	set(handles.etTestParams, 'String', testText);
+	nh = handles;
+
+	return;
 
 
 % -------- PROCESSING / VERIFICATION -------- 5
@@ -428,7 +478,8 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		% Automatically check for param or moment files
 		paramFname = sprintf('%s%s-frame%03d-params.dat', ps.path, ps.filename, ps.frameNum);
 		if(exist(paramFname, 'file') == 2)
-			fp = fopen(paramFname, 'w');
+			fprintf('Found parameter file [%s]\n', paramFname);
+			fp = fopen(paramFname, 'r');
 			if(fp == -1)
 				fprintf('ERROR: Cant open file %s...\n', paramFname);
 			else
@@ -440,7 +491,8 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		end
 		momentFname = sprintf('%s%s-frame%03d-moments.dat', ps.path, ps.filename, ps.frameNum);
 		if(exist(momentFname, 'file') == 2)
-			fp = fopen(momentFname, 'w');
+			fprintf('Found moment file [%s]\n', momentFname);
+			fp = fopen(momentFname, 'r');
 			if(fp == -1)
 				fprintf('ERROR: Cant open file %s\n', momentFname);
 			else
@@ -527,9 +579,14 @@ function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	uiresume(csToolVerifyFig);
     
 
-function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	% Update the numFiles edit text box whenever this property changes
+	vecList = get(handles.pmVecSz, 'String');
+	vecIdx  = get(hadnles.pmVecSz, 'Value');
+	vecSz   = vecList{vecIdx};
+	set(handles.etNumFiles, 'String', vecSz);
+
 
 % -------- EMPTY FUNCTIONS -------- %
 function etImageHeight_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -539,6 +596,8 @@ function etFileName_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecClass_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etNumFiles_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etTestParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etRefParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 % -------- CREATE FUNCTIONS -------- %
 function etFileName_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -578,3 +637,25 @@ function etGoto_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
+
+function etTestParams_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etRefParams_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+
+
+
+
+
+
+
+
+
+
+
