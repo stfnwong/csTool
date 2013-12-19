@@ -104,6 +104,12 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 		%Store intermediate results
 		fmoments{n} = moments;
 		tVec(:,n)   = [moments(1) ; moments(2)];
+
+		% Shift window position
+		%trackWindow(1) = moments(2) / moments(1);
+		%trackWindow(2) = moments(3) / moments(1);
+		%tVec(:,n)      = [trackWindow(1) ; trackWindow(2)];
+
 		if(~T.FIXED_ITER && n > 1)
 			%If we converge early, quit the loop
 			cverge = abs(tVec(:,n) - tVec(:,n-1));
@@ -117,7 +123,7 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 		% ========================================================================= %
 
 		%Continously resize?
-		if(T.WSIZE_CONT)
+		if(T.WSIZE_CONT == 1)
 			%Save previous centroid
 			%cTemp = [trackWindow(1) trackWindow(2)];
 			%trackWindow = wparamComp(T, moments);

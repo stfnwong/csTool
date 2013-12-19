@@ -1765,7 +1765,11 @@ end
 % --------------------------------------------------------------------
 function menu_Pattern_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
-    ef = csToolPattern();
+	if(handles.debug)
+	    ef = csToolPattern(handles.frameBuf, 'debug');
+	else
+		ef = csToolPattern(handles.frameBuf);
+	end
     if(ef == -1)
         fprintf('ERROR: Something went wrong in csToolPattern()\n');
         return;

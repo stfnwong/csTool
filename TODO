@@ -4,6 +4,9 @@
 #
 ###############################################################
 
+FIX PARAM BROWSER!!!!!
+
+
 GENERATE:
 If param files are generated as well, make sure to include the file wparam_init
 with the initial window parameters, which will be loaded at the start of the 

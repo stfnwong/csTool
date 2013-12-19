@@ -496,6 +496,24 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			if(fp == -1)
 				fprintf('ERROR: Cant open file %s\n', momentFname);
 			else
+				% Count number of newline characters and make a cell array with 
+				% the same number of elements
+				if(isunix)
+					[status, result] = system(['wc -l ', momentFname]);
+					if(status == 0)
+						sp = strfind(result, ' ');
+						if(isempty(sp))
+							numLines = str2num(result);
+						else
+							numLines = str2num(result(1:sp));
+						end
+					else
+						fprintf('ERROR: Cant get line count for moments file [%s]\n', momentFname);
+					end
+				else
+					% Have to do this some slow way...
+				end
+				mCell   = cell(1,numLines);
 				moments = fread(fp, 6, 'uint32');
 				opts    = struct('moments', moments);
 				handles.testFrameBuf = handles.testFrameBuf.setFrameParams(handles.idx, opts);

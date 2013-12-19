@@ -22,7 +22,7 @@ function varargout = csToolPattern(varargin)
 
 % Edit the above text to modify the response to help csToolPattern
 
-% Last Modified by GUIDE v2.5 17-Aug-2013 02:48:09
+% Last Modified by GUIDE v2.5 16-Dec-2013 15:35:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -77,21 +77,25 @@ function csToolPattern_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<IN
 	% Set up GUI elements
 	set(handles.etErrThresh, 'String', '0');
 	% Set histogram generation defaults to 16x16 - bufsize 128
-	set(handles.etBufSize, 'String');
-	set(handles.etNbins, 'String');
-	set(handles.etBinWidth, 'String');
+	set(handles.etBufSize, 'String', '128');
+	set(handles.etNbins, 'String', '16');
+	set(handles.etBinWidth, 'String', '16');
+	set(handles.axPatternRes, 'XTick', [], 'XTickLabel', []);
+	set(handles.axPatternRes, 'YTick', [], 'YTickLabel', []);
 	% Set defaults for data variables needed in this scope
 	handles.ihist   = [];
 	handles.pattern = [];
 
     handles.output = hObject;
     guidata(hObject, handles);
+    uiwait(handles.csToolPatternFig);
 
 
 
 % ======== FILE SELECTION FUNCTIONS ======== %
 function varargout = csToolPattern_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
     varargout{1} = handles.output;
+	delete(hObject);
 
 
 function bInputFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -104,6 +108,7 @@ function bInputFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
 	set(handles.etInputFile, 'String', sprintf('%s%s', path, fname));
 	guidata(hObject, handles);
+	uiresume(handles.csToolPatternFig);
 
 function bOutputFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     % Get output filename
@@ -115,6 +120,7 @@ function bOutputFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etOutputFile, 'String', sprintf('%s%s', path, fname));
     guidata(hObject, handles);
+	uiresume(handles.csToolPatternFig);
 
 function bPatternFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Select file to write pattern to
@@ -126,6 +132,7 @@ function bPatternFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
 	set(handles.etPatternFile, 'String', sprintf('%s%s', path, fname));
 	guidata(hObject, handles);
+	uiresume(handles.csToolPatternFig);
 
 
 function bVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -178,6 +185,7 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	% Plot results
 	guidata(hObject, handles);
+	uiresume(handles.csToolPatternFig);
 	
 function bPattrVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
@@ -206,6 +214,7 @@ function bPattrVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	opts.delim = ' ';	
 
 	guidata(hObject, handles);
+	uiresume(handles.csToolPatternFig);
 
 function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Generate pattern file - this should really be called 'write'
@@ -234,6 +243,9 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%refdata = opts.refdata;
 	%delim   = opts.delim;
 
+	guidata(hObject, handles);
+	uiresume(handles.csToolPatternFig);
+
 function bHistData_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Generate pattern file
 	oldPath = get(handles.etHistDataFile, 'String');
@@ -244,6 +256,7 @@ function bHistData_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
 	set(handles.etHistDataFile, 'String', sprintf('%s%s', path, fname));
 	guidata(hObject, handles);
+	uiresume(handles.csToolPatternFig);
 
 function bGenHist_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Generate histogram file
@@ -274,6 +287,7 @@ function bGenHist_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	handles.ihist = ihistgen_cstool(data, opts);
 
 	guidata(hObject, handles);
+	uiresume(handles.csToolPatternFig);
 
 
 % ======== EMPTY FUNCTIONS ======== %
@@ -332,5 +346,3 @@ function etBufSize_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
-
-

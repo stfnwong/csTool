@@ -121,7 +121,7 @@ classdef csTracker < handle
 					T.SPARSE_FAC   = 4;
 					T.SPARSE_ANCH  = 'tl';
 					T.WSIZE_METHOD = 1;
-					T.WSIZE_CONT   = 1;		%continously re-size the tracking window
+					T.WSIZE_CONT   = 0;		%continously re-size the tracking window
 					T.FORCE_TRACK  = 0;
 				case 1
 					if(isa(varargin{1}, 'csTracker'))
