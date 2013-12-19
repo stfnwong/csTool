@@ -8,15 +8,15 @@ function [moments] = winAccumVec(T, bpvec, wparam, dims, varargin)
 % ARGUMENTS:
 % T      - csTracker object.
 % bpvec  - Backprojection vector for the frame to be tracked.
-% wparam - Window parameters of previous frame. Set this to empty to compute a new
-%          set of window parameters from the image moments.
-% dims   - Dimensions of image. Set this to empty to use the default resolution 
-%          (640 x 480)
+% wparam - Window parameters of previous frame. Set this to empty to compute 
+%          a new set of window parameters from the image moments.
+% dims   - Dimensions of image. Set this to empty to use the default 
+%          resolution (640 x 480)
 % (Optional)
-% 'force'- Force winAccumVec to check that bpvec contains segmented pixels. It is 
-%          assumed by default that the caller has established the bpvec to be passed
-%          in has segmented pixels in order to keep the tracking time short. To force
-%          a check here, pass the 'force' flag.
+% 'force'- Force winAccumVec to check that bpvec contains segmented pixels. 
+%          It is assumed by default that the caller has established the 
+%          bpvec to be passed in has segmented pixels in order to keep the 
+%          tracking time short. To force a check here, pass the 'force' flag.
 %
 % OUTPUTS:
 % moments - 6 element row vector of moment sums

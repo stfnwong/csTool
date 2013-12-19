@@ -3,7 +3,7 @@ function wparam = wparamCompCS(T, moments, varargin) %#ok
 % wparam = wparamCompCS(T, moments, [..OPTIONS..])
 %
 % CAMSHIFT adaptive window parameter computation.
-% 
+% The method here is taken from the French Wikipedia page on CAMSHIFT
 %
 
 % Stefan Wong 2013
