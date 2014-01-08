@@ -360,42 +360,43 @@ function nh = gui_updateParams(handles)
 	
 	%handles.etRefParams / handles.etTestParams
 
-	refParams   = handles.refFrameBuf.getWinParams(handles.idx);
-	refMoments  = handles.refFrameBuf.getMoments(handles.idx);
-	testParams  = handles.testFrameBuf.getWinParams(handles.idx);
-	testMoments = handles.testFrameBuf.getMoments(handles.idx);
+	%refParams   = handles.refFrameBuf.getWinParams(handles.idx);
+	%refMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	%testParams  = handles.testFrameBuf.getWinParams(handles.idx);
+	%testMoments = handles.testFrameBuf.getMoments(handles.idx);
 
-	% Format text
-	paramTitle    = sprintf('Window parameters :');
-	momentTitle   = sprintf('Frame Moments :');
-	if(~isempty(refParams))
-		refParamStr = sprintf('%f ', refParams);
-	else
-		refParamStr = [];
-	end
-	if(~isempty(refMoments))
-		refMomentStr = sprintf('%f ', refMoments);
-	else
-		refMomentStr = [];
-	end
-	if(~isempty(testParams))
-		testParamStr = sprintf('%f ', testParams);
-	else
-		testParamStr = [];
-	end
-	if(~isempty(testMoments))
-		testMomentStr = sprintf('%f ', testMoments);
-	else
-		testMomentStr = [];
-	end
+	%% Format text
+	%paramTitle    = sprintf('Window parameters :');
+	%momentTitle   = sprintf('Frame Moments :');
+	%if(~isempty(refParams))
+	%	refParamStr = sprintf('%f ', refParams);
+	%else
+	%	refParamStr = [];
+	%end
+	%if(~isempty(refMoments))
+	%	% TODO : Add control to make Moment display selectable
+	%	refMomentStr = sprintf('%f ', refMoments{1});
+	%else
+	%	refMomentStr = [];
+	%end
+	%if(~isempty(testParams))
+	%	testParamStr = sprintf('%f ', testParams);
+	%else
+	%	testParamStr = [];
+	%end
+	%if(~isempty(testMoments))
+	%	testMomentStr = sprintf('%f ', testMoments{1});
+	%else
+	%	testMomentStr = [];
+	%end
 
-	refText       = {paramTitle, refParamStr,  momentTitle, refMomentStr};
-	testText      = {paramTitle, testParamStr, momentTitle, testMomentStr};
-	set(handles.etRefParams, 'String', refText);
-	set(handles.etTestParams, 'String', testText);
-	nh = handles;
+	%refText       = {paramTitle, refParamStr,  momentTitle, refMomentStr};
+	%testText      = {paramTitle, testParamStr, momentTitle, testMomentStr};
+	%set(handles.etRefParams, 'String', refText);
+	%set(handles.etTestParams, 'String', testText);
+	%nh = handles;
 
-	return;
+	%return;
 
 
 % -------- PROCESSING / VERIFICATION -------- 5
@@ -528,7 +529,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Preview final image
 	refImg   = handles.refFrameBuf.getCurImg(handles.idx);
 	rParams  = handles.refFrameBuf.getWinParams(handles.idx);
-	rMoments = handles.regFrameBuf.getMoments(handles.idx);
+	rMoments = handles.refFrameBuf.getMoments(handles.idx);
     % TODO :  Still a problem here with size(vec) in vec2bpimg()
 	testImg  = handles.testFrameBuf.getCurImg(handles.idx);
 	tParams  = handles.testFrameBuf.getWinParams(handles.idx);

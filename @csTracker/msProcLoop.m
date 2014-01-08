@@ -187,9 +187,9 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 	end
 
 	%Compute new window parameters
-	%wparam = wparamComp(T, moments);
+	wparam = wparamComp(T, moments);
 	%wparam = wparamCompB(T, moments);
-	wparam = wparamCompCS(T, moments);
+	%wparam = wparamCompCS(T, moments);
 	%DEBUG: - Get rid of NaNs by force
 	wparam(isnan(wparam)) = 1;
 

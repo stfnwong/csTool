@@ -43,10 +43,12 @@ function wparam = wparamComp(T, moments, varargin)
 	u02      = yym - (ym * ym);
 	%Compute eigenvector termsa
 	mu2_sum  = u20 + u02;
-	mu2_diff = u20 - u02;
+	mu2_diff = abs(u20 - u02);
 	sqArg    = 4 * (u11 * u11) + (mu2_diff * mu2_diff);
-	axmaj    = 0.5 * (mu2_sum + sqrt(sqArg));
-	axmin    = 0.5 * (mu2_sum - sqrt(sqArg));
+	w        = sqrt(6 * mu2_sum - sqrt(sqArg));
+	l        = sqrt(6 * mu2_sum + sqrt(sqArg));
+	%axmaj    = 0.5 * (mu2_sum + sqrt(sqArg));
+	%axmin    = 0.5 * (mu2_sum - sqrt(sqArg));
 	%Find theta
 	if(T.CORDIC_MODE)
 		sf    = (2^32)/360;
@@ -55,6 +57,6 @@ function wparam = wparamComp(T, moments, varargin)
 		theta = (180/pi) * 0.5 * atan((2*u11)/mu2_diff);
 	end
 	%Format output
-	wparam = [xm ym theta axmaj axmin];
+	wparam = [xm ym theta w l];
 
 end 	%wparamComp()

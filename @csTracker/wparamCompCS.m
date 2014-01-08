@@ -23,11 +23,13 @@ function wparam = wparamCompCS(T, moments, varargin) %#ok
 	u11    = 2 * (xym - (xm * ym));
 	u20    = xxm - (xm * xm);
 	u02    = yym - (ym * ym); 
-	thArg  = u20 - u02 - sqrt(4*u11^2 + (u20 - u02) * (u20 -u02));
+	uDiff  = abs(u20 - u02);
+	%uSum   = u20 + u02;
+	thArg  = uDiff - sqrt(4*u11^2 + uDiff * uDiff);
 	theta  = atan2(2*u11, thArg);
 	eArg   = 2 * u11 * cos(theta) * sin(theta);
-	imax   = u20 * (cos(theta) * cos(theta)) + eArg + u02 * sin(theta);
-	imin   = u20 * (sin(theta) * sin(theta)) - eArg + u02 * cos(theta);
+	imax   = u20 * (cos(theta) * cos(theta)) + eArg + u02 * (sin(theta) * sin(theta));
+	imin   = u20 * (sin(theta) * sin(theta)) - eArg + u02 * (cos(theta) * cos(theta));
 	axmaj  = 4 * sqrt(imax / zm);
 	axmin  = 4 * sqrt(imin / zm);
 	% Project ellipse back onto a rectangle
