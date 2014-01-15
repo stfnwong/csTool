@@ -161,10 +161,16 @@ function [status] = gui_procLoop(handles, varargin)
 
 		% =============== SEGMENTATION ================ %
 		if(SEG && handles.frameBuf.getRenderMode == 0)
-			img     = handles.frameBuf.getCurImg(k, 'img');
-			hsv_img = rgb2hsv(img);
-			hue_img = hsv_img(:,:,1);
-			[bpvec bpsum rhist] = handles.segmenter.segFrame(hue_img);
+			[img ef] = handles.frameBuf.getCurImg(k, 'img');
+			if(ef == -1)
+				fprintf('ERROR: Cant read frame %d/%d, error in frameBuf.getCurImg()\n', k, N);
+				delete(wb);
+				status = -1;
+				return;
+			end
+			hsv_img  = rgb2hsv(img);
+			hue_img  = hsv_img(:,:,1);
+			[bpvec bpsum rhist] = handles.segmenter.segFrame(hue_img, 'norm');
 			params  = struct('bpvec',bpvec,'bpsum',bpsum,'rhist',rhist);
 			handles.frameBuf = handles.frameBuf.setFrameParams(k, params);
 		end
@@ -188,10 +194,17 @@ function [status] = gui_procLoop(handles, varargin)
 
 			%Get frame parameters from previous frame
 			if(k == 1)
-				%If we didn't specify an initial parameter, gui_procLoop will have 
-				%placed a winparam in csTracker.fParams. If we specified a param, 
-				%pass that param into the trackFrame() method
-				bpimg = handles.frameBuf.getCurImg(k, 'bpimg');	
+				%If we didn't specify an initial parameter, gui_procLoop 
+				%will have placed a winparam in csTracker.fParams. If we 
+				%specified a param, pass that param into the trackFrame() 
+				%method
+				[bpimg ef] = handles.frameBuf.getCurImg(k, 'bpimg');	
+				if(ef == -1)
+					fprintf('ERROR: Cant read frame %d/%d, error in frameBuf.getCurImg()\n', k, N);
+					delete(wb);
+					status = -1;
+					return;		%break?
+				end
 				if(exist('initParam', 'var'))
 					% TODO : Pass extra parameters for sparse tracking
 					[st tOpts] = handles.tracker.trackFrame(bpimg, 'wpos', initParam, 'zm', handles.frameBuf.getZeroMoment(k));

@@ -465,7 +465,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			else
 				wparam = handles.frameBuf.getWinParams(idx);
 				for k = 1:length(wparam)
-					fprintf(fp, '%x ', fix(wparam(k)));
+					fprintf(fp, '%d ', fix(wparam(k)));
 				end
 				fclose(fp);
 			end	
@@ -480,7 +480,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			else
 				moments = handles.frameBuf.getWinParams(idx);
 				for k = 1:length(moments)
-					fprintf(fp, '%x ', fix(moments(k)));
+					fprintf(fp, '%d ', fix(moments(k)));
 				end
 				fclose(fp);
 			end

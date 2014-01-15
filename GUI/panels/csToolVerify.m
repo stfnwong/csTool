@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 15-Dec-2013 20:16:01
+% Last Modified by GUIDE v2.5 15-Jan-2014 01:38:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -103,6 +103,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 		return;		%TODO : Modify this outcome?
 		
 	end
+	handles.testBufRead = false;
 
 	% Copy the parameters out of the reference frame buffer and use those
 	% until we are provided with more information about verification
@@ -262,6 +263,7 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	gui_updatePreview(handles.figError, errImg, errTitle, [], []);
 	nh = gui_updateParams(handles);
 	handles = nh;
+	% Write parameters to text box
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolVerifyFig);
@@ -330,8 +332,8 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 % -------- GUI RENDERING FUNCTIONS -------- %
 function gui_updatePreview(axHandle, img, figTitle, params, moments)
-	% axHandle should be vector of axis handles
-	
+	% Clear figure first?
+	cla(axHandle);	
 	imshow(img, 'Parent', axHandle);
 	if(~isempty(figTitle))
 		title(axHandle, figTitle);
@@ -360,43 +362,48 @@ function nh = gui_updateParams(handles)
 	
 	%handles.etRefParams / handles.etTestParams
 
-	%refParams   = handles.refFrameBuf.getWinParams(handles.idx);
-	%refMoments  = handles.refFrameBuf.getMoments(handles.idx);
-	%testParams  = handles.testFrameBuf.getWinParams(handles.idx);
-	%testMoments = handles.testFrameBuf.getMoments(handles.idx);
+	refParams   = handles.refFrameBuf.getWinParams(handles.idx);
+	refMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	if(handles.testBufRead)
+	   testParams  = handles.testFrameBuf.getWinParams(handles.idx);
+	   testMoments = handles.testFrameBuf.getMoments(handles.idx);
+	else
+	   testParams  = [];
+	   testMoments = [];
+	end
 
-	%% Format text
-	%paramTitle    = sprintf('Window parameters :');
-	%momentTitle   = sprintf('Frame Moments :');
-	%if(~isempty(refParams))
-	%	refParamStr = sprintf('%f ', refParams);
-	%else
-	%	refParamStr = [];
-	%end
-	%if(~isempty(refMoments))
-	%	% TODO : Add control to make Moment display selectable
-	%	refMomentStr = sprintf('%f ', refMoments{1});
-	%else
-	%	refMomentStr = [];
-	%end
-	%if(~isempty(testParams))
-	%	testParamStr = sprintf('%f ', testParams);
-	%else
-	%	testParamStr = [];
-	%end
-	%if(~isempty(testMoments))
-	%	testMomentStr = sprintf('%f ', testMoments{1});
-	%else
-	%	testMomentStr = [];
-	%end
+	 %Format text
+	paramTitle    = sprintf('Window parameters :');
+	momentTitle   = sprintf('Frame Moments :');
+	if(~isempty(refParams))
+		refParamStr = sprintf('%4.2f ', refParams);
+	else
+		refParamStr = [];
+	end
+	if(~isempty(refMoments))
+		% TODO : Add control to make Moment display selectable
+		refMomentStr = sprintf('%.0f ', refMoments{1});
+	else
+		refMomentStr = [];
+	end
+	if(~isempty(testParams))
+		testParamStr = sprintf('%4.2f ', testParams);
+	else
+		testParamStr = [];
+	end
+	if(~isempty(testMoments))
+		testMomentStr = sprintf('%.0f ', testMoments{1});
+	else
+		testMomentStr = [];
+	end
 
-	%refText       = {paramTitle, refParamStr,  momentTitle, refMomentStr};
-	%testText      = {paramTitle, testParamStr, momentTitle, testMomentStr};
-	%set(handles.etRefParams, 'String', refText);
-	%set(handles.etTestParams, 'String', testText);
-	%nh = handles;
+	refText       = {paramTitle, refParamStr,  momentTitle, refMomentStr};
+	testText      = {paramTitle, testParamStr, momentTitle, testMomentStr};
+	set(handles.etRefParams, 'String', refText);
+	set(handles.etTestParams, 'String', testText);
+	nh = handles;
 
-	%return;
+	return;
 
 
 % -------- PROCESSING / VERIFICATION -------- 5
@@ -464,8 +471,10 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale');
 		end
 		% Rescale image
-		sc   = range(range(handles.refFrameBuf.getCurImg(handles.idx)));
-		img  = imgRescale(img, sc);
+		%sc   = range(range(handles.refFrameBuf.getCurImg(handles.idx)));
+		%img  = imgRescale(img, sc);
+		sc  = handles.refFrameBuf.getDataSz(handles.idx);
+        img = imgRescale(img, sc);
 		% Format dims and place vector into buffer
 		dims = size(img);
 		dims = [dims(2) dims(1)];	
@@ -476,55 +485,29 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(img, N, vclass, 'dims', dims);
 		end
 
-		% Automatically check for param or moment files
-		paramFname = sprintf('%s%s-frame%03d-params.dat', ps.path, ps.filename, ps.frameNum);
+		% Automatically check for parameter file
+		paramFname = sprintf('%s%s-frame%03d-wparam.dat', ps.path, ps.filename, ps.frameNum);
 		if(exist(paramFname, 'file') == 2)
 			fprintf('Found parameter file [%s]\n', paramFname);
-			fp = fopen(paramFname, 'r');
-			if(fp == -1)
-				fprintf('ERROR: Cant open file %s...\n', paramFname);
-			else
-				params = fread(fp, 5, 'uint32');
-				opts   = struct('winparams', params);
-				handles.testFrameBuf = handles.testFrameBuf.setFrameParams(handles.idx, opts);
-				fclose(fp);
-			end
+			wparams = handles.vecManager.readParams(paramFname);
+			opts    = struct('winparams', params);
+			handles.testFrameBuf = handles.testFrameBuf.setFrameParams(N, opts);
 		end
+		% Automatically check for moment file
 		momentFname = sprintf('%s%s-frame%03d-moments.dat', ps.path, ps.filename, ps.frameNum);
 		if(exist(momentFname, 'file') == 2)
 			fprintf('Found moment file [%s]\n', momentFname);
-			fp = fopen(momentFname, 'r');
-			if(fp == -1)
-				fprintf('ERROR: Cant open file %s\n', momentFname);
-			else
-				% Count number of newline characters and make a cell array with 
-				% the same number of elements
-				if(isunix)
-					[status, result] = system(['wc -l ', momentFname]);
-					if(status == 0)
-						sp = strfind(result, ' ');
-						if(isempty(sp))
-							numLines = str2num(result);
-						else
-							numLines = str2num(result(1:sp));
-						end
-					else
-						fprintf('ERROR: Cant get line count for moments file [%s]\n', momentFname);
-					end
-				else
-					% Have to do this some slow way...
-				end
-				mCell   = cell(1,numLines);
-				moments = fread(fp, 6, 'uint32');
-				opts    = struct('moments', moments);
-				handles.testFrameBuf = handles.testFrameBuf.setFrameParams(handles.idx, opts);
-				fclose(fp);
-			end
+
+			moments = handles.vecManager.readParams(momentFname);
+			opts    = struct('moments', moments);
+			% TODO : is handles.idx really the correct index?
+			handles.testFrameBuf = handles.testFrameBuf.setFrameParams(N, opts);
 		end
 
 	end
 	% Convert to bpvec and save into test buffer
-    handles.vectors = vectors;
+    handles.vectors     = vectors;
+	handles.testBufRead = true;
 
 	% Preview final image
 	refImg   = handles.refFrameBuf.getCurImg(handles.idx);
@@ -666,15 +649,3 @@ function etRefParams_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
-
-
-
-
-
-
-
-
-
-
-
-

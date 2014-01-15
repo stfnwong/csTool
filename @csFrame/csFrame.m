@@ -54,6 +54,7 @@ classdef csFrame < hgsetget
         sparseFac;  %Scaling factor used for this frame if it was sparse
 		filename;	%name of original image file
 		method;		%String containing method used to set params
+		dataSz;     %Scaling factor for data word
 	end
 	
 	methods
@@ -81,6 +82,7 @@ classdef csFrame < hgsetget
 						cf.isSparse  = 0;
 						cf.sparseFac = 0;
 						cf.filename  = ' ';
+						cf.dataSz    = 256;
 				case 1
 					%Copy to new object if argument is a csFrame
 					if(isa(varargin{1}, 'csFrame'))
@@ -98,7 +100,8 @@ classdef csFrame < hgsetget
 						cf.tVec      = opts.tVec;
 						cf.dims      = opts.dims;
 						cf.isSparse  = opts.isSparse;
-						cf.sparseFac = opts.sparseFac;
+						cf.sparseFac = opts.sparseFac;a
+						cf.dataSz    = opts.dataSz;
 						if(ischar(opts.filename))
 							cf.filename  = opts.filename;
 						else
@@ -133,6 +136,7 @@ classdef csFrame < hgsetget
 						cf.isSparse  = 0;
 						cf.sparseFac = 0;
 						cf.filename  = ' ';
+						cf.dataSz    = 256;
 					end
 				otherwise
 					error('Incorrect arguments to constructor');
@@ -164,6 +168,10 @@ classdef csFrame < hgsetget
 			T.filename = fname;
 		end 	%setFilename()
 
+		function set.dataSz(T, dataSz)
+			T.dataSz = dataSz;
+		end
+
 		function set.rhist(T, rhist)
 			T.rhist = rhist;
 		end 	%setRHist()
@@ -187,7 +195,8 @@ classdef csFrame < hgsetget
 
 		function set.moments(T, moments)
 			if(~iscell(moments))
-				error('Moment sums must be in cell array');
+				fprintf('Moment sums must be in cell array\n');
+                return;
 			end
 			T.moments = moments;
 		end

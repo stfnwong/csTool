@@ -567,7 +567,6 @@ ut_vecaccum	util/ut_vecaccum.m	/^function moments = ut_vecaccum(bpvec)$/;"	f
 ut_vecloopaccum	util/ut_vecloopaccum.m	/^function moments = ut_vecloopaccum(bpvec, varargin)$/;"	f
 ut_vecwinaccum	util/ut_vecwinaccum.m	/^function [moments wparam] = ut_vecwinaccum(bpvec, winregion)$/;"	f
 vec2bpimg	util/vec2bpimg.m	/^function bpimg = vec2bpimg(vec, varargin)$/;"	f
-vecAccum	@csTracker/vecAccum.m	/^function [moments wparam] = vecAccum(T, bpdata, varargin)$/;"	f
 vecDiskRead	@vecManager/vecDiskRead.m	/^function [vector varargout] = vecDiskRead(V, fname, varargin)$/;"	f
 vecDiskWrite	@vecManager/vecDiskWrite.m	/^function status = vecDiskWrite(V, data, varargin)$/;"	f
 vecGen	uTest/vecGen.m	/^function vec = vecGen(img, varargin)$/;"	f

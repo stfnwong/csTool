@@ -105,6 +105,23 @@ classdef vecManager
 			rfilename = V.rfilename;
 		end
 
+		function data = readParams(V, fname)
+		% READPARAMS
+		% Read parameter data (non-frame data) from disk.
+			
+			[vdata{n} ref] = vecDiskRead(V, fname);
+			if(ref == -1)
+				fprintf('ERROR (vecManager.readParams) : error reading vector file [%s]\n', fname);
+				data = [];
+				return;
+			end
+			if(V.verbose)
+				fprintf('(vecManager.readParams) : read %d elements from [%s]\n', ref, fname);
+			end
+			data = vdata{n};
+			
+		end 	%readParams()
+
 		%---- Read vector data from disk ---- %
 		function [vecdata varargout] = readVec(V, varargin)
 		% READVEC
@@ -148,7 +165,7 @@ classdef vecManager
 				if(exist('vtype', 'var') && strncmpi(vtype, 'scalar', 6))
 					sz = 1;
 				else
-					sz    = V.dataSz;
+					sz = V.dataSz;
 				end
 			end
 			if(~exist('dtype', 'var'))

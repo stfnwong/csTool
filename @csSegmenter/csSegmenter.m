@@ -287,13 +287,24 @@ classdef csSegmenter < handle
 		end 	%genMhist()
 
 		% ---- INTERFACE METHODS ----- %
-		function [bpvec bpsum rhist] = segFrame(S, img)
+		function [bpvec bpsum rhist] = segFrame(S, img, varargin)
 			% CSSEGMENTER.SEGFRAME
-			% segFrame(S, fh)
+			% segFrame(S, fh, [..NORMALISE..])
 			%
 			% Segment the hue image img using the method specified in
 			% S.method
-			%
+			% Pass in the string 'norm' to normalise to range of DATA_SZ
+			% parameter
+			NORM = false;	
+			if(~isempty(varargin))
+				if(strncmpi(varargin{1}, 'norm', 4))
+					NORM = true;
+				end
+			end
+
+			if(NORM)
+				img = img.* S.DATA_SZ;
+			end
 
 			switch S.method
 				case S.HIST_BP_IMG

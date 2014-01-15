@@ -244,6 +244,10 @@ classdef csFrameBuffer
 			niters = get(FB.frameBuf(idx), 'nIters');
 		end 	%getNiters()
 
+		function dataSz = getDataSz(FB, idx)
+			dataSz = get(FB.frameBuf(idx), 'dataSz');
+		end
+
 		function sp = getSparse(FB, idx)
 			sp = get(FB.frameBuf(idx), 'isSparse');
 		end 	%getSparse()
@@ -276,7 +280,7 @@ classdef csFrameBuffer
 			zmtrue = length(get(FB.frameBuf(idx), 'bpVec'));
 		end 	%getZeroMoment()
 
-		function img = getCurImg(F, idx, varargin)
+		function [img varargout] = getCurImg(F, idx, varargin)
 		% GETCURIMG
 		% img = getCurImg(F, idx, [..OPTIONS..])
 		% Return the image data for the frame at position idx consistent
@@ -322,6 +326,9 @@ classdef csFrameBuffer
 			% Bounds check idx
 			if(idx < 1 || idx > length(F.frameBuf))
 				img = [];
+				if(nargout > 1)
+					varargout{1} = -1;
+				end
 				if(F.verbose)
 					fprintf('%s idx %d out of bounds\n', DSTR, idx);
 				end
@@ -334,12 +341,27 @@ classdef csFrameBuffer
 			if(GET_IMG_ONLY)
 				if(strncmpi(get(fh, 'filename'), ' ', 1))
 					img = [];
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
 					return;
 				end
+                % Check that file exists
+                if(exist(get(fh, 'filename'), 'file') ~= 2)
+                    fprintf('(getCurImg) : file [%s] not found\n', get(fh, 'filename'));
+                    img = [];  
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
+                    return;
+                end
 				img  = imread(get(fh, 'filename'), F.ext);
 				dims = size(img);
 				if(dims(3) > 3)
 					img = img(:,:,1:3);
+				end
+				if(nargout > 1)
+					varargout{1} = 0;
 				end
 				return;
 			end
@@ -347,8 +369,14 @@ classdef csFrameBuffer
 			if(GET_BPIMG_ONLY && RETURN_3_CHANNEL)
 				if(isempty(get(fh, 'dims')) || isempty(get(fh, 'bpVec')))
 					img = [];
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
 				else
 					img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'), '3chan');
+					if(nargout > 1)
+						varargout{1} = 0;
+					end
 				end
 				return;
 			end
@@ -356,8 +384,14 @@ classdef csFrameBuffer
 			if(GET_BPIMG_ONLY)
 				if(isempty(get(fh, 'dims')) || isempty(get(fh, 'bpVec')))
 					img = [];
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
 				else
 					img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
+					if(nargout > 1)
+						varargout{1} = 0;
+					end
 				end
 				return;
 			end
@@ -369,12 +403,18 @@ classdef csFrameBuffer
 					if(strncmpi(get(fh, 'filename'), ' ', 1))
 						fprintf('%s No file data in frame %d\n', DSTR, idx);
 						img = [];
+						if(nargout > 1)
+							varargout{1} = -1;
+						end
 						return;
 					end
 					img  = imread(get(fh, 'filename'), F.ext);
 					dims = size(img);
 					if(dims(3) > 3)
 						img = img(:,:,1:3);
+					end
+					if(nargout > 1)
+						varargout{1} = 0;
 					end
 					return;
 				case F.GEN_BPIMG
@@ -386,14 +426,23 @@ classdef csFrameBuffer
 						else
 							img = vec2bpimg(img, 'dims', get(fh, 'dims'));
 						end
+						if(nargout > 1)
+							varargout{1} = 0;
+						end
 					end
 					return;
 				case F.IMG_DATA
 					if(isempty(get(fh, 'img')))
 						fprintf('%s no image data in frame %d\n', DSTR, idx);
 						img = [];
+						if(nargout > 1)
+							varargout{1} = -1;
+						end
 					else
 						img = get(fh, 'img');
+						if(nargout > 1)
+							varargout{1} = 0;
+						end
 					end
 					return;
 				otherwise
@@ -401,6 +450,9 @@ classdef csFrameBuffer
 						fprintf('%s Invalid renderMode %d\n', DSTR, F.renderMode);
 					end
 					img = [];
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
 					return;
 			end
 						
@@ -617,6 +669,9 @@ classdef csFrameBuffer
 			end
 			if(isfield(opts, 'method'))
 				set(FB.frameBuf(idx), 'method', opts.method);
+			end
+			if(isfield(opts, 'dataSz'))
+				set(FB.frameBuf(idx), 'dataSz', opts.dataSz);
 			end
 
 		end 	%setFrameParams()
@@ -841,11 +896,13 @@ classdef csFrameBuffer
 			% out and set all frame dimensions to match;
 			timg = imread(get(FB.frameBuf(1), 'filename'), FB.ext);
 			dims = size(timg);
+			dataSz = range(range(timg));
 			if(dims(3) > 3)
 				dims(3) = 3;
 			end
 			for k = 1 : length(FB.frameBuf)
 				set(FB.frameBuf(k), 'dims', [dims(2) dims(1)]);
+				set(FB.frameBuf(k), 'dataSz', dataSz);
 			end
 
 			%write back data
@@ -1123,15 +1180,16 @@ classdef csFrameBuffer
 				if(isempty(opts.imsz))
 					fprintf('WARNING: empty dimensions in generated frame %d\n', N);
 				end
-				% TODO : Put a waitbar here
-				frame = genRandFrame(F, opts);
-				bpvec = bpimg2vec(frame, 'bpval');
+				frame  = genRandFrame(F, opts);
+				bpvec  = bpimg2vec(frame, 'bpval');
+				dataSz = max(bpvec(3,:));
 				% set parameter data for frame handle
-				fname = sprintf('bpgen-%03d.ext', N);
+				fname  = sprintf('bpgen-%03d.ext', N);
 				set(F.frameBuf(N), 'filename', fname);
 				set(F.frameBuf(N), 'bpVec', bpvec);
 				set(F.frameBuf(N), 'bpSum', opts.npoints);
 				set(F.frameBuf(N), 'dims', opts.imsz);
+				set(F.frameBuf(N), 'dataSz', dataSz);
 				%set(F.frameBuf(N), 'bpImg', frame);
 				% generate position for new frame
 				opts.loc = genRandPos(F, opts.loc, opts.maxspd, opts.imsz);

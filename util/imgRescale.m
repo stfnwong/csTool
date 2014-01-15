@@ -9,6 +9,9 @@ function scImg = imgRescale(img, scale)
 
 	imgMax   = range(range(img));
 	imgUnity = img./imgMax; 
+    if(~isa(scale, 'double'))
+        scale = double(scale);
+    end
 	scImg    = scale .* imgUnity;
 
 end 	%imgRescale()
