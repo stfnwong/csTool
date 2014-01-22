@@ -47,7 +47,7 @@ end
 % --- Executes just before csToolGenerate is made visible.
 function csToolGenerate_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 
-    handles.debug       = 0;
+    handles.debug       = 1;
 	handles.status      = 0;
     handles.previewMode = 'bp';  %modes are 'img' and 'bp'
     %Parse 'optional' arguments
@@ -464,6 +464,10 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 				fprintf('ERROR: Cant open file [%s]\n', fn);
 			else
 				wparam = handles.frameBuf.getWinParams(idx);
+				%if(handles.debug)
+					fprintf('Writing wparam data to disk (frame %d)\n', idx);
+					disp(wparam);
+				%end
 				for k = 1:length(wparam)
 					fprintf(fp, '%d ', fix(wparam(k)));
 				end
@@ -478,9 +482,19 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			if(fp == -1)
 				fprintf('ERROR: Cant open file [%s]\n', fn);
 			else
-				moments = handles.frameBuf.getWinParams(idx);
-				for k = 1:length(moments)
-					fprintf(fp, '%d ', fix(moments(k)));
+				moments = handles.frameBuf.getMoments(idx);
+                niters  = handles.frameBuf.getNiters(idx);
+				% TODO : How to deal with cell array here...?
+				%if(handles.debug)
+					fprintf('Writing moment data to disk (frame %d)\n', idx);
+					disp(moments{niters});
+				%end
+				for n = 1 : niters
+					m = moments{niters};
+					for k = 1:length(m)
+						fprintf(fp, '%d ', fix(m(k)));
+					end
+					fprintf(fp, '\n');
 				end
 				fclose(fp);
 			end

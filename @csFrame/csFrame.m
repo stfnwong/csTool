@@ -194,10 +194,6 @@ classdef csFrame < hgsetget
 		end
 
 		function set.moments(T, moments)
-			if(~iscell(moments))
-				fprintf('Moment sums must be in cell array\n');
-                return;
-			end
 			T.moments = moments;
 		end
 

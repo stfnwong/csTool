@@ -220,8 +220,8 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 
 % ======== OUTPUT FUNCTION  ======== %	
 function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSD>
-    %varargout{1} = handles.vfSettings;
-	varargout{1} = 0;	%TODO :  temporary - THIS MUST BE FIXED
+    varargout{1} = handles.vfSettings;
+	%varargout{1} = 0;	%TODO :  temporary - THIS MUST BE FIXED
 
 	% ======== CLOSE REQUEST FUNCTION ======== %
 function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -346,12 +346,11 @@ function gui_updatePreview(axHandle, img, figTitle, params, moments)
 		%vidx = get(handles.pmVecSz, 'Value');
 		%vsz  = vstr{vidx};
 		vsz  = 16;			% TODO : Change this!!!!
-		ef   = gui_plotParams(axHandle, params, moments, vsz);
+		ef   = gui_plotParams(axHandle, params, moments, 1, vsz);
 		if(ef == -1)
 			%fprintf('ERROR: Couldnt plot params in frame %d\n', handles.idx);
 			return;
 		end
-		%[l r t b] = gui_calcRect(params(1), params(2), params(4), params(5), params(3), 20);
 		%plot(axHandle, 
 	end
 
@@ -364,19 +363,26 @@ function nh = gui_updateParams(handles)
 
 	refParams   = handles.refFrameBuf.getWinParams(handles.idx);
 	refMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	%refNiters   = handles.refFrameBuf.getNiters(handles.idx);
 	if(handles.testBufRead)
 	   testParams  = handles.testFrameBuf.getWinParams(handles.idx);
 	   testMoments = handles.testFrameBuf.getMoments(handles.idx);
+	   %testNiters  = handles.testFrameBuf.getNiters(handles.idx);
 	else
 	   testParams  = [];
 	   testMoments = [];
+	   %testNiters  = 0;
 	end
 
 	 %Format text
-	paramTitle    = sprintf('Window parameters :');
-	momentTitle   = sprintf('Frame Moments :');
+	refTitle      = sprintf('Reference frame');
+	testTitle     = sprintf('Test frame');
+	paramTitle    = sprintf('xc    yc    theta  width  length');
+	momentTitle   = sprintf('zm    xm    ym     xym    xxm    yym');
+	%errTitle      = sprintf('Parameter error :\n');
 	if(~isempty(refParams))
-		refParamStr = sprintf('%4.2f ', refParams);
+		refParamStr = sprintf('%4.2f ', fix(refParams));
+		%refParamErr = abs(refParams - testParams);
 	else
 		refParamStr = [];
 	end
@@ -397,8 +403,11 @@ function nh = gui_updateParams(handles)
 		testMomentStr = [];
 	end
 
-	refText       = {paramTitle, refParamStr,  momentTitle, refMomentStr};
-	testText      = {paramTitle, testParamStr, momentTitle, testMomentStr};
+	% Show error terms for window parameters as well
+	
+
+	refText       = {refTitle, paramTitle, refParamStr,  momentTitle, refMomentStr};
+	testText      = {testTitle, paramTitle, testParamStr, momentTitle, testMomentStr};
 	set(handles.etRefParams, 'String', refText);
 	set(handles.etTestParams, 'String', testText);
 	nh = handles;
@@ -486,21 +495,33 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		end
 
 		% Automatically check for parameter file
-		paramFname = sprintf('%s%s-frame%03d-wparam.dat', ps.path, ps.filename, ps.frameNum);
+		paramFname = sprintf('%s%s-frame%03d-wparam.dat', ps.path, ps.filename, N);
 		if(exist(paramFname, 'file') == 2)
 			fprintf('Found parameter file [%s]\n', paramFname);
-			wparams = handles.vecManager.readParams(paramFname);
-			opts    = struct('winparams', params);
+			wparams = handles.vecManager.readParams(paramFname, 'wparam');
+			%Make sure wparam is row vector
+			wsz     = size(wparams);
+			if(wsz(1) > wsz(2))
+				wparams = wparams';
+			end
+			%if(handles.debug)
+				fprintf('Read wparam for frame %d\n', N);
+				disp(wparams);
+			%end
+			opts    = struct('winparams', wparams);
 			handles.testFrameBuf = handles.testFrameBuf.setFrameParams(N, opts);
 		end
 		% Automatically check for moment file
-		momentFname = sprintf('%s%s-frame%03d-moments.dat', ps.path, ps.filename, ps.frameNum);
+		momentFname = sprintf('%s%s-frame%03d-moments.dat', ps.path, ps.filename, N);
 		if(exist(momentFname, 'file') == 2)
 			fprintf('Found moment file [%s]\n', momentFname);
-
-			moments = handles.vecManager.readParams(momentFname);
-			opts    = struct('moments', moments);
-			% TODO : is handles.idx really the correct index?
+			% Just use defaults of 16 iters
+			mdata = handles.vecManager.readParams(momentFname, 'moment');
+			%if(handles.debug)
+				fprintf('Read moments for frame %d\n', N);
+                disp(mdata.moments{mdata.niters});
+			%end
+			opts    = struct('moments', {mdata.moments}, 'nIters', mdata.niters);
 			handles.testFrameBuf = handles.testFrameBuf.setFrameParams(N, opts);
 		end
 

@@ -39,7 +39,7 @@ function status = gui_plotParams(axHandle, params, moments, niters, varargin)
 	%each plot can be split across multiple lines (my vim sessions are 90 columns)
 
 	if(isempty(params) || isequal(params, zeros(1,5)))
-		fprintf('%s no params set for this frame\n', DSTR);
+		%fprintf('%s no params set for this frame\n', DSTR);
 		status = -1;
 		return;
 	end
@@ -47,7 +47,7 @@ function status = gui_plotParams(axHandle, params, moments, niters, varargin)
 	%Plot centroids
 	hold(axHandle, 'on');
 	
-	for k = 1:niters
+	for k = 1 : niters
 		m = moments{k};
 		% Check length
 		if(length(m) < 6)

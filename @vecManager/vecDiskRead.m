@@ -17,16 +17,16 @@ function [vector varargout] = vecDiskRead(V, fname, varargin)
 	if(~isempty(varargin))
 		if(strncmpi(varargin{1}, 'dtype', 5))
 			dtype = varargin{2};
-			if(V.verbose)
-				fprintf('(vecDiskRead) : dtype set as [%s]\n', dtype);
-			end
+			%if(V.verbose)
+			%	fprintf('(vecDiskRead) : dtype set as [%s]\n', dtype);
+			%end
 		end
 	end
 
 	%Check options
 	if(~exist('dtype', 'var'))
 		dtype = '%u8';
-		fprintf('(vecDiskRead) : set dtype to %s\n', dtype);
+		%fprintf('(vecDiskRead) : set dtype to %s\n', dtype);
 	end
 
 	fh = fopen(fname, 'r');
@@ -46,12 +46,12 @@ function [vector varargout] = vecDiskRead(V, fname, varargin)
 			fseek(fh, 0, 'cof');
 		end
 		%[vector N] = fread(fh, dtype);
-		[vector N] = textscan(fh, '%u8', 'Delimiter', ' ');
+		[vector N] = textscan(fh, '%u32', 'Delimiter', ' ');
 		vector = cell2mat(vector);	%make sure we return a matrix
-		if(V.verbose)
-			fprintf('Read %d %s from [%s]\n', N, dtype, fname);
-			fprintf('Found %d non-zero elements\n', sum(vector > 0));
-		end
+		%if(V.verbose)
+		%	fprintf('Read %d %s from [%s]\n', N, dtype, fname);
+		%	fprintf('Found %d non-zero elements\n', sum(vector > 0));
+		%end
 		if(nargout > 1)
 			varargout{1} = N;
 		end

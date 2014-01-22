@@ -6,6 +6,18 @@
 
 FIX PARAM BROWSER!!!!!
 
+FOR VERIFICATION ROUTINE
+Should be able to read tracking vector from disk into trajectory browser to compare against original run. This would mean having the two frame buffers in the tool from initialisation and passing the both frame buffer in and out of the verification and trajectory browser GUIs
+
+VERIFY
+Moment data must be in a cell array to be set. For one set of moments we can just wrap the data in a cell array and be done with it. If the testbench is extracting moments from the accumulator, we might opts to put each iteration on a seperate line. Then the csTool parser will need some extra logic to read only to the next newline, and then examine if the subsequent character (after the newline) is an EOF. If not, continue reading and place the data into the next 'iteration' in the verification panel 
+
+The reference parameter text boxes in the top right corner also need some work. The test parameter does not correctly display
+
+Also TODO - does the verification GUI need a parameter browse function?
+
+VECDISKREAD
+Does this correctly read back data that doesnt have the modelsim address specifier at the begninng? The actual frame data comes back fine (it seems), but it appears on inspection that the parameter data is mangled in the GUI. When the source file is examined no problems are found (the data does match). EDIT: On closer inspection, its only the first digit of the first parameter that is bad.
 
 GENERATE:
 If param files are generated as well, make sure to include the file wparam_init

@@ -105,20 +105,50 @@ classdef vecManager
 			rfilename = V.rfilename;
 		end
 
-		function data = readParams(V, fname)
+		function data = readParams(V, fname, ptype, varargin)
 		% READPARAMS
 		% Read parameter data (non-frame data) from disk.
-			
-			[vdata{n} ref] = vecDiskRead(V, fname);
-			if(ref == -1)
-				fprintf('ERROR (vecManager.readParams) : error reading vector file [%s]\n', fname);
+
+			fp = fopen(fname, 'r');
+			if(fp == -1)
+				fprintf('ERROR (vecManager.readParams) Cant open file [%s]\n', fname);
 				data = [];
 				return;
 			end
-			if(V.verbose)
-				fprintf('(vecManager.readParams) : read %d elements from [%s]\n', ref, fname);
+
+			if(strncmpi(ptype, 'moment', 6))
+				MAX_ITER  = 16;
+				NUM_ITERS = 16;
+
+				for k = 1 : length(varargin)
+					if(ischar(varargin{k}))
+						if(strcmpi(varargin{k}, 'max', 3))
+							MAX_ITER = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'num', 3))
+							NUM_ITERS = varargin{k+1};
+						end
+					end
+				end
+
+				moments = cell(1,NUM_ITERS);
+
+				niters = 1;
+				while(niters < MAX_ITER)
+					mvec = fscanf(fp, '%u ', 6);
+					moments{niters} = mvec;
+					% Check if there is another line of data
+					c = fscanf(fp, '%c', 1);
+					if(strncmpi(c, '\n', 1))
+						niters = niters + 1;
+					else
+						break;
+					end
+				end
+				data = struct('moments', {moments}, 'niters', niters);
+			else
+				% Read one line parameter data for this frame
+				data = fscanf(fp, '%u', 5);
 			end
-			data = vdata{n};
 			
 		end 	%readParams()
 
@@ -795,6 +825,7 @@ classdef vecManager
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
 		                   vecDiskWrite(V, data, varargin);	%commit data to disk
 		[vec varargout]  = vecDiskRead(V, fname, varargin);
+		[moments niters] = parseMoment(V, fname, varargin);
 		vec              = genTrackingVec(V, fh);
 		[vec varargout]  = genBPVec(V ,fh, vtype, val);
         [vec varargout]  = genHueVec(V, fh, vtype, val, varargin);
