@@ -9,6 +9,8 @@ FIX PARAM BROWSER!!!!!
 FOR VERIFICATION ROUTINE
 Should be able to read tracking vector from disk into trajectory browser to compare against original run. This would mean having the two frame buffers in the tool from initialisation and passing the both frame buffer in and out of the verification and trajectory browser GUIs
 
+CHEAPEST FIX: Change the 'get current' button into 2 buttons, 'Get Current (reference)' and 'Get Current (test)', which fetch the current trajectory from the reference and test buffer respectively
+
 VERIFY
 Moment data must be in a cell array to be set. For one set of moments we can just wrap the data in a cell array and be done with it. If the testbench is extracting moments from the accumulator, we might opts to put each iteration on a seperate line. Then the csTool parser will need some extra logic to read only to the next newline, and then examine if the subsequent character (after the newline) is an EOF. If not, continue reading and place the data into the next 'iteration' in the verification panel 
 

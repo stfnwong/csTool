@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 08-Jul-2013 03:55:00
+% Last Modified by GUIDE v2.5 22-Jan-2014 19:29:59
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -61,13 +61,17 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<IN
 		for k = 1:length(varargin)
 			if(isa(varargin{k}, 'vecManager'))
 				handles.vecManager = varargin{k};
-			elseif(isa(varargin{k}, 'csFrameBuffer'))
-				handles.frameBuf   = varargin{k};
+			%elseif(isa(varargin{k}, 'csFrameBuffer'))
+			%	handles.frameBuf   = varargin{k};
 			elseif(ischar(varargin{k}))
 				if(strncmpi(varargin{k}, 'debug', 5))
 					handles.debug = true;
 				elseif(strncmpi(varargin{k}, 'idx', 3))
 					handles.fbIdx = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'frameBuf', 8))
+					handles.frameBuf = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'testBuf', 7))
+					handles.testBuf = varargin{k+1};
 				end
 			end
 		end
@@ -81,6 +85,11 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<IN
 	end
 	if(~isfield(handles, 'frameBuf'))
 		fprintf('ERROR: No frameBuf object in csToolTrajBuf()\n');
+		handles.output = -1;
+		return;
+	end
+	if(~isfield(handles, 'testBuf'))
+		fprintf('ERROR: No testBuf object in csToolTrajBuf()\n');
 		handles.output = -1;
 		return;
 	end
@@ -591,7 +600,7 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
 
-function bTrajExtract_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function bGetRef_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Extract current trajectory from frame buffer and place into trajectory
 	%buffer.
 	lRange = str2double(get(handles.etRangeLow, 'String'));
@@ -626,6 +635,41 @@ function bTrajExtract_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	guidata(hObject, handles);
 	%uiresume(handles.fig_trajBuf);
+
+function bGetTest_Callback(hObject, eventdata, handles) %#okINUSL,DEFNU>
+	% Get trajectory from test buffer
+	% TODO : Sort out trajectory get	
+	lRange = str2double(get(handles.etRangeLow, 'String'));
+	hRange = str2double(get(handles.etRangeHigh, 'String'));
+	range  = [lRange hRange];
+	handles.trajBuf = handles.testBuf.getTraj(range);
+
+	% Also show trajectory in preview
+    %fh  = handles.testBuf.getFrameHandle(handles.fbIdx);
+	img = handles.testBuf.getCurImg(handles.fbIdx);
+    ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
+    ta  = handles.trajBuf;
+    tb  = handles.compBuf;
+    err = handles.errBuf;
+    gui_updatePreview(ah, img, handles.fbIdx, ta, tb, err, 'label', handles.labBuf);
+	%gui_renderTraj(handles.fig_trajPreview, handles.trajBuf);
+    %Set the trajectory name
+    trajLab = get(handles.etTrajLabel, 'String');
+    idx     = get(handles.pmBufIdx, 'Value');
+    handles.vecManager = handles.vecManager.writeTrajBufLabel(idx, trajLab);
+    %Update listbox with trajectory values
+    if(~isempty(handles.trajBuf) && ~isempty(handles.compBuf))
+        pErr = abs(handles.trajBuf - handles.compBuf);
+    else
+        pErr = [];
+    end
+    stats = gui_renderText(pErr, handles.trajBuf);
+    set(handles.lbTrajStats, 'String', stats);
+    set(handles.lbTrajStats, 'Value', handles.fbIdx);
+    nLabel = handles.vecManager.getTrajBufLabel(get(handles.pmBufIdx, 'Value'));
+    set(handles.etTrajLabel, 'String', nLabel);
+
+	guidata(hObject, handles);
 
 function bSetLabel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Write just the label into the vecManager object
@@ -959,6 +1003,3 @@ function etGoto_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 
 %function bTrajExtract_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
-
-

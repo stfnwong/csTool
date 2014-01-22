@@ -158,6 +158,15 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 			disp(handles.vecOpts);
 		end
 	end
+	if(~isfield(handles, 'testBuf'))
+		fprintf('Generating test buffer...\n');
+		handles.testBufOpts = init_genTestBufOpts(DATA_DIR, ASSET_DIR, NO_LOAD);
+		handles.testBuf = csFrameBuffer(handles.testBufOpts);
+		if(DEBUG)
+			fprintf('(DEBUG) Test buffer options: \n');
+			disp(handles.testBufOpts);
+		end
+	end
 
     % Load region structure 
     handles.rData = init_genRegionStruct(DATA_DIR, NO_LOAD);
@@ -1221,7 +1230,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 		case 'v'
 			%imsz = handles.frameBuf.getDims(frameIndex);
 			% TODO : Add options strucutre
-			ef = csToolVerify(handles.vecManager, handles.frameBuf);
+			ef = csToolVerify(handles.vecManager, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
 			%ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
 			if(ef == -1)
 				fprintf('ERROR: Error in csToolVerify()\n');
@@ -1249,9 +1258,9 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
             % ================ LAUNCH TRAJECTORY BUFFER ================ %
         case 't'
             if(handles.debug)
-                tbstruct = csToolTrajBuf(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'debug');
+                tbstruct = csToolTrajBuf('frameBuf', handles.frameBuf, 'testBuf', handles.testBuf,  handles.vecManager, 'idx', frameIndex, 'debug');
             else
-                tbstruct = csToolTrajBuf(handles.frameBuf, handles.vecManager, 'idx', frameIndex);
+                tbstruct = csToolTrajBuf('frameBuf', handles.frameBuf, 'testBuf', handles.testBuf,  handles.vecManager, 'idx', frameIndex);
             end
             %Check structure fields
             %NOTE: ANOTHER STUPID BUG!!!!
@@ -1557,7 +1566,7 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
     global frameIndex;
 
 	imsz = handles.frameBuf.getDims(frameIndex);
-	ef = csToolVerify(handles.vecManager, handles.frameBuf);	
+	ef = csToolVerify(handles.vecManager, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
 	%if(handles.debug)
 	%    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug', 'opts', handles.vfOpts);
 	%else
@@ -1574,7 +1583,6 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
         end
 	end
 
-	
 	guidata(hObject, handles);
 	
 end     %bVerify_Callback()
@@ -1734,9 +1742,9 @@ function menu_trajBuf_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
 	global frameIndex;
 
     if(handles.debug)
-        tbstruct = csToolTrajBuf(handles.frameBuf, handles.vecManager, 'idx', frameIndex, 'debug');
+        tbstruct = csToolTrajBuf('frameBuf', handles.frameBuf, 'testBuf', handles.testBuf, handles.vecManager, 'idx', frameIndex, 'debug');
     else
-        tbstruct = csToolTrajBuf(handles.frameBuf, handles.vecManager, 'idx', frameIndex);
+        tbstruct = csToolTrajBuf('frameBuf', handles.frameBuf, 'testBuf', handles.testBuf,  handles.vecManager, 'idx', frameIndex);
     end
     %Check structure fields
     %NOTE: ANOTHER STUPID BUG!!!!

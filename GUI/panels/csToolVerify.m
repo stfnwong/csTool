@@ -66,12 +66,16 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
                     handles.fh = varargin{k+1};
                 elseif(strncmpi(varargin{k}, 'opts', 4))
                     handles.vfSettings = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'frameBuf', 8))
+					handles.refFrameBuf = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'testBuf', 7))
+					handles.testFrameBuf = varargin{k+1};
 				end
 			else
 				if(isa(varargin{k}, 'vecManager'))
 					handles.vecManager = varargin{k};
-				elseif(isa(varargin{k}, 'csFrameBuffer'))
-					handles.refFrameBuf = varargin{k};
+				%elseif(isa(varargin{k}, 'csFrameBuffer'))
+				%	handles.refFrameBuf = varargin{k};
 				end
 			end
 		end
@@ -103,12 +107,13 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 		return;		%TODO : Modify this outcome?
 		
 	end
+	% If there is no test frame buffer then create a new one
+	if(~isfield(handles, 'testFrameBuf'))
+		fprintf('WARNING: No testFrameBuf specified, cloning reference buffer options\n');
+		tOpts = handles.refFrameBuf.getOpts();
+		handles.testFrameBuf = csFrameBuffer(tOpts);
+	end
 	handles.testBufRead = false;
-
-	% Copy the parameters out of the reference frame buffer and use those
-	% until we are provided with more information about verification
-	tOpts = handles.refFrameBuf.getOpts();
-	handles.testFrameBuf = csFrameBuffer(tOpts);
 
 	% TODO : Update this for new csFrameBuffer calls
     % Check if we have a frame handle
@@ -212,7 +217,10 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference', rParams, rMoments);
 
     % Choose default command line output for csToolVerify
-    handles.output = hObject;
+    %handles.output = hObject;
+    %handles.output = struct('vfSettings', handles.vfSettings, ...
+    %                        'refBuf',     handles.refFrameBuf, ...
+    %                        'testBuf',    handles.testFrameBuf);
 
     % Update handles structure
     guidata(hObject, handles);
@@ -220,7 +228,10 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 
 % ======== OUTPUT FUNCTION  ======== %	
 function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSD>
-    varargout{1} = handles.vfSettings;
+	%ostruct = struct('vfSettings', handles.vfSettings, 'refBuf', handles.refFrameBuf, 'testBuf', handles.testFrameBuf);
+	handles.output = struct('refBuf', handles.refFrameBuf, 'testBuf', handles.testFrameBuf);
+	varargout{1} = handles.output;
+    %varargout{1} = handles.vfSettings;
 	%varargout{1} = 0;	%TODO :  temporary - THIS MUST BE FIXED
 
 	% ======== CLOSE REQUEST FUNCTION ======== %

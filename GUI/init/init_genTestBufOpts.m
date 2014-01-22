@@ -1,5 +1,5 @@
-function bufOpts = init_genBufferOpts(DATA_DIR, ASSET_DIR, NO_LOAD)
-% INIT_GENBUFFEROPTS
+function testBufOpts = init_genTestBufferOpts(DATA_DIR, ASSET_DIR, NO_LOAD)
+% INIT_GENTESTBUFFEROPTS
 %
 % Generate an options structure for a csFrameBuffer object. For use with the csToolGUI
 % This medthod attempts to read a saved structure in the directory DATA_DIR, and 
@@ -7,11 +7,11 @@ function bufOpts = init_genBufferOpts(DATA_DIR, ASSET_DIR, NO_LOAD)
 
 % Stefan Wong 2013
 
-	path = which(sprintf('%s/bufOpts.mat', DATA_DIR));
+	path = which(sprintf('%s/testBufOpts.mat', DATA_DIR));
 
 	if(isempty(path) || NO_LOAD)
 		fprintf('No buffer options found - using defaults... \n');
-		bufOpts = struct('nFrames',    32       , ...
+		testBufOpts = struct('nFrames',    32       , ...
                          'path',       ASSET_DIR, ...
                          'ext',        'TIF'    , ...
                          'fNum',       1        , ...
@@ -24,4 +24,4 @@ function bufOpts = init_genBufferOpts(DATA_DIR, ASSET_DIR, NO_LOAD)
 		return;
 	end
 
-end 	%init_genBufferOpts()
+end 	%init_genTestBufferOpts()
