@@ -1230,12 +1230,15 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 		case 'v'
 			%imsz = handles.frameBuf.getDims(frameIndex);
 			% TODO : Add options strucutre
-			ef = csToolVerify(handles.vecManager, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
+			ef = csToolVerify(handles.vecManager, 'opts', handles.vfOpts, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
 			%ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
 			if(ef == -1)
 				fprintf('ERROR: Error in csToolVerify()\n');
 				return;
 			end
+			handles.frameBuf = ef.frameBuf;
+			handles.testBuf  = ef.testBuf;
+			handles.vfOpts   = ef.vSettings;
 
             % ================ LAUNCH RANDOM SEQUENCE SCREEN ================ %
 		case 'y'
@@ -1566,7 +1569,7 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
     global frameIndex;
 
 	imsz = handles.frameBuf.getDims(frameIndex);
-	ef = csToolVerify(handles.vecManager, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
+	ef = csToolVerify(handles.vecManager, 'opts', handles.vfOpts, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
 	%if(handles.debug)
 	%    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug', 'opts', handles.vfOpts);
 	%else
@@ -1576,7 +1579,9 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
 		fprintf('ERROR: csToolVerify returned status -1\n');
 		return;
 	else
-		handles.vfOpts = ef;
+		handles.vfOpts   = ef.vfSettings;
+		handles.frameBuf = ef.frameBuf;
+		handles.testBuf  = ef.testBuf;
         if(handles.debug)
             fprintf('csToolVerify opts:\n');
             disp(ef);

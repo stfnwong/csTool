@@ -57,7 +57,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 
     if(~isempty(varargin))
 		for k = 1:length(varargin)
-			if(ischar(varargin))
+			if(ischar(varargin{k}))
 				if(strncmpi(varargin{k}, 'imsz', 4))
 					imsz = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'debug', 5))
@@ -216,20 +216,14 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	rMoments = handles.refFrameBuf.getMoments(handles.idx);
 	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference', rParams, rMoments);
 
-    % Choose default command line output for csToolVerify
-    %handles.output = hObject;
-    %handles.output = struct('vfSettings', handles.vfSettings, ...
-    %                        'refBuf',     handles.refFrameBuf, ...
-    %                        'testBuf',    handles.testFrameBuf);
-
     % Update handles structure
     guidata(hObject, handles);
 	uiwait(handles.csToolVerifyFig);
 
 % ======== OUTPUT FUNCTION  ======== %	
-function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSD>
+function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 	%ostruct = struct('vfSettings', handles.vfSettings, 'refBuf', handles.refFrameBuf, 'testBuf', handles.testFrameBuf);
-	handles.output = struct('refBuf', handles.refFrameBuf, 'testBuf', handles.testFrameBuf);
+	handles.output = struct('frameBuf', handles.refFrameBuf, 'testBuf', handles.testFrameBuf, 'vfSettings', handles.vfSettings);
 	varargout{1} = handles.output;
     %varargout{1} = handles.vfSettings;
 	%varargout{1} = 0;	%TODO :  temporary - THIS MUST BE FIXED
