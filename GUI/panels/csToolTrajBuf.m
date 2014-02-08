@@ -158,7 +158,7 @@ function varargout = csToolTrajBuf_OutputFcn(hObject, eventdata, handles) %#ok<I
 	handles.output = struct('vecManager', handles.vecManager, ...
                             'frameBuf',   handles.frameBuf);
 	varargout{1} = handles.output;
-    %uiresume(handles.fig_trajBuf);
+    uiresume(handles.fig_trajBuf);
 	%delete(hObject);
 
 function fig_trajBuf_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -449,7 +449,7 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     %Update current frame text
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
+	uiresume(handles.fig_trajBuf);
 
 function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Bounds check and decrement frame index
@@ -472,7 +472,7 @@ function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     %Update current frame text
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
+	uiresume(handles.fig_trajBuf);
 
 
 
@@ -494,6 +494,7 @@ function bLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
     guidata(hObject, handles);
+    uiresume(handles.fig_trajBuf);
 
 
 function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -514,6 +515,7 @@ function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
     guidata(hObject, handles);
+    uiresume(handles.fig_trajBuf);
 
 
 function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -538,6 +540,7 @@ function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
     guidata(hObject, handles);
+    uiresume(handles.fig_trajBuf);
 
 
 
@@ -564,7 +567,7 @@ function bWrite_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     handles.labBuf{2} = clab;
 
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
+	uiresume(handles.fig_trajBuf);
 
 function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Read data out of the vecManager trajectory buffer at the specified
@@ -598,7 +601,7 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     handles.labBuf{2} = clab;
     
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
+	uiresume(handles.fig_trajBuf);
 
 function bGetRef_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Extract current trajectory from frame buffer and place into trajectory
@@ -634,7 +637,7 @@ function bGetRef_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     set(handles.etTrajLabel, 'String', nLabel);
 
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
+	uiresume(handles.fig_trajBuf);
 
 function bGetTest_Callback(hObject, eventdata, handles) %#okINUSL,DEFNU>
 	% Get trajectory from test buffer
@@ -647,6 +650,10 @@ function bGetTest_Callback(hObject, eventdata, handles) %#okINUSL,DEFNU>
 	% Also show trajectory in preview
     %fh  = handles.testBuf.getFrameHandle(handles.fbIdx);
 	img = handles.testBuf.getCurImg(handles.fbIdx);
+    if(isempty(img))
+        fprintf('ERROR: No data in test buffer\n');
+        return;
+    end
     ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
     ta  = handles.trajBuf;
     tb  = handles.compBuf;
@@ -690,7 +697,7 @@ function bSetLabel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     handles.labBuf{2} = clab;
 
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
+	uiresume(handles.fig_trajBuf);
 
 function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Plot the two selected trajectories in the preview axes and modify GUI
@@ -743,7 +750,7 @@ function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     handles.labBuf{2} = clab;
 		
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
+	uiresume(handles.fig_trajBuf);
 
 function bResize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Resize the trajectory buffer in vecManager object
@@ -754,7 +761,7 @@ function bResize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         handles.vecManager = handles.vecManager.setTrajBufSize(bufSize);
     end
     guidata(hObject, handles);
-    %uiresume(handles.fig_trajBuf);
+    uiresume(handles.fig_trajBuf);
 
 function menu_bufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Re-size the trajectory buffer in vecManager (this requires a sub-menu)
@@ -770,7 +777,7 @@ function menu_bufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
     
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
+	uiresume(handles.fig_trajBuf);
 
 % Build into this GUI the notion of range, so that when we adjust the value
 % in either of these boxes, only entires within the ranges are displayed on
@@ -811,6 +818,9 @@ function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
             load(fname);
         end
     end
+	guidata(hObject, handles);
+	uiresume(handles.fig_trajBuf);
+
 
 function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Create a new figure with all data plotted for use in papers, reports, etc
@@ -871,7 +881,7 @@ function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
 	
 	
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
+	uiresume(handles.fig_trajBuf);
 
 % --- Executes on key press with focus on fig_trajBuf and none of its controls.
 function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -934,6 +944,7 @@ function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
 
 	guidata(hObject, handles)
+    uiresume(handles.fig_trajBuf);
 
 
 function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>

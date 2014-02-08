@@ -816,6 +816,21 @@ classdef vecManager
 			end
 		end 	%verifyBPVec()
 
+		% -------- Inject an error into the frame data -------- %
+		function errFrame = injectError(V, frame, errType, errOpts)
+
+			switch(errType)
+				case 'noise'
+					%injectNoise(V, imVec, offset, imsz);
+				case 'offset'
+					%injectOffset(V, imVec, offset, imsz)
+				otherwise
+					fprintf('Invalid errType [%s]\n', errType);
+					errFrame = [];
+					return
+			end
+		end 	%injectError()
+
 	end 		%vecManager METHODS (Public)
 
 	methods (Access = 'private')

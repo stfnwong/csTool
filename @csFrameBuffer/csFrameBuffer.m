@@ -35,10 +35,11 @@ classdef csFrameBuffer
 
 % Stefan Wong 2012
 
-%TODO: 
-% - How to store meanshift vectors? It seems like we just need a routine that can 
-%   go through all the frame parameters and produce v(f) - v(f-1) for each one...
 
+	% TODO : Add frame size parameter...?
+	% TODO : This would mean adding a routine in vecManager that can 
+	% determine the size of the frame from the length and number of 
+	% vector files
 	properties (SetAccess = 'private', GetAccess = 'private')
 		frameBuf;		%array of csFrame handles
 		nFrames;		%number of elements in frameBuf

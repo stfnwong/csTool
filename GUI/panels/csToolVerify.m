@@ -614,6 +614,8 @@ function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	vecIdx  = get(hadnles.pmVecSz, 'Value');
 	vecSz   = vecList{vecIdx};
 	set(handles.etNumFiles, 'String', vecSz);
+	guidata(hObject, handles);
+	uiresume(csToolVerifyFig);
 
 
 % -------- EMPTY FUNCTIONS -------- %
