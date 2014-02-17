@@ -50,6 +50,8 @@ bGenerate_Callback	GUI/panels/csToolPattern.m	/^function bGenerate_Callback(hObj
 bGenerate_Callback	GUI/panels/csToolSeqGen.m	/^function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bGetFile_Callback	GUI/panels/csToolVerify.m	/^function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bGetReadFile_Callback	GUI/panels/csToolSaveBuf.m	/^function bGetReadFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
+bGetRef_Callback	GUI/panels/csToolTrajBuf.m	/^function bGetRef_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bGetTest_Callback	GUI/panels/csToolTrajBuf.m	/^function bGetTest_Callback(hObject, eventdata, handles) %#okINUSL,DEFNU>$/;"	f
 bGetTrajFile_Callback	GUI/panels/csToolGenerate.m	/^function bGetTrajFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bGetWriteFile_Callback	GUI/panels/csToolSaveBuf.m	/^function bGetWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bGoto_Callback	GUI/panels/csToolBufPreview.m	/^function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
@@ -108,7 +110,6 @@ bTrackAll_Callback	GUI/panels/csToolGUI.m	/^function bTrackAll_Callback(hObject,
 bTrackFrame_Callback	GUI/panels/csToolGUI.m	/^function bTrackFrame_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>$/;"	f
 bTrackOpts_Callback	GUI/panels/csToolGUI.m	/^function bTrackOpts_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bTrackRange_Callback	GUI/panels/csToolGUI.m	/^function bTrackRange_Callback(hObject, eventdata, handles)	%#ok<INUSL,DEFNU>$/;"	f
-bTrajExtract_Callback	GUI/panels/csToolTrajBuf.m	/^function bTrajExtract_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bUIgetfile_Callback	GUI/panels/csToolGUI.m	/^function bUIgetfile_Callback(hObject, eventdata, handles) %#ok <INUSL,DEFNU>$/;"	f
 bUIgetfile_Callback	GUI/panels/csToolGenerate.m	/^function bUIgetfile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bVecOpts_Callback	GUI/panels/csToolGUI.m	/^function bVecOpts_Callback(hObject, eventdata, handles)		%#ok<INUSL,DEFNU>$/;"	f
@@ -207,7 +208,7 @@ csToolVecOpts_OutputFcn	GUI/panels/csToolVecOpts.m	/^function varargout = csTool
 csToolVerify	GUI/panels/csToolVerify.m	/^function varargout = csToolVerify(varargin)$/;"	f
 csToolVerifyFig_CloseRequestFcn	GUI/panels/csToolVerify.m	/^function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 csToolVerify_OpeningFcn	GUI/panels/csToolVerify.m	/^function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
-csToolVerify_OutputFcn	GUI/panels/csToolVerify.m	/^function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSD>$/;"	f
+csToolVerify_OutputFcn	GUI/panels/csToolVerify.m	/^function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
 cstParam_FmtParamString	GUI/panels/csToolParamBrowser.m	/^function str = cstParam_FmtParamString(handles)   $/;"	f
 cstParam_ShowPreview	GUI/panels/csToolParamBrowser.m	/^function status = cstParam_ShowPreview(handles)$/;"	f
 dStaticCall	@csFrameBuffer/dStaticCall.m	/^function dStaticCall(fb)$/;"	f
@@ -455,12 +456,15 @@ init_genPvOpts	GUI/init/init_genPvOpts.m	/^function pvOpts = init_genPvOpts(DATA
 init_genRegionStruct	GUI/init/init_genRegionStruct.m	/^function rStruct = init_genRegionStruct(DATA_DIR, NO_LOAD)$/;"	f
 init_genSegmenterOpts	GUI/init/init_genSegmenterOpts.m	/^function segOpts = init_genSegmenterOpts(DATA_DIR, NO_LOAD)$/;"	f
 init_genSqOpts	GUI/init/init_genSqOpts.m	/^function sqOpts = init_genSqOpts(DATA_DIR, NO_LOAD)$/;"	f
+init_genTestBufferOpts	GUI/init/init_genTestBufOpts.m	/^function testBufOpts = init_genTestBufferOpts(DATA_DIR, ASSET_DIR, NO_LOAD)$/;"	f
 init_genTrackerOpts	GUI/init/init_genTrackerOpts.m	/^function trackOpts = init_genTrackerOpts(DATA_DIR, NO_LOAD)$/;"	f
 init_genVecManagerOpts	GUI/init/init_genVecManagerOpts.m	/^function vecOpts = init_genVecManagerOpts(DATA_DIR, NO_LOAD)$/;"	f
 init_genVfOpts	GUI/init/init_genVfOpts.m	/^function vfOpts = init_genVfOpts(DATA_DIR, NO_LOAD)$/;"	f
 init_modelHist	GUI/init/init_modelHist.m	/^function [status nh varargout] = init_modelHist(handles, region, idx, varargin)$/;"	f
 init_parseOptionStructs	GUI/init/init_parseOptsStruct.m	/^function opts = init_parseOptionStructs(noLoad)$/;"	f
 init_restoreFrame	GUI/init/init_restoreFrame.m	/^function handles = init_restoreFrame(handles)$/;"	f
+injectNoise	@vecManager/injectNoise.m	/^function vec = injectNoise(V, imVec, amt, imsz)$/;"	f
+injectOffset	@vecManager/injectOffet.m	/^function [vec] = injectOffset(V, imVec, offset, imsz)$/;"	f
 interp	GUI/interp.m	/^function [token flag] = interp(cmd, varargin)$/;"	f
 kbw_lut	@csSegmenter/kbw_lut.m	/^function pixWeight = kbw_lut(pixel, xyPrev, varargin)$/;"	f
 kernelLookup	@csSegmenter/kernelLookup.m	/^function wpixel = kernelLookup(S, pixel, varargin)$/;"	f
@@ -505,6 +509,7 @@ msProcLoop	@csTracker/msProcLoop.m	/^function [status tOutput] = msProcLoop(T, b
 optParser	@csFrameBuffer/optParser.m	/^function opt = optParser(options)$/;"	f
 optParser	@csImProc/optParser.m	/^function ipOpt = optParser(options)$/;"	f
 parseFmt	@vecManager/parseFmt.m	/^function [ftype val] = parseFmt(fmt)$/;"	f
+parseMoment	@vecManager/parseMoment.m	/^function [moments niters] = parseMoment(V, fname, varargin)$/;"	f
 patternVerify	@vecManager/patternVerify.m	/^function varargout = patternVerify(V, vec, refvece, varargin)$/;"	f
 pmAnchorPoint_Callback	GUI/panels/csToolTrackOpts.m	/^function pmAnchorPoint_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 pmAnchorPoint_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function pmAnchorPoint_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
