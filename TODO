@@ -4,6 +4,13 @@
 #
 ###############################################################
 
+WEIGHT IMAGES
+Need to track down a bug in weight image pipeline - need to follow execution in csSegmenter.
+
+TRAJECTORY BROWSER
+Add a method to manually specify ground truth trajectory
+Also backprojection image generator should have a parameter to modify kQuant
+
 FIX PARAM BROWSER!!!!!
 
 FOR VERIFICATION ROUTINE

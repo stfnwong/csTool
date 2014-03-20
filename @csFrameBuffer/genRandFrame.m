@@ -19,6 +19,7 @@ function rFrame = genRandFrame(F, opts)
 %        npoints - Number of points to generate.
 %        dist    - One of 'uniform' or 'normal'
 %        dscale  - Data scaling factor
+%        wRes    - Resolution allowed for weight image
 %        kernel  - If true, apply kernel function to data (TODO)
 %
 
@@ -65,6 +66,7 @@ function rFrame = genRandFrame(F, opts)
 	% map ellipse back to backprojection image
 	%rFrame(ey, ex) = opts.sfac;
 	rFrame(yidx, xidx) = opts.sfac;
+	% TODO : Perform weighting here
 
 
 end 	%genRandFrame()

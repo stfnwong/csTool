@@ -1122,6 +1122,8 @@ classdef csFrameBuffer
 							sfac = varargin{k+1};
 						elseif(strncmpi(varargin{k}, 'theta', 5))
 							theta = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'wRes', 6))
+							wRes = varargin{k+1};
 						elseif(strncmpi(varargin{k}, 'opts', 4))
 							opts = varargin{k+1};
 						end
@@ -1149,6 +1151,9 @@ classdef csFrameBuffer
 				if(~exist('sfac', 'var'))
 					sfac = 1;
 				end
+				if(~exist('wRes', 'var'))
+					wRes = 1;
+				end
 				if(~exist('theta', 'var'))
 					theta = 0;
 				end
@@ -1169,6 +1174,7 @@ classdef csFrameBuffer
 							  'npoints', npoints, ...
 							  'dist', dist, ...
 							  'dscale', sfac, ...
+					          'wRes', wRes, ...
 							  'kernel', [] );
 			else
 				nframes = opts.nframes;
@@ -1182,6 +1188,9 @@ classdef csFrameBuffer
 					fprintf('WARNING: empty dimensions in generated frame %d\n', N);
 				end
 				frame  = genRandFrame(F, opts);
+				%% Scale frame
+				%frame  = frame ./ max(max(frame));
+				%frame  = sfac .* frame;
 				bpvec  = bpimg2vec(frame, 'bpval');
 				dataSz = max(bpvec(3,:));
 				% set parameter data for frame handle

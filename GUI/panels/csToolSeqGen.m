@@ -22,7 +22,7 @@ function varargout = csToolSeqGen(varargin)
 
 % Edit the above text to modify the response to help csToolSeqGen
 
-% Last Modified by GUIDE v2.5 12-Nov-2013 15:05:16
+% Last Modified by GUIDE v2.5 18-Feb-2014 12:01:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -86,6 +86,7 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 			             'dist', 'normal', ...
 			             'npoints', 128, ...
 			             'sfac', 1, ...
+			             'wRes', 1, ...
 			             'tsize', [64 64], ...
 			             'loc', 0.5*[640 480], ...
 			             'theta', 0 );
@@ -110,6 +111,7 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	set(handles.etNumPoints, 'String', num2str(handles.genOpts.npoints));
 	set(handles.etNumFrames, 'String', num2str(handles.genOpts.nframes));
 	set(handles.etScaleFac,  'String', num2str(handles.genOpts.sfac));
+	set(handels.etWRes,      'String', num2str(handles.genOpts.wRes));
 	set(handles.etMaxSpeed,  'String', num2str(handles.genOpts.maxspd));
 	set(handles.etImgWidth,  'String', num2str(handles.genOpts.imsz(1)));
 	set(handles.etImgHeight, 'String', num2str(handles.genOpts.imsz(2)));
@@ -239,6 +241,7 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	npoints = fix(str2double(get(handles.etNumPoints, 'String')));
 	nframes = fix(str2double(get(handles.etNumFrames, 'String')));
 	sfac    = fix(str2double(get(handles.etScaleFac,  'String')));
+	wRes    = fix(str2double(get(handles.etWRes,      'String')));
 	maxspd  = fix(str2double(get(handles.etMaxSpeed,  'String')));
 	img_w   = fix(str2double(get(handles.etImgWidth,  'String')));
 	img_h   = fix(str2double(get(handles.etImgHeight, 'String')));
@@ -256,6 +259,7 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		             'dist', dist, ...
 		             'npoints', npoints, ...
 		             'sfac', sfac, ...
+		             'wRes', wRes, ...
 		             'theta', 0, ...
 		             'tsize', [64 64], ...
 		             'loc', loc, ...
@@ -408,3 +412,23 @@ function etLocX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 
 
+function etWRes_Callback(hObject, eventdata, handles)
+% hObject    handle to etWRes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of etWRes as text
+%        str2double(get(hObject,'String')) returns contents of etWRes as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function etWRes_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to etWRes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

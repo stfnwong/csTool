@@ -360,6 +360,8 @@ etTrajFile_Callback	GUI/panels/csToolGenerate.m	/^function etTrajFile_Callback(h
 etTrajFile_CreateFcn	GUI/panels/csToolGenerate.m	/^function etTrajFile_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etTrajLabel_Callback	GUI/panels/csToolTrajBuf.m	/^function etTrajLabel_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 etTrajLabel_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function etTrajLabel_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+etWRes_Callback	GUI/panels/csToolSeqGen.m	/^function etWRes_Callback(hObject, eventdata, handles)$/;"	f
+etWRes_CreateFcn	GUI/panels/csToolSeqGen.m	/^function etWRes_CreateFcn(hObject, eventdata, handles)$/;"	f
 etWfilename_Callback	GUI/panels/csToolVecOpts.m	/^function etWfilename_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
 etWfilename_CreateFcn	GUI/panels/csToolVecOpts.m	/^function etWfilename_CreateFcn(hObject, eventdata, handles)		%#ok<INUSD,DEFNU>$/;"	f
 etWriteFile_Callback	GUI/panels/csToolGenerate.m	/^function etWriteFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
