@@ -83,15 +83,16 @@ classdef csFrameBuffer
 		% 	renderMode = 0;
 		% 	verbose    = 0;
 		%
-		% To initialise the csFrameBuffer object with different options, pass in a 
-		% structure with members whose names match the properties of the csFrameBuffer
+		% To initialise the csFrameBuffer object with different options, 
+		% pass in a structure with members whose names match the 
+		% properties of the csFrameBuffer
 		%
 		% USAGE:
 		% F = csFrameBuffer();
 		% F = csFrameBuffer(opts_struct);
 		%
-		% See classdef documentation for further information about methods and 
-		% properties for this class.
+		% See classdef documentation for further information about 
+		% methods and properties for this class.
 
 			switch nargin
 				case 0
@@ -196,10 +197,10 @@ classdef csFrameBuffer
 		% GETFRAMEHANDLE
 		% USAGE : fh = getFrameHandle(N)
 		% 
-		% Obtain the handle to frame N. If N is a scalar, getFrameHandle returns a 
-		% single handle to the Nth frame in the buffer. If N is a vector of intergers,
-		% getFrameHandle returns an array containing handles for the corresponding 
-		% frames
+		% Obtain the handle to frame N. If N is a scalar, getFrameHandle 
+		% returns a single handle to the Nth frame in the buffer. If N 
+		% is a vector of intergers, getFrameHandle returns an array 
+		% containing handles for the corresponding frames
 		%
 			if(length(N) > 1)
 				if(N(end) > F.nFrames)
@@ -711,10 +712,11 @@ classdef csFrameBuffer
 
 		function [FBout status] = parseFilename(FB, fname, varargin)
 		% PARSEFILENAME
-		% This method parses the filename specified by fname and sets the correct
-		% values in FB.path, FB.fName, FB.fNum, and FB.ext. The returned status flag
-		% indicates whether or not the filename was parsed correctly. The caller can
-		% consider the values as set when status returns 0 (no errors).
+		% This method parses the filename specified by fname and sets the 
+		% correct values in FB.path, FB.fName, FB.fNum, and FB.ext. The 
+		% returned status flag indicates whether or not the filename was 
+		% parsed correctly. The caller can consider the values as set when 
+		% status returns 0 (no errors).
 		% 
 
 			if(~ischar(fname))
@@ -798,9 +800,10 @@ classdef csFrameBuffer
 		%
 		% [FB status] = loadFrameData(FB, ...[options]... )
 		%
-		% Load filenames specified by FB.path and FB.fNum into frame buffer. To
-		% override the path, pass the string 'path' followed by the path name. To
-		% override fNum, pass 'num' followed by number of frames to read.
+		% Load filenames specified by FB.path and FB.fNum into frame 
+		% buffer. To override the path, pass the string 'path' followed 
+		% by the path name. To override fNum, pass 'num' followed by 
+		% number of frames to read.
 		
 			ALL = false;
 			%If varargin is a string, take this as being a path to data and 
@@ -851,8 +854,8 @@ classdef csFrameBuffer
 				fprintf('fnum : %d\n', fnum);
 				fprintf('ext  : %s\n', FB.ext);
 			end
-			%If we want to load all frames in buffer, check how many there are and 
-			%place this figure into FB.nFrames
+			%If we want to load all frames in buffer, check how many 
+			%there are and place this figure into FB.nFrames
 			if(ALL)
 				n  = 1;
 				%fn = sprintf('%s%s_%03d.%s', fpath, FB.fName, n, FB.ext); 
@@ -1080,9 +1083,10 @@ classdef csFrameBuffer
 
 		function clearImData(F, varargin)
 		% CLEARIMDATA
-		% Set any image data in the buffer equal to the empty matrix. Pass a integer
-		% N as an optional argument to clear only the data for the Nth frame, or a 
-		% vector of integers to clear image data for frames N(1) to N(end). 
+		% Set any image data in the buffer equal to the empty matrix. 
+		% Pass a integer N as an optional argument to clear only the 
+		% data for the Nth frame, or a vector of integers to clear image 
+		% data for frames N(1) to N(end). 
 		
 			if(nargin > 1)
 				N = varargin{1};
