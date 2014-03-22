@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 10-Nov-2013 18:23:23
+% Last Modified by GUIDE v2.5 22-Mar-2014 00:30:21
 
 
 % Begin initialization code - DO NOT EDIT
@@ -185,6 +185,7 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	handles.vfOpts = init_genVfOpts(DATA_DIR, NO_LOAD);
 	handles.pvOpts = init_genPvOpts(DATA_DIR, NO_LOAD);
 	handles.sqOpts = init_genSqOpts(DATA_DIR, NO_LOAD);
+	handles.sbOpts = init_genSbOpts(DATA_DIR, NO_LOAD);
 	if(DEBUG)
 		fprintf('vfOpts : \n');
 		disp(handles.vfOpts);
@@ -1838,3 +1839,13 @@ function menu_genRandBp_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 end     %menu_genRandBp()
 
+
+% --------------------------------------------------------------------
+function menu_SaveBufData_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	global frameIndex;
+	ef = csToolSaveBuf(handles.frameBuf, handles.segmenter, 'idx', frameIndex, 'opts', handles.sbOpts);
+
+
+
+end

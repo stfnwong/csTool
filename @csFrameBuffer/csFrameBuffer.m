@@ -1008,12 +1008,11 @@ classdef csFrameBuffer
 
 		end 	%loadVectorData()
 
-		function saveBufData(F, range, filename)
+		function saveBufData(F, filename, range)
 		% SAVEBUFDATA
 		% FB = saveBufData(F, range)
 		%
 		% Save buffer contents to disk as a series of *.mat files
-			
 			DATA_DIR = 'data/settings';
 			DSTR     = '[csFrameBuffer.saveBufData()] : ';
 
@@ -1039,7 +1038,9 @@ classdef csFrameBuffer
 
 			for k = range(1) : range(2)
 				filename = sprintf('%s/%s-%03d.%s', ps.path, ps.filename, k, ps.ext);
-				bufDiskWrite(F, F.frameBuf(k), filename);
+				%bufDiskWrite(F, F.frameBuf(k), filename);
+				fhData = F.frameBuf(k);
+				save(filename, 'fhData');
 				waitbar(n/t, wb, sprintf('Saving frame data (%d/%d)', n, t));
 				n = n + 1;
 			end
@@ -1047,25 +1048,54 @@ classdef csFrameBuffer
 
 		end 	%saveBufData()
 
-		function FB = loadBufData(F, startRange, endRange, filename)
+		function FB = loadBufData(F, filename, varargin)
 		% LOADBUFDATA
 		% FB = loadBufData(F, numFiles, startFile);
 		%
 		% Load buffer data from disk 
-
 			DSTR     = '[csFrameBuffer.loadBufData] : ';	
 
-			n = 1;
-			wb = waitbar(0, sprintf('Reading frame data (%d/%d)', n, total));
+			if(~isempty(varargin))
+				for k =  1 : length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'start', 4))
+							sf = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'end', 3))
+							ef = varargin{k+1};
+						end
+					end
+				end
+			end
+			% Check what we have
+			if(~exist('sf', 'var'))
+				sf = 1;
+			end
+			if(~exist('ef', 'var'))
+				ef = 999;
+			end
+
+
 			ps = fname_parse(filename);
 			if(ps.exitflag == -1)
 				fprintf('%s unable to parse file [%s]\n', DSTR, filename);
 				return;
 			end
 
+			chk = checkFiles(filename, 'nframe', (sf+ef));
+			if(chk.exitflag == -1)
+				if(chk.errFrame > 0)
+					endRange = chk.errFrame;
+				end
+			else
+				startRange = sf;
+				endRange = ef;
+			end
+			n = 1;
+			wb = waitbar(0, sprintf('Reading frame data (%d/%d)', n, total));
 			for k = startRange : endRange
 				fn = sprintf('%s/%s-%03d.%s', ps.path, ps.filename, k, ps.ext);
-				status   = bufDiskRead(F, F.frameBuf(k), fn);
+				%status   = bufDiskRead(F, F.frameBuf(k), fn);
+				F.frameBuf(k) = load(fn);
 				if(status == -1)
 					fprintf('%s cant find file [%s]\n', DSTR, fn);
 					delete(wb);

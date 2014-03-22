@@ -15,6 +15,7 @@ function csToolSaveState(handles, DATA_DIR, frameIndex)
 	pvOpts       = handles.pvOpts;                  %#ok
 	vfOpts       = handles.vfOpts;                  %#ok
 	sqOpts       = handles.sqOpts;                  %#ok
+	sbOpts       = handles.sbOpts;                  %#ok
 	testBufOpts  = handles.testBufOpts;             %#ok
 
 	save(sprintf('%s/bufOpts.mat', DATA_DIR),      'bufOpts');
@@ -25,6 +26,7 @@ function csToolSaveState(handles, DATA_DIR, frameIndex)
 	save(sprintf('%s/pvOpts.mat', DATA_DIR),       'pvOpts');
 	save(sprintf('%s/vfOpts.mat', DATA_DIR),       'vfOpts');
 	save(sprintf('%s/sqOpts.mat', DATA_DIR),       'sqOpts');
+	save(sprintf('%s/sbOpts.mat', DATA_DIR),       'sbOpts');
 	save(sprintf('%s/testBufOpts.mat', DATA_DIR),  'testBufOpts');
 
 	%Save ui variables

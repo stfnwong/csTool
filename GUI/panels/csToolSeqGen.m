@@ -111,7 +111,7 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	set(handles.etNumPoints, 'String', num2str(handles.genOpts.npoints));
 	set(handles.etNumFrames, 'String', num2str(handles.genOpts.nframes));
 	set(handles.etScaleFac,  'String', num2str(handles.genOpts.sfac));
-	set(handels.etWRes,      'String', num2str(handles.genOpts.wRes));
+	set(handles.etWRes,      'String', num2str(handles.genOpts.wRes));
 	set(handles.etMaxSpeed,  'String', num2str(handles.genOpts.maxspd));
 	set(handles.etImgWidth,  'String', num2str(handles.genOpts.imsz(1)));
 	set(handles.etImgHeight, 'String', num2str(handles.genOpts.imsz(2)));

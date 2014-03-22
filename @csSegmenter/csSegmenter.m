@@ -175,6 +175,46 @@ classdef csSegmenter < handle
 			end
 		end 	%csSegmenter CONSTRUCTOR
 
+		% ======== SAVEOBJ METHOD ======== %
+		function seg = saveobj(S)
+			seg.DATA_SZ         = S.DATA_SZ;
+			seg.BLK_SZ          = S.BLK_SZ;
+			seg.FPGA_MODE       = S.FPGA_MODE;
+			seg.BP_THRESH       = S.BP_THRESH;
+			seg.BPIMG_BIT_DEPTH = S.BPIMG_BIT_DEPTH;
+			seg.kBandwidth      = S.kBandwidth;
+			seg.kWeight         = S.kWeight;
+			seg.kQuant          = S.kQuant;
+			seg.kScale          = S.kScale;
+			seg.KW_LUT          = S.KW_LUT;
+			seg.XY_PREV         = S.XY_PREV;
+			seg.BG_MODE         = S.BG_MODE;
+			seg.BG_WIN_SZ       = S.BG_WIN_SZ;
+			seg.N_BINS          = S.N_BINS;
+			seg.method          = S.method;
+			seg.mhist           = S.mhist;
+			seg.imRegion        = S.imRegion;
+		end 	%savobj()
+
+		function S = reload(S, seg)
+			S.DATA_SZ           = seg.DATA_SZ;
+			S.BLK_SZ            = seg.BLK_SZ;
+			S.FPGA_MODE         = seg.FPGA_MODE;
+			S.BP_THRESH         = seg.BP_THRESH;
+			S.BPIMG_BIT_DEPTH   = seg.BPIMG_BIT_DEPTH;
+			S.kBandwidth        = seg.kBandwidth;
+			S.kWeight           = seg.kWeight;
+			S.kQuant            = seg.kQuant;
+			S.KW_LUT            = seg.KW_LUT;
+			S.XY_PREV           = seg.XY_PREV;
+			S.BG_MODE           = seg.BG_MODE;
+			S.BG_WIN_SZ         = seg.BG_WIN_SZ;
+			S.N_BINS            = seg.N_BINS;
+			S.method            = seg.method;
+			S.mhist             = seg.mhist;
+			S.imRegion          = seg.imRegion;
+		end 	%reload()
+
 		% ---- GETTER METHODS ----- %
 		function mhist = getMhist(S)
 			mhist = S.mhist;
@@ -444,6 +484,11 @@ classdef csSegmenter < handle
 		sOpt = optParser(options);
 		%display function
 		segDisplay(S);
+		
+		function seg = loadobj(S)
+			seg = csSegmeneter();
+			seg = reload(seg, S);
+		end 	%loadobj()
 	end 		%csSegmenter METHODS (Static)
 
 

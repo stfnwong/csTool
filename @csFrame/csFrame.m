@@ -142,7 +142,47 @@ classdef csFrame < hgsetget
 					error('Incorrect arguments to constructor');
 			end
 		end 	%csFrame() CONSTRUCTOR
-		
+
+		% ========= SAVOBJ METHOD ======== %
+		function fh = saveobj(T)
+			fh.img       = T.img;
+			fh.bpImg     = T.bpImg;
+			fh.bpVec     = T.bpVec;
+			fh.bpSum     = T.bpSum;
+			fh.rhist     = T.rhist;
+			fh.ihist     = T.ihist;
+			fh.winParams = T.winParams;
+			fh.winInit   = T.winInit;
+			fh.moments   = T.moments;
+			fh.nIters    = T.nIters;
+			fh.tVec      = T.tVec;
+			fh.dims      = T.dims;
+			fh.isSparse  = T.isSparse;
+			fh.sparseFac = T.sparseFac;
+			fh.filename  = T.filename;
+			fh.dataSz    = T.dataSz;
+		end 	%savobj()
+
+		% Reload (maps struct to properties
+		function T = reload(T, fh)
+			T.img       = fh.img;
+			T.bpImg     = fh.bpImg;
+			T.bpVec     = fh.bpVec;
+			T.bpSum     = fh.bpSum;
+			T.rhist     = fh.rhist;
+			T.ihist     = fh.ihist;
+			T.winParams = fh.winParams;
+			T.winInit   = fh.winInit;
+			T.moments   = fh.moments;
+			T.nIters    = fh.nIters;
+			T.tVec      = fh.tVec;
+			T.dims      = fh.dims;
+			T.isSparse  = fh.isSparse;
+			T.sparseFac = fh.sparseFac;
+			T.filename  = fh.filename;
+			T.dataSz    = fh.dataSz;
+		end 	%reload()
+
 		% ---- SETTER METHODS ---- %
 		function set.bpSum(T, bpsum)
 			T.bpSum = bpsum;
@@ -261,6 +301,13 @@ classdef csFrame < hgsetget
 		end 	%disp()
 	
 	end 		%csFrame METHODS
+
+	methods (Static)
+		function T = loadobj(fh)
+			T = csFrame();
+			T = reload(T, fh);
+		end
+	end 	%csFrame METHODS (Static)
 
 end 			%classdef csFrame
 		

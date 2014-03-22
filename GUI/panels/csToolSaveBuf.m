@@ -22,7 +22,7 @@ function varargout = csToolSaveBuf(varargin)
 
 % Edit the above text to modify the response to help csToolSaveBuf
 
-% Last Modified by GUIDE v2.5 16-Dec-2013 21:54:39
+% Last Modified by GUIDE v2.5 22-Mar-2014 10:18:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -51,6 +51,8 @@ function csToolSaveBuf_OpeningFcn(hObject, eventdata, handles, varargin)%#ok<INU
 		for k = 1:length(varargin)
 			if(isa(varargin{k}, 'csFrameBuffer'))
 				handles.frameBuf = varargin{k};
+			elseif(isa(varargin{k}, 'csSegmenter'))
+				handles.segmenter = varargin{k};
 			elseif(ischar(varargin{k}))
 				if(strncmpi(varargin{k}, 'idx', 3))
 					handles.idx = varargin{k+1};
@@ -73,12 +75,24 @@ function csToolSaveBuf_OpeningFcn(hObject, eventdata, handles, varargin)%#ok<INU
 	end
 
 	% If supplied, transfer options from main GUI
-	if(exist('opts', 'var'))
-		set(handles.etWriteFile, 'String', opts.writeFile);
-		set(handles.etReadFile,  'String', opts.readFile);
+	if(isfield(handles, 'opts'))
+		set(handles.etWriteFile,    'String', handles.opts.writeFile);
+		set(handles.etReadFile,     'String', handles.opts.readFile);
+		set(handles.etWriteStart,   'String', num2str(handles.opts.writeStart));
+		if(handles.opts.writeEnd == 1)
+			numFiles = handles.frameBuf.getNumFrames();
+			set(handles.etWriteEnd, 'String', num2str(numFiles));
+		else
+			set(handles.etWriteEnd, 'String', num2str(handles.opts.writeEnd));
+		end
+		set(handles.etReadNumFiles, 'String', num2str(handles.opts.readNumFiles));
 	else
-		set(handles.etWriteFile, 'String', 'data/bufdata/frame');
-		set(handles.etReadFile,  'String', 'data/bufdata/frame');
+		writeEnd = handles.frameBuf.getNumFrames();
+		set(handles.etWriteFile,    'String', 'data/bufdata/frame');
+		set(handles.etReadFile,     'String', 'data/bufdata/frame');
+		set(handles.etWriteStart,   'String', '1');
+		set(handles.etWriteEnd,     'String', writeEnd);
+		set(handles.etReadNumFiles, 'String', writeEnd);
 	end
 
 	% Set up GUI
@@ -86,6 +100,10 @@ function csToolSaveBuf_OpeningFcn(hObject, eventdata, handles, varargin)%#ok<INU
 	set(handles.axBufPreview, 'YTick', [], 'YTickLabel', []);	
 	set(handles.etCurFrame,   'String', num2str(handles.idx));
 	set(handles.etGoto,       'String', '1');
+
+	% Set a preview figure.
+	img = handles.frameBuf.getCurImg(handles.idx);
+	imshow(img, 'Parent', handles.axBufPreview);
 
 	handles.output = hObject;
 
@@ -97,7 +115,8 @@ function csToolSaveBuf_OpeningFcn(hObject, eventdata, handles, varargin)%#ok<INU
 
 
 function varargout = csToolSaveBuf_OutputFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
-	varargout{1} = handles.output;
+	%varargout{1} = handles.output;
+	varargout{1} = handles.opts;
 
 
 
@@ -121,12 +140,21 @@ function bGetWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Write file to disk
-	
-	ps = fname_parse(get(handles.etWriteFile, 'String'));
+	filename = get(handles.etWriteFile, 'String');
+	ps = fname_parse(filename);
 	if(ps.exitflag == -1)
 		fprintf('ERROR: Cant parse filename [%s]\n', get(handles.etWriteFile, 'String'));
 		return;
 	end
+
+	startFile = fix(str2double(get(handles.etWriteStart, 'String')));
+	endFile   = fix(str2double(get(handles.etWriteEnd, 'String')));
+
+	% Save frame data
+	handles.frameBuf.saveBufData(filename, [startFile endFile]);
+	% Also write the csSegmenter data to disk
+	
+	
 	
 	guidata(hObject, handles);
 	uiresume(handles.csToolSaveBufFig);
@@ -159,6 +187,7 @@ function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Update GUI preview
 	img = handles.frameBuf.getCurImg(handles.idx);
 	imshow(img, 'Parent', handles.axBufPreview);
+	set(handles.etCurFrame, 'String', num2str(handles.idx));
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolSaveBufFig);
@@ -172,6 +201,7 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Update GUI preview
 	img = handles.frameBuf.getCurImg(handles.idx);
 	imshow(img, 'Parent', handles.axBufPreview);
+	set(handles.etCurFrame, 'String', num2str(handles.idx));
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolSaveBufFig);
@@ -189,6 +219,7 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Update GUI preview
 	img = handles.frameBuf.getCurImg(handles.idx);
 	imshow(img, 'Parent', handles.axBufPreview);
+	set(handles.etCurFrame, 'String', num2str(handles.idx));
 
 	guidata(hObject, handles);
 	uiresume(handles.csToolSaveBufFig);
@@ -222,9 +253,26 @@ function etGoto_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 		set(hObject,'BackgroundColor','white');
 	end
 
+function etWriteStart_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etWriteEnd_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etReadNumFiles_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 % ======== EMPTY FUNCTIONS ======== %
 
 function etGoto_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etCurFrame_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etReadFile_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etWriteStart_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etWriteEnd_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etReadNumFiles_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
