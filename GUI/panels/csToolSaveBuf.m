@@ -22,7 +22,7 @@ function varargout = csToolSaveBuf(varargin)
 
 % Edit the above text to modify the response to help csToolSaveBuf
 
-% Last Modified by GUIDE v2.5 22-Mar-2014 10:18:02
+% Last Modified by GUIDE v2.5 22-Mar-2014 17:07:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -105,6 +105,9 @@ function csToolSaveBuf_OpeningFcn(hObject, eventdata, handles, varargin)%#ok<INU
 	img = handles.frameBuf.getCurImg(handles.idx);
 	imshow(img, 'Parent', handles.axBufPreview);
 
+	% Setup status outputs
+	handles.cancelled = 0;
+
 	handles.output = hObject;
 
 	% Update handles structure
@@ -114,17 +117,19 @@ function csToolSaveBuf_OpeningFcn(hObject, eventdata, handles, varargin)%#ok<INU
 	uiwait(handles.csToolSaveBufFig);
 
 
-function varargout = csToolSaveBuf_OutputFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+function varargout = csToolSaveBuf_OutputFcn(hObject, eventdata, handles)%#ok<INUSL>
 	%varargout{1} = handles.output;
-	varargout{1} = handles.opts;
-
-
-
-
-
-
-
-
+	handles.output = struct('status', handles.cancelled, ...
+							'opts', handles.opts, ... 
+	                        'frameBuf', handles.frameBuf, ...
+		                    'segmenter', handles.segmenter);
+		                    %'writeFile', handles.opts.writeFile, ...
+		                    %'readFile', handles.opts.readFile, ...
+		                    %'writeStart', handles.opts.writeStart,...
+		                    %'writeEnd', handles.opts.writeEnd, ...
+		                    %'readNumFiles', handles.opts.readNumFiles);
+		                    
+	varargout{1} = handles.output;
 
 function bGetWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Set write file
@@ -140,21 +145,12 @@ function bGetWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Write file to disk
-	filename = get(handles.etWriteFile, 'String');
-	ps = fname_parse(filename);
-	if(ps.exitflag == -1)
-		fprintf('ERROR: Cant parse filename [%s]\n', get(handles.etWriteFile, 'String'));
-		return;
-	end
-
+	filename  = get(handles.etWriteFile, 'String');
 	startFile = fix(str2double(get(handles.etWriteStart, 'String')));
 	endFile   = fix(str2double(get(handles.etWriteEnd, 'String')));
 
 	% Save frame data
 	handles.frameBuf.saveBufData(filename, [startFile endFile]);
-	% Also write the csSegmenter data to disk
-	
-	
 	
 	guidata(hObject, handles);
 	uiresume(handles.csToolSaveBufFig);
@@ -174,6 +170,9 @@ function bGetReadFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Create a new csFrameBuffer object and read data into it from disk
+	filename = get(handles.etReadFile, 'String');
+	numFiles = fix(str2double(get(handles.etReadNumFiles, 'String')));
+	handles.frameBuf.loadBufData(filename, numFiles);
 	
 	guidata(hObject, handles);
 	uiresume(handles.csToolSaveBufFig);
@@ -225,10 +224,13 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	uiresume(handles.csToolSaveBufFig);
 
 
+function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
+	% TODO : Call close request function
+	handles.cancelled = 0;
 
-
-
+	uiresume(handles.csToolSaveBufFig);
+	close(handles.csToolSaveBufFig);
 
 
 % ======== CREATE FUNCTIONS ======== %
@@ -276,3 +278,6 @@ function etWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etWriteStart_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etWriteEnd_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etReadNumFiles_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
+
+

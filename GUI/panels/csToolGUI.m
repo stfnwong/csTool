@@ -1844,7 +1844,19 @@ end     %menu_genRandBp()
 function menu_SaveBufData_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	global frameIndex;
-	ef = csToolSaveBuf(handles.frameBuf, handles.segmenter, 'idx', frameIndex, 'opts', handles.sbOpts);
+	sbOpts = csToolSaveBuf(handles.frameBuf, handles.segmenter, 'idx', frameIndex, 'opts', handles.sbOpts);
+
+	if(sbOpts.status == -1)
+		% Operation was cancelled
+		if(handles.debug)
+			fprintf('(DEBUG) : Got cancelled flag in sbOpts\n');
+			disp(sbOpts);
+			disp(sbOpts.opts);
+		end
+	else
+		handles.sbOpts = sbOpts;
+	end
+
 
 
 

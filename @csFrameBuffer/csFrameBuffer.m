@@ -1037,7 +1037,7 @@ classdef csFrameBuffer
 			end
 
 			for k = range(1) : range(2)
-				filename = sprintf('%s/%s-%03d.%s', ps.path, ps.filename, k, ps.ext);
+				filename = sprintf('%s/%s-frame%03d.%s', ps.path, ps.filename, k, ps.ext);
 				%bufDiskWrite(F, F.frameBuf(k), filename);
 				fhData = F.frameBuf(k);
 				save(filename, 'fhData');
@@ -1048,54 +1048,32 @@ classdef csFrameBuffer
 
 		end 	%saveBufData()
 
-		function FB = loadBufData(F, filename, varargin)
+		function FB = loadBufData(F, filename, numFiles)
 		% LOADBUFDATA
 		% FB = loadBufData(F, numFiles, startFile);
 		%
 		% Load buffer data from disk 
 			DSTR     = '[csFrameBuffer.loadBufData] : ';	
 
-			if(~isempty(varargin))
-				for k =  1 : length(varargin)
-					if(ischar(varargin{k}))
-						if(strncmpi(varargin{k}, 'start', 4))
-							sf = varargin{k+1};
-						elseif(strncmpi(varargin{k}, 'end', 3))
-							ef = varargin{k+1};
-						end
-					end
-				end
-			end
-			% Check what we have
-			if(~exist('sf', 'var'))
-				sf = 1;
-			end
-			if(~exist('ef', 'var'))
-				ef = 999;
-			end
-
-
 			ps = fname_parse(filename);
 			if(ps.exitflag == -1)
 				fprintf('%s unable to parse file [%s]\n', DSTR, filename);
 				return;
 			end
-
-			chk = checkFiles(filename, 'nframe', (sf+ef));
+			startFile = ps.frameNum;
+			chk = checkFiles(filename, 'nframe', (startFile+numFiles));
 			if(chk.exitflag == -1)
 				if(chk.errFrame > 0)
-					endRange = chk.errFrame;
+					numFiles = chk.errFrame;
 				end
-			else
-				startRange = sf;
-				endRange = ef;
 			end
 			n = 1;
+			total = startFile + numFiles;
 			wb = waitbar(0, sprintf('Reading frame data (%d/%d)', n, total));
-			for k = startRange : endRange
-				fn = sprintf('%s/%s-%03d.%s', ps.path, ps.filename, k, ps.ext);
-				%status   = bufDiskRead(F, F.frameBuf(k), fn);
-				F.frameBuf(k) = load(fn);
+			for k = startFile : numFiles
+				fn = sprintf('%s/%s-frame%03d.%s', ps.path, ps.filename, k, ps.ext);
+				fhData        = load(fn);
+				F.frameBuf(k) = fhData;
 				if(status == -1)
 					fprintf('%s cant find file [%s]\n', DSTR, fn);
 					delete(wb);
@@ -1222,7 +1200,7 @@ classdef csFrameBuffer
 					fprintf('WARNING: empty dimensions in generated frame %d\n', N);
 				end
 				frame  = genRandFrame(F, opts);
-				%% Scale frame
+				% Scale frame
 				%frame  = frame ./ max(max(frame));
 				%frame  = sfac .* frame;
 				bpvec  = bpimg2vec(frame, 'bpval');

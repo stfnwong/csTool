@@ -80,22 +80,18 @@ function parseStruct = fname_parse(fstring, varargin)
 	% exit early.
 	
 	if(~isempty(dashIdx))
-		if(isempty(extIdx))
-			vecNum = str2double(fstring(end-3 : end));
-		else
-			vecNum = str2double(fstring(extIdx-3 : extIdx));
-		end
-		if(vecNum < 0 || vecNum > 999)
-			fprintf('%s csTool only supports first 999 integers\n', DSTR);
-			vecNum        = [];
-			exitflag      = -1;
-		end
-		if(length(dashIdx) == 2)
-			frameNum = str2double(fstring(dashIdx(2)-3 : dashIdx(2)-1));
-			if(frameNum < 0 || frameNum > 999)
-				fprintf('%s csTool only supports first 999 frames\n', DSTR);
-				frameNum      = [];
-				exitflag      = -1;
+		for k = 1 : length(dashIdx)
+			if(strncmpi(fstring(dashIdx(k)+1:end), 'frame', 5))
+				%frameNum = str2double(fstring(dashIdx(k)-3 : dashIdx(k)-1));
+				frameNum = str2double(fstring(dashIdx(k)+6:dashIdx(k)+8));
+			elseif(strncmpi(fstring(dashIdx(k)+1:end), 'vec', 3))
+				%vecNum = str2double(fstring(end-3 : end));
+				vecNum = str2double(fstring(dashIdx(k)+4:dashIdx(k)+6));
+				if(vecNum < 0 || vecNum > 999)
+					fprintf('%s csTool only supports the first 999 integers\n', DSTR);
+					vecNum   = [];
+					exitflag = -1;
+				end
 			end
 		end
 	end
