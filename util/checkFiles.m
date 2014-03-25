@@ -24,6 +24,8 @@ function chkStruct = checkFiles(filename, varargin)
 					NUM_VEC    = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'svec', 4))
 					START_VEC  = varargin{k+1};
+				elseif(strncmpi(varargin{k}, 'vcheck', 6))
+					CHECK_VEC = true;
 				end
 			end
 		end
@@ -43,6 +45,9 @@ function chkStruct = checkFiles(filename, varargin)
 	end
 	if(~exist('START_VEC', 'var'))
 		START_VEC = 1;
+	end
+	if(~exist('CHECK_VEC', 'var'))
+		CHECK_VEC = false;
 	end
 
 	exitflag = 0;
@@ -128,18 +133,30 @@ function chkStruct = checkFiles(filename, varargin)
 
 		while(frameFile <= NUM_FRAMES && noErr)
             vecFile = START_VEC;
-			while(vecFile <= NUM_VEC && noErr)
-				fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, frameFile, vecFile, ps.ext);
+			% TODO : This loop is clunky - rewrite!
+			if(CHECK_VEC)
+				while(vecFile <= NUM_VEC && noErr)
+					fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, frameFile, vecFile, ps.ext);
+					if(exist(fn, 'file') ~= 2)
+						exitflag = -1;
+						errFrame = frameFile;
+						errVec   = vecFile;
+						errFile  = fn;
+						noErr    = false;
+					end
+					vecFile = vecFile + 1;
+
+				end
+			else
+				fn = sprintf('%s%s-frame%03d.%s', ps.path, ps.filename, frameFile, ps.ext);
 				if(exist(fn, 'file') ~= 2)
 					exitflag = -1;
 					errFrame = frameFile;
-					errVec   = vecFile;
-                    errFile  = fn;
+					errVec   = [];
+					errFile  = fn;
 					noErr    = false;
 				end
-				vecFile = vecFile + 1;
-			end
-			frameFile = frameFile + 1;
+				frameFile = frameFile + 1;
 		end
 	end
 

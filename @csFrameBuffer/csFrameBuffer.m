@@ -1039,7 +1039,7 @@ classdef csFrameBuffer
 			for k = range(1) : range(2)
 				filename = sprintf('%s/%s-frame%03d.%s', ps.path, ps.filename, k, ps.ext);
 				%bufDiskWrite(F, F.frameBuf(k), filename);
-				fhData = F.frameBuf(k);
+				fhData = F.frameBuf(k); %#ok
 				save(filename, 'fhData');
 				waitbar(n/t, wb, sprintf('Saving frame data (%d/%d)', n, t));
 				n = n + 1;
@@ -1055,13 +1055,14 @@ classdef csFrameBuffer
 		% Load buffer data from disk 
 			DSTR     = '[csFrameBuffer.loadBufData] : ';	
 
+			% TODO : May need to initialise the csFrameBuffer object here
 			ps = fname_parse(filename);
 			if(ps.exitflag == -1)
 				fprintf('%s unable to parse file [%s]\n', DSTR, filename);
 				return;
 			end
 			startFile = ps.frameNum;
-			chk = checkFiles(filename, 'nframe', (startFile+numFiles));
+			chk = checkFiles(filename, 'nframe', numFiles);
 			if(chk.exitflag == -1)
 				if(chk.errFrame > 0)
 					numFiles = chk.errFrame;
@@ -1073,14 +1074,8 @@ classdef csFrameBuffer
 			for k = startFile : numFiles
 				fn = sprintf('%s/%s-frame%03d.%s', ps.path, ps.filename, k, ps.ext);
 				fhData        = load(fn);
-				F.frameBuf(k) = fhData;
-				if(status == -1)
-					fprintf('%s cant find file [%s]\n', DSTR, fn);
-					delete(wb);
-					FB = F;
-					return;
-				end
-				waitbar(n/t, wb, sprintf('Reading frame data (%d/%d)', n, t));
+				F.frameBuf(k) = fhData.fhData;
+				waitbar(n/total, wb, sprintf('Reading frame data (%d/%d)', n, total));
 				n = n + 1;
 			end	
 			delete(wb);
@@ -1224,13 +1219,13 @@ classdef csFrameBuffer
 		end 	%genRandSeq()
 
 		% -------- DISPLAY --------
-		function disp(fb)
-            %seems to be an issue here with parameter....
-            if(~isa(fb, 'csFrameBuffer'))
-                error('Argument must be csFrameBuffer object');
-            end
-            fbufDisplay(fb);
-		end     %disp()
+		%function disp(fb)
+        %    %seems to be an issue here with parameter....
+        %    if(~isa(fb, 'csFrameBuffer'))
+        %        error('Argument must be csFrameBuffer object');
+        %    end
+        %    fbufDisplay(fb);
+		%end     %disp()
 
         function fbufDisplay(fb)
         %FBUFDISPLAY

@@ -1854,7 +1854,13 @@ function menu_SaveBufData_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 			disp(sbOpts.opts);
 		end
 	else
-		handles.sbOpts = sbOpts;
+		handles.sbOpts    = sbOpts.opts;
+		handles.frameBuf  = sbOpts.frameBuf;
+		handles.segmenter = sbOpts.segmenter;
+		if(handles.debug)
+			fprintf('sbOpts :\n');
+			disp(sbOpts);
+		end
 	end
 
 

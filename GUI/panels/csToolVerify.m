@@ -442,7 +442,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		return;
 	end
 	% TODO : Write a routine to make sure the files are on disk
-	chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize);
+	chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize, 'vcheck');
 	if(chk.exitflag == -1)
 		fprintf('ERROR: In file (%d/%d), vector (%d/%d) [%s]\n', chk.errFrame, numFiles, chk.errVec, vsize, filename);
 		return;

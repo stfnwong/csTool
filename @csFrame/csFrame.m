@@ -242,63 +242,63 @@ classdef csFrame < hgsetget
 		end 	%setTVec()
 
 		% ---- DISPLAY : disp(csFrame)
-		function disp(cf)
-		% DISP()
-		%
-		% Format handle contents for display in console
-			
-			%if(strncmpi(cf.filename, ' ', 1))
-			if(strncmpi(cf.filename, ' ', 1) || isempty(cf.filename))
-				fprintf('Image data not read yet\n');
-			else
-				fprintf('Image : %s\n', cf.filename);
-			end
-			if(~isempty(cf.img))
-				sz = size(cf.img);
-				fprintf('img   : %d x %d (h x w)\n', sz(1), sz(2));
-			else
-				fprintf('No image data assigned\n');
-			end
-			if(~isempty(cf.bpImg))
-				sz = size(cf.bpImg);
-				fprintf('bpImg : %d x %d (h x w)\n', sz(1), sz(2));
-				fprintf('bpSum : %d\n', cf.bpSum);
-			else
-				fprintf('bpImg : Not set\n');
-			end
-			if(~isempty(cf.bpVec))
-				sz = size(cf.bpVec);
-				fprintf('bpVec : %d x %d \n', sz(1), sz(2));
-				fprintf('bpSum : %d\n', cf.bpSum);
-			else
-				fprintf('bpVec : Not set\n');
-			end
-			if(~isempty(cf.dims))
-				fprintf('Image dimension : %d x %d\n', cf.dims(1), cf.dims(2));
-			else
-				fprintf('dims  : Not set\n');
-			end
-			%params = cf.winParams{end}; 
-            params = cf.winParams;
-            wsz    = size(params);
-			if(wsz(2) > 1)
-				fprintf('TRACKING WINDOW PARAMETERS:\n');
-				fprintf('xc    : %d\n', params(1));
-				fprintf('yc    : %d\n', params(2));
-				fprintf('theta : %d\n', params(3));
-				fprintf('axmaj : %d\n', params(4));
-				fprintf('axmin : %d\n', params(5));
-				%fprintf('Window centered at %d,%d (x,y)\n', params(1), params(2));
-				%fprintf('Orientation: %f radians\n', params(3));
-				%fprintf('Bounding region:\n');
-				%fprintf('X axis : %d\n', params(4) * 2);
-				%fprintf('Y axis : %d\n', params(5) * 2);
-			else
-				fprintf('Window parameters not set\n');
-			end
-            fprintf('\n');
-			
-		end 	%disp()
+		%function disp(cf)
+		%% DISP()
+		%%
+		%% Format handle contents for display in console
+		%	
+		%	%if(strncmpi(cf.filename, ' ', 1))
+		%	if(strncmpi(cf.filename, ' ', 1) || isempty(cf.filename))
+		%		fprintf('Image data not read yet\n');
+		%	else
+		%		fprintf('Image : %s\n', cf.filename);
+		%	end
+		%	if(~isempty(cf.img))
+		%		sz = size(cf.img);
+		%		fprintf('img   : %d x %d (h x w)\n', sz(1), sz(2));
+		%	else
+		%		fprintf('No image data assigned\n');
+		%	end
+		%	if(~isempty(cf.bpImg))
+		%		sz = size(cf.bpImg);
+		%		fprintf('bpImg : %d x %d (h x w)\n', sz(1), sz(2));
+		%		fprintf('bpSum : %d\n', cf.bpSum);
+		%	else
+		%		fprintf('bpImg : Not set\n');
+		%	end
+		%	if(~isempty(cf.bpVec))
+		%		sz = size(cf.bpVec);
+		%		fprintf('bpVec : %d x %d \n', sz(1), sz(2));
+		%		fprintf('bpSum : %d\n', cf.bpSum);
+		%	else
+		%		fprintf('bpVec : Not set\n');
+		%	end
+		%	if(~isempty(cf.dims))
+		%		fprintf('Image dimension : %d x %d\n', cf.dims(1), cf.dims(2));
+		%	else
+		%		fprintf('dims  : Not set\n');
+		%	end
+		%	%params = cf.winParams{end}; 
+        %    params = cf.winParams;
+        %    wsz    = size(params);
+		%	if(wsz(2) > 1)
+		%		fprintf('TRACKING WINDOW PARAMETERS:\n');
+		%		fprintf('xc    : %d\n', params(1));
+		%		fprintf('yc    : %d\n', params(2));
+		%		fprintf('theta : %d\n', params(3));
+		%		fprintf('axmaj : %d\n', params(4));
+		%		fprintf('axmin : %d\n', params(5));
+		%		%fprintf('Window centered at %d,%d (x,y)\n', params(1), params(2));
+		%		%fprintf('Orientation: %f radians\n', params(3));
+		%		%fprintf('Bounding region:\n');
+		%		%fprintf('X axis : %d\n', params(4) * 2);
+		%		%fprintf('Y axis : %d\n', params(5) * 2);
+		%	else
+		%		fprintf('Window parameters not set\n');
+		%	end
+        %    fprintf('\n');
+		%	
+		%end 	%disp()
 	
 	end 		%csFrame METHODS
 

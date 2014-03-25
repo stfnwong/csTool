@@ -208,7 +208,7 @@ classdef vecManager
 
 			% Check that files exist
 			if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
-				chk = checkFiles(fname, 'nvec', sz);
+				chk = checkFiles(fname, 'nvec', sz, 'vcheck');
 				if(chk.exitflag == -1)
 					fprintf('%s cant find file [%s] (%d/%d)\n', DSTR, chk.errFile, chk.errVec, sz);
 					vecdata = [];
