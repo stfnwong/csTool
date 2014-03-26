@@ -78,6 +78,7 @@ function parseStruct = fname_parse(fstring, varargin)
 	dashIdx  = strfind(fstring, '-');
 	vecNum   = [];
 	frameNum = [];
+	frameIdx = [];
 
 	if(FRAME_BUF)
 		frameNum = fix(str2double(fstring(extIdx-3:extIdx-1)));
@@ -93,7 +94,6 @@ function parseStruct = fname_parse(fstring, varargin)
 	% be correctly recovered
 
 	vecIdx   = [];
-	fnameEnd = [];
 	if(~isempty(dashIdx))
 		for k = 1 : length(dashIdx)
 			if(strncmpi(fstring(dashIdx(k)+1:end), 'frame', 5))

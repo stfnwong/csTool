@@ -4,6 +4,8 @@
 #
 ###############################################################
 
+CONSOLODATE FRAME BUFFER DATA LOADING METHODS
+
 WEIGHT IMAGES
 Need to track down a bug in weight image pipeline - need to follow execution in csSegmenter.
 

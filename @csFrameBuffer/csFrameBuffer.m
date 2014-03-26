@@ -43,11 +43,11 @@ classdef csFrameBuffer
 	properties (SetAccess = 'private', GetAccess = 'private')
 		frameBuf;		%array of csFrame handles
 		nFrames;		%number of elements in frameBuf
-		msVec;			%Meanshift vectors for each frame (ie: how much target moved)
-		path;			%Path to frame data
-		ext;			%File extension for frame data
-		fName;			%filename 
-		fNum;			%Which frame to start reading from 
+		msVec;			%Meanshift vectors for each frame 
+		%path;			%Path to frame data
+		%ext;			%File extension for frame data
+		%fName;			%filename 
+		%fNum;			%Which frame to start reading from 
 		renderMode;		% (ENUM) Read file from disk or genBP Img
 		% NOTE (renderMode) This effectively acts as an enum that 
 		% determines which kind of data getCurImg() will return
@@ -795,7 +795,7 @@ classdef csFrameBuffer
 		%         PROCESSING FUNCTIONS       %
 		% -----------------------------------%
 		
-		function [FB status varargout] = loadFrameData(FB, varargin)
+		function [FB status varargout] = loadFrameData(FB, filename, varargin)
 		% LOADFRAMEDATA
 		%
 		% [FB status] = loadFrameData(FB, ...[options]... )
@@ -805,36 +805,33 @@ classdef csFrameBuffer
 		% by the path name. To override fNum, pass 'num' followed by 
 		% number of frames to read.
 		
-			ALL = false;
-			%If varargin is a string, take this as being a path to data and 
-			%use in place of FB.path
-			if(nargin > 1)
-				for k = 1:length(varargin)
+			DSTR = '(csFrameBuffer.loadFrameData) :';
+			FORCE = true; 	%even if not all files are present, load what we have
+			if(~isempty(varargin))
+				for k = 1 : length(varargin)
 					if(ischar(varargin{k}))
-						if(strncmpi(varargin{k}, 'path', 4))
-							fpath = varargin{k+1};
-						elseif(strncmpi(varargin{k}, 'num', 3))
-							fnum  = varargin{k+1};
-						elseif(strncmpi(varargin{k}, 'all', 3))
-							ALL = true;
-						elseif(strncmpi(varargin{k}, 'fname', 5))
-							fullName = varargin{k+1};
+						if(strncmpi(varargin{k}, 'nframes', 6))
+							nframes = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'force', 5))
+							FORCE = true;
 						end
 					end
 				end
 			end
-			%Catch unmodified variables
-			if(~exist('fpath', 'var'))
-				fpath = FB.path;
+			
+			%Check what we have
+			if(~exist('nframes', 'var'))
+				 nframes = F.nFrames;
 			end
-			if(~exist('fnum', 'var'))
-				%Ensure that fnum is numeric
-				if(ischar(FB.fNum))
-					fnum = str2double(FB.fNum);
-				else
-					fnum = FB.fNum;
-				end
+
+			chk = checkFiles(filename, 'nframes', nframes, 'framebuf');
+			if(chk.exitflag == -1)
+				fprintf('%s ERROR cant find file [%s]\n', DSTR, chk.errFile);
+				FB = F;
+				status = -1;
+				return;
 			end
+
 
 			%Check parameters are sensible
 			if(isempty(fpath) || ~ischar(fpath))
@@ -854,6 +851,9 @@ classdef csFrameBuffer
 				fprintf('fnum : %d\n', fnum);
 				fprintf('ext  : %s\n', FB.ext);
 			end
+
+
+
 			%If we want to load all frames in buffer, check how many 
 			%there are and place this figure into FB.nFrames
 			if(ALL)
