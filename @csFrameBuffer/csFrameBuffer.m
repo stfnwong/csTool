@@ -9,9 +9,6 @@ classdef csFrameBuffer
 % frameBuf - 
 % nFrames  - 
 % msVec    - 
-% path     -
-% ext      - 
-% fNum     - 
 % verbose  - 
 %
 % METHODS
@@ -21,7 +18,6 @@ classdef csFrameBuffer
 % create a new csFrameBuffer with the default initialisation. Pass in an options 
 % structure to override default setup
 %
-% setPath
 %
 % setNFrames
 %
@@ -72,10 +68,6 @@ classdef csFrameBuffer
 		%
 		% 	frameBuf   = csFrame()
 		% 	nFrames    = 0
-		% 	path       = ' '
-		% 	ext        = 'tif'
-		% 	fNum       = 1;
-		% 	fName      = ' '
 		% 	renderMode = 0;
 		% 	verbose    = 0;
 		%
@@ -139,14 +131,12 @@ classdef csFrameBuffer
 		% -------- GETTER FUNCTIONS -------- %
 		% -----------------------------------%
 		
-		
 		function n = getNumFrames(F)
 		% GETNUMFRAMES
 		% Returns the number of frame handles currently stored in the
 		% buffer
 			n = F.nFrames;
 		end 	%getNumFrames()
-		
 
 		function rMode = getRenderMode(F)
 			rMode = F.renderMode;
@@ -486,65 +476,6 @@ classdef csFrameBuffer
 			FB.nFrames  = length(fr);
 
 		end 	%initFrameBuf()
-
-		function [FB] = clearImHist(FB, fIndex)
-		% CLEARIMHIST
-		% Clear the image histogram property of the frame handle at index fIndex. If
-		% fIndex is a vector, all frame handles in the vector are cleared
-		
-			if(length(fIndex) > 1)
-				for k = 1:fIndex(1):fIndex(end)
-					set(FB.frameBuf(k), 'ihist', []);	
-				end
-			else
-				set(FB.frameBuf(fIndex), 'ihist', []);
-			end
-
-		end 	%clearImHist
-
-		function [FBout status] = parseFilename(FB, fname, varargin)
-		% PARSEFILENAME
-		% This method parses the filename specified by fname and sets the 
-		% correct values in FB.path, FB.fName, FB.fNum, and FB.ext. The 
-		% returned status flag indicates whether or not the filename was 
-		% parsed correctly. The caller can consider the values as set when 
-		% status returns 0 (no errors).
-		% 
-
-			if(~ischar(fname))
-				error('Filename must be string');
-			end
-			ps = fname_parse(fname, 'lnum');
-			if(ps.exitflag == -1)
-				%Check what fields we do have
-				if(isempty(fs.ext))
-					status = -1;
-                    FBout  = FB;
-					return;
-				end
-			else
-				FB.ext   = ps.ext;
-			end	
-			FB.fName = ps.filename;
-			FB.fNum  = ps.vecNum;
-			FB.path  = ps.path;
-			status   = 0;
-            FBout    = FB;
-			return;
-
-		end 	%parseFilename()
-		
-        function FB = setPath(FB, path)
-		% SETPATH
-		% 
-		% Alter the path to files stored locally in the csFrameBuffer
-		% object. 
-        
-            if(~ischar(path))
-                error('Path must be string');
-            end
-            FB.path = path;
-		end
 		
 		function FB = setNFrames(FB, nFrames)
 		% SETNFRAMES
