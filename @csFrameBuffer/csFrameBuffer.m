@@ -44,10 +44,6 @@ classdef csFrameBuffer
 		frameBuf;		%array of csFrame handles
 		nFrames;		%number of elements in frameBuf
 		msVec;			%Meanshift vectors for each frame 
-		%path;			%Path to frame data
-		%ext;			%File extension for frame data
-		%fName;			%filename 
-		%fNum;			%Which frame to start reading from 
 		renderMode;		% (ENUM) Read file from disk or genBP Img
 		% NOTE (renderMode) This effectively acts as an enum that 
 		% determines which kind of data getCurImg() will return
@@ -99,10 +95,6 @@ classdef csFrameBuffer
 					%Default initialisation
 					fb.frameBuf   = csFrame();
 					fb.nFrames    = 0;
-					fb.path       = ' ';
-					fb.ext        = 'tif';
-					fb.fNum       = 1;
-					fb.fName      = '';
 					fb.renderMode = 0;
 					fb.verbose    = 0;
 				case 1
@@ -118,25 +110,16 @@ classdef csFrameBuffer
 						end
 						fb.frameBuf   = csFrame(); 
 						fb.nFrames    = opts.nFrames;
-						fb.path       = opts.path;
-						fb.fNum       = opts.fNum;
-						fb.fName      = opts.fName;
 						fb.renderMode = opts.renderMode;
 						fb.verbose    = fb.verbose;
 						if(fb.verbose)
 							fprintf('Verbose mode on\n');
 						end
-						%init buffer
-						tpath = sprintf('%s_%03d', opts.path, opts.fNum);
-						%if(csFrameBuffer.bufMemCheck(opts.nFrames, tpath))
-						%	fprintf('WARNING: Buffer may exhaust memory\n');
-						%end
 						for n = opts.nFrames:-1:1
 							t_buf(n) = csFrame();
 						end
 						fb.frameBuf = t_buf;
 						%Use default extension
-						fb.ext      = 'tif';
 					end
 				case 2
 					%Assume second arg is struct?
@@ -156,11 +139,6 @@ classdef csFrameBuffer
 		% -------- GETTER FUNCTIONS -------- %
 		% -----------------------------------%
 		
-		function ext = getExt(F)
-		% GETEXT
-		% Returns the current file extension type
-			ext = F.ext;
-		end 	%getExt()
 		
 		function n = getNumFrames(F)
 		% GETNUMFRAMES
@@ -169,12 +147,6 @@ classdef csFrameBuffer
 			n = F.nFrames;
 		end 	%getNumFrames()
 		
-		function path = getPath(F)
-		% GETPATH
-		% Return a string containing the current internal path
-		
-			path = F.path;
-		end		%getPath()
 
 		function rMode = getRenderMode(F)
 			rMode = F.renderMode;
@@ -185,10 +157,6 @@ classdef csFrameBuffer
 		% Return an options structure. For csToolGUI.
 			opts = struct('frameBuf',   F.frameBuf, ...
                           'nFrames',    F.nFrames,  ...
-                          'path',       F.path,     ...
-                          'ext',        F.ext,      ...
-                          'fNum',       F.fNum,     ...
-                          'fName',      F.fName,    ...
 				          'renderMode', F.renderMode, ...
                           'verbose',    F.verbose );
 		end 	%getOpts();
@@ -322,8 +290,9 @@ classdef csFrameBuffer
 				end
 			end
 
-			% TODO : Adjust renderMode and calling mechanism 
-			% TODO : Test csToolVerify read and write calls
+			if(nargout > 1)
+				varargout{1} = 0;
+			end
 
 			% Bounds check idx
 			if(idx < 1 || idx > length(F.frameBuf))
@@ -337,199 +306,22 @@ classdef csFrameBuffer
 				return;
 			end
 
-			% Get frmae handle
-			fh = F.frameBuf(idx);
+			opts = struct('RETURN_IMG', RETURN_IMG, ...
+				          'RETURN_3_CHANNEL', RETURN_3_CHANNEL, ...
+				          'GET_BPIMG_ONLY', GET_BPIMG_ONLY, ...
+				          'GET_IMG_ONLY', GET_IMG_ONLY );
 
-			if(GET_IMG_ONLY)
-				if(strncmpi(get(fh, 'filename'), ' ', 1))
-					img = [];
-					if(nargout > 1)
-						varargout{1} = -1;
-					end
-					return;
-				end
-                % Check that file exists
-                if(exist(get(fh, 'filename'), 'file') ~= 2)
-                    fprintf('(getCurImg) : file [%s] not found\n', get(fh, 'filename'));
-                    img = [];  
-					if(nargout > 1)
-						varargout{1} = -1;
-					end
-                    return;
-                end
-				img  = imread(get(fh, 'filename'), F.ext);
-				dims = size(img);
-				if(dims(3) > 3)
-					img = img(:,:,1:3);
-				end
+			% TODO : Adjust renderMode and calling mechanism 
+			% TODO : Test csToolVerify read and write calls
+			[img status] = getImgData(F, idx, opts);
+			if(status == -1)
+				fprintf('%s ERROR returning image data for index %d\n', DSTR, idx);
 				if(nargout > 1)
-					varargout{1} = 0;
+					varargout{1} = -1;
 				end
-				return;
 			end
-
-			if(GET_BPIMG_ONLY && RETURN_3_CHANNEL)
-				if(isempty(get(fh, 'dims')) || isempty(get(fh, 'bpVec')))
-					img = [];
-					if(nargout > 1)
-						varargout{1} = -1;
-					end
-				else
-					img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'), '3chan');
-					if(nargout > 1)
-						varargout{1} = 0;
-					end
-				end
-				return;
-			end
-
-			if(GET_BPIMG_ONLY)
-				if(isempty(get(fh, 'dims')) || isempty(get(fh, 'bpVec')))
-					img = [];
-					if(nargout > 1)
-						varargout{1} = -1;
-					end
-				else
-					img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
-					if(nargout > 1)
-						varargout{1} = 0;
-					end
-				end
-				return;
-			end
-
-			% Get image based on renderMode
-			switch(F.renderMode)
-				case F.IMG_FILE
-					% Read image from disk and return img file
-					if(strncmpi(get(fh, 'filename'), ' ', 1))
-						fprintf('%s No file data in frame %d\n', DSTR, idx);
-						img = [];
-						if(nargout > 1)
-							varargout{1} = -1;
-						end
-						return;
-					end
-					img  = imread(get(fh, 'filename'), F.ext);
-					dims = size(img);
-					if(dims(3) > 3)
-						img = img(:,:,1:3);
-					end
-					if(nargout > 1)
-						varargout{1} = 0;
-					end
-					return;
-				case F.GEN_BPIMG
-					% Read image from bpVec and return image file
-					img = get(fh, 'bpVec');
-					if(RETURN_IMG)
-						if(RETURN_3_CHANNEL)
-							img = vec2bpimg(img, 'dims', get(fh, 'dims'), '3chan');
-						else
-							img = vec2bpimg(img, 'dims', get(fh, 'dims'));
-						end
-						if(nargout > 1)
-							varargout{1} = 0;
-						end
-					end
-					return;
-				case F.IMG_DATA
-					if(isempty(get(fh, 'img')))
-						fprintf('%s no image data in frame %d\n', DSTR, idx);
-						img = [];
-						if(nargout > 1)
-							varargout{1} = -1;
-						end
-					else
-						img = get(fh, 'img');
-						if(nargout > 1)
-							varargout{1} = 0;
-						end
-					end
-					return;
-				otherwise
-					if(F.verbose)
-						fprintf('%s Invalid renderMode %d\n', DSTR, F.renderMode);
-					end
-					img = [];
-					if(nargout > 1)
-						varargout{1} = -1;
-					end
-					return;
-			end
-						
 			
 		end 	%getCurImg()
-
-        function printFrameContents(F, varargin)
-		% PRINTFRAMECONTENTS
-		%
-		% Shows in console the values assigned to fields of the frame
-		% handles currently in the buffer. Call with no arguments to show
-		% values for all frames in the buffer. Call with a scalar or vector
-		% to show the values for a single frame or range of frames
-		
-			if(isempty(varargin))
-				N = varargin{1};
-			else
-				N = F.Frames;
-			end
-            %Loop over all frame handles in buffer and show contents
-			if(length(N) > 1)
-				for k = N(1):N(end)
-					disp(F.frameBuf(k));
-				end
-			else
-				disp(F.frameBuf(N));
-			end
-			
-        end     %printFrameContents
-		
-		function path = showPath(fb, varargin)
-		% SHOWPATH
-		%
-		% Show the value of the internal path variable. NOTE: This function
-		% is deprecated, use getPath(), getNumFrames(), and getExt() instead
-			
-			error(nargchk(1,3,nargin));
-			if(nargin == 1)
-				path = sprintf('%s_%03d.%s', fb.path, fb.fNum, fb.ext);
-			else
-				if(ischar(varargin{1}))
-					%Check which path to return
-					if(strncmpi(varargin{1}, 'start', 5))
-						path = sprintf('%s', fb.frameBuf(1).filename);
-					elseif(strncmpi(varargin{1}, 'end', 3))
-						path = sprintf('%s', fb.frameBuf(end).filename);
-					else
-						error('Unrecognised option');
-					end
-				else
-					error('Optional argument must be string');
-				end
-			end
-		end
-
-		function filename = showFilename(FB, varargin)
-		% SHOWFILENAME
-		% Assemble the filename from the string components in the 
-		% csFrameBuffer object
-		% 
-		% The filename is reconstructed according to the pattern below:
-		%
-		% path -> fName -> '_' -> fNum -> ext
-		%
-		% which is concatenated into the string filename.
-
-			%Parse path at the end. That way if the files are in the 
-			%current directory we just don't bother concatenating the path 
-			%on at the start
-			filename = strcat(FB.fName, '_', FB.fNum, FB.ext);
-			if(~isempty(FB.path))
-				filename = strcat(FB.path, filename);
-			end
-
-		end 	%showFilename
 
 		% -------- GETTRAJ -------- %
 		function traj = getTraj(F, varargin)
@@ -795,7 +587,7 @@ classdef csFrameBuffer
 		%         PROCESSING FUNCTIONS       %
 		% -----------------------------------%
 		
-		function [FB status varargout] = loadFrameData(FB, filename, varargin)
+		function [FB status] = loadFrameData(FB, filename, varargin)
 		% LOADFRAMEDATA
 		%
 		% [FB status] = loadFrameData(FB, ...[options]... )
@@ -804,14 +596,22 @@ classdef csFrameBuffer
 		% buffer. To override the path, pass the string 'path' followed 
 		% by the path name. To override fNum, pass 'num' followed by 
 		% number of frames to read.
+		%
+		% OPTIONS:
+		% 'force' - If not all files a present, load as many as possible
+		% 'img'   - Load image data into csFrameBuffer. By default only 
+		%           the path is written to the csFrame handle.
 		
-			DSTR = '(csFrameBuffer.loadFrameData) :';
-			FORCE = true; 	%even if not all files are present, load what we have
+			DSTR       = '(csFrameBuffer.loadFrameData) :';
+			FORCE      = true; 	%even if not all files are present, load what we have
+			LOAD_IMAGE = true;
 			if(~isempty(varargin))
 				for k = 1 : length(varargin)
 					if(ischar(varargin{k}))
 						if(strncmpi(varargin{k}, 'nframes', 6))
-							nframes = varargin{k+1};
+							numFiles = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'img', 3))
+							LOAD_IMAGE = true;
 						elseif(strncmpi(varargin{k}, 'force', 5))
 							FORCE = true;
 						end
@@ -820,93 +620,52 @@ classdef csFrameBuffer
 			end
 			
 			%Check what we have
-			if(~exist('nframes', 'var'))
-				 nframes = F.nFrames;
+			if(~exist('numFiles', 'var'))
+				 numFiles = F.nFrames;
 			end
 
-			chk = checkFiles(filename, 'nframes', nframes, 'framebuf');
+			chk = checkFiles(filename, 'nframes', numFiles, 'framebuf');
 			if(chk.exitflag == -1)
-				fprintf('%s ERROR cant find file [%s]\n', DSTR, chk.errFile);
-				FB = F;
-				status = -1;
-				return;
-			end
-
-
-			%Check parameters are sensible
-			if(isempty(fpath) || ~ischar(fpath))
-				fprintf('Path not correctly set, exiting...\n');
-				status = -1;
-				return;
-			end
-			if(isempty(FB.ext) || ~ischar(FB.ext))
-				fprintf('Extension not correctly set, exiting...\n');
-				status = -1;
-				return;
-			end
-
-			if(FB.verbose)
-				fprintf('fpath: %s\n', fpath);
-				fprintf('fName: %s\n', FB.fName);
-				fprintf('fnum : %d\n', fnum);
-				fprintf('ext  : %s\n', FB.ext);
-			end
-
-
-
-			%If we want to load all frames in buffer, check how many 
-			%there are and place this figure into FB.nFrames
-			if(ALL)
-				n  = 1;
-				%fn = sprintf('%s%s_%03d.%s', fpath, FB.fName, n, FB.ext); 
-				fn = sprintf('%s%s%03d.%s', fpath, FB.fName, n, FB.ext); 
-				while(isequal(exist(fn, 'file'), 2))
-					set(FB.frameBuf(k), 'filename', fn);
+				if(FORCE && chk.errFrame > 1)
 					if(FB.verbose)
-						fprintf('Read frame %3d in sequence\n', n);
+						fprintf('%s %d of %d files found, reading first %d files\n', DSTR, chk.errFrame, numFiles, chk.errFrame);
 					end
-					n  = n+1;
-					fn = sprintf('%s%s%03d.%s', fpath, FB.fName, n, FB.ext);
-				end
-				if(n == 1)
-					fprintf('ERROR: Start file does not exist (%s)\n', fn);
+					numFiles = chk.errFrame;
+				else
+					fprintf('%s ERROR cant find file [%s]\n', DSTR, chk.errFile);
+					FB = F;
 					status = -1;
 					return;
 				end
-				if(FB.verbose)
-					fprintf('Read %d frmaes from %s\n', n, fpath);
-				end
-				%Also report the number of frames read, if required
-				if(nargout > 2)
-					varargout{1} = n;
-				end
-				FB.nFrames = n;
-			else
-				%Load data into buffer
-				for k = 1:FB.nFrames
-					fn   = sprintf('%s%s%03d.%s', fpath, FB.fName, fnum+k-1, FB.ext); 
-					set(FB.frameBuf(k), 'filename', fn);
-					if(FB.verbose)
-						fprintf('Read frame %3d of %3d (%s) \n', k, FB.nFrames, fn);
-					end
-					fnum = fnum + 1;
+			end
+
+			ps = fname_parse(filename, 'framebuf');
+			startFile = ps.vecNum;
+
+			for k = startFile : numFiles
+				fn = sprintf('%s%s%03d.%s', ps.path, ps.filename, k, ps.ext);
+				set(F.frameBuf(k), 'filename', fn);
+				if(LOAD_IMAGE)
+					img = imread(fn, ps.ext);
+					set(F.frameBuf(k), 'img', img);
 				end
 			end
+
 			if(FB.verbose)
 				fprintf('\n File read complete\n');
 				fprintf('Read %d frames\n', k);
 			end
 			% Assume that all images are the same size, read an image 
 			% out and set all frame dimensions to match;
-			timg = imread(get(FB.frameBuf(1), 'filename'), FB.ext);
+			timg = imread(get(F.frameBuf(1), 'filename'), FB.ext);
 			dims = size(timg);
 			dataSz = range(range(timg));
 			if(dims(3) > 3)
 				dims(3) = 3;
 			end
-			for k = 1 : length(FB.frameBuf)
-				set(FB.frameBuf(k), 'dims', [dims(2) dims(1)]);
-				set(FB.frameBuf(k), 'dataSz', dataSz);
+			for k = 1 : length(F.frameBuf)
+				set(F.frameBuf(k), 'dims', [dims(2) dims(1)]);
+				set(F.frameBuf(k), 'dataSz', dataSz);
 			end
 
 			%write back data
@@ -1274,6 +1033,7 @@ classdef csFrameBuffer
 		pos    = genRandPos(F, prevPos, maxDist, imsz);
 		         bufDiskWrite(F, fh, filename);
 				 bufDiskRead(F, fh, filename);
+		[img varargout] = getImgData(F, idx, opts);
 	end
 
 	methods (Static)
