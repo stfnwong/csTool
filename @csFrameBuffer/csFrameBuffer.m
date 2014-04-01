@@ -132,9 +132,6 @@ classdef csFrameBuffer
 		% -----------------------------------%
 		
 		function n = getNumFrames(F)
-		% GETNUMFRAMES
-		% Returns the number of frame handles currently stored in the
-		% buffer
 			n = F.nFrames;
 		end 	%getNumFrames()
 
@@ -518,7 +515,7 @@ classdef csFrameBuffer
 		%         PROCESSING FUNCTIONS       %
 		% -----------------------------------%
 		
-		function [FB status] = loadFrameData(FB, filename, varargin)
+		function [FB status varargout] = loadFrameData(FB, filename, varargin)
 		% LOADFRAMEDATA
 		%
 		% [FB status] = loadFrameData(FB, ...[options]... )
@@ -566,6 +563,9 @@ classdef csFrameBuffer
 					fprintf('%s ERROR cant find file [%s]\n', DSTR, chk.errFile);
 					FB = F;
 					status = -1;
+					if(nargout > 2)
+						varargout{1} = numFiles;
+					end
 					return;
 				end
 			end
@@ -603,6 +603,9 @@ classdef csFrameBuffer
 			FB.fNum       = fnum;
 			FB.renderMode = FB.IMG_FILE;
             status        = 0;
+			if(nargout > 2)
+				varargout{1} = numFiles;
+			end
 			return;
 
 		end 	%loadFrameData()

@@ -23,16 +23,8 @@ function [status nh varargout] = gui_loadFrames(handles, filename, numFrames)
 	end
 
 	if(LOAD_ALL)
-		%Parse filename to get format
-		fs = fname_parse(filename);
-		if(fs.exitflag == -1)
-			fprintf('ERROR: Couldnt parse filename %s\n', filename);
-			status = -1;
-			return;
-		end
-		fs = sprintf('%s%s_%03d.%s', fs.path, fs.filename, fs.vecNum, fs.ext);
 		fprintf('Loading all files from %s onwards...\n', fs);
-		handles.frameBuf = handles.frameBuf.parseFilename(filename);
+		%handles.frameBuf = handles.frameBuf.parseFilename(filename);
 		[handles.frameBuf exitflag nf] = handles.frameBuf.loadFrameData('all');
 		if(exitflag == -1)
 			fprintf('ERROR: Failed to load data into frame buffer\n');
@@ -45,8 +37,8 @@ function [status nh varargout] = gui_loadFrames(handles, filename, numFrames)
 			varargout{1} = nf;
 		end
 	else
-		handles.frameBuf = handles.frameBuf.setNFrames(numFrames);
-		handles.frameBuf = handles.frameBuf.parseFilename(filename);
+		%handles.frameBuf = handles.frameBuf.setNFrames(numFrames);
+		%handles.frameBuf = handles.frameBuf.parseFilename(filename);
 		
 		fprintf('Loading %d frames from %s...\n', numFrames, filename);
 		[handles.frameBuf exitflag] = handles.frameBuf.loadFrameData();
@@ -62,3 +54,5 @@ function [status nh varargout] = gui_loadFrames(handles, filename, numFrames)
 	status = 0;
 	nh = handles;
 end		%loadFrames()
+
+

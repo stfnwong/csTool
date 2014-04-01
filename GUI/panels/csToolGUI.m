@@ -517,18 +517,14 @@ function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(frameIndex == 0)
 		frameIndex = 1;
 	end
-	filename = get(handles.etFilePath, 'String');
-	%Test for 'all' switch
-	if(strncmpi(get(handles.etNumFrames, 'String'), 'all', 3))
-		[exitflag nh] = gui_loadFrames(handles, filename, 'all');
-	else	
-		nFrame  = str2double(get(handles.etNumFrames, 'String'));
-		[exitflag nh] = gui_loadFrames(handles, filename, nFrame);
-	end
-	if(exitflag == -1)
+	filename  = get(handles.etFilePath, 'String');
+	numFrames = fix(str2double(handles.etNumFrames, 'String'));
+	[handles.frameBuf ef nf] = handles.frameBuf.loadFrameData(filename, numFrames);
+	if(ef == -1)
 		return;
 	end
-	handles = nh;
+	fprintf('Read %d frames into buffer\n', nf);
+
     %Re-check the frame index - this is caused by an incorrect value for
     %the frameIndex variable being set on startup. Invesigate preferences
     %files for culprit
@@ -1071,18 +1067,15 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			if(frameIndex == 0)
 				frameIndex = 1;
 			end
-            filename = get(handles.etFilePath, 'String');
-			%Test for 'all' switch
-			if(strncmpi(get(handles.etNumFrames, 'String'), 'all', 3))
-				[exitflag nh] = gui_loadFrames(handles, filename, 'all');
-			else	
-				nFrame  = str2double(get(handles.etNumFrames, 'String'));
-				[exitflag nh] = gui_loadFrames(handles, filename, nFrame);
-			end
-			if(exitflag == -1)
+            filename  = get(handles.etFilePath, 'String');
+			numFrames = fix(str2double(get(handles.etNumFrames, 'String')));
+			[handles.frameBuf ef nf] = handles.frameBuf.loadFrameData(filename, numFrames);
+			if(ef == -1)
 				return;
 			end
-			handles = nh;
+			if(handles.debug)
+				fprintf('Read %d frames into buffer\n', nf);
+			end
 		case 's'
 			if(length(eventdata.Modifier) == 1 && strncmpi(eventdata.Modifier{:}, 'control', 7))
 				%Save
