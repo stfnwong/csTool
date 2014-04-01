@@ -105,7 +105,7 @@ function [status nh] = gui_showPreview(handles, varargin)
 		%If the first element is empty, then the rest will also be empty
 		%(similarly for zero)
 		if(isempty(params) ||isequal(params, zeros(1,length(params))))
-			fprintf('No params set for this frame\n');
+			%fprintf('No params set for this frame\n');
 			set(handles.etParam, 'String', 'No window parameters set for this frame');
 		else
             if(~exist('idx', 'var'))

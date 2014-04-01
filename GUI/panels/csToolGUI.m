@@ -518,7 +518,7 @@ function bLoad_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		frameIndex = 1;
 	end
 	filename  = get(handles.etFilePath, 'String');
-	numFrames = fix(str2double(handles.etNumFrames, 'String'));
+	numFrames = fix(str2double(get(handles.etNumFrames, 'String')));
 	[handles.frameBuf ef nf] = handles.frameBuf.loadFrameData(filename, numFrames);
 	if(ef == -1)
 		return;

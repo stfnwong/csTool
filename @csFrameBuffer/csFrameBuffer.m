@@ -515,7 +515,7 @@ classdef csFrameBuffer
 		%         PROCESSING FUNCTIONS       %
 		% -----------------------------------%
 		
-		function [FB status varargout] = loadFrameData(FB, filename, varargin)
+		function [FB status varargout] = loadFrameData(FB, filename, numFiles,  varargin)
 		% LOADFRAMEDATA
 		%
 		% [FB status] = loadFrameData(FB, ...[options]... )
@@ -536,9 +536,7 @@ classdef csFrameBuffer
 			if(~isempty(varargin))
 				for k = 1 : length(varargin)
 					if(ischar(varargin{k}))
-						if(strncmpi(varargin{k}, 'nframes', 6))
-							numFiles = varargin{k+1};
-						elseif(strncmpi(varargin{k}, 'img', 3))
+						if(strncmpi(varargin{k}, 'img', 3))
 							LOAD_IMAGE = true;
 						elseif(strncmpi(varargin{k}, 'force', 5))
 							FORCE = true;
@@ -549,8 +547,14 @@ classdef csFrameBuffer
 			
 			%Check what we have
 			if(~exist('numFiles', 'var'))
-				 numFiles = F.nFrames;
-			end
+				 numFiles = FB.nFrames;
+			 else
+				 if(numFiles > FB.nFrames)
+					 for n = numFiles:-1:1
+						 FB.frameBuf(n) = csFrame();
+					 end
+				 end
+			 end
 
 			chk = checkFiles(filename, 'nframes', numFiles, 'framebuf');
 			if(chk.exitflag == -1)
@@ -561,7 +565,6 @@ classdef csFrameBuffer
 					numFiles = chk.errFrame;
 				else
 					fprintf('%s ERROR cant find file [%s]\n', DSTR, chk.errFile);
-					FB = F;
 					status = -1;
 					if(nargout > 2)
 						varargout{1} = numFiles;
@@ -571,16 +574,22 @@ classdef csFrameBuffer
 			end
 
 			ps = fname_parse(filename, 'framebuf');
-			startFile = ps.vecNum;
+			startFile = ps.frameNum;
 
-			for k = startFile : numFiles
+			idx   = 1;
+			total = length(startFile : (startFile+numFiles))-1;
+			wb = waitbar(0, 'Reading image files...', 'Name', 'Reading image files');
+			for k = startFile : (startFile + numFiles)-1
 				fn = sprintf('%s%s%03d.%s', ps.path, ps.filename, k, ps.ext);
-				set(F.frameBuf(k), 'filename', fn);
+				set(FB.frameBuf(idx), 'filename', fn);
 				if(LOAD_IMAGE)
 					img = imread(fn, ps.ext);
-					set(F.frameBuf(k), 'img', img);
+					set(FB.frameBuf(idx), 'img', img);
 				end
+				idx = idx + 1;
+				waitbar(idx/total, wb, sprintf('Reading file %d/%d', idx, total));
 			end
+			delete(wb);
 
 			if(FB.verbose)
 				fprintf('\n File read complete\n');
@@ -588,19 +597,19 @@ classdef csFrameBuffer
 			end
 			% Assume that all images are the same size, read an image 
 			% out and set all frame dimensions to match;
-			timg = imread(get(F.frameBuf(1), 'filename'), FB.ext);
+			%timg = imread(get(FB.frameBuf(1), 'filename'), ps.ext);
+			timg = imread(fn, ps.ext);
 			dims = size(timg);
 			dataSz = range(range(timg));
 			if(dims(3) > 3)
 				dims(3) = 3;
 			end
-			for k = 1 : length(F.frameBuf)
-				set(F.frameBuf(k), 'dims', [dims(2) dims(1)]);
-				set(F.frameBuf(k), 'dataSz', dataSz);
+			for k = 1 : length(FB.frameBuf)
+				set(FB.frameBuf(k), 'dims', [dims(2) dims(1)]);
+				set(FB.frameBuf(k), 'dataSz', dataSz);
 			end
 
 			%write back data
-			FB.fNum       = fnum;
 			FB.renderMode = FB.IMG_FILE;
             status        = 0;
 			if(nargout > 2)

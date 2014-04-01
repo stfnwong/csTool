@@ -20,6 +20,7 @@ function chkStruct = checkFiles(filename, varargin)
 	START_VEC   = 1;
 	CHECK_VEC   = false;
 	FRAME_BUF   = false;
+	VERBOSE     = false;
 	if(~isempty(varargin))
 		for k = 1 : length(varargin)
 			if(ischar(varargin{k}))
@@ -35,6 +36,8 @@ function chkStruct = checkFiles(filename, varargin)
 					CHECK_VEC = true;
 				elseif(strncmpi(varargin{k}, 'framebuf', 8))
 					FRAME_BUF = true;
+				elseif(strncmpi(varargin{k}, 'verbose', 7))
+					VERBOSE   = true;
 				end
 			end
 		end
@@ -72,8 +75,10 @@ function chkStruct = checkFiles(filename, varargin)
 		end
 
 		if(exitflag ~= -1)
-			frameNum = START_FRAME;
-			while(frameNum < NUM_FRAMES)
+			START_FRAME = ps.frameNum;
+			frameNum    = ps.frameNum;
+			%while(frameNum < NUM_FRAMES)
+			while(frameNum < (START_FRAME + NUM_FRAMES))
 				fn = sprintf('%s%s%03d.%s', ps.path, ps.filename, frameNum, ps.ext);
 				if(exist(fn, 'file') ~= 2)
 					exitflag = -1;
@@ -83,6 +88,10 @@ function chkStruct = checkFiles(filename, varargin)
 				end
 				frameNum = frameNum + 1;
 			end
+		end
+
+		if(VERBOSE)
+			fprintf('Check frame %d - frame %d\n', START_FRAME, frameNum);
 		end
 
 		chkStruct = struct('exitflag', exitflag, ...

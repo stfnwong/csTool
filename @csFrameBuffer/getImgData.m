@@ -33,7 +33,7 @@ function [img status] = getImgData(F, idx, opts)
 			status = -1;
 			return;
 		end
-		img  = imread(get(fh, 'filename'), F.ext);
+		img  = imread(get(fh, 'filename'));
 		dims = size(img);
 		if(dims(3) > 3)
 			img = img(:,:,1:3);
@@ -76,7 +76,7 @@ function [img status] = getImgData(F, idx, opts)
 				status = -1;
 				return;
 			end
-			img  = imread(get(fh, 'filename'), F.ext);
+			img  = imread(get(fh, 'filename'));
 			dims = size(img);
 			if(dims(3) > 3)
 				img = img(:,:,1:3);

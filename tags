@@ -409,6 +409,7 @@ genRowVec	@vecManager/genRowVec.m	/^function vec = genRowVec(V, data, varargin)$
 genTestImg	@vecManager/genTestImg.m	/^function img = genTestImg(V, opts, varargin)$/;"	f
 genTrackingVec	@vecManager/genTrackingVec.m	/^function vec = genTrackingVec(V, fh)$/;"	f
 gen_kernel_lut	@csSegmenter/gen_kernel_lut.m	/^function klut = gen_kernel_lut(S, scale, bw, quant, varargin)$/;"	f
+getImgData	@csFrameBuffer/getImgData.m	/^function [img status] = getImgData(F, idx, opts)$/;"	f
 gui_axHitTest	GUI/gui_axHitTest.m	/^function [hit ah varargout] = gui_axHitTest(axHandles, figHandle, cPos, varargin)$/;"	f
 gui_calcEllipse	GUI/gui_calcEllipse.m	/^function [X Y] = gui_calcEllipse(x,y,a,b,ang,steps)$/;"	f
 gui_calcRect	GUI/gui_calcRect.m	/^function [left right top bottom] = gui_calcRect(xc, yc, width, height, ang, steps)$/;"	f
