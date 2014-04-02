@@ -254,24 +254,30 @@ classdef csFrameBuffer
 		% 'bpimg' - Return the backprojection image irrespective of 
 		%           renderMode
 		% 'img'   - Return the RGB image irrespective of renderMode
-		%
-			RETURN_IMG       = true;
-			RETURN_3_CHANNEL = false;
-			GET_BPIMG_ONLY   = false;
-			GET_IMG_ONLY     = false;
-			DSTR             = '[getCurImg()] : ';
+		
+		% TODO : Strategy for this method
+		% If no options are specified we return the default image type.
+		% We can override the default by supplying an argument to the 
+		% function to request a specific data member from the frame 
+		% handle
+		
 
+			GET_BP_IMG   = false;
+			GET_HUE_IMG  = false;
+			GET_HSV_IMG  = false;
+			GET_RGB_IMG  = false;
+			FORCE_3_CHAN = false;
+			VERBOSE      = false;
+			
 			if(~isempty(varargin))
 				for k = 1 : length(varargin)
 					if(ischar(varargin{k}))
-						if(strncmpi(varargin{1}, 'vec', 3))
-							RETURN_IMG = false;
+						if(strncmpi(varargin{k}, 'mode', 4))
+							imgMode = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'verbose', 7))
+							VERBOSE = true;
 						elseif(strncmpi(varargin{k}, '3chan', 5))
-							RETURN_3_CHANNEL = true;
-						elseif(strncmpi(varargin{k}, 'bpimg', 5))
-							GET_BPIMG_ONLY = true;
-						elseif(strncmpi(varargin{k}, 'img', 3))
-							GET_IMG_ONLY = true;
+							FORCE_3_CHAN = true;
 						end
 					end
 				end
@@ -293,10 +299,26 @@ classdef csFrameBuffer
 				return;
 			end
 
-			opts = struct('RETURN_IMG', RETURN_IMG, ...
-				          'RETURN_3_CHANNEL', RETURN_3_CHANNEL, ...
-				          'GET_BPIMG_ONLY', GET_BPIMG_ONLY, ...
-				          'GET_IMG_ONLY', GET_IMG_ONLY );
+			% Set format options
+			if(exist('imgMode', 'var'))
+				if(strncmpi(imgMode, 'bp', 2))
+					GET_BP_IMG = true;
+				elseif(strncmpi(imgMode, 'rgb', 3))
+					GET_RGB_IMG = true;
+				elseif(strncmpi(imgMode, 'hsv', 3))
+					GET_HSV_IMG = true;
+				elseif(strncmpi(imgMode, 'hue', 3))
+					GET_HUE_IMG = true;
+				end
+			end
+
+			opts = struct('GET_BP_IMG', GET_BP_IMG, ...
+				          'GET_HUE_IMG', GET_HUE_IMG, ...
+				          'GET_HSV_IMG', GET_HSV_IMG, ...
+				          'GET_RGB_IMG', GET_RGB_IMG, ... 
+				          'FORCE_3_CHAN', FORCE_3_CHAN, ...
+			              'verbose', VERBOSE );
+
 
 			% TODO : Adjust renderMode and calling mechanism 
 			% TODO : Test csToolVerify read and write calls
@@ -582,6 +604,7 @@ classdef csFrameBuffer
 			for k = startFile : (startFile + numFiles)-1
 				fn = sprintf('%s%s%03d.%s', ps.path, ps.filename, k, ps.ext);
 				set(FB.frameBuf(idx), 'filename', fn);
+				set(FB.frameBuf(idx), 'hasImgData', true);
 				if(LOAD_IMAGE)
 					img = imread(fn, ps.ext);
 					set(FB.frameBuf(idx), 'img', img);

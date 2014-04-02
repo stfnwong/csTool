@@ -4,6 +4,19 @@
 #
 ###############################################################
 
+GET RID OF renderMode flag
+I now think it makes more sense for the flag that indicates how to return
+the data to be a property of the csFrame object in the buffer. When a new
+random sequence is generated, we set a flag in the csFrame object.
+
+hasImgData = false; 	%generated data
+hasImgData = true; 		%read data from disk
+
+if the hasImgData flag is true, we then check the frames img member, and if
+it is empty, read the file from disk. Otherwise assume that the data in the
+img member is the frame data and continue. 
+
+
 CONSOLODATE FRAME BUFFER DATA LOADING METHODS
 
 WEIGHT IMAGES

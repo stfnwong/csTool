@@ -55,6 +55,7 @@ classdef csFrame < hgsetget
 		filename;	%name of original image file
 		method;		%String containing method used to set params
 		dataSz;     %Scaling factor for data word
+		hasImgData; %Does this handle contain image data?
 	end
 	
 	methods
@@ -66,42 +67,44 @@ classdef csFrame < hgsetget
 			switch nargin
 				case 0
 					%Set default
-						cf.img       = [];
-						cf.bpImg     = [];
-						cf.bpVec     = [];
-						cf.bpSum     = 0;
-						cf.rhist     = zeros(1,16, 'uint8');
-						cf.ihist     = [];
-						%cf.winParams = cell(1,1);
-						cf.winParams = zeros(1,5);
-						cf.winInit   = zeros(1,5);
-						cf.moments   = cell(1,1);
-						cf.nIters    = 0;
-						cf.tVec      = [];
-						cf.dims      = [];
-						cf.isSparse  = 0;
-						cf.sparseFac = 0;
-						cf.filename  = ' ';
-						cf.dataSz    = 256;
+						cf.img        = [];
+						cf.bpImg      = [];
+						cf.bpVec      = [];
+						cf.bpSum      = 0;
+						cf.rhist      = zeros(1,16, 'uint8');
+						cf.ihist      = [];
+						%cf.winParams  = cell(1,1);
+						cf.winParams  = zeros(1,5);
+						cf.winInit    = zeros(1,5);
+						cf.moments    = cell(1,1);
+						cf.nIters     = 0;
+						cf.tVec       = [];
+						cf.dims       = [];
+						cf.isSparse   = 0;
+						cf.sparseFac  = 0;
+						cf.filename   = ' ';
+						cf.dataSz     = 256;
+						cf.hasImgData = false;
 				case 1
 					%Copy to new object if argument is a csFrame
 					if(isa(varargin{1}, 'csFrame'))
 						cf = varargin{1};
 					elseif(isa(varargin{1}, 'struct'))
 						opts = varargin{1};
-						cf.img       = opts.img;
-						cf.bpImg     = opts.bpImg;
-						cf.bpSum     = opts.bpSum;
-						cf.bpVec     = opts.bpVec;
-						cf.rhist     = opts.rhist;
-						cf.ihist     = opts.ihist;
-						cf.winInit   = opts.winInit;
-						cf.nIters    = opts.nIters;
-						cf.tVec      = opts.tVec;
-						cf.dims      = opts.dims;
-						cf.isSparse  = opts.isSparse;
-						cf.sparseFac = opts.sparseFac;a
-						cf.dataSz    = opts.dataSz;
+						cf.img        = opts.img;
+						cf.bpImg      = opts.bpImg;
+						cf.bpSum      = opts.bpSum;
+						cf.bpVec      = opts.bpVec;
+						cf.rhist      = opts.rhist;
+						cf.ihist      = opts.ihist;
+						cf.winInit    = opts.winInit;
+						cf.nIters     = opts.nIters;
+						cf.tVec       = opts.tVec;
+						cf.dims       = opts.dims;
+						cf.isSparse   = opts.isSparse;
+						cf.sparseFac  = opts.sparseFac;a
+						cf.dataSz     = opts.dataSz;
+						cf.hasImgData = opts.hasImgData;
 						if(ischar(opts.filename))
 							cf.filename  = opts.filename;
 						else
@@ -120,23 +123,24 @@ classdef csFrame < hgsetget
 						
 					else
 						%Not enough info to set params, so init to empty
-						cf.img       = [];
-						cf.bpImg     = [];
-						cf.bpVec     = [];
-						cf.bpSum     = 0;
-						cf.rhist     = zeros(1,16);
-						cf.ihist     = [];
-						%cf.winParams = cell(1,1);
-						cf.winParams = zeros(1,5);
-						cf.winInit   = zeros(1,5);
-						cf.moments   = cell(1,1);
-						cf.nIters    = 0;
-						cf.tVec      = [];
-						cf.dims      = [];
-						cf.isSparse  = 0;
-						cf.sparseFac = 0;
-						cf.filename  = ' ';
-						cf.dataSz    = 256;
+						cf.img        = [];
+						cf.bpImg      = [];
+						cf.bpVec      = [];
+						cf.bpSum      = 0;
+						cf.rhist      = zeros(1,16);
+						cf.ihist      = [];
+						%cf.winParams  = cell(1,1);
+						cf.winParams  = zeros(1,5);
+						cf.winInit    = zeros(1,5);
+						cf.moments    = cell(1,1);
+						cf.nIters     = 0;
+						cf.tVec       = [];
+						cf.dims       = [];
+						cf.isSparse   = 0;
+						cf.sparseFac  = 0;
+						cf.filename   = ' ';
+						cf.dataSz     = 256;
+						cf.hasImgData = false;
 					end
 				otherwise
 					error('Incorrect arguments to constructor');
@@ -145,42 +149,44 @@ classdef csFrame < hgsetget
 
 		% ========= SAVOBJ METHOD ======== %
 		function fh = saveobj(T)
-			fh.img       = T.img;
-			fh.bpImg     = T.bpImg;
-			fh.bpVec     = T.bpVec;
-			fh.bpSum     = T.bpSum;
-			fh.rhist     = T.rhist;
-			fh.ihist     = T.ihist;
-			fh.winParams = T.winParams;
-			fh.winInit   = T.winInit;
-			fh.moments   = T.moments;
-			fh.nIters    = T.nIters;
-			fh.tVec      = T.tVec;
-			fh.dims      = T.dims;
-			fh.isSparse  = T.isSparse;
-			fh.sparseFac = T.sparseFac;
-			fh.filename  = T.filename;
-			fh.dataSz    = T.dataSz;
+			fh.img        = T.img;
+			fh.bpImg      = T.bpImg;
+			fh.bpVec      = T.bpVec;
+			fh.bpSum      = T.bpSum;
+			fh.rhist      = T.rhist;
+			fh.ihist      = T.ihist;
+			fh.winParams  = T.winParams;
+			fh.winInit    = T.winInit;
+			fh.moments    = T.moments;
+			fh.nIters     = T.nIters;
+			fh.tVec       = T.tVec;
+			fh.dims       = T.dims;
+			fh.isSparse   = T.isSparse;
+			fh.sparseFac  = T.sparseFac;
+			fh.filename   = T.filename;
+			fh.dataSz     = T.dataSz;
+			fh.hasImgData = T.hasImgData;
 		end 	%savobj()
 
 		% Reload (maps struct to properties
 		function T = reload(T, fh)
-			T.img       = fh.img;
-			T.bpImg     = fh.bpImg;
-			T.bpVec     = fh.bpVec;
-			T.bpSum     = fh.bpSum;
-			T.rhist     = fh.rhist;
-			T.ihist     = fh.ihist;
-			T.winParams = fh.winParams;
-			T.winInit   = fh.winInit;
-			T.moments   = fh.moments;
-			T.nIters    = fh.nIters;
-			T.tVec      = fh.tVec;
-			T.dims      = fh.dims;
-			T.isSparse  = fh.isSparse;
-			T.sparseFac = fh.sparseFac;
-			T.filename  = fh.filename;
-			T.dataSz    = fh.dataSz;
+			T.img        = fh.img;
+			T.bpImg      = fh.bpImg;
+			T.bpVec      = fh.bpVec;
+			T.bpSum      = fh.bpSum;
+			T.rhist      = fh.rhist;
+			T.ihist      = fh.ihist;
+			T.winParams  = fh.winParams;
+			T.winInit    = fh.winInit;
+			T.moments    = fh.moments;
+			T.nIters     = fh.nIters;
+			T.tVec       = fh.tVec;
+			T.dims       = fh.dims;
+			T.isSparse   = fh.isSparse;
+			T.sparseFac  = fh.sparseFac;
+			T.filename   = fh.filename;
+			T.dataSz     = fh.dataSz;
+			T.hasImgData = fh.hasImgData;
 		end 	%reload()
 
 		% ---- SETTER METHODS ---- %
@@ -240,6 +246,10 @@ classdef csFrame < hgsetget
 		function set.tVec(T, vec)
 			T.tVec = vec;
 		end 	%setTVec()
+
+		function set.hasImgData(T, hasImgData)
+			T.hasImgData = hasImgData;
+		end 	%hasImgData()
 
 		% ---- DISPLAY : disp(csFrame)
 		%function disp(cf)

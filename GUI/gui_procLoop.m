@@ -161,15 +161,15 @@ function [status] = gui_procLoop(handles, varargin)
 
 		% =============== SEGMENTATION ================ %
 		if(SEG && handles.frameBuf.getRenderMode == 0)
-			[img ef] = handles.frameBuf.getCurImg(k, 'img');
+			[hue_img ef] = handles.frameBuf.getCurImg(k, 'mode', 'hue');
 			if(ef == -1)
 				fprintf('ERROR: Cant read frame %d/%d, error in frameBuf.getCurImg()\n', k, N);
 				delete(wb);
 				status = -1;
 				return;
 			end
-			hsv_img  = rgb2hsv(img);
-			hue_img  = hsv_img(:,:,1);
+			%hsv_img  = rgb2hsv(img);
+			%hue_img  = hsv_img(:,:,1);
 			[bpvec bpsum rhist] = handles.segmenter.segFrame(hue_img, 'norm');
 			params  = struct('bpvec',bpvec,'bpsum',bpsum,'rhist',rhist);
 			handles.frameBuf = handles.frameBuf.setFrameParams(k, params);
@@ -198,7 +198,8 @@ function [status] = gui_procLoop(handles, varargin)
 				%will have placed a winparam in csTracker.fParams. If we 
 				%specified a param, pass that param into the trackFrame() 
 				%method
-				[bpimg ef] = handles.frameBuf.getCurImg(k, 'bpimg');	
+				%[bpimg ef] = handles.frameBuf.getCurImg(k, 'bpimg');	
+				[bpimg ef] = handles.frameBuf.getCurImg(k, 'mode', 'bp');
 				if(ef == -1)
 					fprintf('ERROR: Cant read frame %d/%d, error in frameBuf.getCurImg()\n', k, N);
 					delete(wb);
@@ -250,7 +251,8 @@ function [status] = gui_procLoop(handles, varargin)
 						return;
 					end
 				end
-				bpimg      = handles.frameBuf.getCurImg(k, 'bpimg');
+				%bpimg      = handles.frameBuf.getCurImg(k, 'bpimg');
+				bpimg      = handles.frameBuf.getCurImg(k, 'mode', 'bp');
 				[st tOpts] = handles.tracker.trackFrame(bpimg, 'wpos', pParam, 'zm', handles.frameBuf.getZeroMoment(k));
 				if(st == -2)
 					%This error code indicates that we will quit the loop early,
