@@ -74,7 +74,7 @@ function [status nh] = gui_showPreview(handles, varargin)
 	
 
 	if(handles.frameBuf.hasBpData(idx))
-		bpimg = handles.frameBuf.getCurImg(idx, 'bpimg');
+		bpimg = handles.frameBuf.getCurImg(idx, 'mode', 'bp');
 		if(get(handles.chkShowSparse, 'Value'))
             %Check if this is a sparse vector, and show as such in preview
             if(handles.frameBuf.isSparseVec(idx))

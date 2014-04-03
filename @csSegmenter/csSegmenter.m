@@ -335,6 +335,7 @@ classdef csSegmenter < handle
 			% S.method
 			% Pass in the string 'norm' to normalise to range of DATA_SZ
 			% parameter
+
 			NORM = false;	
 			if(~isempty(varargin))
 				if(strncmpi(varargin{1}, 'norm', 4))
