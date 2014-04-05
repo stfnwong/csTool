@@ -112,11 +112,20 @@ function parseStruct = fname_parse(fstring, varargin)
 			end
 		end
 	end
-	% TODO : Add PARSE_VEC_ONLY modifier here
+
 	if(FRAME_BUF)
 		fnameEnd = frameIdx;
 	else
-		if(~isempty(frameIdx))
+		if(PARSE_VEC_ONLY)
+			% With this option set, the -frame component part of the 
+			% filename is not seperated 
+			if(~isempty(vecIdx))
+				fnameEnd = vecIdx;
+			else
+				% No vecIdx - so filename part extends to extIdx
+				fnameEnd = extIdx-1;
+			end
+		elseif(~isempty(frameIdx))
 			fnameEnd = frameIdx;
 		elseif(isempty(dashIdx))
 			fnameEnd = extIdx-1;

@@ -162,8 +162,8 @@ function chkStruct = checkFiles(filename, varargin)
 						noErr    = false;
 					end
 					vecFile = vecFile + 1;
-
 				end
+				frameFile = frameFile + 1;
 			else
 				fn = sprintf('%s%s-frame%03d.%s', ps.path, ps.filename, frameFile, ps.ext);
 				if(exist(fn, 'file') ~= 2)

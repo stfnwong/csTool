@@ -255,13 +255,6 @@ classdef csFrameBuffer
 		%           renderMode
 		% 'img'   - Return the RGB image irrespective of renderMode
 		
-		% TODO : Strategy for this method
-		% If no options are specified we return the default image type.
-		% We can override the default by supplying an argument to the 
-		% function to request a specific data member from the frame 
-		% handle
-		
-
 			GET_BP_IMG   = false;
 			GET_HUE_IMG  = false;
 			GET_HSV_IMG  = false;
@@ -311,20 +304,17 @@ classdef csFrameBuffer
 					GET_HUE_IMG = true;
 				end
 			end
-
+			% Format options structure
 			opts = struct('GET_BP_IMG', GET_BP_IMG, ...
 				          'GET_HUE_IMG', GET_HUE_IMG, ...
 				          'GET_HSV_IMG', GET_HSV_IMG, ...
 				          'GET_RGB_IMG', GET_RGB_IMG, ... 
 				          'FORCE_3_CHAN', FORCE_3_CHAN, ...
 			              'verbose', VERBOSE );
-
-
-			% TODO : Adjust renderMode and calling mechanism 
 			% TODO : Test csToolVerify read and write calls
 			[img status] = getImgData(F, idx, opts);
 			if(status == -1)
-				fprintf('%s ERROR returning image data for index %d\n', DSTR, idx);
+				fprintf('ERROR returning image data for index %d\n', idx);
 				if(nargout > 1)
 					varargout{1} = -1;
 				end
@@ -476,6 +466,9 @@ classdef csFrameBuffer
 			if(isfield(opts, 'dataSz'))
 				set(FB.frameBuf(idx), 'dataSz', opts.dataSz);
 			end
+			if(isfield(opts, 'hasImgData'))
+				set(FB.frameBuf(idx), 'hasImgData', opts.hasImgData);
+			end
 
 		end 	%setFrameParams()
 
@@ -613,6 +606,7 @@ classdef csFrameBuffer
 				waitbar(idx/total, wb, sprintf('Reading file %d/%d', idx, total));
 			end
 			delete(wb);
+			FB.nFrames = numFiles;	
 
 			if(FB.verbose)
 				fprintf('\n File read complete\n');
@@ -804,7 +798,6 @@ classdef csFrameBuffer
 				n = n + 1;
 			end	
 			delete(wb);
-			% TODO : Need to figure out which renderMode to use after load
 			FB = F;
 
 		end 	%loadBufData()
@@ -997,7 +990,7 @@ classdef csFrameBuffer
 	methods (Access = 'private')
 		rFrame = genRandFrame(F, opts);
 		pos    = genRandPos(F, prevPos, maxDist, imsz);
-		         bufDiskWrite(F, fh, filename);
+		status = bufDiskWrite(F, fh, filename);
 				 bufDiskRead(F, fh, filename);
 		[img varargout] = getImgData(F, idx, opts);
 	end

@@ -165,7 +165,7 @@ function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 function bGetReadFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Set write file
 	oldPath = get(handles.etReadFile, 'String');
-	[fname path] = uiputfile('*.dat', 'Select file to write pattern to...');
+	[fname path] = uigetfile('*.mat', 'Select file to read pattern from...');
 	if(isempty(fname))
 		fname = oldPath;
 		path  = '';

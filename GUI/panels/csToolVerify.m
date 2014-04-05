@@ -216,17 +216,17 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	rMoments = handles.refFrameBuf.getMoments(handles.idx);
 	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference', rParams, rMoments);
 
+	handles.output = hObject;
     % Update handles structure
     guidata(hObject, handles);
 	uiwait(handles.csToolVerifyFig);
 
 % ======== OUTPUT FUNCTION  ======== %	
 function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
-	%ostruct = struct('vfSettings', handles.vfSettings, 'refBuf', handles.refFrameBuf, 'testBuf', handles.testFrameBuf);
-	handles.output = struct('frameBuf', handles.refFrameBuf, 'testBuf', handles.testFrameBuf, 'vfSettings', handles.vfSettings);
+	handles.output = struct('frameBuf', handles.refFrameBuf, ...
+		                    'testBuf', handles.testFrameBuf, ...
+		                    'vfSettings', handles.vfSettings);
 	varargout{1} = handles.output;
-    %varargout{1} = handles.vfSettings;
-	%varargout{1} = 0;	%TODO :  temporary - THIS MUST BE FIXED
 
 	% ======== CLOSE REQUEST FUNCTION ======== %
 function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -236,14 +236,14 @@ function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL
         uiresume(handles.csToolVerifyFig);
     else
         %Ok to clean up
-        delete(handles.csToolverifyFig);
+        delete(handles.csToolVerifyFig);
     end
 
 
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
 	uiresume(handles.csToolVerifyFig);
-	delete(handles.csToolVerifyFig);
+	close(handles.csToolVerifyFig);
 
 
 % ---------- TRANSPORT CONTROLS -------- %	
@@ -441,7 +441,6 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		fprintf('ERROR: Cant interpret number of files [%s]\n', get(handles.etNumFiles, 'String'));
 		return;
 	end
-	% TODO : Write a routine to make sure the files are on disk
 	chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize, 'vcheck');
 	if(chk.exitflag == -1)
 		fprintf('ERROR: In file (%d/%d), vector (%d/%d) [%s]\n', chk.errFrame, numFiles, chk.errVec, vsize, filename);
@@ -487,16 +486,24 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		% Rescale image
 		%sc   = range(range(handles.refFrameBuf.getCurImg(handles.idx)));
 		%img  = imgRescale(img, sc);
-		sc  = handles.refFrameBuf.getDataSz(handles.idx);
-        img = imgRescale(img, sc);
+		%sc  = handles.refFrameBuf.getDataSz(handles.idx);
+        %img = imgRescale(img, sc);
+		img = imgRescale(img, dataSz);
 		% Format dims and place vector into buffer
 		dims = size(img);
 		dims = [dims(2) dims(1)];	
 		if(strncmpi(vclass, 'backprojection', 14))
-			bpvec = bpimg2vec(img, 'bpval');
-			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(bpvec, N, vclass, 'dims', dims);
+			[bpvec bpsum] = bpimg2vec(img, 'bpval');
+			fParams = struct('bpvec', bpvec, ...
+				             'bpsum', bpsum, ...
+				             'dims', dims, ...
+				             'hasImgData', false);
+			handles.testFrameBuf = handles.testFrameBuf.setFrameParams(N, fParams);
 		else
-			handles.testFrameBuf = handles.testFrameBuf.loadVectorData(img, N, vclass, 'dims', dims);
+			fParams = struct('img', img, ...
+				             'dims', dims, ...
+				             'hasImgData', true);
+			handles.testFrameBuf = handles.testFrameBuf.setFrameParams(N, fParams);
 		end
 
 		% Automatically check for parameter file
@@ -543,12 +550,14 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	testImg  = handles.testFrameBuf.getCurImg(handles.idx);
 	tParams  = handles.testFrameBuf.getWinParams(handles.idx);
 	tMoments = handles.testFrameBuf.getMoments(handles.idx);
+    errImg   = abs(double(refImg) - double(testImg));
 	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference', rParams, rMoments);
 	gui_updatePreview(handles.figPreviewTest, testImg, 'Test Data', tParams, tMoments);
-	gui_updatePreview(handles.figError, abs(refImg - testImg), 'Error Image', [], []);
+	gui_updatePreview(handles.figError, errImg, 'Error Image', [], []);
 
 	%imshow(img, 'Parent', handles.figPreviewTest);
     guidata(hObject, handles);
+	uiresume(handles.csToolVerifyFig);
 
 function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Browse for file to read
@@ -560,6 +569,7 @@ function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);
+	uiresume(handles.csToolVerifyFig);
 
 function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     % Run verification routine against frame currently displayed in main

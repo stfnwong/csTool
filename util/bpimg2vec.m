@@ -1,4 +1,4 @@
-function vec = bpimg2vec(bpimg, varargin)
+function [vec varargout] = bpimg2vec(bpimg, varargin)
 % BPIMG2VEC
 % vec = bpimg2vec(bpimg, [..OPTIONS..])
 % Convert back projection image into 2 dimensional vector whose columns are the 
@@ -55,6 +55,11 @@ function vec = bpimg2vec(bpimg, varargin)
 		for k = 1:length(idy)
 			vec(3,k) = bpimg(idy(k), idx(k));
 		end
+	end
+
+	if(nargout > 1)
+		bpsum = sum(sum(bpimg));
+		varargout{1} = bpsum;
 	end
 	
 end 	%bpimg2vec()

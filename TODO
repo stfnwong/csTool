@@ -4,6 +4,8 @@
 #
 ###############################################################
 
+FIX READ FILE BUTTON IN csToolSaveBuf GUI
+
 GET RID OF renderMode flag
 I now think it makes more sense for the flag that indicates how to return
 the data to be a property of the csFrame object in the buffer. When a new

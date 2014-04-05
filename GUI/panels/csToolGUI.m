@@ -1076,6 +1076,10 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			if(handles.debug)
 				fprintf('Read %d frames into buffer\n', nf);
 			end
+			[exitflag handles] = gui_showPreview(handles, 'idx', frameIndex);
+			if(exitflag == -1)
+				return;
+			end
 		case 's'
 			if(length(eventdata.Modifier) == 1 && strncmpi(eventdata.Modifier{:}, 'control', 7))
 				%Save
@@ -1226,9 +1230,9 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			% TODO : Add options strucutre
 			ef = csToolVerify(handles.vecManager, 'opts', handles.vfOpts, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
 			%ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
-			if(ef == -1)
-				fprintf('ERROR: Error in csToolVerify()\n');
-				return;
+			if(handles.debug)
+				fprintf('ef :\n');
+				disp(ef);
 			end
 			handles.frameBuf = ef.frameBuf;
 			handles.testBuf  = ef.testBuf;
@@ -1564,23 +1568,15 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
 
 	imsz = handles.frameBuf.getDims(frameIndex);
 	ef = csToolVerify(handles.vecManager, 'opts', handles.vfOpts, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
-	%if(handles.debug)
-	%    ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'debug', 'opts', handles.vfOpts);
-	%else
-	%	ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz, 'opts', handles.vfOpts);
-	%end
-	if(~isstruct(ef) && ef == -1)
-		fprintf('ERROR: csToolVerify returned status -1\n');
-		return;
-	else
-		handles.vfOpts   = ef.vfSettings;
-		handles.frameBuf = ef.frameBuf;
-		handles.testBuf  = ef.testBuf;
-        if(handles.debug)
-            fprintf('csToolVerify opts:\n');
-            disp(ef);
-        end
+
+	if(handles.debug)
+		fprintf('ef :\n');
+		disp(ef);
 	end
+
+	handles.vfOpts   = ef.vfSettings;
+	handles.frameBuf = ef.frameBuf;
+	handles.testBuf  = ef.testBuf;
 
 	guidata(hObject, handles);
 	

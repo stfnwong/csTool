@@ -170,6 +170,9 @@ classdef vecManager
 						elseif(strncmpi(varargin{k}, 'dtype', 5))
 							dtype = varargin{k+1};
 							fprintf('(readVec) dtype set to [%s]\n', dtype);
+						elseif(strncmpi(varargin{k}, 'dmode', 5))
+							dmode = varargin{k+1};
+							fprintf('(readVec) dmode set to [%s]\n', dmode);
 						elseif(strncmpi(varargin{k}, 'sz', 2)) %no. elemn in vector
 							sz    = varargin{k+1};
 							fprintf('(readVec) size set to %d\n', sz);
@@ -202,38 +205,15 @@ classdef vecManager
 				dtype = '%u8';
 				fprintf('%s set dtype to [%s]\n', DSTR, dtype);
 			end
-
-			% TODO : Need to check that files exist, and then generate those filenames
-			% in a loop for vecDiskRead()
-
-			% Check that files exist
-			if(strncmpi(vtype, 'row', 3) || strncmpi(vtype, 'col', 3))
-				chk = checkFiles(fname, 'nvec', sz, 'vcheck');
-				if(chk.exitflag == -1)
-					fprintf('%s cant find file [%s] (%d/%d)\n', DSTR, chk.errFile, chk.errVec, sz);
-					vecdata = [];
-					if(nargout > 1)
-						varargout{1} = -1;
-					end
-					return;
-				end
-			else
-				% Assume scalar
-				chk = checkFiles(fname, 'nvec', 1);
-				if(chk.exitflag == -1)
-					fprintf('%s cant find file [%s]\n', DSTR, chk.errFile);
-					vecdata = [];
-					if(nargout > 1)
-						varargout{1} = -1;
-					end
-					return;
-				end
+			if(~exist('dmode', 'var'))
+				dmode = 'dec';
 			end
+			% TODO : Format an options strcuture for vecDiskRead
+			vopts = struct('dtype', dtype, ...
+				           'mode', dmode);
 
 			% Allocate memory and read files in sequence
 			vecdata = cell(1, sz);
-			wb = waitbar(0, sprintf('Reading vector (0/%d)', length(vecdata)), 'Name', 'Reading vector data...');
-
 			% Parse filename
 			ps = fname_parse(fname, 'veconly');
 			if(ps.exitflag)
@@ -245,9 +225,22 @@ classdef vecManager
 				return;
 			end
 
+			if(sz == 1)
+				[vecdata{1} ref] = vecDiskRead(V, filename, vopts);
+				if(ref == -1)
+					fprintf('%s error in file [%s]\n', DSTR, filename);
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
+					return;
+				end
+			end
+
+			wb = waitbar(0, sprintf('Reading vector (0/%d)', length(vecdata)), 'Name', 'Reading vector data...');
+
 			for n = 1 : length(vecdata)
 				fn = sprintf('%s%s-vec%03d.%s', ps.path, ps.filename, n, ps.ext);
-				[vecdata{n} ref] = vecDiskRead(V, fn, 'dtype', dtype);
+				[vecdata{n} ref] = vecDiskRead(V, fn, 'dtype', vopts);
 				if(ref == -1)
 					fprintf('%s error in vector stream %d\n', DSTR, n);
 					delete(wb);

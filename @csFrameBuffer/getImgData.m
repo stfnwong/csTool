@@ -93,12 +93,25 @@ function [img status] = getImgData(F, idx, opts)
 
 	% Return whatever the default class of image is for this frame
 	if(get(fh, 'hasImgData'))
-		img = get(fh, 'img');
-	else
-		if(opts.FORCE_3_CHAN)
-			img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'), '3chan');
+		% Still ought to check what data there is 
+		if(~isempty(get(fh, 'img')))
+			img = get(fh, 'img');
 		else
-			img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
+			img = [];
+			status = -1;
+			return;
+		end
+	else
+		if(~isempty(get(fh, 'bpVec')))
+			if(opts.FORCE_3_CHAN)
+				img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'), '3chan');
+			else
+				img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
+			end
+		else
+			img = [];
+			status = -1;
+			return;
 		end
 	end
 
