@@ -174,12 +174,11 @@ function bGetReadFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 	uiresume(handles.csToolSaveBufFig);
 
-
 function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	filename = get(handles.etReadFile, 'String');
 	numFiles = fix(str2double(get(handles.etReadNumFiles, 'String')));
-	handles.frameBuf.loadBufData(filename, numFiles);
+	handles.frameBuf = handles.frameBuf.loadBufData(filename, numFiles);
 	
 	guidata(hObject, handles);
 	uiresume(handles.csToolSaveBufFig);

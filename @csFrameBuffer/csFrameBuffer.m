@@ -641,7 +641,6 @@ classdef csFrameBuffer
 		% FB = saveBufData(F, range)
 		%
 		% Save buffer contents to disk as a series of *.mat files
-			DATA_DIR = 'data/settings';
 			DSTR     = '[csFrameBuffer.saveBufData()] : ';
 
 			if(isempty(range))
@@ -697,7 +696,7 @@ classdef csFrameBuffer
 				end
 			end
 			n = 1;
-			total = startFile + numFiles;
+			total = startFile + numFiles - 1;
 			wb = waitbar(0, sprintf('Reading frame data (%d/%d)', n, total));
 			for k = startFile : numFiles
 				fn = sprintf('%s/%s-frame%03d.%s', ps.path, ps.filename, k, ps.ext);
@@ -707,6 +706,7 @@ classdef csFrameBuffer
 				n = n + 1;
 			end	
 			delete(wb);
+			F.nFrames = numFiles;
 			FB = F;
 
 		end 	%loadBufData()

@@ -95,9 +95,13 @@ function [img status] = getImgData(F, idx, opts)
 	if(get(fh, 'hasImgData'))
 		% Still ought to check what data there is 
 		if(~isempty(get(fh, 'img')))
-			img = get(fh, 'img');
+			img    = get(fh, 'img');
+		elseif(~strncmpi(get(fh, 'filename'), ' ', 1))
+			img    = imread(filename);
+			status = 0;
+			return;
 		else
-			img = [];
+			img    = [];
 			status = -1;
 			return;
 		end
@@ -109,7 +113,7 @@ function [img status] = getImgData(F, idx, opts)
 				img = vec2bpimg(get(fh, 'bpVec'), 'dims', get(fh, 'dims'));
 			end
 		else
-			img = [];
+			img    = [];
 			status = -1;
 			return;
 		end

@@ -1852,7 +1852,6 @@ function menu_SaveBufData_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		end
 	end
 
-
-
+    guidata(hObject, handles);
 
 end
