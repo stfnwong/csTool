@@ -198,12 +198,12 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     set(handles.etImageHeight, 'String', dims(2));
 
 	% Setup reference preview figure
-	set(handles.figPreviewRef,  'XTick', [], 'XTickLabel', []);
-	set(handles.figPreviewRef,  'YTick', [], 'YTickLabel', []);
+	set(handles.figPreviewRef,   'XTick', [], 'XTickLabel', []);
+	set(handles.figPreviewRef,   'YTick', [], 'YTickLabel', []);
 	title(handles.figPreviewRef, 'Reference');
 	% Setup test preview figure
-	set(handles.figPreviewTest, 'XTick', [], 'XTickLabel', []);
-	set(handles.figPreviewTest, 'YTick', [], 'YTickLabel', []);
+	set(handles.figPreviewTest,  'XTick', [], 'XTickLabel', []);
+	set(handles.figPreviewTest,  'YTick', [], 'YTickLabel', []);
 	title(handles.figPreviewTest, 'Preview');
 	% Setup error figure
 	set(handles.figError,   'XTick', [], 'XTickLabel', []);
