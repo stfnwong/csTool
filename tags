@@ -122,7 +122,7 @@ bWrite_Callback	GUI/panels/wrModelHist.m	/^function bWrite_Callback(hObject, eve
 blockramEst	util/blockramEst.m	/^function [nbits varargout] = blockramEst(imsz, vdim, vlen, N, sfac, varargin)$/;"	f
 blockramVs	util/blockramVs.m	/^function [varargout] = blockramVs(imsz, vlen, sfac, range, varargin)$/;"	f
 bpErrVec	@vecManager/bpErrVec.m	/^function errVec = bpErrVec(V, vectors, refvec, varargin)$/;"	f
-bpimg2vec	util/bpimg2vec.m	/^function vec = bpimg2vec(bpimg, varargin)$/;"	f
+bpimg2vec	util/bpimg2vec.m	/^function [vec varargout] = bpimg2vec(bpimg, varargin)$/;"	f
 bufDiskRead	@csFrameBuffer/bufDiskRead.m	/^function status = bufDiskRead(FB, fh, filename)$/;"	f
 bufDiskWrite	@csFrameBuffer/bufDiskWrite.m	/^function bufDiskWrite(FB, fh, filename)$/;"	f
 bufMemCheck	@csFrameBuffer/bufMemCheck.m	/^function status = bufMemCheck(nFrames, path, varargin)$/;"	f
@@ -131,6 +131,7 @@ buf_spDecode	util/buf_spDecode.m	/^function [bpvec varargout] = buf_spDecode(spv
 buf_spEncode	util/buf_spEncode.m	/^function [spvec varargout] = buf_spEncode(bpimg, varargin)$/;"	f
 catVecStream	@vecManager/catVecStream.m	/^function [vec varargout] = catVecStream(V, vtype, val, varargin)$/;"	f
 checkFiles	util/checkFiles.m	/^function chkStruct = checkFiles(filename, varargin)$/;"	f
+checkvectors	checkvectors.m	/^function [numFiles] = checkvectors(fname, numfiles, vsz)$/;"	f
 chkAppendNum_Callback	GUI/panels/csToolGenerate.m	/^function chkAppendNum_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 chkAutoGen_Callback	GUI/panels/csToolVecOpts.m	/^function chkAutoGen_Callback(hObject, eventdata, handles)   %#ok<INUSD,DEFNU>$/;"	f
 chkBP_Callback	GUI/panels/csToolGenerate.m	/^function chkBP_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
@@ -409,6 +410,7 @@ genRowVec	@vecManager/genRowVec.m	/^function vec = genRowVec(V, data, varargin)$
 genTestImg	@vecManager/genTestImg.m	/^function img = genTestImg(V, opts, varargin)$/;"	f
 genTrackingVec	@vecManager/genTrackingVec.m	/^function vec = genTrackingVec(V, fh)$/;"	f
 gen_kernel_lut	@csSegmenter/gen_kernel_lut.m	/^function klut = gen_kernel_lut(S, scale, bw, quant, varargin)$/;"	f
+getImg	GUI/panels/csToolVerify.m	/^function [refImg testImg errImg] = getImg(handles) $/;"	f
 getImgData	@csFrameBuffer/getImgData.m	/^function [img status] = getImgData(F, idx, opts)$/;"	f
 gui_axHitTest	GUI/gui_axHitTest.m	/^function [hit ah varargout] = gui_axHitTest(axHandles, figHandle, cPos, varargin)$/;"	f
 gui_calcEllipse	GUI/gui_calcEllipse.m	/^function [X Y] = gui_calcEllipse(x,y,a,b,ang,steps)$/;"	f
@@ -532,6 +534,8 @@ pmBufIdx_Callback	GUI/panels/csToolTrajBuf.m	/^function pmBufIdx_Callback(hObjec
 pmBufIdx_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function pmBufIdx_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 pmCompIdx_Callback	GUI/panels/csToolTrajBuf.m	/^function pmCompIdx_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 pmCompIdx_CreateFcn	GUI/panels/csToolTrajBuf.m	/^function pmCompIdx_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmDataFmt_Callback	GUI/panels/csToolVerify.m	/^function pmDataFmt_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
+pmDataFmt_CreateFcn	GUI/panels/csToolVerify.m	/^function pmDataFmt_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 pmDistribution_Callback	GUI/panels/csToolSeqGen.m	/^function pmDistribution_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 pmDistribution_CreateFcn	GUI/panels/csToolSeqGen.m	/^function pmDistribution_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 pmKernelBandwidth_Callback	GUI/panels/csToolSegOpts.m	/^function pmKernelBandwidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
@@ -585,7 +589,7 @@ ut_vecaccum	util/ut_vecaccum.m	/^function moments = ut_vecaccum(bpvec)$/;"	f
 ut_vecloopaccum	util/ut_vecloopaccum.m	/^function moments = ut_vecloopaccum(bpvec, varargin)$/;"	f
 ut_vecwinaccum	util/ut_vecwinaccum.m	/^function [moments wparam] = ut_vecwinaccum(bpvec, winregion)$/;"	f
 vec2bpimg	util/vec2bpimg.m	/^function bpimg = vec2bpimg(vec, varargin)$/;"	f
-vecDiskRead	@vecManager/vecDiskRead.m	/^function [vector varargout] = vecDiskRead(V, fname, varargin)$/;"	f
+vecDiskRead	@vecManager/vecDiskRead.m	/^function [vector varargout] = vecDiskRead(V, fname, opts)$/;"	f
 vecDiskWrite	@vecManager/vecDiskWrite.m	/^function status = vecDiskWrite(V, data, varargin)$/;"	f
 vecGen	uTest/vecGen.m	/^function vec = vecGen(img, varargin)$/;"	f
 verifyBPVec	@vecManager/verifyBPVec.m	/^function status = verifyBPVec(V, fh, vec, varargin)$/;"	f

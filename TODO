@@ -4,7 +4,12 @@
 #
 ###############################################################
 
-FIX READ FILE BUTTON IN csToolSaveBuf GUI
+VEC008
+For some reason there is a problem with vec008 for the psygen series of
+vectors. I can't find anything wrong with this file in the hex editor,
+but MATLABs importdata() routine thinks there is some non-ascii data in
+the streamii data in
+the stream.
 
 GET RID OF renderMode flag
 I now think it makes more sense for the flag that indicates how to return

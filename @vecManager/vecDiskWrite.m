@@ -86,16 +86,6 @@ function status = vecDiskWrite(V, data, varargin)
 		        'Name', sprintf('Writing %s...', filename{k}));
 	for k = 1:length(data)
 		vec = data{k};
-
-		%Normalise data if required
-% 		if(BIT_1)
-% 			vec = vec./(max(max(vec)));
-% 			vec = round(vec);
-% 		elseif(BIT_2)
-% 			vec = vec ./ (max(max(vec)));
-% 			vec = vec .* 4;
-% 			vec = round(vec);
-% 		end
 		if(VSIM_ADR)
 			%Write address for modelsim
 			fprintf(fp(k), '@0 ');
