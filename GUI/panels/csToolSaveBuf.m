@@ -179,6 +179,12 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	filename = get(handles.etReadFile, 'String');
 	numFiles = fix(str2double(get(handles.etReadNumFiles, 'String')));
 	handles.frameBuf = handles.frameBuf.loadBufData(filename, numFiles);
+
+	% Show preview of first frame
+	handles.idx = 1;
+	img = handles.frameBuf.getCurImg(handles.idx);
+	imshow(img, 'Parent', handles.axBufPreview);
+	set(handles.etCurFrame, 'String', num2str(handles.idx));
 	
 	guidata(hObject, handles);
 	uiresume(handles.csToolSaveBufFig);

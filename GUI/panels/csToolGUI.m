@@ -1236,7 +1236,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			end
 			handles.frameBuf = ef.frameBuf;
 			handles.testBuf  = ef.testBuf;
-			handles.vfOpts   = ef.vSettings;
+			handles.vfOpts   = ef.vfSettings;
 
             % ================ LAUNCH RANDOM SEQUENCE SCREEN ================ %
 		case 'y'
@@ -1293,6 +1293,27 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 					fprintf('csToolBufPreview settings :\n');
 					disp(handles.pvOpts);
 					disp(handles.frameBuf);
+				end
+			end
+			% ================ LAUNCH SAVE/LOAD DIALOG ================ %
+		case 'L'
+
+			sbOpts = csToolSaveBuf(handles.frameBuf, handles.segmenter, 'idx', frameIndex, 'opts', handles.sbOpts);
+
+			if(sbOpts.status == -1)
+				% Operation was cancelled
+				if(handles.debug)
+					fprintf('(DEBUG) : Got cancelled flag in sbOpts\n');
+					disp(sbOpts);
+					disp(sbOpts.opts);
+				end
+			else
+				handles.sbOpts    = sbOpts.opts;
+				handles.frameBuf  = sbOpts.frameBuf;
+				handles.segmenter = sbOpts.segmenter;
+				if(handles.debug)
+					fprintf('sbOpts :\n');
+					disp(sbOpts);
 				end
 			end
 

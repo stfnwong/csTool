@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 15-Jan-2014 01:38:12
+% Last Modified by GUIDE v2.5 06-Apr-2014 00:20:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -132,11 +132,13 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	handles.idx = 1;
 
 	%Populate GUI elements
-    fmtStr  = {'16', '8', '4', '2'};
-    orStr   = {'row', 'col', 'scalar'};
+    fmtStr     = {'16', '8', '4', '2'};
+    orStr      = {'row', 'col', 'scalar'};
+	dataFmtStr = {'hex', 'dec'}; 	%TODO : binary
     %typeStr = {'HSV', 'Hue', 'BP'};
-	set(handles.pmVecSz, 'String', fmtStr);
-	set(handles.pmVecOr, 'String', orStr);
+	set(handles.pmVecSz,   'String', fmtStr);
+	set(handles.pmVecOr,   'String', orStr);
+	set(handles.pmDataFmt, 'String', dataFmtStr);
 	%set(handles.pmVecClass, 'String', typeStr);
     vtStr = {'RGB', 'HSV', 'Hue', 'Backprojection'};
     set(handles.pmVecClass, 'String', vtStr);
@@ -178,7 +180,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     % set vector type
     switch(handles.vfSettings.vtype)
         case 'RGB'
-            set(hnadles.pmVecType, 'Value', 1);
+            set(handles.pmVecClass, 'Value', 1);
         case 'HSV'
             set(handles.pmVecClass, 'Value', 2);
         case 'Hue'
@@ -190,6 +192,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 			fprintf('Setting to backprojection\n');
 			set(handles.pmVecClass, 'Value', 4);
     end
+	handles.vclass = handles.vfSettings.vtype;
 
     % set image size
     dims = handles.vfSettings.dims;
@@ -253,9 +256,11 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	if(handles.idx < 1)
 		handles.idx = 1;
 	end
-	refImg    = handles.refFrameBuf.getCurImg(handles.idx);
-	testImg   = handles.testFrameBuf.getCurImg(handles.idx);
-	errImg    = abs(refImg - testImg);
+	%refImg    = handles.refFrameBuf.getCurImg(handles.idx);
+	%testImg   = handles.testFrameBuf.getCurImg(handles.idx);
+	%errImg    = abs(refImg - testImg);
+	%
+	[refImg testImg errImg] = getImg(handles);
 	refTitle  = sprintf('Reference frame %d', handles.idx);
 	testTitle = sprintf('Test frame %d', handles.idx);
 	errTitle  = sprintf('Error frame %d', handles.idx);
@@ -281,9 +286,10 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(handles.idx > handles.testFrameBuf.getNumFrames())
 		handles.idx = handles.testFrameBuf.getNumFrames();
 	end
-	refImg    = handles.refFrameBuf.getCurImg(handles.idx);
-	testImg   = handles.testFrameBuf.getCurImg(handles.idx);
-	errImg    = abs(refImg - testImg);
+	%refImg    = handles.refFrameBuf.getCurImg(handles.idx);
+	%testImg   = handles.testFrameBuf.getCurImg(handles.idx);
+	%errImg    = abs(refImg - testImg);
+	[refImg testImg errImg] = getImg(handles);
 	refTitle  = sprintf('Reference frame %d', handles.idx);
 	testTitle = sprintf('Test frame %d', handles.idx);
 	errTitle  = sprintf('Error frame %d', handles.idx);
@@ -316,9 +322,10 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	end
 	handles.idx = destIdx;
 
-	refImg    = handles.refFrameBuf.getCurImg(handles.idx);
-	testImg   = handles.testFrameBuf.getCurImg(handles.idx);
-	errImg    = abs(refImg - testImg);
+	%refImg    = handles.refFrameBuf.getCurImg(handles.idx);
+	%testImg   = handles.testFrameBuf.getCurImg(handles.idx);
+	%errImg    = abs(refImg - testImg);
+	[refImg testImg errImg] = getImg(handles);
 	refTitle  = sprintf('Reference frame %d', handles.idx);
 	testTitle = sprintf('Test frame %d', handles.idx);
 	errTitle  = sprintf('Error frame %d', handles.idx);
@@ -436,6 +443,9 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	vcidx    = get(handles.pmVecClass, 'Value');
 	vclass   = vclist{vcidx};
 	numFiles = fix(str2double(get(handles.etNumFiles, 'String')));
+	dfmtStr  = get(handles.pmDataFmt, 'String');
+	dfmtidx  = get(handles.pmDataFmt, 'Value');
+	dataFmt  = dfmtStr{dfmtidx};
 	
 	if(isnan(numFiles))
 		fprintf('ERROR: Cant interpret number of files [%s]\n', get(handles.etNumFiles, 'String'));
@@ -458,7 +468,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Read files in loop
 	for N = 1 : numFiles
 		fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, N, 1, ps.ext);
-		[vectors ef] = handles.vecManager.readVec('fname', fn, 'sz', vsize, 'vtype', vtype);
+		[vectors ef] = handles.vecManager.readVec('fname', fn, 'sz', vsize, 'vtype', vtype, 'dmode', dataFmt);
 		if(ef == -1)
 			fprintf('ERROR: Failed to read vector in file [%s]\n', fn);
 			return;
@@ -479,9 +489,9 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		end
 
 		if(iscell(vectors) && strncmpi(vtype, 'scalar', 6))
-			img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar', 'dataSz', dataSz, 'scale');
+			img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar', 'dataSz', dataSz, 'scale', 'dmode', dataFmt);
 		else
-			img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale');
+			img = handles.vecManager.formatVecImg(vectors, 'vecFmt', vtype, 'dataSz', dataSz, 'scale', 'dmode', dataFmt);
 		end
 		% Rescale image
 		%sc   = range(range(handles.refFrameBuf.getCurImg(handles.idx)));
@@ -543,14 +553,15 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	handles.testBufRead = true;
 
 	% Preview final image
-	refImg   = handles.refFrameBuf.getCurImg(handles.idx);
+	%refImg   = handles.refFrameBuf.getCurImg(handles.idx);
 	rParams  = handles.refFrameBuf.getWinParams(handles.idx);
 	rMoments = handles.refFrameBuf.getMoments(handles.idx);
     % TODO :  Still a problem here with size(vec) in vec2bpimg()
-	testImg  = handles.testFrameBuf.getCurImg(handles.idx);
+	%testImg  = handles.testFrameBuf.getCurImg(handles.idx);
 	tParams  = handles.testFrameBuf.getWinParams(handles.idx);
 	tMoments = handles.testFrameBuf.getMoments(handles.idx);
-    errImg   = abs(double(refImg) - double(testImg));
+    %errImg   = abs(double(refImg) - double(testImg));
+	[refImg testImg errImg] = getImg(handles);
 	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference', rParams, rMoments);
 	gui_updatePreview(handles.figPreviewTest, testImg, 'Test Data', tParams, tMoments);
 	gui_updatePreview(handles.figError, errImg, 'Error Image', [], []);
@@ -627,6 +638,46 @@ function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 	uiresume(csToolVerifyFig);
 
+% Generate error image
+function [refImg testImg errImg] = getImg(handles) 
+
+	%handles.vclass
+	% TODO : If the class is set as backprojection, then get 
+	% backprojection images and find difference.
+	% If hue, get the hue image... and so on
+	
+	switch(handles.vclass)
+		case 'RGB'
+			refImg  = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'rgb');
+			testImg = handles.testFrameBuf.getCurImg(handles.idx, 'mode', 'rgb');
+			errImg  = [];
+		case 'HSV'
+			refImg  = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'hsv');
+			testImg = handles.testFrameBuf.getCurImg(handles.idx, 'mode', 'hsv');
+			errImg  = [];
+		case 'Hue'
+			refImg  = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'hue');
+			testImg = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'hue');
+			if(~isempty(refImg) && ~isempty(testImg))
+				errImg  = abs(refImg - testImg);
+			else
+				errImg = [];
+			end
+
+		case 'backprojection'
+			refImg  = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'bp');
+			testImg = handles.testFrameBuf.getCurImg(handles.idx, 'mode', 'bp');
+            if(~isempty(refImg) && ~isempty(testImg))
+                errImg  = abs(refImg - testImg);
+            else
+                errImg = [];
+            end
+
+		otherwise
+			refImg  = [];
+			testImg = [];
+			errImg  = [];
+	end
 
 % -------- EMPTY FUNCTIONS -------- %
 function etImageHeight_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -638,6 +689,7 @@ function etNumFiles_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etTestParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etRefParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function pmDataFmt_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 % -------- CREATE FUNCTIONS -------- %
 function etFileName_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -687,3 +739,13 @@ function etRefParams_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
+
+function pmDataFmt_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+
+
+
+

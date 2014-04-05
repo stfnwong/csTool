@@ -210,7 +210,7 @@ classdef vecManager
 			end
 			% TODO : Format an options strcuture for vecDiskRead
 			vopts = struct('dtype', dtype, ...
-				           'mode', dmode);
+				           'dmode', dmode);
 
 			% Allocate memory and read files in sequence
 			vecdata = cell(1, sz);
@@ -240,7 +240,7 @@ classdef vecManager
 
 			for n = 1 : length(vecdata)
 				fn = sprintf('%s%s-vec%03d.%s', ps.path, ps.filename, n, ps.ext);
-				[vecdata{n} ref] = vecDiskRead(V, fn, 'dtype', vopts);
+				[vecdata{n} ref] = vecDiskRead(V, fn, vopts);
 				if(ref == -1)
 					fprintf('%s error in vector stream %d\n', DSTR, n);
 					delete(wb);

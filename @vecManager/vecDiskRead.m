@@ -37,8 +37,14 @@ function [vector varargout] = vecDiskRead(V, fname, opts)
 		end
 		if(strncmpi(opts.dmode, 'hex', 3))
 			% DO HEX STUFF
-			a      = char(importdata(fname));
-			vector = hex2dec(a(:,3:end));
+			a      = importdata(fname, ' ');
+            if(~isstruct(a))
+                a      = char(a);
+                vector = sscanf(a, '%x ');
+            else
+                fprintf('PROBLEM WITH FILE [%s]\n', fname);
+            end
+			%vector = hex2dec(a(:,3:end));
 			if(nargout > 1)
 				varargout{1} = length(vector);
 			end
