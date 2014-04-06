@@ -50,7 +50,7 @@ function status = gui_plotParams(axHandle, params, moments, niters, varargin)
 	for k = 1 : niters
 		m = moments{k};
 		% Check length
-		if(length(m) < 6)
+		if(length(m) < 5)
 			fprintf('Not enough elements in moments for iter %d\n', k);
 			status = -1;
 			return;

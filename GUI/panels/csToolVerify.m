@@ -115,12 +115,6 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	end
 	handles.testBufRead = false;
 
-	% TODO : Update this for new csFrameBuffer calls
-    % Check if we have a frame handle
-    if(~isfield(handles, 'fh'))
-        fprintf('WARNING: No frame handle specified\n');
-		fprintf('Frame handle input is now deprecated\n');
-    end
     % Make a field for vectors
     handles.vectors = [];
 	if(~exist('imsz', 'var'))
@@ -219,6 +213,7 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	rMoments = handles.refFrameBuf.getMoments(handles.idx);
 	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference', rParams, rMoments);
 
+	handles.status = 0;
 	handles.output = hObject;
     % Update handles structure
     guidata(hObject, handles);
@@ -228,7 +223,8 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 	handles.output = struct('frameBuf', handles.refFrameBuf, ...
 		                    'testBuf', handles.testFrameBuf, ...
-		                    'vfSettings', handles.vfSettings);
+		                    'vfSettings', handles.vfSettings, ...
+		                    'status', handles.status);
 	varargout{1} = handles.output;
 
 	% ======== CLOSE REQUEST FUNCTION ======== %
@@ -245,7 +241,8 @@ function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL
 
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
-	uiresume(handles.csToolVerifyFig);
+	handles.status = 0;
+	%uiresume(handles.csToolVerifyFig);
 	close(handles.csToolVerifyFig);
 
 
@@ -350,7 +347,7 @@ function gui_updatePreview(axHandle, img, figTitle, params, moments)
 	if(~isempty(figTitle))
 		title(axHandle, figTitle);
 	end
-
+	
 	if(~isequal(params, zeros(1,5)) || ~isempty(params) && ...
 	   ~isequal(moments, zeros(1,6)) || ~isempty(moments))
 		% Plot parameters
@@ -422,6 +419,7 @@ function nh = gui_updateParams(handles)
 	testText      = {testTitle, paramTitle, testParamStr, momentTitle, testMomentStr};
 	set(handles.etRefParams, 'String', refText);
 	set(handles.etTestParams, 'String', testText);
+	handles.status = -1;
 	nh = handles;
 
 	return;

@@ -1230,13 +1230,15 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			% TODO : Add options strucutre
 			ef = csToolVerify(handles.vecManager, 'opts', handles.vfOpts, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
 			%ef = csToolVerify('vecManager', handles.vecManager, 'imsz', imsz);
-			if(handles.debug)
-				fprintf('ef :\n');
-				disp(ef);
+			if(ef.status ~= -1)
+				if(handles.debug)
+					fprintf('ef :\n');
+					disp(ef);
+				end
+				handles.frameBuf = ef.frameBuf;
+				handles.testBuf  = ef.testBuf;
+				handles.vfOpts   = ef.vfSettings;
 			end
-			handles.frameBuf = ef.frameBuf;
-			handles.testBuf  = ef.testBuf;
-			handles.vfOpts   = ef.vfSettings;
 
             % ================ LAUNCH RANDOM SEQUENCE SCREEN ================ %
 		case 'y'
@@ -1587,17 +1589,17 @@ function bVerify_Callback(hObject, eventdata, handles) %#ok <INUSD,DEFNU>
     %TODO: Call the verify panel
     global frameIndex;
 
-	imsz = handles.frameBuf.getDims(frameIndex);
 	ef = csToolVerify(handles.vecManager, 'opts', handles.vfOpts, 'frameBuf', handles.frameBuf, 'testBuf', handles.testBuf);
 
-	if(handles.debug)
-		fprintf('ef :\n');
-		disp(ef);
+	if(ef.status ~= -1)
+		if(handles.debug)
+			fprintf('ef :\n');
+			disp(ef);
+		end
+		handles.vfOpts   = ef.vfSettings;
+		handles.frameBuf = ef.frameBuf;
+		handles.testBuf  = ef.testBuf;
 	end
-
-	handles.vfOpts   = ef.vfSettings;
-	handles.frameBuf = ef.frameBuf;
-	handles.testBuf  = ef.testBuf;
 
 	guidata(hObject, handles);
 	
