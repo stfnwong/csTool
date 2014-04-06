@@ -404,7 +404,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			if(handles.debug)
 				fprintf('Generating RGB Vec (%s) for frame %d\n', fmt, idx);
 			end
-			img = handles.frameBuf.getCurImg(idx, 'img');
+			img = handles.frameBuf.getCurImg(idx, 'mode', 'rgb');
 			handles.vecManager.writeImgVec(img, opts, 'rgb');
 			%handles.vecManager.writeRGBVec(fh, 'fmt', fmt, 'file', fname);
 		end
@@ -414,7 +414,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			if(handles.debug)
 				fprintf('Generating Hue Vec (%s) for frame %d\n', fmt, idx);
 			end
-			img = handles.frameBuf.getCurImg(idx, 'img');
+			img = handles.frameBuf.getCurImg(idx, 'mode', 'hue');
 			img = rgb2hsv(img);
 			img = img(:,:,1);
 			handles.vecManager.writeImgVec(img, opts, 'hue');
@@ -426,7 +426,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			if(handles.debug)
 				fprintf('Generating HSV Vec (%s) for frame %d\n', fmt, idx);
 			end
-			img = handles.frameBuf.getCurImg(idx, 'img');
+			img = handles.frameBuf.getCurImg(idx, 'mode', 'hsv');
 			img = rgb2hsv(img);
 			handles.vecManager.writeImgVec(img, opts, 'hsv');
 			%handles.vecManager.writeHSVVec(fh, 'fmt', fmt, 'file', fname);
@@ -437,7 +437,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			if(handles.debug)
 				fprintf('Generating BPVec (%s) for frame %d\n', fmt, idx);
 			end
-			img = handles.frameBuf.getCurImg(idx, 'bpimg');
+			img = handles.frameBuf.getCurImg(idx, 'mode', 'bp');
 			handles.vecManager.writeImgVec(img, opts, 'bp');
 			%handles.vecManager.writeBPVec(fh, 'fmt', fmt, 'file', fname);
 		end

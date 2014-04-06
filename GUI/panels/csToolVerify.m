@@ -667,6 +667,9 @@ function [refImg testImg errImg] = getImg(handles)
 		case 'backprojection'
 			refImg  = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'bp');
 			testImg = handles.testFrameBuf.getCurImg(handles.idx, 'mode', 'bp');
+			% TODO : Trial normalising the image here
+			refImg  = imgNorm(refImg);
+			testImg = imgNorm(testImg);
             if(~isempty(refImg) && ~isempty(testImg))
                 errImg  = abs(refImg - testImg);
             else

@@ -777,38 +777,6 @@ classdef vecManager
 			end
 		end 	%writeTrackingVec()
 
-		% -------- VERIFY HUE VECTOR -------- %
-		% TODO : Make trajectory vector a parameter here and commit result to
-		% disk
-		function verifyHueVector(V, huevec, refvec, varargin)
-		% This method is a wrapper to the verifyVector() method, which selects
-		% the correct scale, orientation, and type settings
-			if(~iscell(huevec))
-				fprintf('ERROR: huevec must be cell array\n');
-				return;
-			end
-			if(~iscell(refvec))
-				fprintf('ERROR: refvec must be cell array\n');
-				return;
-			end
-			% TODO : wrap verifyVector() here
-
-		end 	%verifyHueVector()
-		
-		% -------- VERIFY BACKPROJECTION VECTOR -------- %
-		function verifyBPVec(V, bpvec, refvec, varargin)
-		% This method is a wrapper to the verifyVector() method, which selects
-		% the correct scale, orientation, and type settings.
-			if(~iscell(bpvec))
-				fprintf('ERROR: bpvec must be cell array\n');
-				return;
-			end
-			if(~iscell(refvec))
-				fprintf('ERROR: refvec must be cell array\n');
-				return;
-			end
-		end 	%verifyBPVec()
-
 		% -------- Inject an error into the frame data -------- %
 		function errFrame = injectError(V, frame, errType, errOpts)
 
@@ -831,7 +799,7 @@ classdef vecManager
 		%[ftype val] = parseFmt(V,fmt);
 		% ---- TEST VECTOR GENERATION ---- %
 		% ---- genFrameVec() : GENERATE VECTOR FOR FRAME
-		                   vecDiskWrite(V, data, varargin);	%commit data to disk
+		status           = vecDiskWrite(V, data, varargin);	%commit data to disk
 		[vec varargout]  = vecDiskRead(V, fname, varargin);
 		[moments niters] = parseMoment(V, fname, varargin);
 		vec              = genTrackingVec(V, fh);
