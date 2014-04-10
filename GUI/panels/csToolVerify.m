@@ -372,15 +372,16 @@ function nh = gui_updateParams(handles)
 
 	refParams   = handles.refFrameBuf.getWinParams(handles.idx);
 	refMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	refNiters   = handles.refFrameBuf.getNiters(handles.idx);
 	%refNiters   = handles.refFrameBuf.getNiters(handles.idx);
 	if(handles.testBufRead)
 	   testParams  = handles.testFrameBuf.getWinParams(handles.idx);
 	   testMoments = handles.testFrameBuf.getMoments(handles.idx);
-	   %testNiters  = handles.testFrameBuf.getNiters(handles.idx);
+	   testNiters  = handles.testFrameBuf.getNiters(handles.idx);
 	else
 	   testParams  = [];
 	   testMoments = [];
-	   %testNiters  = 0;
+	   testNiters  = [];
 	end
 
 	 %Format text
@@ -397,26 +398,36 @@ function nh = gui_updateParams(handles)
 	end
 	if(~isempty(refMoments))
 		% TODO : Add control to make Moment display selectable
-		refMomentStr = sprintf('%.0f ', refMoments{1});
+		refMomentStr = sprintf('[%.0f] ', refMoments{1});
 	else
 		refMomentStr = [];
 	end
+	if(~isempty(refNiters))
+		refNiterString = sprintf('iters : %d', refNiters);
+	else
+		refNiterString = [];
+	end
 	if(~isempty(testParams))
-		testParamStr = sprintf('%4.2f ', testParams);
+		testParamStr = sprintf('[%4.2f] ', testParams);
 	else
 		testParamStr = [];
 	end
 	if(~isempty(testMoments))
-		testMomentStr = sprintf('%.0f ', testMoments{1});
+		testMomentStr = sprintf('[%.0f] ', testMoments{1});
 	else
 		testMomentStr = [];
+	end
+	if(~isempty(testNiters))
+		testNiterString = sprintf('iters : %d', testNiters);
+	else
+		testNiterString = [];
 	end
 
 	% Show error terms for window parameters as well
 	
 
-	refText       = {refTitle, paramTitle, refParamStr,  momentTitle, refMomentStr};
-	testText      = {testTitle, paramTitle, testParamStr, momentTitle, testMomentStr};
+	refText       = {refTitle, paramTitle, refParamStr,  momentTitle, refMomentStr, refNiterString};
+	testText      = {testTitle, paramTitle, testParamStr, momentTitle, testMomentStr, testNiterString};
 	set(handles.etRefParams, 'String', refText);
 	set(handles.etTestParams, 'String', testText);
 	handles.status = -1;

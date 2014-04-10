@@ -80,11 +80,11 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 	%clean up garbage values
 	rhist(isnan(rhist)) = 0;
     rhist(isinf(rhist)) = 0;
-	%if(T.FPGA_MODE)
-	%	rhist(isinf(rhist)) = T.DATA_SZ;
-	%else
-	%	rhist(isinf(rhist)) = 1;
-	%end
+	if(T.FPGA_MODE)
+		rhist(isinf(rhist)) = T.DATA_SZ;
+	else
+		rhist(isinf(rhist)) = 1;
+	end
     rhist = rhist ./ (max(max(rhist))); %TODO : DO this last
 	% TODO: MEX this?
 	
