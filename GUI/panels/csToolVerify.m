@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 06-Apr-2014 00:20:54
+% Last Modified by GUIDE v2.5 10-Apr-2014 13:56:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -647,6 +647,18 @@ function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 	uiresume(csToolVerifyFig);
 
+function csToolVerifyFig_KeyPressFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	switch eventdata.Character
+		case 'f'
+
+		case 'b'
+
+		case 'r'
+
+	end
+
+
 % Generate error image
 function [refImg testImg errImg] = getImg(handles) 
 
@@ -756,8 +768,6 @@ function pmDataFmt_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
-
-
 
 
 
