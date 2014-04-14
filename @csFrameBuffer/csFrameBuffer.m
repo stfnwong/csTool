@@ -314,7 +314,9 @@ classdef csFrameBuffer
 			% TODO : Test csToolVerify read and write calls
 			[img status] = getImgData(F, idx, opts);
 			if(status == -1)
-				fprintf('ERROR returning image data for index %d\n', idx);
+				%if(F.verbose)
+				%	fprintf('ERROR returning image data for index %d\n', idx);
+				%end
 				if(nargout > 1)
 					varargout{1} = -1;
 				end

@@ -210,6 +210,7 @@ csToolVecOpts_OpeningFcn	GUI/panels/csToolVecOpts.m	/^function csToolVecOpts_Ope
 csToolVecOpts_OutputFcn	GUI/panels/csToolVecOpts.m	/^function varargout = csToolVecOpts_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
 csToolVerify	GUI/panels/csToolVerify.m	/^function varargout = csToolVerify(varargin)$/;"	f
 csToolVerifyFig_CloseRequestFcn	GUI/panels/csToolVerify.m	/^function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+csToolVerifyFig_KeyPressFcn	GUI/panels/csToolVerify.m	/^function csToolVerifyFig_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>$/;"	f
 csToolVerify_OpeningFcn	GUI/panels/csToolVerify.m	/^function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>$/;"	f
 csToolVerify_OutputFcn	GUI/panels/csToolVerify.m	/^function varargout = csToolVerify_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>$/;"	f
 cstParam_FmtParamString	GUI/panels/csToolParamBrowser.m	/^function str = cstParam_FmtParamString(handles)   $/;"	f
@@ -410,13 +411,14 @@ genRowVec	@vecManager/genRowVec.m	/^function vec = genRowVec(V, data, varargin)$
 genTestImg	@vecManager/genTestImg.m	/^function img = genTestImg(V, opts, varargin)$/;"	f
 genTrackingVec	@vecManager/genTrackingVec.m	/^function vec = genTrackingVec(V, fh)$/;"	f
 gen_kernel_lut	@csSegmenter/gen_kernel_lut.m	/^function klut = gen_kernel_lut(S, scale, bw, quant, varargin)$/;"	f
-getImg	GUI/panels/csToolVerify.m	/^function [refImg testImg errImg] = getImg(handles) $/;"	f
 getImgData	@csFrameBuffer/getImgData.m	/^function [img status] = getImgData(F, idx, opts)$/;"	f
 gui_axHitTest	GUI/gui_axHitTest.m	/^function [hit ah varargout] = gui_axHitTest(axHandles, figHandle, cPos, varargin)$/;"	f
 gui_calcEllipse	GUI/gui_calcEllipse.m	/^function [X Y] = gui_calcEllipse(x,y,a,b,ang,steps)$/;"	f
 gui_calcRect	GUI/gui_calcRect.m	/^function [left right top bottom] = gui_calcRect(xc, yc, width, height, ang, steps)$/;"	f
 gui_disable	GUI/panels/csToolSeqGen.m	/^function nh = gui_disable(handles, state)$/;"	f
 gui_genImHist	GUI/gui_genImHist.m	/^function varargout = gui_genImHist(varargin)$/;"	f
+gui_getImg	GUI/panels/csToolVerify.m	/^function [refImg testImg errImg] = gui_getImg(refFrameBuf, testFrameBuf, idx, vclass)$/;"	f
+gui_getParams	GUI/panels/csToolVerify.m	/^function [rParams rMoments tParams tMoments] = gui_getParams(refFrameBuf, testFrameBuf, idx)$/;"	f
 gui_getTraj	GUI/gui_getTraj.m	/^function [tVec varargout] = gui_getTraj(frameBuf, varargin)$/;"	f
 gui_ifaceEnable	GUI/gui_ifaceEnable.m	/^function nh = gui_ifaceEnable(handles, state)$/;"	f
 gui_loadFrames	GUI/gui_loadFrames.m	/^function [status nh varargout] = gui_loadFrames(handles, filename, numFrames)$/;"	f
@@ -551,7 +553,7 @@ pmRMeth_Callback	GUI/panels/csToolTrackOpts.m	/^function pmRMeth_Callback(hObjec
 pmRMeth_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function pmRMeth_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>$/;"	f
 pmSparseFac_Callback	GUI/panels/csToolTrackOpts.m	/^function pmSparseFac_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 pmSparseFac_CreateFcn	GUI/panels/csToolTrackOpts.m	/^function pmSparseFac_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
-pmVecClass_Callback	GUI/panels/csToolVerify.m	/^function pmVecClass_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+pmVecClass_Callback	GUI/panels/csToolVerify.m	/^function pmVecClass_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 pmVecClass_CreateFcn	GUI/panels/csToolVerify.m	/^function pmVecClass_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
 pmVecFmt_Callback	GUI/panels/csToolVecOpts.m	/^function pmVecFmt_Callback(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
 pmVecFmt_CreateFcn	GUI/panels/csToolVecOpts.m	/^function pmVecFmt_CreateFcn(hObject, eventdata, handles)	%#ok<INUSD,DEFNU>$/;"	f
