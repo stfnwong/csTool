@@ -383,7 +383,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			disp(winparam)
 			fprintf('Writing to file [%s]\n', ipf);
 			for k = 1 : length(winparam)
-				fprintf(fp, '%x ', winparam(k));
+				fprintf(fp, '%d ', winparam(k));
 			end
 			fclose(fp);
 		end

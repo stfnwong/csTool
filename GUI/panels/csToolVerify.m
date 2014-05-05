@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 10-Apr-2014 13:56:40
+% Last Modified by GUIDE v2.5 10-Apr-2014 16:01:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -246,6 +246,75 @@ function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	close(handles.csToolVerifyFig);
 
 
+function pmVecClass_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+	vcIdx  = get(handles.pmVecClass, 'Value');
+	vcStr  = get(handles.pmVecClass, 'String');
+	vcType = vcStr{vcIdx};
+	
+	if(strncmpi(vcType, 'RGB', 3))
+		handles.vclass = 'RGB';
+	elseif(strncmpi(vcType, 'HSV', 3))
+		handles.vclass = 'HSV';
+	elseif(strncmpi(vcType, 'Hue', 3))
+		handles.vclass = 'Hue';
+	elseif(strncmpi(vcType, 'backprojection', 14))
+		handles.vclass = 'backprojection';
+	else
+		return;
+	end
+
+	guidata(hObject, handles);
+	uiresume(handles.csToolVerifyFig);
+
+
+% ---------- KEYPRESS FUNCTION -------- %	
+function csToolVerifyFig_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
+
+	switch eventdata.Character
+		case 'f'
+			if(handles.idx < handles.testFrameBuf.getNumFrames())
+				handles.idx = handles.idx+1;
+			else
+				handles.idx = handles.testFrameBuf.getNumFrames();
+			end
+			
+			refTitle  = sprintf('Reference frame %d', handles.idx);
+			testTitle = sprintf('Test frame %d', handles.idx);
+			errTitle  = sprintf('Error frame %d', handles.idx);
+			[refImg testImg errImg] = gui_getImg(handles.refFrameBuf, handles.testFrameBuf, handles.idx, handles.vclass);
+			[rParams rMoments tParams tMoments] = gui_getParams(handles.refFrameBuf, handles.testFrameBuf, handles.idx);
+			gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
+			gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
+			gui_updatePreview(handles.figError, errImg, errTitle, [], []);
+			nh = gui_updateParams(handles);
+			handles = nh;
+
+		case 'b'
+			if(handles.idx > 1)
+				handles.idx = handles.idx - 1;
+			else
+				handles.idx = 1;
+			end
+
+			refTitle  = sprintf('Reference frame %d', handles.idx);
+			testTitle = sprintf('Test frame %d', handles.idx);
+			errTitle  = sprintf('Error frame %d', handles.idx);
+			[refImg testImg errImg] = gui_getImg(handles.refFrameBuf, handles.testFrameBuf, handles.idx, handles.vclass);
+			[rParams rMoments tParams tMoments] = gui_getParams(handles.refFrameBuf, handles.testFrameBuf, handles.idx);
+			gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
+			gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
+			gui_updatePreview(handles.figError, errImg, errTitle, [], []);
+			nh = gui_updateParams(handles);
+			handles = nh;
+
+		case 'r'
+
+	end
+
+	guidata(hObject, handles);
+	uiresume(handles.csToolVerifyFig);
+
 % ---------- TRANSPORT CONTROLS -------- %	
 function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	
@@ -257,14 +326,17 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%testImg   = handles.testFrameBuf.getCurImg(handles.idx);
 	%errImg    = abs(refImg - testImg);
 	%
-	[refImg testImg errImg] = getImg(handles);
+
 	refTitle  = sprintf('Reference frame %d', handles.idx);
 	testTitle = sprintf('Test frame %d', handles.idx);
 	errTitle  = sprintf('Error frame %d', handles.idx);
-	tParams   = handles.testFrameBuf.getWinParams(handles.idx);
-	tMoments  = handles.testFrameBuf.getMoments(handles.idx);
-	rParams   = handles.refFrameBuf.getWinParams(handles.idx);
-	rMoments  = handles.refFrameBuf.getMoments(handles.idx);
+
+	%tParams   = handles.testFrameBuf.getWinParams(handles.idx);
+	%tMoments  = handles.testFrameBuf.getMoments(handles.idx);
+	%rParams   = handles.refFrameBuf.getWinParams(handles.idx);
+	%rMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	[refImg testImg errImg] = gui_getImg(handles.refFrameBuf, handles.testFrameBuf, handles.idx, handles.vclass);
+	[rParams rMoments tParams tMoments] = gui_getParams(handles.refFrameBuf, handles.testFrameBuf, handles.idx);
 	gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
 	gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
 	gui_updatePreview(handles.figError, errImg, errTitle, [], []);
@@ -286,14 +358,15 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	%refImg    = handles.refFrameBuf.getCurImg(handles.idx);
 	%testImg   = handles.testFrameBuf.getCurImg(handles.idx);
 	%errImg    = abs(refImg - testImg);
-	[refImg testImg errImg] = getImg(handles);
 	refTitle  = sprintf('Reference frame %d', handles.idx);
 	testTitle = sprintf('Test frame %d', handles.idx);
 	errTitle  = sprintf('Error frame %d', handles.idx);
-	tParams   = handles.testFrameBuf.getWinParams(handles.idx);
-	tMoments  = handles.testFrameBuf.getMoments(handles.idx);
-	rParams   = handles.refFrameBuf.getWinParams(handles.idx);
-	rMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	%tParams   = handles.testFrameBuf.getWinParams(handles.idx);
+	%tMoments  = handles.testFrameBuf.getMoments(handles.idx);
+	%rParams   = handles.refFrameBuf.getWinParams(handles.idx);
+	%rMoments  = handles.refFrameBuf.getMoments(handles.idx);
+	[refImg testImg errImg] = gui_getImg(handles.refFrameBuf, handles.testFrameBuf, handles.idx, handles.vclass);
+	[rParams rMoments tParams tMoments] = gui_getParams(handles.refFrameBuf, handles.testFrameBuf, handles.idx);
 	gui_updatePreview(handles.figPreviewRef, refImg, refTitle, rParams, rMoments);
 	gui_updatePreview(handles.figPreviewTest, testImg, testTitle, tParams, tMoments);
 	gui_updatePreview(handles.figError, errImg, errTitle, [], []);
@@ -322,7 +395,7 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	%refImg    = handles.refFrameBuf.getCurImg(handles.idx);
 	%testImg   = handles.testFrameBuf.getCurImg(handles.idx);
 	%errImg    = abs(refImg - testImg);
-	[refImg testImg errImg] = getImg(handles);
+	[refImg testImg errImg] = gui_getImg(handles,refFrameBuf, handles.testFrameBuf, handles.idx, handles.vclass);
 	refTitle  = sprintf('Reference frame %d', handles.idx);
 	testTitle = sprintf('Test frame %d', handles.idx);
 	errTitle  = sprintf('Error frame %d', handles.idx);
@@ -570,7 +643,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	tParams  = handles.testFrameBuf.getWinParams(handles.idx);
 	tMoments = handles.testFrameBuf.getMoments(handles.idx);
     %errImg   = abs(double(refImg) - double(testImg));
-	[refImg testImg errImg] = getImg(handles);
+	[refImg testImg errImg] = gui_getImg(handles.refFrameBuf, handles.testFrameBuf, handles.idx, handles.vclass);
 	gui_updatePreview(handles.figPreviewRef, refImg, 'Reference', rParams, rMoments);
 	gui_updatePreview(handles.figPreviewTest, testImg, 'Test Data', tParams, tMoments);
 	gui_updatePreview(handles.figError, errImg, 'Error Image', [], []);
@@ -659,26 +732,35 @@ function csToolVerifyFig_KeyPressFcn(hObject, eventdata, handles)%#ok<INUSL,DEFN
 	end
 
 
+
+% Get params for GUI update
+function [rParams rMoments tParams tMoments] = gui_getParams(refFrameBuf, testFrameBuf, idx)
+	
+	tParams   = testFrameBuf.getWinParams(idx);
+	tMoments  = testFrameBuf.getMoments(idx);
+	rParams   = refFrameBuf.getWinParams(idx);
+	rMoments  = refFrameBuf.getMoments(idx);
+
 % Generate error image
-function [refImg testImg errImg] = getImg(handles) 
+function [refImg testImg errImg] = gui_getImg(refFrameBuf, testFrameBuf, idx, vclass)
 
 	%handles.vclass
 	% TODO : If the class is set as backprojection, then get 
 	% backprojection images and find difference.
 	% If hue, get the hue image... and so on
 	
-	switch(handles.vclass)
+	switch(vclass)
 		case 'RGB'
-			refImg  = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'rgb');
-			testImg = handles.testFrameBuf.getCurImg(handles.idx, 'mode', 'rgb');
+			refImg  = refFrameBuf.getCurImg(idx, 'mode', 'rgb');
+			testImg = testFrameBuf.getCurImg(idx, 'mode', 'rgb');
 			errImg  = [];
 		case 'HSV'
-			refImg  = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'hsv');
-			testImg = handles.testFrameBuf.getCurImg(handles.idx, 'mode', 'hsv');
+			refImg  = refFrameBuf.getCurImg(idx, 'mode', 'hsv');
+			testImg = testFrameBuf.getCurImg(idx, 'mode', 'hsv');
 			errImg  = [];
 		case 'Hue'
-			refImg  = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'hue');
-			testImg = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'hue');
+			refImg  = refFrameBuf.getCurImg(idx, 'mode', 'hue');
+			testImg = refFrameBuf.getCurImg(idx, 'mode', 'hue');
 			if(~isempty(refImg) && ~isempty(testImg))
 				errImg  = abs(refImg - testImg);
 			else
@@ -686,8 +768,8 @@ function [refImg testImg errImg] = getImg(handles)
 			end
 
 		case 'backprojection'
-			refImg  = handles.refFrameBuf.getCurImg(handles.idx, 'mode', 'bp');
-			testImg = handles.testFrameBuf.getCurImg(handles.idx, 'mode', 'bp');
+			refImg  = refFrameBuf.getCurImg(idx, 'mode', 'bp');
+			testImg = testFrameBuf.getCurImg(idx, 'mode', 'bp');
 			% TODO : Trial normalising the image here
 			refImg  = imgNorm(refImg);
 			testImg = imgNorm(testImg);
@@ -708,7 +790,7 @@ function etImageHeight_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etImageWidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmVecOr_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etFileName_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-function pmVecClass_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+
 function etNumFiles_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etTestParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -768,6 +850,3 @@ function pmDataFmt_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
-
-
-
