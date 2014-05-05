@@ -22,7 +22,7 @@ function varargout = csToolSeqGen(varargin)
 
 % Edit the above text to modify the response to help csToolSeqGen
 
-% Last Modified by GUIDE v2.5 18-Feb-2014 12:01:55
+% Last Modified by GUIDE v2.5 06-May-2014 05:45:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -117,6 +117,8 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	set(handles.etImgHeight, 'String', num2str(handles.genOpts.imsz(2)));
 	set(handles.etLocX,      'String', num2str(handles.genOpts.loc(1)));
 	set(handles.etLocY,      'String', num2str(handles.genOpts.loc(2)));
+	set(handles.etTargetWidth, 'String', num2str(handles.genOpts.tsize(1)));
+	set(handles.etTargetHeight, 'String', num2str(handles.genOpts.tsize(2)));
 	distStr = {'normal', 'uniform'};
 	set(handles.pmDistribution, 'String', distStr);
 	if(strncmpi(handles.genOpts.dist, 'normal', 6))
@@ -238,13 +240,15 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	handles = gui_disable(handles, 'off');
 	% Format options structure
-	npoints = fix(str2double(get(handles.etNumPoints, 'String')));
-	nframes = fix(str2double(get(handles.etNumFrames, 'String')));
-	sfac    = fix(str2double(get(handles.etScaleFac,  'String')));
-	wRes    = fix(str2double(get(handles.etWRes,      'String')));
-	maxspd  = fix(str2double(get(handles.etMaxSpeed,  'String')));
-	img_w   = fix(str2double(get(handles.etImgWidth,  'String')));
-	img_h   = fix(str2double(get(handles.etImgHeight, 'String')));
+	npoints = fix(str2double(get(handles.etNumPoints,    'String')));
+	nframes = fix(str2double(get(handles.etNumFrames,    'String')));
+	sfac    = fix(str2double(get(handles.etScaleFac,     'String')));
+	wRes    = fix(str2double(get(handles.etWRes,         'String')));
+	maxspd  = fix(str2double(get(handles.etMaxSpeed,     'String')));
+	img_w   = fix(str2double(get(handles.etImgWidth,     'String')));
+	img_h   = fix(str2double(get(handles.etImgHeight,    'String')));
+	tWidth  = fix(str2double(get(handles.etTargetWidth,  'String')));
+	tHeight = fix(str2double(get(handles.etTargetHeight, 'String')));
 	distidx = get(handles.pmDistribution, 'Value');
 	diststr = get(handles.pmDistribution, 'String');
 	dist    = diststr{distidx};
@@ -261,7 +265,7 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		             'sfac', sfac, ...
 		             'wRes', wRes, ...
 		             'theta', 0, ...
-		             'tsize', [64 64], ...
+		             'tsize', [tWidth tHeight], ...
 		             'loc', loc, ...
 		             'kernel', [] );
 	
@@ -336,7 +340,32 @@ function nh = gui_disable(handles, state)
 
 	nh = handles;
 
+function chkLockSize_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+	tw = fix(str2double(get(handles.etTargetWidth, 'String')));
+	th = fix(str2double(get(handles.etTargetHeight, 'String')));
+	set(handles.etNumPoints, 'String', num2str(tw*th));
 
+	guidata(hObject, handles);
+	uiresume(handles.csToolSeqGen);
+
+function etTargetHeight_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+	if(get(handles.chkLockSize, 'Value'))
+		tw = fix(str2double(get(handles.etTargetWidth, 'String')));
+		th = fix(str2double(get(handles.etTargetHeight, 'String')));
+		set(handles.etNumPoints, 'String', num2str(tw*th));
+		guidata(hObject, handles);
+		uiresume(handles.csToolSeqGen);
+	end
+
+		
+function etTargetWidth_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+	if(get(handles.chkLockSize, 'Value'))
+		tw = fix(str2double(get(handles.etTargetWidth, 'String')));
+		th = fix(str2double(get(handles.etTargetHeight, 'String')));
+		set(handles.etNumPoints, 'String', num2str(tw*th));
+		guidata(hObject, handles);
+		uiresume(handles.csToolSegGen);
+	end
 
 % ======== CREATE FUNCTIONS ======== %
 % --- Executes during object creation, after setting all properties.
@@ -395,6 +424,20 @@ function etLocY_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 		set(hObject,'BackgroundColor','white');
 	end
 
+function etWRes_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etTargetWidth_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etTargetHeight_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 
 % ======== EMPTY FUNCTIONS ======== %
 
@@ -409,26 +452,7 @@ function etFrame_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etCurFrame_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etLocY_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etLocX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etWRes_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 
 
-function etWRes_Callback(hObject, eventdata, handles)
-% hObject    handle to etWRes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of etWRes as text
-%        str2double(get(hObject,'String')) returns contents of etWRes as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function etWRes_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to etWRes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
