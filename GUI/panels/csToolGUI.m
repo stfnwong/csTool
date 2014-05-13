@@ -1247,8 +1247,11 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			else
 				sgOpts = csToolSeqGen('genopts', handles.sqOpts);
 			end
+            if(handles.debug)
+                fprintf('INFO: Returned from csToolSeqGen() call (keyPressFcn)\n');
+            end
 			if(sgOpts.status ~= -1)
-                % TODO : Re-write structure names on csToolSeqGen side
+                % TODO : Re-write structure names on csThoolSeqGen side
 				handles.sqOpts  = sgOpts.genOpts;
 				handles.frameBuf = sgOpts.frameBuf;
 				if(handles.debug)

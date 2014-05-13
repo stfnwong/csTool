@@ -22,7 +22,7 @@ function varargout = csToolSeqGen(varargin)
 
 % Edit the above text to modify the response to help csToolSeqGen
 
-% Last Modified by GUIDE v2.5 06-May-2014 05:45:49
+% Last Modified by GUIDE v2.5 10-May-2014 18:28:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -134,7 +134,7 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	handles.fbIdx = initFrame;
 	set(handles.etFrame, 'String', num2str(handles.fbIdx));
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
-	handles.cancelled = 0;
+	handles.cancelled = -1; %-1 here while there are still output leaks
 	% Choose default command line output for csToolSeqGen
 	handles.output = hObject;
 
@@ -353,19 +353,20 @@ function etTargetHeight_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		tw = fix(str2double(get(handles.etTargetWidth, 'String')));
 		th = fix(str2double(get(handles.etTargetHeight, 'String')));
 		set(handles.etNumPoints, 'String', num2str(tw*th));
-		guidata(hObject, handles);
-		uiresume(handles.csToolSeqGen);
-	end
 
+	end
+	guidata(hObject, handles);
+	uiresume(handles.csToolSeqGen);
 		
 function etTargetWidth_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(get(handles.chkLockSize, 'Value'))
 		tw = fix(str2double(get(handles.etTargetWidth, 'String')));
 		th = fix(str2double(get(handles.etTargetHeight, 'String')));
 		set(handles.etNumPoints, 'String', num2str(tw*th));
-		guidata(hObject, handles);
-		uiresume(handles.csToolSegGen);
+
 	end
+	guidata(hObject, handles);
+	uiresume(handles.csToolSeqGen);
 
 % ======== CREATE FUNCTIONS ======== %
 % --- Executes during object creation, after setting all properties.
@@ -453,6 +454,3 @@ function etCurFrame_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etLocY_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etLocX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etWRes_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
-
-

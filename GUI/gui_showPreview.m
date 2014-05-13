@@ -116,6 +116,12 @@ function [status nh] = gui_showPreview(handles, varargin)
 			niters  = handles.frameBuf.getNiters(idx);
 			dims    = handles.frameBuf.getDims(idx);
 			bpsum   = handles.frameBuf.getBpSum(idx);
+			isSp    = handles.frameBuf.getSparse(idx);
+			if(isSp)
+				spfac = handles.frameBuf.getSparseFac(idx);
+			else
+				spfac = [];
+			end
 			gui_plotParams(handles.fig_bpPreview, params, moments, niters);
 			if(exist('params', 'var'))
 				params = handles.frameBuf.getWinParams(idx);
@@ -123,7 +129,7 @@ function [status nh] = gui_showPreview(handles, varargin)
 			if(~exist('pidx', 'var'))
 				pidx = 1;
 			end
-			[str status] = gui_setWinParams(pidx, params, moments, niters, dims, bpsum);
+			[str status] = gui_setWinParams(pidx, params, moments, niters, dims, bpsum, spfac);
 			if(status == 0)
 				set(handles.etParam, 'String', str);
 			end
