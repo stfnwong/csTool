@@ -134,7 +134,8 @@ function csToolSeqGen_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
 	handles.fbIdx = initFrame;
 	set(handles.etFrame, 'String', num2str(handles.fbIdx));
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
-	handles.cancelled = -1; %-1 here while there are still output leaks
+	%-1 here while there are still output leaks
+	handles.cancelled = 0; 
 	% Choose default command line output for csToolSeqGen
 	handles.output = hObject;
 
@@ -182,7 +183,6 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolSeqGen);
 
 function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Bounds check and increment frame index
@@ -197,7 +197,6 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolSeqGen);
 
 function bFirst_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	handles.fbIdx = 1;
@@ -206,7 +205,6 @@ function bFirst_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolSeqGen);
 
 function bLast_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	handles.fbIdx = handles.frameBuf.getNumFrames();
@@ -215,7 +213,6 @@ function bLast_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolSeqGen);
 
 function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Jump to specified frame 
@@ -233,7 +230,6 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolSeqGen);
 
 function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Generate Random Sequence
@@ -286,14 +282,12 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	gui_updatePreview(handles.figPreview, fh);
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolSeqGen);
 
 function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	%handles.output = struct('status', 0, ...
 	%	                    'frameBuf', handles.frameBuf, ...
 	%	                    'genOpts', handles.genOpts );
 	handles.cancelled = 0;
-	uiresume(handles.csToolSeqGen);
 	close(handles.csToolSeqGen);
 
 function bCancel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
@@ -301,7 +295,6 @@ function bCancel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	%	                    'frameBuf', handles.frameBuf, ...
 	%	                    'genOpts', handles.genOpts);
 	handles.cancelled = -1;
-	uiresume(handles.csToolSeqGen);
 	close(handles.csToolSeqGen);
 
 function figPreview_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
@@ -346,7 +339,6 @@ function chkLockSize_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.etNumPoints, 'String', num2str(tw*th));
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolSeqGen);
 
 function etTargetHeight_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(get(handles.chkLockSize, 'Value'))
@@ -356,7 +348,6 @@ function etTargetHeight_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	end
 	guidata(hObject, handles);
-	uiresume(handles.csToolSeqGen);
 		
 function etTargetWidth_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(get(handles.chkLockSize, 'Value'))
@@ -366,7 +357,6 @@ function etTargetWidth_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	end
 	guidata(hObject, handles);
-	uiresume(handles.csToolSeqGen);
 
 % ======== CREATE FUNCTIONS ======== %
 % --- Executes during object creation, after setting all properties.
