@@ -160,7 +160,8 @@ function [status] = gui_procLoop(handles, varargin)
 		waitbar(k/N, wb, sprintf('%s (%d/%d)...', fs, k, N));
 
 		% =============== SEGMENTATION ================ %
-		if(SEG && handles.frameBuf.getRenderMode == 0)
+		%if(SEG && handles.frameBuf.getRenderMode == 0)
+        if(SEG)
 			[hue_img ef] = handles.frameBuf.getCurImg(k, 'mode', 'hue');
 			if(ef == -1)
 				fprintf('ERROR: Cant read frame %d/%d, error in frameBuf.getCurImg()\n', k, N);
@@ -173,7 +174,7 @@ function [status] = gui_procLoop(handles, varargin)
 			[bpvec bpsum rhist] = handles.segmenter.segFrame(hue_img, 'norm');
 			params  = struct('bpvec',bpvec,'bpsum',bpsum,'rhist',rhist);
 			handles.frameBuf = handles.frameBuf.setFrameParams(k, params);
-		end
+        end
 		%Check this frame has been segmented
 		if(~handles.frameBuf.hasBpData(k))
 			fprintf('ERROR: frame %d has no backprojected pixels\n', k);
@@ -192,6 +193,8 @@ function [status] = gui_procLoop(handles, varargin)
                 return;
 			end
 
+			bpsum = handles.frameBuf.getBpSum(k);
+
 			%Get frame parameters from previous frame
 			if(k == 1)
 				%If we didn't specify an initial parameter, gui_procLoop 
@@ -208,9 +211,9 @@ function [status] = gui_procLoop(handles, varargin)
 				end
 				if(exist('initParam', 'var'))
 					% TODO : Pass extra parameters for sparse tracking
-					[st tOpts] = handles.tracker.trackFrame(bpimg, 'wpos', initParam, 'zm', handles.frameBuf.getZeroMoment(k));
+					[st tOpts] = handles.tracker.trackFrame(bpimg, 'wpos', initParam, 'zm', handles.frameBuf.getZeroMoment(k), 'bpsum', bpsum);
 				else
-					[st tOpts] = handles.tracker.trackFrame(bpimg, 'zm', handles.frameBuf.getZeroMoment(k));
+					[st tOpts] = handles.tracker.trackFrame(bpimg, 'zm', handles.frameBuf.getZeroMoment(k), 'bpsum', bpsum);
 				end
 				if(st == 0)
 					handles.frameBuf = handles.frameBuf.setFrameParams(k, tOpts);
@@ -253,7 +256,7 @@ function [status] = gui_procLoop(handles, varargin)
 				end
 				%bpimg      = handles.frameBuf.getCurImg(k, 'bpimg');
 				bpimg      = handles.frameBuf.getCurImg(k, 'mode', 'bp');
-				[st tOpts] = handles.tracker.trackFrame(bpimg, 'wpos', pParam, 'zm', handles.frameBuf.getZeroMoment(k));
+				[st tOpts] = handles.tracker.trackFrame(bpimg, 'wpos', pParam, 'zm', handles.frameBuf.getZeroMoment(k), 'bpsum', bpsum);
 				if(st == -2)
 					%This error code indicates that we will quit the loop early,
 					%returning control to the GUI

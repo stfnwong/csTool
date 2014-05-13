@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 13-May-2014 20:12:40
+% Last Modified by GUIDE v2.5 13-May-2014 21:26:49
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -751,8 +751,13 @@ function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Find average error and display
 	avgX = sum(err(1,:)) / length(err);
 	avgY = sum(err(2,:)) / length(err);
-	set(handles.etAvgErrX, 'String', num2str(avgX));
-	set(handles.etAvgErrY, 'String', num2str(avgY));
+	set(handles.etAvgErrX, 'String', sprintf('%3.2f', avgX));
+	set(handles.etAvgErrY, 'String', sprintf('%3.2f', avgY));
+	% Find standard deviation and display
+	stdX = std(err(1,:));
+	stdY = std(err(2,:));
+	set(handles.etStdDevX, 'String', sprintf('%3.2f', stdX));
+	set(handles.etStdDevY, 'String', sprintf('%3.2f', stdY));
 		
 	guidata(hObject, handles);
 
@@ -965,6 +970,8 @@ function etCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etAvgErrX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etAvgErrY_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etStdDevX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etStdDevY_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 % -------- CREATE FUNCTIONS ------- %
 function etTrajLabel_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -1022,4 +1029,13 @@ function etAvgErrY_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 		set(hObject,'BackgroundColor','white');
 	end
 
+function etStdDevY_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etStdDevX_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 %function bTrajExtract_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>

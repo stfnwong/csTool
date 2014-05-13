@@ -373,7 +373,8 @@ classdef csSegmenter < handle
 				disp(rhist);
 			end
        		%Write frame data
-			bpsum = sum(sum(bpvec)) / S.kQuant;
+			%bpsum = sum(sum(bpvec)) / S.kQuant;
+			bpsum = length(bpvec);
 			if(S.verbose)
 				fprintf('bpSum : %f\n', bpsum);
 			end
