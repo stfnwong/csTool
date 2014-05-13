@@ -49,7 +49,7 @@ function [str status] = gui_setWinParams(idx, wparam, moments, niters, dims, bps
 	bs  = sprintf('Backprojected pixels : %d', bpsum);	
 	%s1  = sprintf('xc    : %.1f\n', xc);
 	s1  = sprintf('xc : %.1f yc : %.1f', xc, yc);
-	s2  = sprintf('theta : %.1f\n', theta);
+	s2  = sprintf('theta : %.1f', theta);
 	s3  = sprintf('axmaj : %.1f, axmin : %.1f', axmaj, axmin);
 	if(~isempty(spfac))
 		s4 = sprintf('Scaling factor : %d', spfac);

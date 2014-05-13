@@ -242,7 +242,6 @@ function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
 	handles.status = 0;
-	%uiresume(handles.csToolVerifyFig);
 	close(handles.csToolVerifyFig);
 
 
@@ -265,7 +264,6 @@ function pmVecClass_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 
 % ---------- KEYPRESS FUNCTION -------- %	
@@ -313,7 +311,6 @@ function csToolVerifyFig_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
 	end
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 % ---------- TRANSPORT CONTROLS -------- %	
 function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -345,7 +342,6 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Write parameters to text box
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
@@ -374,7 +370,6 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	handles = nh;
 
 	guidata(hObject, handles);	
-	uiresume(handles.csToolVerifyFig);
 
 function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
@@ -410,7 +405,6 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	handles = nh;
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 % -------- GUI RENDERING FUNCTIONS -------- %
 function gui_updatePreview(axHandle, img, figTitle, params, moments)
@@ -650,7 +644,6 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	%imshow(img, 'Parent', handles.figPreviewTest);
     guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Browse for file to read
@@ -662,7 +655,6 @@ function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     % Run verification routine against frame currently displayed in main
@@ -700,14 +692,12 @@ function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     
     guidata(hObject, handles);
-	uiresume(csToolVerifyFig);
 
 function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     % Perform a pattern verification
     % TODO : Put this in top menu bar (with a sub GUI)
 
     guidata(hObject, handles);
-	uiresume(csToolVerifyFig);
     
 
 function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -718,7 +708,6 @@ function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	vecSz   = vecList{vecIdx};
 	set(handles.etNumFiles, 'String', vecSz);
 	guidata(hObject, handles);
-	uiresume(csToolVerifyFig);
 
 function csToolVerifyFig_KeyPressFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 

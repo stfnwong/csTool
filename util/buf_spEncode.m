@@ -211,6 +211,7 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 				else
 					fac    = SP_FACTORS(k);
 					thresh = SP_THRESH(k);
+					break;
 				end
 			end
 		end

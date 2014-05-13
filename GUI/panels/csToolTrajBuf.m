@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 22-Jan-2014 19:29:59
+% Last Modified by GUIDE v2.5 13-May-2014 20:12:40
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -128,6 +128,14 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<IN
 	%set(handles.fig_trajErrorX,  'YTick', [], 'YTickLabel', []);
 	%set(handles.fig_trajErrorY,  'XTick', [], 'XTickLabel', []);
 	%set(handles.fig_trajErrorY,  'YTick', [], 'YTickLabel', []);
+	
+	% Setup axes labels for error plots
+	xlabel(handles.fig_trajErrorX, 'Frame #');
+	ylabel(handles.fig_trajErrorX, 'Error (pixels)');
+	title(handles.fig_trajErrorX, 'Error (x dimension)');
+	xlabel(handles.fig_trajErrorY, 'Frame #');
+	ylabel(handles.fig_trajErrorY, 'Error (pixels)');
+	title(handles.fig_trajErrorY, 'Error (y dimension)');
 	
 	%Check that there are frames in frame buffer
 	if(handles.frameBuf.getNumFrames() < 1)
@@ -255,13 +263,13 @@ function gui_renderErrorPlot(axHandle, traj, idx, varargin)
 				shp    = stem(axHandle(k), 1:length(p), p, 'v');
                 set(sh, 'Color',[0 0 1], 'MarkerFaceColor',[0 1 0], 'MarkerSize', 2);
                 set(shp,'Color',[0 0 1], 'MarkerFaceColor',[1 0 0], 'MarkerSize',10);
-                if(k == 1)
-                    title('Trajectory Error (x)');
-                else
-                    title('Trajectory Error (y)');
-                end
-                xlabel('Frame #');
-                ylabel('Error (pixels)');
+                %if(k == 1)
+                %    title('Trajectory Error (x)');
+                %else
+                %    title('Trajectory Error (y)');
+                %end
+                %xlabel('Frame #');
+                %ylabel('Error (pixels)');
                 if(exist('lgnd', 'var'))
                     legend(sh, lgnd);       %DEPRECATED
                 end
@@ -432,7 +440,7 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(handles.fbIdx < N)
 		handles.fbIdx = handles.fbIdx + 1;
 		img = handles.frameBuf.getCurImg(handles.fbIdx);
-		%fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
+		%fh = handles.frameBuf.getFrameHandle(handles.fbIdx
 		%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
 		ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
 		ta  = handles.trajBuf;
@@ -739,6 +747,12 @@ function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     clab   = handles.vecManager.getTrajBufLabel(get(handles.pmCompIdx, 'Value'));
     handles.labBuf{1} = nLabel;
     handles.labBuf{2} = clab;
+
+	% Find average error and display
+	avgX = sum(err(1,:)) / length(err);
+	avgY = sum(err(2,:)) / length(err);
+	set(handles.etAvgErrX, 'String', num2str(avgX));
+	set(handles.etAvgErrY, 'String', num2str(avgY));
 		
 	guidata(hObject, handles);
 
@@ -870,7 +884,7 @@ function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
 	guidata(hObject, handles);
 
 % --- Executes on key press with focus on fig_trajBuf and none of its controls.
-function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
     % Add some keyboard shortcuts for this subpanel for quicker navigation,
     % etc
 	% TODO : The frame indexing methods are just cut/paste of bNext and bPrev
@@ -949,6 +963,8 @@ function chkKeep_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etBufSize_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etAvgErrX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etAvgErrY_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 % -------- CREATE FUNCTIONS ------- %
 function etTrajLabel_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -996,5 +1012,14 @@ function etGoto_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
+function etAvgErrX_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etAvgErrY_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 
 %function bTrajExtract_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
