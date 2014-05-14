@@ -1289,7 +1289,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
             end
 
             % ================ LAUNCH BUFFER PREVIEW ================ %
-		case 'p'
+		case 'P'
 			prStr = csToolBufPreview(handles.frameBuf, 'opts', handles.pvOpts, 'idx', frameIndex);
 			if(prStr.exitflag ~= -1)
 				handles.pvOpts = prStr.pvOpts;
