@@ -497,7 +497,6 @@ function nh = gui_updateParams(handles)
 	testText      = {testTitle, paramTitle, testParamStr, momentTitle, testMomentStr, testNiterString};
 	set(handles.etRefParams, 'String', refText);
 	set(handles.etTestParams, 'String', testText);
-	handles.status = -1;
 	nh = handles;
 
 	return;
@@ -708,19 +707,6 @@ function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	vecSz   = vecList{vecIdx};
 	set(handles.etNumFiles, 'String', vecSz);
 	guidata(hObject, handles);
-
-function csToolVerifyFig_KeyPressFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
-
-	switch eventdata.Character
-		case 'f'
-
-		case 'b'
-
-		case 'r'
-
-	end
-
-
 
 % Get params for GUI update
 function [rParams rMoments tParams tMoments] = gui_getParams(refFrameBuf, testFrameBuf, idx)
