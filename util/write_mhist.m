@@ -11,9 +11,11 @@ function [ef] = write_mhist(fname, mhist, varargin)
 	
 	VERBOSE = false;
 
-	if(strncmpi(varargin{1}, 'ver', 3))
-		VERBOSE = true;
-	end
+    if(~isempty(varargin))
+        if(strncmpi(varargin{1}, 'ver', 3))
+            VERBOSE = true;
+        end
+    end
 
 	fh = fopen(fname, 'w');
 	if(fh == -1)

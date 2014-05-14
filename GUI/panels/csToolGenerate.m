@@ -434,9 +434,10 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			if(handles.debug)
 				fprintf('Generating Hue Vec (%s) for frame %d\n', fmt, idx);
 			end
-			img = handles.frameBuf.getCurImg(idx, 'mode', 'hue');
-			img = rgb2hsv(img);
-			img = img(:,:,1);
+            img = handles.frameBuf.getCurImg(idx, 'mode', 'rgb');
+			%img = handles.frameBuf.getCurImg(idx, 'mode', 'hue');
+			%img = rgb2hsv(img);
+			%img = img(:,:,1);
 			handles.vecManager.writeImgVec(img, opts, 'hue');
 			%handles.vecManager.writeHueVec(fh, 'fmt', fmt, 'file', fname);
 		end
@@ -469,7 +470,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 				fprintf('ERROR: parse error generating mhist\n');
 				return;
 			end
-			fn = sprintf('%s%s-mhist.%s', path, str, ext);
+			fn = sprintf('%s%s-mhist.dat', fs.path, fs.filename);
 			ef = write_mhist(fn, handles.mhist);
 			if(ef == -1)
 				return;
