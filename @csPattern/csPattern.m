@@ -2,9 +2,20 @@ classdef csPattern < handle
 % CSPATTERN
 %
 % Pattern generation and verification class
+%
+% PROPERTIES
+% verbose - Sets verbose mode
+%
+% METHODS
+% genRowHistImg  - Generate a hue image for testing histogram in row
+%                  oriented backprojection pipeline.
+% genColHistImg  - Generate a hue image for testing histogram in column
+%                  oriented backprojection pipeline.
+% vMemePattern   - Verify pattern data for memory switching test
+% readPatternVec - Read a memory pattern vector from disk
 
 	properties
-
+		verbose; %set verbose mode
 	end
 
 	methods (Access = 'public')
@@ -15,8 +26,14 @@ classdef csPattern < handle
 			switch nargin
 				case 0
 					% Initialise
+					P.verbose = false;
 				case 1
 					% Copy
+					if(isa(varargin{1}, 'csPattern'))
+						P = varargin{1};
+					else
+						P.verbose = false;
+					end	
 				otherwise
 					error('Incorrect arguments to csPattern constructor');
 			end
@@ -168,6 +185,63 @@ classdef csPattern < handle
 			end
 
 		end 	%vMemPattern()
+
+		% ==== Read pattern data from disk ==== 
+		function [patternVec varargout] = readPatternVec(P, fname, varargin)
+		% READPATTERNVEC
+		% Read pattern vector from disk.
+		%
+		% ARGUMENTS
+		% P     - csPattern object
+		% fname - Filename for pattern data
+		% (OPTIONAL) 
+		% 'input', 'filename' - Also read input pattern data from 
+		%           stored in 'filename'
+
+			if(~isempty(varargin))
+				if(strncmpi(varargin{1}, 'input', 5))
+					inpFilename = varargin{2};
+				end
+			end
+
+			% Set varargout{1} to empty. If input data is
+			% read then later set to input vector
+			if(nargout > 1)
+				varargout{1} = [];
+			end
+
+			fp = fopen(fname, 'r');
+			if(fp == -1)
+				fprintf('ERROR: Cant open file [%s]\n', fname);
+				patternVec = [];
+				return;
+			end
+
+			% Read pattern vector data
+			[patternVec N] = textscan(fp, '%u32', 'Delimter', ' ');
+			if(P.verbose)
+				fprintf('Read %d data points from file [%s]\n', N, fname);
+			end
+			fclose(fp);
+
+			% Also read input file
+			if(exist('inpFilename', 'var'))
+				fp = fopen(inpFilename, 'r');
+				if(fp == -1)
+					fprintf('ERROR: Cant open input vector file at [%s]\n', inpFilename);
+					return;
+				end
+				[inpPattern M] = textscan(fp, '%u32', 'Delimiter', ' ');
+				if(P.verbose)
+					fprintf('Read %d data points from file [%s]\n', M, inpFilename);
+				end
+				if(nargout > 1)
+					varargout{1} = inpPattern;
+				end
+			end
+
+		end 	%readPatternVec()
+
 
 	end 	%methods (public)
 

@@ -186,6 +186,7 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	handles.pvOpts = init_genPvOpts(DATA_DIR, NO_LOAD);
 	handles.sqOpts = init_genSqOpts(DATA_DIR, NO_LOAD);
 	handles.sbOpts = init_genSbOpts(DATA_DIR, NO_LOAD);
+	handles.ptOpts = init_genPatternTestOpts(DATA_DIR, NO_LOAD);
 	if(DEBUG)
 		fprintf('vfOpts : \n');
 		disp(handles.vfOpts);
@@ -193,6 +194,8 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 		disp(handles.pvOpts);
 		fprintf('sqOpts :\n');
 		disp(handles.sqOpts);
+		fprintf('ptOpts :\n');
+		disp(handles.ptOpts);
 	end
     handles = init_UIElements(handles);
 
@@ -1300,6 +1303,14 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 					disp(handles.frameBuf);
 				end
 			end
+		case 'p'
+			if(handles.debug)
+				handles.ptOpts.verbose = true;
+			else
+				handles.ptOpts.verbose = false;
+			end
+			pattrStruct = csToolPatternTest('opts', handles.ptOpts);
+			handles.ptOpts = pattrStruct;
 			% ================ LAUNCH SAVE/LOAD DIALOG ================ %
 		case 'L'
 
