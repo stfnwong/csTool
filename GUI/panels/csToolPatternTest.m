@@ -22,7 +22,7 @@ function varargout = csToolPatternTest(varargin)
 
 % Edit the above text to modify the response to help csToolPatternTest
 
-% Last Modified by GUIDE v2.5 16-May-2014 18:12:27
+% Last Modified by GUIDE v2.5 16-May-2014 19:13:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -86,6 +86,8 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 	set(handles.pmImgType, 'String', imgTypeStr);
 	dFormat    = {'Dec', 'Hex'};
 	set(handles.pmDataFormat, 'String', dFormat);
+	clampStr   = {'Clamp to Input', 'Clamp to Output'};
+	set(handles.pmClamp, 'String', clampStr);
 	
 	% Take values from options and place on GUI
 	opts = handles.patternOpts; 	%alias to shorten code
@@ -116,7 +118,7 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 	handles.refVec   = [];
 	handles.errVec   = [];
 	handles.pattrVec = [];
-
+	handles.clampIdx = 1;
 	handles.errIdx = 1;
 	handles.hImg = 0;
 
@@ -209,6 +211,7 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		% the same length as the input and pad out the output vector with 
 		% zeros
 		if(length(handles.pattrVec) < length(inpVec))
+			handles.clampIdx = length(handles.pattrVec);
 			pvec = zeros(1, length(inpVec));
 			pvec(1:length(handles.pattrVec)) = handles.pattrVec;
 			handles.pattrVec = uint32(pvec);
@@ -218,9 +221,27 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	
 	% Format listbox  
-	stats = gui_renderStats(handles.refVec, handles.pattrVec, handles.errVec);	
-	set(handles.lbPatternStats, 'String', stats);	
-	gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+
+
+	% Check how much to render
+	
+	clampIdx = get(handles.pmClamp, 'Value');
+	switch clampIdx
+		case 1
+			%Clamp to input	
+			rVec = handles.refVec(1:handles.clampIdx);
+			pVec = handles.pattrVec(1:handles.clampIdx);
+			eVec = handles.errVec(1:handles.clampIdx);
+			gui_renderPlot(handles.axPreview, rVec, pVec, eVec, handles.errIdx);
+			stats = gui_renderStats(rVec, pVec, eVec);
+			set(handles.lbPatternStats, 'String', stats);	
+		case 2
+			%Clamp to output
+			gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+			stats = gui_renderStats(handles.refVec, handles.pattrVec, handles.errVec);	
+			set(handles.lbPatternStats, 'String', stats);	
+	end
+
 
 	fclose(fp);
 	guidata(hObject, handles);
@@ -240,9 +261,35 @@ function bNextErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		handles.errIdx = eidx + N;
 	end
 
-	set(handles.lbPatternStats, 'Value', handles.errIdx);
-	gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+	clampIdx = get(handles.pmClamp, 'Value');
+	switch clampIdx
+		case 1
+			%Clamp to input	
+			rVec = handles.refVec(1:handles.clampIdx);
+			pVec = handles.pattrVec(1:handles.clampIdx);
+			eVec = handles.errVec(1:handles.clampIdx);
+			eidx = handles.errIdx; 	%shorten lines with alias
+			N    = find((eVec(eidx+1 : end) > 0), 1, 'first');
+			if((eidx + N) > length(eVec))
+				handles.errIdx = length(eVec);
+			else
+				handles.errIdx = eidx + N;
+			end
+			gui_renderPlot(handles.axPreview, rVec, pVec, eVec, handles.errIdx);
+		case 2
+			%Clamp to output
+		
+			eidx = handles.errIdx; 	%shorten lines with alias
+			N    = find((handles.errVec(eidx+1 : end) > 0), 1, 'first');
+			if((eidx + N) > length(handles.errVec))
+				handles.errIdx = length(handles.errVec);
+			else
+				handles.errIdx = eidx + N;
+			end
+			gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+	end
 
+	set(handles.lbPatternStats, 'Value', handles.errIdx);
 	guidata(hObject, handles);
 
 function bPrevErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
@@ -252,16 +299,34 @@ function bPrevErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		return;
 	end
 	eidx = handles.errIdx; 	%shorten lines with alias
-	P    = find((handles.errVec(1 : eidx+1) > 0), 1, 'last');
-	if((eidx - P) < 1)
-		handles.errIdx = 1;
-	else
-		handles.errIdx = eidx - P;
+
+	clampIdx = get(handles.pmClamp, 'Value');
+	switch clampIdx
+		case 1
+			%Clamp to input	
+			rVec = handles.refVec(1:handles.clampIdx);
+			pVec = handles.pattrVec(1:handles.clampIdx);
+			eVec = handles.errVec(1:handles.clampIdx);
+			P    = find((eVec(1 : eidx+1) > 0), 1, 'last');
+			if((eidx - P) < 1)
+				handles.errIdx = 1;
+			else
+				handles.errIdx = eidx - P;
+			end
+			gui_renderPlot(handles.axPreview, rVec, pVec, eVec, handles.errIdx);
+		case 2
+			%Clamp to output
+		
+			P    = find((handles.errVec(1 : eidx+1) > 0), 1, 'last');
+			if((eidx - P) < 1)
+				handles.errIdx = 1;
+			else
+				handles.errIdx = eidx - P;
+			end
+			gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
 	end
 	
 	set(handles.lbPatternStats, 'Value', handles.errIdx);
-	gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
-
 	guidata(hObject, handles);
 
 
@@ -340,7 +405,7 @@ function stats = gui_renderStats(refVec, pattrVec, errVec)
 	stats = cell(1, length(refVec));
 	
 	for k = 1 : length(stats)
-		stats{k} = sprintf('ref: [%4d] | pattr: [%4d] | err: [%4d]', refVec(k), pattrVec(k), errVec(k));
+		stats{k} = sprintf('idx : [%4d] | ref: [%4d] | pattr: [%4d] | err: [%4d]', k, refVec(k), pattrVec(k), errVec(k));
 	end
 
 function gui_renderPlot(axHandle, refVec, pattrVec, errVec, idx)
@@ -432,6 +497,10 @@ function etMemWord_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 		set(hObject,'BackgroundColor','white');
 	end
 
+function pmClamp_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 % ======== EMPTY FUNCTIONS ========= %
 function etReadFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etBinWidth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -446,3 +515,9 @@ function chkAutoGen_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function pmDataFormat_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etInputFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etMemWord_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function pmClamp_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
+
+
+
+
