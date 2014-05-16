@@ -32,7 +32,11 @@ classdef csPattern < handle
 					if(isa(varargin{1}, 'csPattern'))
 						P = varargin{1};
 					else
-						P.verbose = false;
+						if(strncmpi(varargin{1}, 'verbose', 7))
+							P.verbose = true;
+						else
+							P.verbose = false;
+						end
 					end	
 				otherwise
 					error('Incorrect arguments to csPattern constructor');

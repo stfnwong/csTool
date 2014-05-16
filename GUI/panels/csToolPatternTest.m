@@ -22,7 +22,7 @@ function varargout = csToolPatternTest(varargin)
 
 % Edit the above text to modify the response to help csToolPatternTest
 
-% Last Modified by GUIDE v2.5 16-May-2014 02:26:24
+% Last Modified by GUIDE v2.5 16-May-2014 16:05:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -45,7 +45,7 @@ end
 
 
 % --- Executes just before csToolPatternTest is made visible.
-function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)
+function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)%#ok<INUSL>
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -73,10 +73,19 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)
 		return;
 	end
 
+	% Create csPattern object
+	if(handles.patternOpts.verbose)
+		handles.patternObj = csPattern('verbose');
+	else
+		handles.patternObj = csPattern();
+	end
+
 	% Populate GUI elements
 	% set pmImType values
 	imgTypeStr = {'Column', 'Row'};
 	set(handles.pmImType, 'String', imgTypeStr);
+	dFormat    = {'Dec', 'Hex'};
+	set(handles.pmDataFormat, 'String', dFormat);
 	
 	% Take values from options and place on GUI
 	opts = handles.patternOpts; 	%alias to shorten code
@@ -96,7 +105,12 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)
 	%	set(handles.axPreview, 'YTick', [], 'YTickLabel', []);
 	%end
 
+	handles.refVec   = [];
+	handles.errVec   = [];
+	handles.pattrVec = [];
 
+	handles.errVecIdx = 1;
+	handles.hImg = 0;
 
 	% Choose default command line output for csToolPatternTest
 	handles.output = hObject;
@@ -108,9 +122,21 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)
 	uiwait(handles.csToolPatternFig);
 
 
-function varargout = csToolPatternTest_OutputFcn(hObject, eventdata, handles) 
+function varargout = csToolPatternTest_OutputFcn(hObject, eventdata, handles)%#ok<INUSL>
 % Get default command line output from handles structure
-varargout{1} = handles.output;
+	% Format output options
+	oStruct = struct('numBins', [], ...
+		             'binWidth', [], ...
+		             'dims', [], ...
+		             'verbose', []);
+	% Save values
+	oStruct.numBins  = str2double(get(handles.etNumBins, 'String'));
+	oStruct.binWidth = str2double(get(handles.etBinWidth, 'String'));
+	img_w            = str2double(get(handles.etImgWidth, 'String'));
+	img_h            = str2double(get(handles.etImgHeight, 'String'));
+	oStruct.dims     = [img_w img_h];
+	oStruct.verbose  = handles.patternOpts.verbose;
+	varargout{1} = oStruct;
 
 
 function csToolPatternFig_CloseRequestFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
@@ -125,15 +151,169 @@ function csToolPatternFig_CloseRequestFcn(hObject, eventdata, handles)%#ok<INUSL
 function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	close(handles.csTooPatternFig);
 
-function bBrowseFile_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-function bRead_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function bBrowseFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+    %Browse for file to read
+    oldText = get(handles.etFileName, 'String');
+    [fname path] = uigetfile('*.dat', 'Select vector file...');
+    if(isempty(fname))
+        fname = oldText;
+		path  = [];
+    end
+    set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
+    guidata(hObject, handles);
 
-function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-function bSetWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	filename = get(handles.etReadFilename, 'String');
+	
+	fp = fopen(filename, 'r');
+	if(fp == -1)
+		fprintf('ERROR: Cant open file %s]\n', filename);
+		return;
+	end
+
+	% Read file and get memory word size
+	mWord = str2double(get(handles.etMemWord, 'String'));
+	if(get(handles.chkAutoGen, 'Value'))
+		handles.pattrVec = handles.patternObj.readPatternVec(filename);
+		[handles.errVec handles.refVec]= handles.patternObj.vMemPattern(handles.pattrVec, mWord);
+	else
+		inpFilename = get(handles.etInputFilename, 'String');
+		[handles.pattrVec inpVec] = handles.patternObj.readPatternVec(filename, inpFilename);
+		[handles.errVec handles.refVec] = handles.patternObj.vMemPattern(handles.pattrVec, mWord, inpVec);
+	end	
+
+	% Show pattern vector and error vector in preview
+	
+	% Format listbox  
+	stats = gui_renderStats(handles.refVec, handles.pattrVec, handles.errVec);	
+	set(handles.lbPatternStats, 'String', stats);	
+	gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+
+	fclose(fp);
+	guidata(hObject, handles);
+
+function bNextErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	eidx = handles.errIdx; 	%shorten lines with alias
+	N    = find((handles.errVec(eidx+1 : end) > 0), 1, 'first');
+	handles.errIdx = eidx + N;
+
+	set(handles.lbPatternStats, 'Value', handles.errIdx);
+	gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+
+	guidata(hObject, handles);
+
+function bPrevErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	eidx = handles.errIdx; 	%shorten lines with alias
+	P    = find((handles.errVec(1 : eidx+1) > 0), 1, 'last');
+	handles.errIdx = eidx - P;
+	
+	set(handles.lbPatternStats, 'Value', handles.errIdx);
+	gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+
+	guidata(hObject, handles);
 
 
+function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
+	imgTypeList = get(handles.pmImgType, 'String');
+	imgTypeIdx  = get(handles.pmImgType, 'String');
+	imgType     = imgTypeList{imgTypeIdx};
+	% Get options for hue image generation
+	nBins       = str2double(get(handles.etNumBins, 'String'));
+	bWidth      = str2double(get(handles.etBinWidth, 'String'));
+	vecSz       = str2double(get(handles.etVecSz, 'String'));
+	img_w       = str2double(get(handles.etImgWidth, 'String'));
+	img_h       = str2double(get(handles.etImgHeight, 'String'));
+	dims        = [img_w img_h];
+
+	if(strncmpi(imgType, 'column', 6))
+		handles.hImg = handles.patternObj.genColHistImg(dims, nBins, bWidth, vecSz);
+	elseif(strncmpi(imgType, 'row', 3))
+		handles.hImg = handles.patternObj.genRowHistImg(dims, nBins, bWidth);
+	else
+		fprintf('Unknonwn image type [%s]\n', imgType);
+		return;
+	end
+
+	% Show image in preview
+	imshow(handles.axPreview, hImg);
+	if(strncmpi(imgType, 'column', 6))
+		title(handles.axPreview, 'Column Hue Image');
+	else
+		title(handles.axPreview, 'Row Hue Image');
+	end
+	set(handles.axPreview, 'XTick', [], 'XTickLabel', []);
+	set(handles.axPreview, 'YTick', [], 'YTickLabel', []);
+
+	guidata(hObject, handles);
+
+function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	filename = get(etImgFilename, 'String');
+	dfList   = get(handles.pmDataFormat, 'String');
+	dfIdx    = get(handles.pmDataFormat, 'Value');
+	dFormat  = dfList{dfIdx};
+
+	fp = fopen(filename, 'w');
+	if(fp == -1)
+		fprintf('ERROR: Cant open file [%s]\n', filename);
+		return;
+	end
+
+	if(strncmpi(dFormat, 'Dec', 3))
+		fprintf(fp, '%d ', handles.hImg);
+	elseif(strncmpi(dFormat, 'Hex', 3))
+		fprintf(fp, '%x ', handles.hImg);
+	end
+
+	fclose(fp);
+	guidata(hObject, handles);
+
+function bSetWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+    oldText = get(handles.etFileName, 'String');
+    [fname path] = uiputfile('*.dat', 'Select output file...');
+    if(isempty(fname))
+        fname = oldText;
+		path  = [];
+    end
+    set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
+    guidata(hObject, handles);
+
+
+% ======== LOCAL GUI FUNCTIONS ======== %
+function stats = gui_renderStats(refVec, pattrVec, errVec)
+
+	stats = cell(1, length(refVec));
+	
+	for k = 1 : length(stats)
+		stats{k} = sprintf('ref: [%4d] | pattr: [%4d] | err: [%4d]', refVec(k), pattrVec(k), errVec(k));
+	end
+
+function gui_renderPlot(axHandle, refVec, pattrVec, errVec, idx)
+
+	cla(axHandle);
+	plot(axHandle, 1:length(refVec), refVec, 'Color', [0 1 0]);
+	hold(axHandle, 'on');
+	plot(axHandle, 1:length(pattrVec), pattrVec, 'Color', [0 0 1]);
+	plot(axHandle, 1:length(errVec), errVec, 'Color', [1 0 0]);
+	% Show current position as magenta triangle
+	plot(axHandle, idx, pattrVec(idx), 'Color', [1 0 1], 'Marker', 'v');
+	hold(axHandle, 'off');
+
+function bSetInputFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+    %Browse for file to read
+    oldText = get(handles.etFileName, 'String');
+    [fname path] = uigetfile('*.dat', 'Select vector file...');
+    if(isempty(fname))
+        fname = oldText;
+		path  = [];
+    end
+    set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
+    guidata(hObject, handles);
 
 % ======== CREATE FUNCTIONS ======== %
 function etReadFilename_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -181,6 +361,20 @@ function pmImgType_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 		set(hObject,'BackgroundColor','white');
 	end
 
+function pmDataFormat_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etInputFilename_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etMemWord_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 
 % ======== EMPTY FUNCTIONS ========= %
 function etReadFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -192,10 +386,10 @@ function etImgWidth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etVecSz_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function pmImgType_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etImgFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function chkAutoGen_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function pmDataFormat_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etInputFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etMemWord_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 
-% --- Executes on button press in bAutoGen.
-function bAutoGen_Callback(hObject, eventdata, handles)
-% hObject    handle to bAutoGen (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+
