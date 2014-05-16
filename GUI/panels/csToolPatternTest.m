@@ -202,6 +202,7 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(get(handles.chkAutoGen, 'Value'))
 		handles.pattrVec = handles.patternObj.readPatternVec(filename);
 		[handles.errVec handles.refVec]= handles.patternObj.vMemPattern(handles.pattrVec, mWord);
+		handles.clampIdx = length(handles.pattrVec);
 	else
 		inpFilename = get(handles.etInputFilename, 'String');
 		inpVec = handles.patternObj.readPatternVec(inpFilename);
@@ -232,11 +233,12 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 			inpVec = uint32(ivec);
 		end
 
+		handles.clampIdx = length(inpVec);
 		[handles.errVec handles.refVec] = handles.patternObj.vMemPattern(handles.pattrVec, mWord, inpVec);
 	end	
 	
-	clampIdx = get(handles.pmClamp, 'Value');
-	switch clampIdx
+	cIdx = get(handles.pmClamp, 'Value');
+	switch cIdx
 		case 1
 			%Clamp to input	
 			handles.truncRef   = handles.refVec(1:handles.clampIdx);
@@ -270,6 +272,9 @@ function bNextErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	end
 	eidx = handles.errIdx;
 	N    = find((handles.truncErr(eidx+1 : end) > 0), 1, 'first');
+	if(isempty(N))
+		return;
+	end
 	if((eidx + N) > length(handles.truncErr))
 		handles.errIdx = length(handles.truncErr);
 	else
@@ -287,8 +292,15 @@ function bPrevErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		fprintf('No error vector set\n');
 		return;
 	end
-	eidx = handles.errIdx; 	%shorten lines with alias
+	% Create alias and bounds check
+	eidx = handles.errIdx; 	
+	if(eidx == length(handles.truncErr))
+		eidx = length(handles.truncErr) - 1;
+	end
 	P    = find((handles.truncErr(1 : eidx+1) > 0), 1, 'last');
+	if(isempty(P))
+		return;
+	end
 	if((eidx - P) < 1)
 		handles.errIdx = 1;
 	else
@@ -383,8 +395,10 @@ function bScale_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		handles.errIdx = length(handles.truncRef);
 	end
 
+	stats = gui_renderStats(handles.truncRef, handles.truncPattr, handles.truncErr);
 	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
-
+	set(handles.lbPatternStats, 'String', stats);	
+	set(handles.lbPatternStats, 'Value', handles.errIdx);
 	guidata(hObject, handles);
 
 
