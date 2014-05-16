@@ -195,6 +195,7 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		return;
 	end
 
+	handles.errIdx = 1;
 	% Read file and get memory word size
 	mWord = str2double(get(handles.etMemWord, 'String'));
 	if(get(handles.chkAutoGen, 'Value'))
@@ -218,12 +219,6 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		end
 		[handles.errVec handles.refVec] = handles.patternObj.vMemPattern(handles.pattrVec, mWord, inpVec);
 	end	
-
-	
-	% Format listbox  
-
-
-	% Check how much to render
 	
 	clampIdx = get(handles.pmClamp, 'Value');
 	switch clampIdx
@@ -253,13 +248,7 @@ function bNextErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		fprintf('No error vector set\n');
 		return;
 	end
-	eidx = handles.errIdx; 	%shorten lines with alias
-	N    = find((handles.errVec(eidx+1 : end) > 0), 1, 'first');
-	if((eidx + N) > length(handles.errVec))
-		handles.errIdx = length(handles.errVec);
-	else
-		handles.errIdx = eidx + N;
-	end
+	eidx = handles.errIdx;
 
 	clampIdx = get(handles.pmClamp, 'Value');
 	switch clampIdx
@@ -268,7 +257,6 @@ function bNextErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 			rVec = handles.refVec(1:handles.clampIdx);
 			pVec = handles.pattrVec(1:handles.clampIdx);
 			eVec = handles.errVec(1:handles.clampIdx);
-			eidx = handles.errIdx; 	%shorten lines with alias
 			N    = find((eVec(eidx+1 : end) > 0), 1, 'first');
 			if((eidx + N) > length(eVec))
 				handles.errIdx = length(eVec);
@@ -279,7 +267,6 @@ function bNextErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		case 2
 			%Clamp to output
 		
-			eidx = handles.errIdx; 	%shorten lines with alias
 			N    = find((handles.errVec(eidx+1 : end) > 0), 1, 'first');
 			if((eidx + N) > length(handles.errVec))
 				handles.errIdx = length(handles.errVec);
@@ -329,6 +316,28 @@ function bPrevErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	set(handles.lbPatternStats, 'Value', handles.errIdx);
 	guidata(hObject, handles);
 
+
+function lbPatternStats_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	% Jump to position
+	lbIdx = get(handles.lbPatternStats, 'Value');
+
+	clampIdx = get(handles.pmClamp, 'Value');
+	switch clampIdx
+		case 1
+			%Clamp to input	
+			rVec = handles.refVec(1:handles.clampIdx);
+			pVec = handles.pattrVec(1:handles.clampIdx);
+			eVec = handles.errVec(1:handles.clampIdx);
+			handles.errIdx = lbIdx;
+			gui_renderPlot(handles.axPreview, rVec, pVec, eVec, handles.errIdx);
+		case 2
+			%Clamp to output
+			handles.errIdx = lbIdx;
+			gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+	end
+
+	guidata(hObject, handles);
 
 function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
@@ -505,7 +514,7 @@ function pmClamp_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etReadFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etBinWidth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etNumBins_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-function lbPatternStats_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
 function etImgHeight_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etImgWidth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etVecSz_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
