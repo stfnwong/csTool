@@ -115,19 +115,20 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 	%	set(handles.axPreview, 'YTick', [], 'YTickLabel', []);
 	%end
 
-	handles.refVec   = [];
-	handles.errVec   = [];
-	handles.pattrVec = [];
-	handles.clampIdx = 1;
-	handles.errIdx = 1;
-	handles.hImg = 0;
+	handles.refVec     = [];
+	handles.errVec     = [];
+	handles.pattrVec   = [];
+	handles.truncRef   = [];
+	handles.truncErr   = [];
+	handles.truncPattr = [];
+	handles.clampIdx   = 1;
+	handles.errIdx     = 1;
+	handles.hImg       = 0;
 
 	% Choose default command line output for csToolPatternTest
 	handles.output = hObject;
-
 	% Update handles structure
 	guidata(hObject, handles);
-
 	% UIWAIT makes csToolPatternTest wait for user response (see UIRESUME)
 	uiwait(handles.csToolPatternFig);
 
@@ -212,11 +213,25 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		% the same length as the input and pad out the output vector with 
 		% zeros
 		if(length(handles.pattrVec) < length(inpVec))
+			if(handles.patternOpts.verbose)
+				fprintf('WARNING: pattern vector shorter than input vector by %d elements\n', abs(length(handles.pattrVec) - length(inpVec)));
+			end
 			handles.clampIdx = length(handles.pattrVec);
 			pvec = zeros(1, length(inpVec));
 			pvec(1:length(handles.pattrVec)) = handles.pattrVec;
 			handles.pattrVec = uint32(pvec);
 		end
+		% Occasionally, the opposite happens
+		if(length(inpVec) < length(handles.pattrVec))
+			if(handles.patternOpts.verbose)
+				fprintf('WARNING: input vector shorter than pattern vector by %d elements\n', abs(length(inpVec) - length(handles.pattrVec)));
+			end
+			handles.clampIdx = length(inpVec);
+			ivec = zeros(1, length(handles.pattrVec));
+			ivec(1:length(inpVec)) = inpVec;
+			inpVec = uint32(ivec);
+		end
+
 		[handles.errVec handles.refVec] = handles.patternObj.vMemPattern(handles.pattrVec, mWord, inpVec);
 	end	
 	
@@ -224,19 +239,19 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	switch clampIdx
 		case 1
 			%Clamp to input	
-			rVec = handles.refVec(1:handles.clampIdx);
-			pVec = handles.pattrVec(1:handles.clampIdx);
-			eVec = handles.errVec(1:handles.clampIdx);
-			gui_renderPlot(handles.axPreview, rVec, pVec, eVec, handles.errIdx);
-			stats = gui_renderStats(rVec, pVec, eVec);
-			set(handles.lbPatternStats, 'String', stats);	
+			handles.truncRef   = handles.refVec(1:handles.clampIdx);
+			handles.truncPattr = handles.pattrVec(1:handles.clampIdx);
+			handles.truncErr   = handles.errVec(1:handles.clampIdx);
 		case 2
 			%Clamp to output
-			gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
-			stats = gui_renderStats(handles.refVec, handles.pattrVec, handles.errVec);	
-			set(handles.lbPatternStats, 'String', stats);	
+			handles.truncRef   = handles.refVec;
+			handles.truncPattr = handles.pattrVec;
+			handles.truncErr   = handles.errVec;
 	end
 
+	stats = gui_renderStats(handles.truncRef, handles.truncPattr, handles.truncErr);
+	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
+	set(handles.lbPatternStats, 'String', stats);	
 
 	fclose(fp);
 	guidata(hObject, handles);
@@ -244,37 +259,19 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 function bNextErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	% Check if there is an error vector first
-	if(isempty(handles.errVec))
+	if(isempty(handles.truncErr))
 		fprintf('No error vector set\n');
 		return;
 	end
 	eidx = handles.errIdx;
-
-	clampIdx = get(handles.pmClamp, 'Value');
-	switch clampIdx
-		case 1
-			%Clamp to input	
-			rVec = handles.refVec(1:handles.clampIdx);
-			pVec = handles.pattrVec(1:handles.clampIdx);
-			eVec = handles.errVec(1:handles.clampIdx);
-			N    = find((eVec(eidx+1 : end) > 0), 1, 'first');
-			if((eidx + N) > length(eVec))
-				handles.errIdx = length(eVec);
-			else
-				handles.errIdx = eidx + N;
-			end
-			gui_renderPlot(handles.axPreview, rVec, pVec, eVec, handles.errIdx);
-		case 2
-			%Clamp to output
-		
-			N    = find((handles.errVec(eidx+1 : end) > 0), 1, 'first');
-			if((eidx + N) > length(handles.errVec))
-				handles.errIdx = length(handles.errVec);
-			else
-				handles.errIdx = eidx + N;
-			end
-			gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+	N    = find((handles.truncErr(eidx+1 : end) > 0), 1, 'first');
+	if((eidx + N) > length(handles.truncErr))
+		handles.errIdx = length(handles.truncErr);
+	else
+		handles.errIdx = eidx + N;
 	end
+
+	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
 
 	set(handles.lbPatternStats, 'Value', handles.errIdx);
 	guidata(hObject, handles);
@@ -286,33 +283,14 @@ function bPrevErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		return;
 	end
 	eidx = handles.errIdx; 	%shorten lines with alias
-
-	clampIdx = get(handles.pmClamp, 'Value');
-	switch clampIdx
-		case 1
-			%Clamp to input	
-			rVec = handles.refVec(1:handles.clampIdx);
-			pVec = handles.pattrVec(1:handles.clampIdx);
-			eVec = handles.errVec(1:handles.clampIdx);
-			P    = find((eVec(1 : eidx+1) > 0), 1, 'last');
-			if((eidx - P) < 1)
-				handles.errIdx = 1;
-			else
-				handles.errIdx = eidx - P;
-			end
-			gui_renderPlot(handles.axPreview, rVec, pVec, eVec, handles.errIdx);
-		case 2
-			%Clamp to output
-		
-			P    = find((handles.errVec(1 : eidx+1) > 0), 1, 'last');
-			if((eidx - P) < 1)
-				handles.errIdx = 1;
-			else
-				handles.errIdx = eidx - P;
-			end
-			gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
+	P    = find((handles.truncErr(1 : eidx+1) > 0), 1, 'last');
+	if((eidx - P) < 1)
+		handles.errIdx = 1;
+	else
+		handles.errIdx = eidx - P;
 	end
-	
+	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
+
 	set(handles.lbPatternStats, 'Value', handles.errIdx);
 	guidata(hObject, handles);
 
@@ -321,21 +299,9 @@ function lbPatternStats_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	% Jump to position
 	lbIdx = get(handles.lbPatternStats, 'Value');
+	handles.errIdx = lbIdx;
 
-	clampIdx = get(handles.pmClamp, 'Value');
-	switch clampIdx
-		case 1
-			%Clamp to input	
-			rVec = handles.refVec(1:handles.clampIdx);
-			pVec = handles.pattrVec(1:handles.clampIdx);
-			eVec = handles.errVec(1:handles.clampIdx);
-			handles.errIdx = lbIdx;
-			gui_renderPlot(handles.axPreview, rVec, pVec, eVec, handles.errIdx);
-		case 2
-			%Clamp to output
-			handles.errIdx = lbIdx;
-			gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
-	end
+	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
 
 	guidata(hObject, handles);
 
@@ -395,6 +361,26 @@ function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	end
 
 	fclose(fp);
+	guidata(hObject, handles);
+
+function pmClamp_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	clampIdx = get(handles.pmClamp, 'Value');
+	switch clampIdx
+		case 1
+			%Clamp to input	
+			handles.truncRef   = handles.refVec(1:handles.clampIdx);
+			handles.truncPattr = handles.pattrVec(1:handles.clampIdx);
+			handles.truncErr   = handles.errVec(1:handles.clampIdx);
+		case 2
+			%Clamp to output
+			handles.truncRef   = handles.refVec;
+			handles.truncPattr = handles.pattrVec;
+			handles.truncErr   = handles.errVec;
+	end
+
+	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
+
 	guidata(hObject, handles);
 
 function bSetWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
@@ -524,7 +510,7 @@ function chkAutoGen_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function pmDataFormat_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etInputFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etMemWord_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-function pmClamp_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
 
 
 
