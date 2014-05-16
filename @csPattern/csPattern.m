@@ -171,6 +171,7 @@ classdef csPattern < handle
 
 			if(~isempty(varargin))
 				refPattern = varargin{1};
+				refPattern = uint32(refPattern);
 			else
 				refPattern = zeros(1, length(pattrVec));
 				rw = 0;
@@ -181,6 +182,7 @@ classdef csPattern < handle
 						rw = 0;
 					end
 				end
+				refPattern = uint32(refPattern);
 			end
 
 			errVec = abs(pattrVec - refPattern);
@@ -191,28 +193,13 @@ classdef csPattern < handle
 		end 	%vMemPattern()
 
 		% ==== Read pattern data from disk ==== 
-		function [patternVec varargout] = readPatternVec(P, fname, varargin)
+		function [patternVec] = readPatternVec(P, fname)
 		% READPATTERNVEC
 		% Read pattern vector from disk.
 		%
 		% ARGUMENTS
 		% P     - csPattern object
 		% fname - Filename for pattern data
-		% (OPTIONAL) 
-		% 'input', 'filename' - Also read input pattern data from 
-		%           stored in 'filename'
-
-			if(~isempty(varargin))
-				if(strncmpi(varargin{1}, 'input', 5))
-					inpFilename = varargin{2};
-				end
-			end
-
-			% Set varargout{1} to empty. If input data is
-			% read then later set to input vector
-			if(nargout > 1)
-				varargout{1} = [];
-			end
 
 			fp = fopen(fname, 'r');
 			if(fp == -1)
@@ -222,27 +209,12 @@ classdef csPattern < handle
 			end
 
 			% Read pattern vector data
-			[patternVec N] = textscan(fp, '%u32', 'Delimter', ' ');
+			[patternVec N] = textscan(fp, '%u32', 'Delimiter', ' ');
 			if(P.verbose)
 				fprintf('Read %d data points from file [%s]\n', N, fname);
 			end
 			fclose(fp);
-
-			% Also read input file
-			if(exist('inpFilename', 'var'))
-				fp = fopen(inpFilename, 'r');
-				if(fp == -1)
-					fprintf('ERROR: Cant open input vector file at [%s]\n', inpFilename);
-					return;
-				end
-				[inpPattern M] = textscan(fp, '%u32', 'Delimiter', ' ');
-				if(P.verbose)
-					fprintf('Read %d data points from file [%s]\n', M, inpFilename);
-				end
-				if(nargout > 1)
-					varargout{1} = inpPattern;
-				end
-			end
+			patternVec = cell2mat(patternVec)';
 
 		end 	%readPatternVec()
 

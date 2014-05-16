@@ -22,7 +22,7 @@ function varargout = csToolPatternTest(varargin)
 
 % Edit the above text to modify the response to help csToolPatternTest
 
-% Last Modified by GUIDE v2.5 16-May-2014 16:05:07
+% Last Modified by GUIDE v2.5 16-May-2014 18:12:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,7 +83,7 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 	% Populate GUI elements
 	% set pmImType values
 	imgTypeStr = {'Column', 'Row'};
-	set(handles.pmImType, 'String', imgTypeStr);
+	set(handles.pmImgType, 'String', imgTypeStr);
 	dFormat    = {'Dec', 'Hex'};
 	set(handles.pmDataFormat, 'String', dFormat);
 	
@@ -91,8 +91,16 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 	opts = handles.patternOpts; 	%alias to shorten code
 	set(handles.etNumBins,   'String', num2str(opts.numBins));
 	set(handles.etBinWidth,  'String', num2str(opts.binWidth));
+	set(handles.etVecSz,     'String', num2str(opts.vecSz));
+	set(handles.etMemWord,   'String', num2str(opts.mWord));
 	set(handles.etImgWidth,  'String', num2str(opts.dims(1)));
 	set(handles.etImgHeight, 'String', num2str(opts.dims(2)));
+	
+	% Set filenames
+	set(handles.etImgFilename, 'String', opts.genFilename);
+	set(handles.etReadFilename, 'String', opts.readFilename);
+	% TODO : Input filename
+	set(handles.etInputFilename, 'String', opts.inpFilename);
 
 	% Setup preview window based on preview mode
 	set(handles.axPreview, 'XTick', [], 'XTickLabel', []);
@@ -109,7 +117,7 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 	handles.errVec   = [];
 	handles.pattrVec = [];
 
-	handles.errVecIdx = 1;
+	handles.errIdx = 1;
 	handles.hImg = 0;
 
 	% Choose default command line output for csToolPatternTest
@@ -125,41 +133,54 @@ function csToolPatternTest_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 function varargout = csToolPatternTest_OutputFcn(hObject, eventdata, handles)%#ok<INUSL>
 % Get default command line output from handles structure
 	% Format output options
+	% TODO : Clean up this structure....
 	oStruct = struct('numBins', [], ...
 		             'binWidth', [], ...
+		             'vecSz', [], ...
+		             'mWord', [], ...
+		             'previewMode', 'test', ...
 		             'dims', [], ...
-		             'verbose', []);
+		             'verbose', [], ...
+		             'genFilename', [], ...
+		             'readFilename', [], ...
+		             'inpFilename', []);
+		             
 	% Save values
-	oStruct.numBins  = str2double(get(handles.etNumBins, 'String'));
-	oStruct.binWidth = str2double(get(handles.etBinWidth, 'String'));
-	img_w            = str2double(get(handles.etImgWidth, 'String'));
-	img_h            = str2double(get(handles.etImgHeight, 'String'));
-	oStruct.dims     = [img_w img_h];
-	oStruct.verbose  = handles.patternOpts.verbose;
+	oStruct.numBins      = str2double(get(handles.etNumBins, 'String'));
+	oStruct.binWidth     = str2double(get(handles.etBinWidth, 'String'));
+	oStruct.vecSz        = str2double(get(handles.etVecSz, 'String'));
+	oStruct.mWord        = str2double(get(handles.etMemWord, 'String'));
+	img_w                = str2double(get(handles.etImgWidth, 'String'));
+	img_h                = str2double(get(handles.etImgHeight, 'String'));
+	oStruct.dims         = [img_w img_h];
+	oStruct.verbose      = handles.patternOpts.verbose;
+	oStruct.genFilename  = get(handles.etImgFilename, 'String');
+	oStruct.readFilename = get(handles.etReadFilename, 'String');
+	oStruct.inpFilename  = get(handles.etInputFilename, 'String');
 	varargout{1} = oStruct;
 
 
 function csToolPatternFig_CloseRequestFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     if(isequal(get(hObject, 'waitstatus'), 'waiting'))
         %Still waiting on GUI
-        uiresume(handles.csToolVerifyFig);
+        uiresume(handles.csToolPatternFig);
     else
         %Ok to clean up
-        delete(handles.csToolVerifyFig);
+        delete(handles.csToolPatternFig);
     end
 
 function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
-	close(handles.csTooPatternFig);
+	close(handles.csToolPatternFig);
 
 function bBrowseFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     %Browse for file to read
-    oldText = get(handles.etFileName, 'String');
+    oldText = get(handles.etReadFilename, 'String');
     [fname path] = uigetfile('*.dat', 'Select vector file...');
     if(isempty(fname))
         fname = oldText;
 		path  = [];
     end
-    set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
+    set(handles.etReadFilename, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);
 
 function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
@@ -179,11 +200,22 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		[handles.errVec handles.refVec]= handles.patternObj.vMemPattern(handles.pattrVec, mWord);
 	else
 		inpFilename = get(handles.etInputFilename, 'String');
-		[handles.pattrVec inpVec] = handles.patternObj.readPatternVec(filename, inpFilename);
+		inpVec = handles.patternObj.readPatternVec(inpFilename);
+		handles.pattrVec = handles.patternObj.readPatternVec(filename);
+
+		% Make sure that vectors are the same lenght. If there is a problem,
+		% with the output, then it will be shorter (since textscan will 
+		% discard 'x' values, for instance). Therefore, make a new vector
+		% the same length as the input and pad out the output vector with 
+		% zeros
+		if(length(handles.pattrVec) < length(inpVec))
+			pvec = zeros(1, length(inpVec));
+			pvec(1:length(handles.pattrVec)) = handles.pattrVec;
+			handles.pattrVec = uint32(pvec);
+		end
 		[handles.errVec handles.refVec] = handles.patternObj.vMemPattern(handles.pattrVec, mWord, inpVec);
 	end	
 
-	% Show pattern vector and error vector in preview
 	
 	% Format listbox  
 	stats = gui_renderStats(handles.refVec, handles.pattrVec, handles.errVec);	
@@ -195,9 +227,18 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 function bNextErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
+	% Check if there is an error vector first
+	if(isempty(handles.errVec))
+		fprintf('No error vector set\n');
+		return;
+	end
 	eidx = handles.errIdx; 	%shorten lines with alias
 	N    = find((handles.errVec(eidx+1 : end) > 0), 1, 'first');
-	handles.errIdx = eidx + N;
+	if((eidx + N) > length(handles.errVec))
+		handles.errIdx = length(handles.errVec);
+	else
+		handles.errIdx = eidx + N;
+	end
 
 	set(handles.lbPatternStats, 'Value', handles.errIdx);
 	gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
@@ -206,9 +247,17 @@ function bNextErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 function bPrevErr_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
+	if(isempty(handles.errVec))
+		fprintf('No error vector set\n');
+		return;
+	end
 	eidx = handles.errIdx; 	%shorten lines with alias
 	P    = find((handles.errVec(1 : eidx+1) > 0), 1, 'last');
-	handles.errIdx = eidx - P;
+	if((eidx - P) < 1)
+		handles.errIdx = 1;
+	else
+		handles.errIdx = eidx - P;
+	end
 	
 	set(handles.lbPatternStats, 'Value', handles.errIdx);
 	gui_renderPlot(handles.axPreview, handles.refVec, handles.pattrVec, handles.errVec, handles.errIdx);
@@ -247,6 +296,8 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	end
 	set(handles.axPreview, 'XTick', [], 'XTickLabel', []);
 	set(handles.axPreview, 'YTick', [], 'YTickLabel', []);
+	xlabel(handles.axPreview, []);
+	ylabel(handles.axPreview, []);
 
 	guidata(hObject, handles);
 
@@ -273,13 +324,13 @@ function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	guidata(hObject, handles);
 
 function bSetWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
-    oldText = get(handles.etFileName, 'String');
+    oldText = get(handles.etImgFilename, 'String');
     [fname path] = uiputfile('*.dat', 'Select output file...');
     if(isempty(fname))
         fname = oldText;
 		path  = [];
     end
-    set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
+    set(handles.etImgFilename, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);
 
 
@@ -300,19 +351,24 @@ function gui_renderPlot(axHandle, refVec, pattrVec, errVec, idx)
 	plot(axHandle, 1:length(pattrVec), pattrVec, 'Color', [0 0 1]);
 	plot(axHandle, 1:length(errVec), errVec, 'Color', [1 0 0]);
 	% Show current position as magenta triangle
-	plot(axHandle, idx, pattrVec(idx), 'Color', [1 0 1], 'Marker', 'v');
+	plot(axHandle, idx, pattrVec(idx), 'Color', [1 0 1], 'Marker', 'v', 'MarkerSize', 8, 'LineWidth', 4);
 	hold(axHandle, 'off');
+	title(axHandle, 'Pattern Vector Comparison');
+	legend(axHandle, 'Reference Vector', 'Pattern Vector', 'Error Vector', 'Current Position');
+	xlabel(axHandle, 'Data word #');
+	ylabel(axHandle, 'Data word value');
+
 
 function bSetInputFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
     %Browse for file to read
-    oldText = get(handles.etFileName, 'String');
+    oldText = get(handles.etInputFilename, 'String');
     [fname path] = uigetfile('*.dat', 'Select vector file...');
     if(isempty(fname))
         fname = oldText;
 		path  = [];
     end
-    set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
+    set(handles.etInputFilename, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);
 
 % ======== CREATE FUNCTIONS ======== %
@@ -390,6 +446,3 @@ function chkAutoGen_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function pmDataFormat_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etInputFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etMemWord_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
-
-

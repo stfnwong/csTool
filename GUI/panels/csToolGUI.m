@@ -120,6 +120,9 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	if(exist('force_no_load', 'var'))
 		NO_LOAD = 1;
 	end
+	if(~exist('NO_LOAD', 'var'))
+		NO_LOAD = 1;
+	end
 
 	%Check which objects have been created, and init new ones if needed
 	if(~isfield(handles, 'frameBuf'))
