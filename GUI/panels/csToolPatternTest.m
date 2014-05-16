@@ -22,7 +22,7 @@ function varargout = csToolPatternTest(varargin)
 
 % Edit the above text to modify the response to help csToolPatternTest
 
-% Last Modified by GUIDE v2.5 16-May-2014 19:13:15
+% Last Modified by GUIDE v2.5 17-May-2014 00:26:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -242,11 +242,16 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 			handles.truncRef   = handles.refVec(1:handles.clampIdx);
 			handles.truncPattr = handles.pattrVec(1:handles.clampIdx);
 			handles.truncErr   = handles.errVec(1:handles.clampIdx);
+			% Set ranges
+			set(handles.etLowRange, 'String', '1');
+			set(handles.etHighRange, 'String', num2str(handles.clampIdx));
 		case 2
 			%Clamp to output
 			handles.truncRef   = handles.refVec;
 			handles.truncPattr = handles.pattrVec;
 			handles.truncErr   = handles.errVec;
+			set(handles.etLowRange, 'String', '1');
+			set(handles.etHighRange, 'String', num2str(length(handles.refVec)));
 	end
 
 	stats = gui_renderStats(handles.truncRef, handles.truncPattr, handles.truncErr);
@@ -363,6 +368,26 @@ function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	fclose(fp);
 	guidata(hObject, handles);
 
+
+function bScale_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	lowRange  = fix(str2double(get(handles.etLowRange, 'String')));
+	highRange = fix(str2double(get(handles.etHighRange, 'String')));
+
+	% Rescale vectors
+	handles.truncRef   = handles.refVec(lowRange:highRange);
+	handles.truncPattr = handles.pattrVec(lowRange:highRange);
+	handles.truncErr   = handles.errVec(lowRange:highRange);
+	
+	if(handles.errIdx > length(handles.truncRef))
+		handles.errIdx = length(handles.truncRef);
+	end
+
+	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
+
+	guidata(hObject, handles);
+
+
 function pmClamp_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	clampIdx = get(handles.pmClamp, 'Value');
@@ -378,7 +403,8 @@ function pmClamp_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 			handles.truncPattr = handles.pattrVec;
 			handles.truncErr   = handles.errVec;
 	end
-
+	set(handles.etLowRange, 'String', '1');
+	set(handles.etHighRange, 'String', num2str(length(handles.truncRef)));
 	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
 
 	guidata(hObject, handles);
@@ -413,6 +439,7 @@ function gui_renderPlot(axHandle, refVec, pattrVec, errVec, idx)
 	% Show current position as magenta triangle
 	plot(axHandle, idx, pattrVec(idx), 'Color', [1 0 1], 'Marker', 'v', 'MarkerSize', 8, 'LineWidth', 4);
 	hold(axHandle, 'off');
+	axis(axHandle, 'tight');
 	title(axHandle, 'Pattern Vector Comparison');
 	legend(axHandle, 'Reference Vector', 'Pattern Vector', 'Error Vector', 'Current Position');
 	xlabel(axHandle, 'Data word #');
@@ -496,11 +523,21 @@ function pmClamp_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
+
+function etLowRange_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etHighRange_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
 % ======== EMPTY FUNCTIONS ========= %
 function etReadFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etBinWidth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etNumBins_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
 function etImgHeight_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etImgWidth_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etVecSz_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -510,9 +547,5 @@ function chkAutoGen_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function pmDataFormat_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etInputFilename_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etMemWord_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
-
-
-
-
-
+function etLowRange_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etHighRange_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
