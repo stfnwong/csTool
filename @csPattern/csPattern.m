@@ -145,50 +145,36 @@ classdef csPattern < handle
 			delete(wb);
 		end 	%genColHistImg()
 
+		% ========= GENERATE REFERENCE VECTOR ======== %
+		function refVec = genRefVec(P, vecLen, mWord)
+
+			refVec = zeros(1, vecLen);
+			
+			rw = 0;
+			for n = 1 : length(refVec)
+				refVec(n) = rw;
+				rw = rw + 1;
+				if(rw > mWord)
+					rw = 0;
+				end
+			end
+
+		end 	%genRefVec()
+
 		% ========= VERIFY MEMORY PATTERN TEST========= %
-		function [errVec varargout] = vMemPattern(P, pattrVec, mWord, varargin)
+		function [errVec varargout] = vMemPattern(P, refVec, pattrVec)
 		% VMEMPATTERN
 		% Verify memory pattern for FIFO switching test
 		%
-		% This function verifies a pattern vector from a bank 
-		% switched memory. Data values are written into the memory
-		% starting at zero and incrementing to the size of the 
-		% memory word. Comparing the input and output shows locations
-		% where the pattern is dropped or interrupted, indicating a 
-		% timing error. The reference pattern vector can be passed in
-		% or generated automatically. Auto-generation is performed by
-		% creating a new vector the same length as the pattern vector,
-		% and looping a word over it wrapping at mWord;
-		%
 		% ARGUMENTS
-		% P - csPattern object
-		% pattrVec - Pattern vector read from RTL testbench. This should
-		%            be a 1xN vector as long as the data stream
-		% mWord    - Size of memory word used in test.
+		% P        - csPattern object
+		% refVec   - Reference vector
+		% pattrVec - Pattern vector
 		%
 		% OUTPUTS
 		% errVec   - Error vector. 
-
-			if(~isempty(varargin))
-				refPattern = varargin{1};
-				refPattern = uint32(refPattern);
-			else
-				refPattern = zeros(1, length(pattrVec));
-				rw = 0;
-				for n = 1 : length(refPattern)
-					refPattern(n) = rw;
-					rw = rw + 1;
-					if(rw >= mWord)
-						rw = 0;
-					end
-				end
-				refPattern = uint32(refPattern);
-			end
-
-			errVec = abs(pattrVec - refPattern);
-			if(nargout > 1)
-				varargout{1} = refPattern;
-			end
+	
+			errVec = abs(refVec - pattrVec);
 
 		end 	%vMemPattern()
 

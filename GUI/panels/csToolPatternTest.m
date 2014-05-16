@@ -201,13 +201,15 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	mWord = str2double(get(handles.etMemWord, 'String'));
 	if(get(handles.chkAutoGen, 'Value'))
 		handles.pattrVec = handles.patternObj.readPatternVec(filename);
-		[handles.errVec handles.refVec]= handles.patternObj.vMemPattern(handles.pattrVec, mWord);
+		handles.refVec   = genRefVec(length(handles.pattrVec), mWord);
+		handles.errVec   = handles.patternObj.vMemPattern(handles.refVec, handles.pattrVec);
+		%[handles.errVec handles.refVec]= handles.patternObj.vMemPattern(handles.pattrVec, mWord);
 		handles.clampIdx = length(handles.pattrVec);
 	else
 		inpFilename = get(handles.etInputFilename, 'String');
 		inpVec = handles.patternObj.readPatternVec(inpFilename);
 		handles.pattrVec = handles.patternObj.readPatternVec(filename);
-
+		handles.clampIdx = length(handles.pattrVec);
 		% Make sure that vectors are the same lenght. If there is a problem,
 		% with the output, then it will be shorter (since textscan will 
 		% discard 'x' values, for instance). Therefore, make a new vector
@@ -232,9 +234,9 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 			ivec(1:length(inpVec)) = inpVec;
 			inpVec = uint32(ivec);
 		end
-
-		handles.clampIdx = length(inpVec);
-		[handles.errVec handles.refVec] = handles.patternObj.vMemPattern(handles.pattrVec, mWord, inpVec);
+		handles.refVec = inpVec;
+		handles.errVec = handles.patternObj.vMemPattern(inpVec, handles.pattrVec);
+		%[handles.errVec handles.refVec] = handles.patternObj.vMemPattern(handles.pattrVec, mWord, inpVec);
 	end	
 	
 	cIdx = get(handles.pmClamp, 'Value');
@@ -451,7 +453,7 @@ function gui_renderPlot(axHandle, refVec, pattrVec, errVec, idx)
 	plot(axHandle, 1:length(pattrVec), pattrVec, 'Color', [0 0 1]);
 	plot(axHandle, 1:length(errVec), errVec, 'Color', [1 0 0]);
 	% Show current position as magenta triangle
-	plot(axHandle, idx, pattrVec(idx), 'Color', [1 0 1], 'Marker', 'v', 'MarkerSize', 8, 'LineWidth', 4);
+	plot(axHandle, idx, errVec(idx), 'Color', [1 0 1], 'Marker', 'v', 'MarkerSize', 8, 'LineWidth', 4);
 	hold(axHandle, 'off');
 	axis(axHandle, 'tight');
 	title(axHandle, 'Pattern Vector Comparison');
