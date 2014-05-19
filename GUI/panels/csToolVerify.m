@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 10-Apr-2014 16:01:20
+% Last Modified by GUIDE v2.5 19-May-2014 12:34:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -129,10 +129,12 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     fmtStr     = {'16', '8', '4', '2'};
     orStr      = {'row', 'col', 'scalar'};
 	dataFmtStr = {'hex', 'dec'}; 	%TODO : binary
+	delimStr   = {'Space', 'Comma'};
     %typeStr = {'HSV', 'Hue', 'BP'};
 	set(handles.pmVecSz,   'String', fmtStr);
 	set(handles.pmVecOr,   'String', orStr);
 	set(handles.pmDataFmt, 'String', dataFmtStr);
+	set(handles.pmDelimiter, 'String', delimStr);
 	%set(handles.pmVecClass, 'String', typeStr);
     vtStr = {'RGB', 'HSV', 'Hue', 'Backprojection'};
     set(handles.pmVecClass, 'String', vtStr);
@@ -242,7 +244,6 @@ function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL
 function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Exit the panel
 	handles.status = 0;
-	%uiresume(handles.csToolVerifyFig);
 	close(handles.csToolVerifyFig);
 
 
@@ -265,7 +266,6 @@ function pmVecClass_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 
 % ---------- KEYPRESS FUNCTION -------- %	
@@ -313,7 +313,6 @@ function csToolVerifyFig_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
 	end
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 % ---------- TRANSPORT CONTROLS -------- %	
 function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -345,7 +344,6 @@ function bPrev_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Write parameters to text box
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
@@ -374,7 +372,6 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	handles = nh;
 
 	guidata(hObject, handles);	
-	uiresume(handles.csToolVerifyFig);
 
 function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
@@ -410,7 +407,6 @@ function bGoto_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	handles = nh;
 
 	guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 % -------- GUI RENDERING FUNCTIONS -------- %
 function gui_updatePreview(axHandle, img, figTitle, params, moments)
@@ -498,12 +494,10 @@ function nh = gui_updateParams(handles)
 
 	% Show error terms for window parameters as well
 	
-
 	refText       = {refTitle, paramTitle, refParamStr,  momentTitle, refMomentStr, refNiterString};
 	testText      = {testTitle, paramTitle, testParamStr, momentTitle, testMomentStr, testNiterString};
 	set(handles.etRefParams, 'String', refText);
 	set(handles.etTestParams, 'String', testText);
-	handles.status = -1;
 	nh = handles;
 
 	return;
@@ -528,15 +522,33 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	dfmtStr  = get(handles.pmDataFmt, 'String');
 	dfmtidx  = get(handles.pmDataFmt, 'Value');
 	dataFmt  = dfmtStr{dfmtidx};
+	delimStr = get(handles.pmDelimiter, 'String');
+	delimIdx = get(handles.pmDelimiter, 'Value');
+	delimSel = delimStr{delimIdx};
+
+	if(strncmpi(delimSel, 'space', 5))
+		delim = ' ';
+	elseif(strncmpi(delimSel, 'comma', 5))
+		delim = ',';
+	else
+		delim = ' ';
+	end
 	
 	if(isnan(numFiles))
 		fprintf('ERROR: Cant interpret number of files [%s]\n', get(handles.etNumFiles, 'String'));
 		return;
 	end
-	chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize, 'vcheck');
-	if(chk.exitflag == -1)
-		fprintf('ERROR: In file (%d/%d), vector (%d/%d) [%s]\n', chk.errFrame, numFiles, chk.errVec, vsize, filename);
-		return;
+	% Only need to do file check if there is more than one file
+	if(numFiles > 1)
+		if(strncmpi(vtype, 'scalar', 6))
+			chk = checkFiles(filename, 'nframe', numFiles, 'scalar');
+		else
+			chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize, 'vcheck');
+		end
+		if(chk.exitflag == -1)
+			fprintf('ERROR: In file (%d/%d), vector (%d/%d) [%s]\n', chk.errFrame, numFiles, chk.errVec, vsize, filename);
+			return;
+		end
 	end
 
 	% Setup test frame buffer
@@ -549,8 +561,13 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	% Read files in loop
 	for N = 1 : numFiles
-		fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, N, 1, ps.ext);
-		[vectors ef] = handles.vecManager.readVec('fname', fn, 'sz', vsize, 'vtype', vtype, 'dmode', dataFmt);
+		
+		if(strncmpi(vtype, 'scalar', 6))
+			fn = sprintf('%s%s-frame%03d.%s', ps.path, ps.filename, N, ps.ext);
+		else
+			fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, N, 1, ps.ext);
+		end
+		[vectors ef] = handles.vecManager.readVec('fname', fn, 'sz', vsize, 'vtype', vtype, 'dmode', dataFmt, 'delim', delim);
 		if(ef == -1)
 			fprintf('ERROR: Failed to read vector in file [%s]\n', fn);
 			return;
@@ -569,7 +586,12 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			otherwise
 				dataSz = 256;
 		end
-
+		% TODO : can change this to 
+		% if(scalar)
+		% 	vectors = vectors{1};
+		% end
+		%
+		% Then do standard call
 		if(iscell(vectors) && strncmpi(vtype, 'scalar', 6))
 			img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar', 'dataSz', dataSz, 'scale', 'dmode', dataFmt);
 		else
@@ -650,7 +672,6 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	%imshow(img, 'Parent', handles.figPreviewTest);
     guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Browse for file to read
@@ -662,7 +683,6 @@ function bGetFile_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etFileName, 'String', sprintf('%s/%s', path, fname));
     guidata(hObject, handles);
-	uiresume(handles.csToolVerifyFig);
 
 function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     % Run verification routine against frame currently displayed in main
@@ -700,14 +720,12 @@ function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     
     guidata(hObject, handles);
-	uiresume(csToolVerifyFig);
 
 function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     % Perform a pattern verification
     % TODO : Put this in top menu bar (with a sub GUI)
 
     guidata(hObject, handles);
-	uiresume(csToolVerifyFig);
     
 
 function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -718,20 +736,6 @@ function pmVecSz_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	vecSz   = vecList{vecIdx};
 	set(handles.etNumFiles, 'String', vecSz);
 	guidata(hObject, handles);
-	uiresume(csToolVerifyFig);
-
-function csToolVerifyFig_KeyPressFcn(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
-
-	switch eventdata.Character
-		case 'f'
-
-		case 'b'
-
-		case 'r'
-
-	end
-
-
 
 % Get params for GUI update
 function [rParams rMoments tParams tMoments] = gui_getParams(refFrameBuf, testFrameBuf, idx)
@@ -796,6 +800,7 @@ function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etTestParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etRefParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function pmDataFmt_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function pmDelimiter_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 % -------- CREATE FUNCTIONS -------- %
 function etFileName_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -826,6 +831,7 @@ function pmVecClass_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
+
 function etNumFiles_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
@@ -847,6 +853,11 @@ function etRefParams_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	end
 
 function pmDataFmt_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function pmDelimiter_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end

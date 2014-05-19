@@ -27,7 +27,7 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 	% ==== PRE-ALLOCATION STAGE ==== %
 	% Load any data needed in the loop here
 	if(T.method == T.SPARSE_WINDOW || T.method == T.SPARSE_IMG)
-		[spvec spstat] = buf_spEncode(bpimg, 'auto', 'rt', 'trim', 'sz', T.SPARSE_FAC);
+		[spvec spstat] = buf_spEncode(bpimg, opts.bpsum, 'auto', 'rt', 'trim', 'sz', T.SPARSE_FAC);
 		if(isempty(spstat))
 			status  = -1;
 			tOutput = [];
@@ -38,6 +38,7 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 				fprintf('WARNING: Zeros in spvec\n');
 			end
 			fprintf('spvec has %d elements\n', spstat.bpsz);
+			fprintf('spfac is %d\n', spstat.fac);
 		end
 		%Check spvec
 		if(sum(sum(spvec)) == 0)
@@ -120,61 +121,6 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 				break;
 			end
 		end	
-		% ========================================================================= %
-
-		%Continously resize?
-		%if(T.WSIZE_CONT == 1)
-		%	%Save previous centroid
-		%	%cTemp = [trackWindow(1) trackWindow(2)];
-		%	%trackWindow = wparamComp(T, moments);
-		%	%trackWindow = wparamCompB(T, moments);
-		%	trackWindow = wparamCompCS(T, moments);
-		%	switch(T.WSIZE_METHOD)
-		%		case T.ZERO_MOMENT
-		%			if(exist('spstat', 'var'))
-		%				trackWindow(4) = fix(sqrt(moments(1)) * spstat.fac);
-		%				trackWindow(5) = fix(sqrt(moments(1)) * spstat.fac);
-		%			end	
-		%		case T.EIGENVEC
-		%			%Make window size based on semi-major/semi-minor axes of ellipse
-		%			%Enfore minimum window size
-		%			%NOTE: Attempting half the semi axis length
-		%			trackWindow(4) = trackWindow(4);
-		%			trackWindow(5) = trackWindow(5);
-		%		case T.HALF_EIGENVEC
-		%			trackWindow(4) = trackWindow(4) / 2;
-		%			trackWindow(5) = trackWindow(5) / 2;
-
-		%		otherwise
-		%			fprintf('ERROR: No such window size method, using zero moment...\n');
-		%			trackWindow(4) = fix(sqrt(moments(1)));
-		%			trackWindow(5) = fix(sqrt(moments(1)));
-		%	end
-		%	%Enforce minimum window size (2x2)
-		%	if(trackWindow(4) < 2 || isnan(trackWindow(4)))
-		%		trackWindow(4) = 2;
-		%	end
-		%	if(trackWindow(5) < 2 || isnan(trackWindow(5)))
-		%		trackWindow(5) = 2;
-		%	end
-		%	%If xc, yc are zero, NaN, or Inf, use previous values so that window 
-		%	%remains in place. We also check if both the centroid locations
-		%	%are at one, as this is a common error condition. In the case
-		%	%the the value is actually one, there should be a smooth
-		%	%transition from the previous frame into this one (as that
-		%	%assumption is build into the tracker) and so recovering the
-		%	%previous frame will still give an acceptable result)
-		%	if(isnan(trackWindow(1)) || isnan(trackWindow(2)) || ...
-        %       isinf(trackWindow(1)) || isinf(trackWindow(2)) || ...
-        %       trackWindow(1) == 0   || trackWindow(2) == 0   || ...
-        %       (trackWindow(1) == 1  && trackWindow(2) == 1))
-		%		if(T.verbose)
-		%			fprintf('Reverting to temp centroid [%f %f]\n', ctemp(1), ctemp(2));
-		%		end
-		%		trackWindow(1) = ctemp(1);
-		%		trackWindow(2) = ctemp(2);
-		%	end
-		%end
 	end
 
 	%Check that we did converge, and if not report
@@ -193,33 +139,6 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 	%DEBUG: - Get rid of NaNs by force
 	wparam(isnan(wparam)) = 1;
 
-	% ==== WINDOW SIZING ROUTINE ==== %	
-	% TODO : Maybe this isnt needed...?
-	%switch(T.WSIZE_METHOD)
-	%	case T.ZERO_MOMENT
-	%		if(exist('spstat', 'var'))
-	%			wparam(4) = fix(sqrt(moments(1)) * spstat.fac);
-	%			wparam(5) = fix(sqrt(moments(1)) * spstat.fac);
-	%		else
-	%			wparam(4) = fix(sqrt(moments(1) * wparam(1)));
-	%			wparam(5) = fix(sqrt(moments(1) * wparam(2)));
-	%		end
-	%	case T.EIGENVEC
-	%		if(exist('spstat', 'var'))
-	%			wparam(4) = wparam(4) * spstat.fac;
-	%			wparam(5) = wparam(5) * spstat.fac;
-	%		end
-	%		%Value are already correct in wparamComp
-	%	case T.HALF_EIGENVEC
-	%		%Make window size based on semi-major/semi-minor axes of ellipse
-	%		%NOTE: Trying half the semi-axis size
-	%		wparam(4) = wparam(4) / 2;
-	%		wparam(5) = wparam(5) / 2;
-	%	otherwise
-	%		fprintf('ERROR: No such window size method, using zero moment...\n');
-	%		wparam(4) = fix(sqrt(moments(1)));
-	%		wparam(5) = fix(sqrt(moments(1)));
-	%end
 	if(T.verbose)
 		fprintf('wparam :');
 		disp(wparam);
@@ -276,6 +195,7 @@ function [status tOutput] = msProcLoop(T, bpimg, trackWindow, opts)
 			spfac       = spstat.fac;
 		else
 			issparsevec = 0;
+			spfac       = 1;
 		end
 	else
 		issparsevec = 0;

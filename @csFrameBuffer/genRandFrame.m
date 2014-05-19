@@ -1,4 +1,4 @@
-function rFrame = genRandFrame(F, opts)
+function [rFrame npix] = genRandFrame(F, opts)
 % GENRANDFRAME
 % rFrame = genRandFrame(F, opts)
 %
@@ -66,6 +66,7 @@ function rFrame = genRandFrame(F, opts)
 	% map ellipse back to backprojection image
 	%rFrame(ey, ex) = opts.sfac;
 	rFrame(yidx, xidx) = opts.sfac;
+    npix = length(rFrame(rFrame > 0));
 	% TODO : Perform weighting here
 
 

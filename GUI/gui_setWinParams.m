@@ -1,4 +1,4 @@
-function [str status] = gui_setWinParams(idx, wparam, moments, niters, dims, bpsum)
+function [str status] = gui_setWinParams(idx, wparam, moments, niters, dims, bpsum, spfac)
 % GUI_SETWINPARAMS
 % [str status] = gui_setWinParams(frameBuf, idx, [...OPTIONS...])
 %
@@ -26,6 +26,7 @@ function [str status] = gui_setWinParams(idx, wparam, moments, niters, dims, bps
 	%	end
 	%end
 	
+	
 	m = moments{idx};
 	
 	% Format string
@@ -44,22 +45,27 @@ function [str status] = gui_setWinParams(idx, wparam, moments, niters, dims, bps
 		axmin = wparam(5);
 	end
 
-	ds  = sprintf('Dimensions : [%d x %d]\n', dims(1), dims(2));
-	bs  = sprintf('Backprojected pixels : %d\n', bpsum);	
+	ds  = sprintf('Dimensions : [%d x %d]', dims(1), dims(2));
+	bs  = sprintf('Backprojected pixels : %d', bpsum);	
 	%s1  = sprintf('xc    : %.1f\n', xc);
-	s1  = sprintf('xc : %.1f yc : %.1f\n', xc, yc);
-	s2  = sprintf('theta : %.1f\n', theta);
-	s3  = sprintf('axmaj : %.1f, axmin : %.1f\n', axmaj, axmin);
+	s1  = sprintf('xc : %.1f yc : %.1f', xc, yc);
+	s2  = sprintf('theta : %.1f', theta);
+	s3  = sprintf('axmaj : %.1f, axmin : %.1f', axmaj, axmin);
+	if(~isempty(spfac))
+		s4 = sprintf('Scaling factor : %d', spfac);
+	else
+		s4 = [];
+	end
 	%Format title string
 	if(exist('param', 'var'))
-		st  = sprintf('wparam %d of %d\n', param, niters);
+		st  = sprintf('wparam %d of %d', param, niters);
 	else
-		st = sprintf('wparam 1 of %d\n', niters);
+		st = sprintf('wparam 1 of %d', niters);
 	end
 	%s4  = sprintf('axmin : %.1f\n', axmin); 
 	%str = strcat(s1, s2, s3, s4, s5);
     %str = sprintf('xc    : %d\nyc    ; %d\ntheta : %d\naxmaj : %d\naxmin : %d\n', xc, yc, theta, axmaj, axmin);
-    str = {ds, bs, st, s1, s2, s3};
+    str = {ds, bs, st, s1, s2, s3, s4};
 	status = 0;
 
 end 	%gui_setWinParams()

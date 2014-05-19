@@ -3,13 +3,14 @@ function [vector varargout] = vecDiskRead(V, fname, opts) %#ok
 %
 % ARGUMENTS
 % V    - vecManager object
-% fname - Name of file to open. If parsing is required (for example, to read a 
-%         series of numbered files) it is the responsibility of the caller to ensure
-%         the filename is correctly parsed before being passed to vecDiskRead()
+% fname - Name of file to open. If parsing is required (for example, to 
+%         read a series of numbered files) it is the responsibility of the 
+%         caller to ensure the filename is correctly parsed before calling
+%         vecDiskRead()
 %
 % OPTIONAL ARGUMENTS
-% dtype, 'str'  - Data type to read from file. This is a string selected from one of
-%                 the valid datatype options for fread()
+% dtype, 'str'  - Data type to read from file. This is a string selected 
+%                 from one of the valid datatype options for fread()
 % debug         - Print debugging strings (verbose mode)
 
 % Stefan Wong 2012
@@ -52,7 +53,7 @@ function [vector varargout] = vecDiskRead(V, fname, opts) %#ok
 			end
 		else
 			%[vector N] = fread(fh, dtype);
-			[vector N] = textscan(fh, '%u32', 'Delimiter', ' ');
+			[vector N] = textscan(fh, '%u32', 'Delimiter', opts.delim);
 			vector = cell2mat(vector);	%make sure we return a matrix
 			%if(V.verbose)
 			%	fprintf('Read %d %s from [%s]\n', N, dtype, fname);

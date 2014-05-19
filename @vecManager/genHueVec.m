@@ -93,7 +93,7 @@ function [vec varargout] = genHueVec(V, img, vtype, val, varargin) %#ok<INUSL>
 					waitbar(p/t, wb, sprintf('Generating column vector (%d/%d)', ...
                                      p, t));
 					p = p+1;
-                    ridx = rdix + numel(n:rdim:img_w);
+                    ridx = ridx + numel(n:rdim:img_w);
 				end
 				vec{n} = row;
 			end

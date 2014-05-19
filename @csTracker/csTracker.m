@@ -236,6 +236,8 @@ classdef csTracker < handle
 							vec_conv = true;
 						elseif(strncmpi(varargin{k}, 'dims', 4))
 							dims = varargin{k+1};
+						elseif(strncmpi(varargin{k}, 'bpsum', 5))
+							bpsum = varargin{k+1};
 						end
 					end
 				end
@@ -251,13 +253,16 @@ classdef csTracker < handle
 			if(~exist('zmtrue', 'var'))
 				zmtrue = [];
 			end
+			if(~exist('bpsum', 'var'))
+				bpsum = sum(sum(bpsum));
+			end
 			%Warn about empty wpos and quit loop
 			if(isempty(wpos))
 				fprintf('ERROR: Empty window position vector\n');
 				return;
 			end
 			%Run tracking loop
-			procOpts = struct('zmtrue', zmtrue, 'conv_vec', vec_conv, 'dims', dims);
+			procOpts = struct('zmtrue', zmtrue, 'conv_vec', vec_conv, 'dims', dims, 'bpsum', bpsum);
 			[plFlag tOpts] = msProcLoop(T, bpimg, wpos, procOpts);
 			if(plFlag == -1)
 				fprintf('WARNING: problem tracking frame \n');

@@ -1,4 +1,4 @@
-function [spvec varargout] = buf_spEncode(bpimg, varargin)
+function [spvec varargout] = buf_spEncode(bpimg, bpsum, varargin)
 % BUF_SPENCODE
 % Create sparsely coded vector to simulate sparse buffer component
 %
@@ -98,7 +98,7 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
                 elseif(strncmpi(varargin{k}, 'rt', 2))
                     RTVEC = true;
                 elseif(strncmpi(varargin{k}, 'eps', 3))
-                    eps   = varargin{k+1};
+                    buf_eps   = varargin{k+1};
 				elseif(strncmpi(varargin{k}, 'buf', 3) || ...
                        strncmpi(varargin{k}, 'sz',  2))
 					bufsz = varargin{k+1};
@@ -116,15 +116,17 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 			SZ = 4;	%turns out (coincidentally) that the index for 4 is also 4
 		else
             SZ = bufsz;
-        end
+		end
 	else
 		SZ = 4;
 	end
 	%Genrate factors and thresholds for scaling test
-    SP_FACTORS = 2.^(length(SP_BUFSZ):-1:0);
-    SP_THRESH  = 2.^(length(SP_BUFSZ):-1:0) ./ 2;
+    %SP_FACTORS = 2.^(length(SP_BUFSZ)-1:-1:0);
+
+    %SP_THRESH  = 2.^(length(SP_BUFSZ):-1:0) ./ 2;
     %SP_THRESH  = (SP_BUFSZ(SZ:end).^2) ./ 2;
 	%SP_THRESH  = 2.^(0:(length(SP_BUFSZ(SZ:end)) + 1));
+
 	
     if(~exist('buf_eps', 'var'))
         buf_eps = 0;
@@ -134,9 +136,9 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
     % in the window size that causes the vector to be sparse. For example,
     % it may be preferable to make the transition size slightly larger or
     % (more often) slightly smaller. By default
-	[h w d] = size(bpimg);
+	[h w d] = size(bpimg); %#ok
 	imsz    = h * w;
-	bpsum   = sum(sum(bpimg));
+	%bpsum   = sum(sum(bpimg));
 
 	if(TRIM)
 		spvec = zeros(2, imsz);	%excess gets cut off anyway
@@ -187,11 +189,20 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 			end
 			return;
 		end
+		factors              = 2.^(0:(length(SP_BUFSZ(sIdx:end-1))));
+		thresholds           = 2.^(0:(length(SP_BUFSZ(sIdx:end-1)))) ./ 2;
+		SP_FACTORS           = zeros(1, length(SP_BUFSZ));
+		SP_THRESH            = zeros(1, length(SP_BUFSZ));
+		SP_FACTORS(sIdx:end) = factors;
+		SP_THRESH(sIdx:end)  = thresholds;
+		%SP_FACTORS = 2.^(0:(length(SP_BUFSZ(sIdx:end-1))));
+	    %SP_THRESH  = 2.^(0:(length(SP_BUFSZ(sIdx:end-1)))) ./ 2;
 
 		for k = sIdx:length(SP_BUFSZ)
 			if(bpsum < imsz/SP_BUFSZ(k) + buf_eps)
 				%Vector fits into specified buffer
-				if(k == SZ)		%Already small enough to fit
+				%if(k == SZ)		%Already small enough to fit
+				if(k == sIdx)
 					if(RTVEC)	%Return original vector
 						spvec = bpimg2vec(bpimg);
 						if(nargout > 1)		%format some stats for sp_stat
@@ -211,12 +222,13 @@ function [spvec varargout] = buf_spEncode(bpimg, varargin)
 				else
 					fac    = SP_FACTORS(k);
 					thresh = SP_THRESH(k);
+					break;
 				end
 			end
 		end
 
-		%If we get to here and haven't set any fac or thresh variables, something 
-		%went wrong
+		%If we get to here and haven't set any fac or thresh variables, 
+		%something went wrong
 		if(~exist('fac', 'var') || ~exist('thresh', 'var'))
 			%Print appropriate message
 			if(~exist('fac', 'var'))

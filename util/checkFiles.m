@@ -20,6 +20,7 @@ function chkStruct = checkFiles(filename, varargin)
 	START_VEC   = 1;
 	CHECK_VEC   = false;
 	FRAME_BUF   = false;
+	SCALAR      = false;
 	VERBOSE     = false;
 	if(~isempty(varargin))
 		for k = 1 : length(varargin)
@@ -36,6 +37,8 @@ function chkStruct = checkFiles(filename, varargin)
 					CHECK_VEC = true;
 				elseif(strncmpi(varargin{k}, 'framebuf', 8))
 					FRAME_BUF = true;
+				elseif(strncmpi(varargin{k}, 'scalar', 6))
+					SCALAR    = true;
 				elseif(strncmpi(varargin{k}, 'verbose', 7))
 					VERBOSE   = true;
 				end
@@ -116,7 +119,7 @@ function chkStruct = checkFiles(filename, varargin)
 			errFrame = -1;
 			errVec   = -1;
 			errFile  = filename;
-		elseif(isempty(ps.vecNum))
+		elseif(~SCALAR && isempty(ps.vecNum))
 			fprintf('ERROR: No vector field in filename [%s]\n', filename);
 			exitflag = -1;
 			errFrame = -1;
@@ -139,6 +142,7 @@ function chkStruct = checkFiles(filename, varargin)
 		end
 	end
 
+
 	% With two while loops
 	if(exitflag ~= -1)
 		exitflag  = 0;
@@ -147,6 +151,10 @@ function chkStruct = checkFiles(filename, varargin)
 		errFile   = [];
 		frameFile = START_FRAME;
 		noErr     = true;
+
+		if(SCALAR && CHECK_VEC)
+			CHECK_VEC = false;
+		end
 
 		while(frameFile <= NUM_FRAMES && noErr)
             vecFile = START_VEC;

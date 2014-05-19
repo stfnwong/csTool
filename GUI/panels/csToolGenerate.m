@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 05-Dec-2013 19:39:19
+% Last Modified by GUIDE v2.5 18-May-2014 18:30:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -346,9 +346,21 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		fprintf('ERROR: parse error in filename %s\n', filename);
 		return;
 	end
+
+	% TODO : This operation of stripping off the extension only to 
+	% possibly put it back later if the file type is scalar should be 
+	% considered a RUSH FIX, and needs to be properly coded at a later
+	% date. The reason for removing the extension is because the vector
+	% splitting part currently adds it in, meaning vector files with *.dat
+	% filenames end up being filaname.dat.dat 
+	%
+	% This is an easy fix but I don't have time right now to test. 
+
 	if(~isempty(fs.ext))
 		% Need to strip off file extension before calling writeImgVec()
 		filename = filename(1 : fs.extIdx-1);
+	elseif(strncmpi(vtype, 'scalar', 6))
+		filename = sprintf('%s.dat', filename);
 	end
 	
 	% Add -frame%03d to filenames that are part of series of images
@@ -356,11 +368,19 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		fname = cell(1, range(2));
 		for k = range(1) : range(2)
 			%fname{k} = sprintf('%s%s-%03d.dat', fs.path, fs.filename, k);
-			fname{k} = sprintf('%s-frame%03d', filename, k);
+            if(strncmpi(vtype, 'scalar', 6))
+                fname{k} = sprintf('%s-frame%03d.dat', filename, k);
+            else
+                fname{k} = sprintf('%s-frame%03d', filename, k);
+            end
 		end
 	else
 		% Make alias to simplify later sections
-		fname{1} = sprintf('%s', filename);
+        if(strncmpi(vtype, 'scalar', 6))
+            fname{1} = sprintf('%s.dat', filename);
+        else
+            fname{1} = sprintf('%s', filename);
+        end
 	end
 
 	% TODO : For now hard code scale at 256 - add GUI control for this
@@ -414,9 +434,10 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			if(handles.debug)
 				fprintf('Generating Hue Vec (%s) for frame %d\n', fmt, idx);
 			end
-			img = handles.frameBuf.getCurImg(idx, 'mode', 'hue');
-			img = rgb2hsv(img);
-			img = img(:,:,1);
+            img = handles.frameBuf.getCurImg(idx, 'mode', 'rgb');
+			%img = handles.frameBuf.getCurImg(idx, 'mode', 'hue');
+			%img = rgb2hsv(img);
+			%img = img(:,:,1);
 			handles.vecManager.writeImgVec(img, opts, 'hue');
 			%handles.vecManager.writeHueVec(fh, 'fmt', fmt, 'file', fname);
 		end
@@ -449,7 +470,7 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 				fprintf('ERROR: parse error generating mhist\n');
 				return;
 			end
-			fn = sprintf('%s%s-mhist.%s', path, str, ext);
+			fn = sprintf('%s%s-mhist.dat', fs.path, fs.filename);
 			ef = write_mhist(fn, handles.mhist);
 			if(ef == -1)
 				return;
@@ -641,3 +662,4 @@ function etTrajFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkVsim_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function chkGenParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function chkGenMoments_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function chkNormBp_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>

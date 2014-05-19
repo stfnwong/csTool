@@ -173,6 +173,9 @@ classdef vecManager
 						elseif(strncmpi(varargin{k}, 'dmode', 5))
 							dmode = varargin{k+1};
 							fprintf('(readVec) dmode set to [%s]\n', dmode);
+						elseif(strncmpi(varargin{k}, 'delim', 5))
+							delim = varargin{k+1};
+							fprintf('(readVec) delim set to [%s]\n', delim);
 						elseif(strncmpi(varargin{k}, 'sz', 2)) %no. elemn in vector
 							sz    = varargin{k+1};
 							fprintf('(readVec) size set to %d\n', sz);
@@ -208,9 +211,29 @@ classdef vecManager
 			if(~exist('dmode', 'var'))
 				dmode = 'dec';
 			end
+			if(~exist('delim', 'var'))
+				delim = ' ';
+			end
 			% TODO : Format an options strcuture for vecDiskRead
 			vopts = struct('dtype', dtype, ...
-				           'dmode', dmode);
+				           'dmode', dmode, ...
+				           'delim', delim);
+
+			%if(sz == 1)
+            if(strncmpi(vtype, 'scalar', 6))
+				[vecdata{1} ref] = vecDiskRead(V, fname, vopts);
+				if(ref == -1)
+					fprintf('%s error in file [%s]\n', DSTR, fname);
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
+					return;
+				end
+                if(nargout > 1)
+                    varargout{1} = 0;
+                end
+                return;
+            end
 
 			% Allocate memory and read files in sequence
 			vecdata = cell(1, sz);
@@ -223,17 +246,6 @@ classdef vecManager
 					varargout{1} = -1;
 				end
 				return;
-			end
-
-			if(sz == 1)
-				[vecdata{1} ref] = vecDiskRead(V, filename, vopts);
-				if(ref == -1)
-					fprintf('%s error in file [%s]\n', DSTR, filename);
-					if(nargout > 1)
-						varargout{1} = -1;
-					end
-					return;
-				end
 			end
 
 			wb = waitbar(0, sprintf('Reading vector (0/%d)', length(vecdata)), 'Name', 'Reading vector data...');
@@ -717,7 +729,7 @@ classdef vecManager
 				case 'bp'
 					vec = genBPVec(V, img, opts.vtype, opts.val);
 					if(strncmpi(opts.vtype, 'scalar', 6))
-						vecDiskWrite(V, {vec}, 'fname', {opts.fname}, 'vsim');
+						vecDiskWrite(V, {vec}, 'fname', {opts.fname}, 'vsim', opts.vsim);
 					else
 						for n = length(vec):-1:1
 							vecnames{n} = sprintf('%s-vec%03d.dat', opts.fname, n);

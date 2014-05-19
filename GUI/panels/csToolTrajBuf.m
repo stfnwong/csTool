@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 22-Jan-2014 19:29:59
+% Last Modified by GUIDE v2.5 13-May-2014 21:26:49
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -129,6 +129,14 @@ function csToolTrajBuf_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<IN
 	%set(handles.fig_trajErrorY,  'XTick', [], 'XTickLabel', []);
 	%set(handles.fig_trajErrorY,  'YTick', [], 'YTickLabel', []);
 	
+	% Setup axes labels for error plots
+	xlabel(handles.fig_trajErrorX, 'Frame #');
+	ylabel(handles.fig_trajErrorX, 'Error (pixels)');
+	title(handles.fig_trajErrorX, 'Error (x dimension)');
+	xlabel(handles.fig_trajErrorY, 'Frame #');
+	ylabel(handles.fig_trajErrorY, 'Error (pixels)');
+	title(handles.fig_trajErrorY, 'Error (y dimension)');
+	
 	%Check that there are frames in frame buffer
 	if(handles.frameBuf.getNumFrames() < 1)
 		%Cant do anything without frames....
@@ -159,8 +167,6 @@ function varargout = csToolTrajBuf_OutputFcn(hObject, eventdata, handles) %#ok<I
                             'frameBuf',   handles.frameBuf);
 	varargout{1} = handles.output;
     delete(handles.fig_trajBuf);
-    %uiresume(handles.fig_trajBuf);
-	%delete(hObject);
 
 function fig_trajBuf_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
@@ -256,13 +262,13 @@ function gui_renderErrorPlot(axHandle, traj, idx, varargin)
 				shp    = stem(axHandle(k), 1:length(p), p, 'v');
                 set(sh, 'Color',[0 0 1], 'MarkerFaceColor',[0 1 0], 'MarkerSize', 2);
                 set(shp,'Color',[0 0 1], 'MarkerFaceColor',[1 0 0], 'MarkerSize',10);
-                if(k == 1)
-                    title('Trajectory Error (x)');
-                else
-                    title('Trajectory Error (y)');
-                end
-                xlabel('Frame #');
-                ylabel('Error (pixels)');
+                %if(k == 1)
+                %    title('Trajectory Error (x)');
+                %else
+                %    title('Trajectory Error (y)');
+                %end
+                %xlabel('Frame #');
+                %ylabel('Error (pixels)');
                 if(exist('lgnd', 'var'))
                     legend(sh, lgnd);       %DEPRECATED
                 end
@@ -433,7 +439,7 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	if(handles.fbIdx < N)
 		handles.fbIdx = handles.fbIdx + 1;
 		img = handles.frameBuf.getCurImg(handles.fbIdx);
-		%fh = handles.frameBuf.getFrameHandle(handles.fbIdx);
+		%fh = handles.frameBuf.getFrameHandle(handles.fbIdx
 		%gui_renderPreview(handles.fig_trajPreview, fh, handles.fbIdx);
 		ah  = [handles.fig_trajPreview handles.fig_trajErrorX handles.fig_trajErrorY];
 		ta  = handles.trajBuf;
@@ -450,7 +456,6 @@ function bNext_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     %Update current frame text
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Bounds check and decrement frame index
@@ -473,7 +478,6 @@ function bPrev_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     %Update current frame text
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 
 
@@ -495,7 +499,6 @@ function bLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
     guidata(hObject, handles);
-    %uiresume(handles.fig_trajBuf);
 
 
 function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -516,7 +519,6 @@ function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
     guidata(hObject, handles);
-    %uiresume(handles.fig_trajBuf);
 
 
 function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -541,7 +543,6 @@ function bGoto_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     set(handles.etCurFrame, 'String', num2str(handles.fbIdx));
     guidata(hObject, handles);
-    %uiresume(handles.fig_trajBuf);
 
 
 
@@ -568,7 +569,6 @@ function bWrite_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     handles.labBuf{2} = clab;
 
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Read data out of the vecManager trajectory buffer at the specified
@@ -602,7 +602,6 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     handles.labBuf{2} = clab;
     
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 function bGetRef_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Extract current trajectory from frame buffer and place into trajectory
@@ -638,7 +637,6 @@ function bGetRef_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     set(handles.etTrajLabel, 'String', nLabel);
 
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 function bGetTest_Callback(hObject, eventdata, handles) %#okINUSL,DEFNU>
 	% Get trajectory from test buffer
@@ -698,7 +696,6 @@ function bSetLabel_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     handles.labBuf{2} = clab;
 
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Plot the two selected trajectories in the preview axes and modify GUI
@@ -749,9 +746,19 @@ function bCompare_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     clab   = handles.vecManager.getTrajBufLabel(get(handles.pmCompIdx, 'Value'));
     handles.labBuf{1} = nLabel;
     handles.labBuf{2} = clab;
+
+	% Find average error and display
+	avgX = sum(err(1,:)) / length(err);
+	avgY = sum(err(2,:)) / length(err);
+	set(handles.etAvgErrX, 'String', sprintf('%3.2f', avgX));
+	set(handles.etAvgErrY, 'String', sprintf('%3.2f', avgY));
+	% Find standard deviation and display
+	stdX = std(err(1,:));
+	stdY = std(err(2,:));
+	set(handles.etStdDevX, 'String', sprintf('%3.2f', stdX));
+	set(handles.etStdDevY, 'String', sprintf('%3.2f', stdY));
 		
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 function bResize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Resize the trajectory buffer in vecManager object
@@ -762,7 +769,6 @@ function bResize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         handles.vecManager = handles.vecManager.setTrajBufSize(bufSize);
     end
     guidata(hObject, handles);
-    %uiresume(handles.fig_trajBuf);
 
 function menu_bufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Re-size the trajectory buffer in vecManager (this requires a sub-menu)
@@ -778,7 +784,6 @@ function menu_bufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
     
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 % Build into this GUI the notion of range, so that when we adjust the value
 % in either of these boxes, only entires within the ranges are displayed on
@@ -820,7 +825,6 @@ function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
         end
     end
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 
 function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -882,10 +886,9 @@ function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
 	
 	
 	guidata(hObject, handles);
-	%uiresume(handles.fig_trajBuf);
 
 % --- Executes on key press with focus on fig_trajBuf and none of its controls.
-function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<DEFNU>
     % Add some keyboard shortcuts for this subpanel for quicker navigation,
     % etc
 	% TODO : The frame indexing methods are just cut/paste of bNext and bPrev
@@ -945,13 +948,11 @@ function fig_trajBuf_KeyPressFcn(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
 
 	guidata(hObject, handles)
-    %uiresume(handles.fig_trajBuf);
 
 
 function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
     %Close figure and return to main GUI
     close(handles.fig_trajBuf);
-    %uiresume(handles.fig_trajBuf);
 
 % ---- UNUSED CALLBACKS ---- %
 function etTrajLabel_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -966,6 +967,10 @@ function chkKeep_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etBufSize_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etAvgErrX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etAvgErrY_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etStdDevX_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etStdDevY_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 % -------- CREATE FUNCTIONS ------- %
 function etTrajLabel_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
@@ -1013,5 +1018,23 @@ function etGoto_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
+function etAvgErrX_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 
+function etAvgErrY_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etStdDevY_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etStdDevX_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 %function bTrajExtract_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>

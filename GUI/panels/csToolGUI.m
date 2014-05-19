@@ -120,6 +120,9 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	if(exist('force_no_load', 'var'))
 		NO_LOAD = 1;
 	end
+	if(~exist('NO_LOAD', 'var'))
+		NO_LOAD = 1;
+	end
 
 	%Check which objects have been created, and init new ones if needed
 	if(~isfield(handles, 'frameBuf'))
@@ -186,6 +189,7 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 	handles.pvOpts = init_genPvOpts(DATA_DIR, NO_LOAD);
 	handles.sqOpts = init_genSqOpts(DATA_DIR, NO_LOAD);
 	handles.sbOpts = init_genSbOpts(DATA_DIR, NO_LOAD);
+	handles.ptOpts = init_genPatternTestOpts(DATA_DIR, NO_LOAD);
 	if(DEBUG)
 		fprintf('vfOpts : \n');
 		disp(handles.vfOpts);
@@ -193,6 +197,8 @@ function csToolGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 		disp(handles.pvOpts);
 		fprintf('sqOpts :\n');
 		disp(handles.sqOpts);
+		fprintf('ptOpts :\n');
+		disp(handles.ptOpts);
 	end
     handles = init_UIElements(handles);
 
@@ -1247,8 +1253,11 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 			else
 				sgOpts = csToolSeqGen('genopts', handles.sqOpts);
 			end
+            if(handles.debug)
+                fprintf('INFO: Returned from csToolSeqGen() call (keyPressFcn)\n');
+            end
 			if(sgOpts.status ~= -1)
-                % TODO : Re-write structure names on csToolSeqGen side
+                % TODO : Re-write structure names on csThoolSeqGen side
 				handles.sqOpts  = sgOpts.genOpts;
 				handles.frameBuf = sgOpts.frameBuf;
 				if(handles.debug)
@@ -1286,7 +1295,7 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
             end
 
             % ================ LAUNCH BUFFER PREVIEW ================ %
-		case 'p'
+		case 'P'
 			prStr = csToolBufPreview(handles.frameBuf, 'opts', handles.pvOpts, 'idx', frameIndex);
 			if(prStr.exitflag ~= -1)
 				handles.pvOpts = prStr.pvOpts;
@@ -1297,6 +1306,14 @@ function csToolFigure_KeyPressFcn(hObject, eventdata, handles)	%#ok<DEFNU>
 					disp(handles.frameBuf);
 				end
 			end
+		case 'p'
+			if(handles.debug)
+				handles.ptOpts.verbose = true;
+			else
+				handles.ptOpts.verbose = false;
+			end
+			pattrStruct = csToolPatternTest('opts', handles.ptOpts);
+			handles.ptOpts = pattrStruct;
 			% ================ LAUNCH SAVE/LOAD DIALOG ================ %
 		case 'L'
 

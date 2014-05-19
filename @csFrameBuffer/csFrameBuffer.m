@@ -823,7 +823,7 @@ classdef csFrameBuffer
 				if(isempty(opts.imsz))
 					fprintf('WARNING: empty dimensions in generated frame %d\n', N);
 				end
-				frame  = genRandFrame(F, opts);
+				[frame npix] = genRandFrame(F, opts);
 				% Scale frame
 				%frame  = frame ./ max(max(frame));
 				%frame  = sfac .* frame;
@@ -833,7 +833,8 @@ classdef csFrameBuffer
 				fname  = sprintf('bpgen-%03d.ext', N);
 				set(F.frameBuf(N), 'filename', fname);
 				set(F.frameBuf(N), 'bpVec', bpvec);
-				set(F.frameBuf(N), 'bpSum', opts.npoints);
+				%set(F.frameBuf(N), 'bpSum', opts.npoints);
+				set(F.frameBuf(N), 'bpSum', npix);
 				set(F.frameBuf(N), 'dims', opts.imsz);
 				set(F.frameBuf(N), 'dataSz', dataSz);
 				%set(F.frameBuf(N), 'bpImg', frame);
@@ -899,10 +900,10 @@ classdef csFrameBuffer
 	
 	% ---- METHODS IN FILES ---- %
 	methods (Access = 'private')
-		rFrame = genRandFrame(F, opts);
-		pos    = genRandPos(F, prevPos, maxDist, imsz);
-		status = bufDiskWrite(F, fh, filename);
-				 bufDiskRead(F, fh, filename);
+		[rFrame npix]   = genRandFrame(F, opts);
+		pos             = genRandPos(F, prevPos, maxDist, imsz);
+		status          = bufDiskWrite(F, fh, filename);
+			              bufDiskRead(F, fh, filename);
 		[img varargout] = getImgData(F, idx, opts);
 	end
 
