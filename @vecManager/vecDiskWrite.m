@@ -81,36 +81,62 @@ function status = vecDiskWrite(V, data, varargin)
 		end
 	end
 
-	%Write data to disk	
-	wb = waitbar(0, sprintf('Writing vector (%d/%d)', 1, length(data)), ...
-		        'Name', sprintf('Writing %s...', filename{k}));
-	for k = 1:length(data)
-		vec = data{k};
+	%If there is only one element in data cell, then convert to 
+	%matrix form and write as scalar stream
+	if(length(data) == 1)
+		vec = cell2mat(data{1});
+		
 		if(VSIM_ADR)
-			%Write address for modelsim
-			fprintf(fp(k), '@0 ');
+			fprintf(fp(1), '@0 ');
 		end
-		% DEBUG:
-		if(sum(isnan(vec)) > 0)
-			fprintf('WARNING: [%s]  vector data has %d NaN\n', filename{k}, sum(isnan(vec)));
+
+		for n = 1 : length(vec)
+			switch numFmt
+				case 'hex'
+					fprintf(fp(1), '%X ', vec(n));
+				case 'dec'
+					fprintf(fp(1), '%d ', vec(n));
+				otherwise
+					fprintf('Not a supported number format, quitting\n');
+					fclose(fp(1));
+					status = -1;
+					return;
+			end
 		end
-		switch numFmt
-			case 'hex'
-				fprintf(fp(k), '%X ', vec);
-			case 'dec'
-				fprintf(fp(k), '%d ', vec);
-			otherwise 
-				fprintf('Not a supported number format, quitting...\n');
-				for m = 1:length(data)
-					fclose(fp(m));
-				end
-				status = -1;
-				return;
+	else
+		%Write data to disk	
+		wb = waitbar(0, sprintf('Writing vector (%d/%d)', 1, length(data)), ...
+					'Name', sprintf('Writing %s...', filename{k}));
+		for k = 1:length(data)
+			%vec = cell2mat(data{k});
+			vec = data{k};
+			if(VSIM_ADR)
+				%Write address for modelsim
+				fprintf(fp(k), '@0 ');
+			end
+			% DEBUG:
+			%if(sum(isnan(vec)) > 0)
+			%	fprintf('WARNING: [%s]  vector data has %d NaN\n', filename{k}, sum(isnan(vec)));
+			%end
+			switch numFmt
+				case 'hex'
+					fprintf(fp(k), '%X ', vec);
+				case 'dec'
+					fprintf(fp(k), '%d ', vec);
+				otherwise 
+					fprintf('Not a supported number format, quitting...\n');
+					for m = 1:length(data)
+						fclose(fp(m));
+					end
+					status = -1;
+					return;
+			end
+			waitbar(k/length(data), wb, sprintf('Writing vector %s (%d/%d)', ...
+									   filename{k}, k, length(data)));
 		end
-		waitbar(k/length(data), wb, sprintf('Writing vector %s (%d/%d)', ...
-			                       filename{k}, k, length(data)));
+		delete(wb);
 	end
-	delete(wb);
+
 	for k = 1:length(data)
 		fclose(fp(k));
 	end

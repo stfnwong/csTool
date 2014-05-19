@@ -22,7 +22,7 @@ function varargout = csToolGenerate(varargin)
 
 % Edit the above text to modify the response to help csToolGenerate
 
-% Last Modified by GUIDE v2.5 05-Dec-2013 19:39:19
+% Last Modified by GUIDE v2.5 18-May-2014 18:30:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -662,3 +662,4 @@ function etTrajFile_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function chkVsim_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function chkGenParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function chkGenMoments_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function chkNormBp_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>

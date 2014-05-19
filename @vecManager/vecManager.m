@@ -717,7 +717,7 @@ classdef vecManager
 				case 'bp'
 					vec = genBPVec(V, img, opts.vtype, opts.val);
 					if(strncmpi(opts.vtype, 'scalar', 6))
-						vecDiskWrite(V, {vec}, 'fname', {opts.fname}, 'vsim');
+						vecDiskWrite(V, {vec}, 'fname', {opts.fname}, 'vsim', opts.vsim);
 					else
 						for n = length(vec):-1:1
 							vecnames{n} = sprintf('%s-vec%03d.dat', opts.fname, n);

@@ -258,7 +258,7 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 			set(handles.etHighRange, 'String', num2str(length(handles.refVec)));
 	end
 
-	stats = gui_renderStats(handles.truncRef, handles.truncPattr, handles.truncErr);
+	stats = gui_renderStats(handles.truncRef, handles.truncPattr, handles.truncErr, 0);
 	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
 	set(handles.lbPatternStats, 'String', stats);	
 
@@ -327,7 +327,7 @@ function lbPatternStats_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 	imgTypeList = get(handles.pmImgType, 'String');
-	imgTypeIdx  = get(handles.pmImgType, 'String');
+	imgTypeIdx  = get(handles.pmImgType, 'Value');
 	imgType     = imgTypeList{imgTypeIdx};
 	% Get options for hue image generation
 	nBins       = str2double(get(handles.etNumBins, 'String'));
@@ -347,7 +347,8 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	end
 
 	% Show image in preview
-	imshow(handles.axPreview, hImg);
+	hImg = handles.hImg./(max(max(handles.hImg)));
+	imshow(hImg, 'Parent', handles.axPreview);
 	if(strncmpi(imgType, 'column', 6))
 		title(handles.axPreview, 'Column Hue Image');
 	else
@@ -362,7 +363,7 @@ function bGenerate_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 function bWrite_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
-	filename = get(etImgFilename, 'String');
+	filename = get(handles.etImgFilename, 'String');
 	dfList   = get(handles.pmDataFormat, 'String');
 	dfIdx    = get(handles.pmDataFormat, 'Value');
 	dFormat  = dfList{dfIdx};
@@ -397,7 +398,8 @@ function bScale_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		handles.errIdx = length(handles.truncRef);
 	end
 
-	stats = gui_renderStats(handles.truncRef, handles.truncPattr, handles.truncErr);
+	% TODO : Add offset term here so indicies are the same as original array
+	stats = gui_renderStats(handles.truncRef, handles.truncPattr, handles.truncErr, lowRange-1);
 	gui_renderPlot(handles.axPreview, handles.truncRef, handles.truncPattr, handles.truncErr, handles.errIdx);
 	set(handles.lbPatternStats, 'String', stats);	
 	set(handles.lbPatternStats, 'Value', handles.errIdx);
@@ -437,12 +439,12 @@ function bSetWriteFile_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 
 
 % ======== LOCAL GUI FUNCTIONS ======== %
-function stats = gui_renderStats(refVec, pattrVec, errVec)
+function stats = gui_renderStats(refVec, pattrVec, errVec, offset)
 
 	stats = cell(1, length(refVec));
 	
 	for k = 1 : length(stats)
-		stats{k} = sprintf('idx : [%4d] | ref: [%4d] | pattr: [%4d] | err: [%4d]', k, refVec(k), pattrVec(k), errVec(k));
+		stats{k} = sprintf('idx : [%4d] | ref: [%4d] | pattr: [%4d] | err: [%4d]', k+offset, refVec(k), pattrVec(k), errVec(k));
 	end
 
 function gui_renderPlot(axHandle, refVec, pattrVec, errVec, idx)
