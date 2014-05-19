@@ -540,7 +540,11 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
 	% Only need to do file check if there is more than one file
 	if(numFiles > 1)
-		chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize, 'vcheck');
+		if(strncmpi(vtype, 'scalar', 6))
+			chk = checkFiles(filename, 'nframe', numFiles, 'scalar');
+		else
+			chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize, 'vcheck');
+		end
 		if(chk.exitflag == -1)
 			fprintf('ERROR: In file (%d/%d), vector (%d/%d) [%s]\n', chk.errFrame, numFiles, chk.errVec, vsize, filename);
 			return;
@@ -557,7 +561,12 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
 	% Read files in loop
 	for N = 1 : numFiles
-		fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, N, 1, ps.ext);
+		
+		if(strncmpi(vtype, 'scalar', 6))
+			fn = sprintf('%s%s-frame%03d.%s', ps.path, ps.filename, N, ps.ext);
+		else
+			fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, N, 1, ps.ext);
+		end
 		[vectors ef] = handles.vecManager.readVec('fname', fn, 'sz', vsize, 'vtype', vtype, 'dmode', dataFmt, 'delim', delim);
 		if(ef == -1)
 			fprintf('ERROR: Failed to read vector in file [%s]\n', fn);
@@ -577,7 +586,12 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			otherwise
 				dataSz = 256;
 		end
-
+		% TODO : can change this to 
+		% if(scalar)
+		% 	vectors = vectors{1};
+		% end
+		%
+		% Then do standard call
 		if(iscell(vectors) && strncmpi(vtype, 'scalar', 6))
 			img = handles.vecManager.formatVecImg(vectors{1}, 'vecFmt', 'scalar', 'dataSz', dataSz, 'scale', 'dmode', dataFmt);
 		else

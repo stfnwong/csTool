@@ -219,6 +219,22 @@ classdef vecManager
 				           'dmode', dmode, ...
 				           'delim', delim);
 
+			%if(sz == 1)
+            if(strncmpi(vtype, 'scalar', 6))
+				[vecdata{1} ref] = vecDiskRead(V, fname, vopts);
+				if(ref == -1)
+					fprintf('%s error in file [%s]\n', DSTR, fname);
+					if(nargout > 1)
+						varargout{1} = -1;
+					end
+					return;
+				end
+                if(nargout > 1)
+                    varargout{1} = 0;
+                end
+                return;
+            end
+
 			% Allocate memory and read files in sequence
 			vecdata = cell(1, sz);
 			% Parse filename
@@ -230,17 +246,6 @@ classdef vecManager
 					varargout{1} = -1;
 				end
 				return;
-			end
-
-			if(sz == 1)
-				[vecdata{1} ref] = vecDiskRead(V, filename, vopts);
-				if(ref == -1)
-					fprintf('%s error in file [%s]\n', DSTR, filename);
-					if(nargout > 1)
-						varargout{1} = -1;
-					end
-					return;
-				end
 			end
 
 			wb = waitbar(0, sprintf('Reading vector (0/%d)', length(vecdata)), 'Name', 'Reading vector data...');
