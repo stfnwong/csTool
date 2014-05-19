@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 10-Apr-2014 16:01:20
+% Last Modified by GUIDE v2.5 19-May-2014 12:34:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -129,10 +129,12 @@ function csToolVerify_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INU
     fmtStr     = {'16', '8', '4', '2'};
     orStr      = {'row', 'col', 'scalar'};
 	dataFmtStr = {'hex', 'dec'}; 	%TODO : binary
+	delimStr   = {'Space', 'Comma'};
     %typeStr = {'HSV', 'Hue', 'BP'};
 	set(handles.pmVecSz,   'String', fmtStr);
 	set(handles.pmVecOr,   'String', orStr);
 	set(handles.pmDataFmt, 'String', dataFmtStr);
+	set(handles.pmDelimiter, 'String', delimStr);
 	%set(handles.pmVecClass, 'String', typeStr);
     vtStr = {'RGB', 'HSV', 'Hue', 'Backprojection'};
     set(handles.pmVecClass, 'String', vtStr);
@@ -492,7 +494,6 @@ function nh = gui_updateParams(handles)
 
 	% Show error terms for window parameters as well
 	
-
 	refText       = {refTitle, paramTitle, refParamStr,  momentTitle, refMomentStr, refNiterString};
 	testText      = {testTitle, paramTitle, testParamStr, momentTitle, testMomentStr, testNiterString};
 	set(handles.etRefParams, 'String', refText);
@@ -521,15 +522,29 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	dfmtStr  = get(handles.pmDataFmt, 'String');
 	dfmtidx  = get(handles.pmDataFmt, 'Value');
 	dataFmt  = dfmtStr{dfmtidx};
+	delimStr = get(handles.pmDelimiter, 'String');
+	delimIdx = get(handles.pmDelimiter, 'Value');
+	delimSel = delimStr{delimIdx};
+
+	if(strncmpi(delimSel, 'space', 5))
+		delim = ' ';
+	elseif(strncmpi(delimSel, 'comma', 5))
+		delim = ',';
+	else
+		delim = ' ';
+	end
 	
 	if(isnan(numFiles))
 		fprintf('ERROR: Cant interpret number of files [%s]\n', get(handles.etNumFiles, 'String'));
 		return;
 	end
-	chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize, 'vcheck');
-	if(chk.exitflag == -1)
-		fprintf('ERROR: In file (%d/%d), vector (%d/%d) [%s]\n', chk.errFrame, numFiles, chk.errVec, vsize, filename);
-		return;
+	% Only need to do file check if there is more than one file
+	if(numFiles > 1)
+		chk = checkFiles(filename, 'nframe', numFiles, 'nvec', vsize, 'vcheck');
+		if(chk.exitflag == -1)
+			fprintf('ERROR: In file (%d/%d), vector (%d/%d) [%s]\n', chk.errFrame, numFiles, chk.errVec, vsize, filename);
+			return;
+		end
 	end
 
 	% Setup test frame buffer
@@ -543,7 +558,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	% Read files in loop
 	for N = 1 : numFiles
 		fn = sprintf('%s%s-frame%03d-vec%03d.%s', ps.path, ps.filename, N, 1, ps.ext);
-		[vectors ef] = handles.vecManager.readVec('fname', fn, 'sz', vsize, 'vtype', vtype, 'dmode', dataFmt);
+		[vectors ef] = handles.vecManager.readVec('fname', fn, 'sz', vsize, 'vtype', vtype, 'dmode', dataFmt, 'delim', delim);
 		if(ef == -1)
 			fprintf('ERROR: Failed to read vector in file [%s]\n', fn);
 			return;
@@ -771,6 +786,7 @@ function etGoto_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etTestParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etRefParams_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function pmDataFmt_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function pmDelimiter_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 
 % -------- CREATE FUNCTIONS -------- %
 function etFileName_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
@@ -801,6 +817,7 @@ function pmVecClass_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
         set(hObject,'BackgroundColor','white');
     end
 
+
 function etNumFiles_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
@@ -822,6 +839,11 @@ function etRefParams_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	end
 
 function pmDataFmt_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function pmDelimiter_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end

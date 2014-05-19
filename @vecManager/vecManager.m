@@ -173,6 +173,9 @@ classdef vecManager
 						elseif(strncmpi(varargin{k}, 'dmode', 5))
 							dmode = varargin{k+1};
 							fprintf('(readVec) dmode set to [%s]\n', dmode);
+						elseif(strncmpi(varargin{k}, 'delim', 5))
+							delim = varargin{k+1};
+							fprintf('(readVec) delim set to [%s]\n', delim);
 						elseif(strncmpi(varargin{k}, 'sz', 2)) %no. elemn in vector
 							sz    = varargin{k+1};
 							fprintf('(readVec) size set to %d\n', sz);
@@ -208,9 +211,13 @@ classdef vecManager
 			if(~exist('dmode', 'var'))
 				dmode = 'dec';
 			end
+			if(~exist('delim', 'var'))
+				delim = ' ';
+			end
 			% TODO : Format an options strcuture for vecDiskRead
 			vopts = struct('dtype', dtype, ...
-				           'dmode', dmode);
+				           'dmode', dmode, ...
+				           'delim', delim);
 
 			% Allocate memory and read files in sequence
 			vecdata = cell(1, sz);

@@ -53,7 +53,7 @@ function [vector varargout] = vecDiskRead(V, fname, opts) %#ok
 			end
 		else
 			%[vector N] = fread(fh, dtype);
-			[vector N] = textscan(fh, '%u32', 'Delimiter', ' ');
+			[vector N] = textscan(fh, '%u32', 'Delimiter', opts.delim);
 			vector = cell2mat(vector);	%make sure we return a matrix
 			%if(V.verbose)
 			%	fprintf('Read %d %s from [%s]\n', N, dtype, fname);
