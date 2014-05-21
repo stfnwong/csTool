@@ -43,6 +43,58 @@ classdef csPattern < handle
 			end
 		end 	%csPattern()
 
+
+		function hImg = genHistImg(P, dims, nBins, bWidth)
+		% GENHISTIMG
+		% Generated histogram testing image.
+		%
+		% ARGUMENTS:
+		% P      - csPattern class object
+		% dims   - 1x2 vector of image dimensions [w h]
+		% nBins  - Number of bins in histogram
+		% bWidth - Width of bin in image histogram
+		%
+		% OUTPUTS:
+		% hImg   - A dims(2) x dims(1) matrix containing hue pixels in
+		%          test pattern order
+
+			hImg  = zeros(dims(2), dims(1));
+			ihist = zeros(1, nBins);
+			
+			for n = 1 : length(ihist)
+				ihist(n) = (n-1)*bWidth;
+			end
+
+			% Need to check that the height is divisble by columns
+			if(mod(dims(2), vecSz) ~= 0)
+				fprintf('ERROR: vector size (%d) is not a multiple of image height (%d)\n', vecSz, dims(2));
+				hImg = [];
+				return;
+			end
+
+			cdim = dims(2) / vecSz;
+
+			%Set up waitbar 
+			t = cdim * dims(1);
+			p = 1;
+			wb = waitbar(0, sprintf('Generating column hue pattern (0/%d)', t), 'Name', 'Generating column hue pattern');
+
+			% Generate one row and copy
+			hIdx = 1;
+			hRow = zeros(1, dims(2));
+			for xpix = 1 : dims(1)
+				hRow(1, xpix) = ihist(hIdx);
+				hIdx = hIdx + 1;
+				if(hIdx > length(ihist))
+					hIdx = 1;
+				end
+				p = p + 1;
+			end
+			hImg = repmat(hRow, [dims(2) 1]);
+
+			delete(wb);
+		end 	%genHistImg()
+
 		% ========= GENERATE HISTOGRAM TEST IMAGES ========= %
 		function hImg = genRowHistImg(P, dims, nBins, bWidth)
 		% GENROWHISTIMG
