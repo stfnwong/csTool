@@ -95,6 +95,14 @@ classdef csPattern < handle
 			delete(wb);
 		end 	%genHistImg()
 
+
+		% ========= READ A HISTOGRAM VECTOR FROM DISK ========= %
+		function histVec = readHistVec(P, fname, opts)
+		% READHISTVEC
+		% Read a set of histogram data from an RTL simulation
+
+		end 	%readHistVec()
+
 		% ========= GENERATE HISTOGRAM TEST IMAGES ========= %
 		function hImg = genRowHistImg(P, dims, nBins, bWidth)
 		% GENROWHISTIMG
