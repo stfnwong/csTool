@@ -201,7 +201,7 @@ function bRead_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	mWord = str2double(get(handles.etMemWord, 'String'));
 	if(get(handles.chkAutoGen, 'Value'))
 		handles.pattrVec = handles.patternObj.readPatternVec(filename);
-		handles.refVec   = genRefVec(length(handles.pattrVec), mWord);
+		handles.refVec   = handles.patternObj.genRefVec(length(handles.pattrVec), mWord);
 		handles.errVec   = handles.patternObj.vMemPattern(handles.refVec, handles.pattrVec);
 		%[handles.errVec handles.refVec]= handles.patternObj.vMemPattern(handles.pattrVec, mWord);
 		handles.clampIdx = length(handles.pattrVec);
