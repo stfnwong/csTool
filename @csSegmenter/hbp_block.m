@@ -115,7 +115,7 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 
 	% TODO : Check this
 	if(T.kQuant == 1)
-		bpdata = bpimg2vec(bpim);
+		bpdata = bpimg2vec(bpimg);
 	else
 		bpdata = bpimg2vec(bpimg, 'bpval');
 	end
