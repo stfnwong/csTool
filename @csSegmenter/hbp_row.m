@@ -88,11 +88,15 @@ function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)
 					ihist_row(k) = sum(sum(pix));
 				end
 			end
+			rhist_row = mhist ./ ihist_row;
+			bprow = hbp(T, imRow, rhist_row, KDENS, 'offset', [n 0]);
+			bpimg(r, (n-1)*row_len+1:n*row_len) = bprow;
+			%bpimg(r, :) = bprow;
 		end
 		%Backproject this row, write backprojection back to image
-		rhist_row = mhist ./ ihist_row;
-		bprow = hbp(T, imRow, rhist_row, KDENS, 'offset', [n 0]);
-		bpimg(n, :) = bprow;
+		%rhist_row = mhist ./ ihist_row;
+		%bprow = hbp(T, imRow, rhist_row, KDENS, 'offset', [n 0]);
+		%bpimg(r, :) = bprow;
 	end
 
 

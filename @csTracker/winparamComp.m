@@ -13,7 +13,7 @@
 
 % Stefan Wong 2012
 
-function wparam = wparamComp(T, moments, varargin)
+function wparam = winParamComp(T, moments, varargin)
 
 	ISNORM = 0;			
 	%Check optional arguments

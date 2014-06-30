@@ -70,15 +70,17 @@ function [moments] = winAccumImg(T, bpimg, wparam, varargin)
 		ylim(ylim < 1)       = 1;
 		%Give up and use two loops
 		M00 = 0; M10 = 0; M01 = 0; M11 = 0; M20 = 0; M02 = 0;
+		% NOTE : Need to scale the moment sum here by the value in
+		% bpimg(y,x)
 		for x = xlim(1):xlim(2)
 			for y = ylim(1):ylim(2)
 				if(bpimg(y,x) > 0)
-					M00 = M00 + 1;
-					M10 = M10 + x;
-					M01 = M01 + y;
-					M11 = M11 + x * y;
-					M20 = M20 + x * x;
-					M02 = M02 + y * y;
+					M00 = M00 + bpimg(y,x);
+					M10 = M10 + x * bpimg(y,x);
+					M01 = M01 + y * bpimg(y,x);
+					M11 = M11 + x * y * bpimg(y,x);
+					M20 = M20 + x * x * bpimg(y,x);
+					M02 = M02 + y * y * bpimg(y,x);
 				end
 			end
 		end
