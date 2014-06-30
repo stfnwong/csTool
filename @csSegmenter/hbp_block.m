@@ -72,6 +72,7 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 
 	% Save rhist blocks, compute an 'average' rhist at the end
 	rhistBlk = cell(BLOCKS_X, BLOCKS_Y);
+    ihistBlk = cell(BLOCKS_X, BLOCKS_Y);
 
 	%Normalise ratio histogram to fit block size
 	mhist = hist_norm(mhist, BLK_SZ*BLK_SZ);
@@ -101,25 +102,31 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 			%rhist = T.DATA_SZ .* rhist;		%scale to data size
 			%Save this ratio histogram
 			rhistBlk{x+1, y+1} = rhist;
+            ihistBlk{x+1, y+1} = ihist;
 			%Backproject this block, write block results back to 
 			%corresponding location in original image.
 			bpblk = hbp(T, iblk, rhist, 'offset', [x+1 y+1]); 
 			bpimg(y_pix, x_pix) = bpblk;
 		end
 	end
-	%Compute overall ratio histogram
+	%Compute overall ratio histogram, image histogram
 	rhist = zeros(1, T.N_BINS);
+    ihist = zeros(1, T.N_BINS);
 	for x = 1:BLOCKS_X
 		for y = 1:BLOCKS_Y
 			rhist = rhist + rhistBlk{x,y};
+            ihist = ihist + ihistBlk{x,y};
 		end
 	end
 	rhist = rhist ./ max(max(rhist));
+    ihist = ihist ./ max(max(ihist));
 
+	bpimg(bpimg < T.BP_THRESH) = 0;
 	if(T.FPGA_MODE)
 		bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]
 		bpimg = fix(bpimg .* T.kQuant);
 	end
+
 
     bpdata = bpimg2vec(bpimg, 'bpval');
 

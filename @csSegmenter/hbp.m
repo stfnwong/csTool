@@ -65,9 +65,10 @@ function bpimg = hbp(S, img, rhist, varargin)
 				%	
 				else
 					idx = find(bins > img(y,x), 1, 'first');
-					if(rhist(idx) > S.BP_THRESH)
-						bpimg(y,x) = rhist(idx);
-					end
+					bpimg(y,x) = rhist(idx);
+					%if(rhist(idx) > S.BP_THRESH)
+					%	bpimg(y,x) = rhist(idx);
+					%end
 				end
 			end
 		end

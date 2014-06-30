@@ -104,8 +104,8 @@ function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)
 		%bprow = hbp(T, imRow, rhist_row, KDENS, 'offset', [n 0]);
 		%bpimg(r, :) = bprow;
 	end
-
-
+	
+	bpimg(bpimg < T.BP_THRESH) = 0;
 	if(T.FPGA_MODE)
 		bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]
 		bpimg = fix(bpimg .* T.kQuant);			%range - [0 kQuant]
