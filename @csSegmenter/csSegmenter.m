@@ -51,7 +51,7 @@ classdef csSegmenter < handle
 		%Kernel Weighting parameters
 		kBandwidth;		%Bandwidth of kernel in pixels
 		kWeight;		% Whether or not to perform kernel weighting
-		kQuant;			%Quantisation of bandwith LUT (in bits)a
+		kQuant;			%Quantisation of bandwith LUT (in bits)
 		kScale;			%Scaling factor for kernel profile
 		KW_LUT;		%Kernel weighting lookup table
 		%Parameters for online discriminative tracking
