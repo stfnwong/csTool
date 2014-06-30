@@ -70,6 +70,9 @@ function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)
 		bins = T.DATA_SZ .* (1:T.N_BINS);
 	end
 
+	%Normalise ratio histogram to fit block size
+	mhist = hist_norm(mhist, row_len);
+
 	% Process rows
 	for r = 1:img_h
 		ihist_row = zeros(1, T.N_BINS);
@@ -89,6 +92,9 @@ function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)
 				end
 			end
 			rhist_row = mhist ./ ihist_row;
+			rhist_row(isnan(rhist_row)) = 0;
+            rhist_row(isinf(rhist_row)) = 0;
+            rhist_row = rhist_row ./ (max(max(rhist_row)));
 			bprow = hbp(T, imRow, rhist_row, KDENS, 'offset', [n 0]);
 			bpimg(r, (n-1)*row_len+1:n*row_len) = bprow;
 			%bpimg(r, :) = bprow;

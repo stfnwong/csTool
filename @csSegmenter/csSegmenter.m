@@ -476,7 +476,7 @@ classdef csSegmenter < handle
 		[bpdata rhist] = hbp_block(S, img, mhist);
 		% ---- hbp_row()   : HISTOGRAM BACKPROJECTION PER ROW
 		[bpdata rhist] = hbp_row(S, img, mhist);
-		bpimg          = hbp(S, img, rhist, KDENS, varargin);
+		bpimg          = hbp(S, img, rhist, varargin);
 		wpixel         = kernelLookup(S, pixel, varargin);
 		klut           = gen_kernel_lut(S, scale, bw, quant, varargin);
 	end 		%csSegmenter METHODS (Private)

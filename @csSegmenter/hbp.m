@@ -1,4 +1,4 @@
-function bpimg = hbp(S, img, rhist, KDENS, varargin)
+function bpimg = hbp(S, img, rhist, varargin)
 % HBP
 % bpimg = hbp(S, img, rhist, KDENS, [..OPTIONS..])
 %
@@ -37,9 +37,9 @@ function bpimg = hbp(S, img, rhist, KDENS, varargin)
 		end
 	end
 
-	if(isempty(KDENS))
-		KDENS = false;
-	end
+	%if(isempty(KDENS))
+	%	KDENS = false;
+	%end
 	if(~exist('bins', 'var'))
 		bins = S.N_BINS .* (1:S.N_BINS);
 	end
@@ -47,19 +47,22 @@ function bpimg = hbp(S, img, rhist, KDENS, varargin)
 		offset = [0 0];
 	end
 
+	% If the d output is note requested, img_w becomes img_w * d
 	[img_h img_w d] = size(img); %#ok
 	bpimg = zeros(img_h, img_w);
 
 	for x = 1:img_w
 		for y = 1:img_h
 			if(img(y,x) ~= 0)
-				if(KDENS)
+				if(S.kWeight)
 					pixel = [x y] + offset;
 					kw = kernelLookup(S, pixel);
 					if(kw > 0)
 						idx = find(bins > img(y,x), 1, 'first');
 						bpimg(y,x) = kw * rhist(idx);
 					end
+				%elseif(S.HIST_BP_BLOCK)
+				%	
 				else
 					idx = find(bins > img(y,x), 1, 'first');
 					if(rhist(idx) > S.BP_THRESH)
