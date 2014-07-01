@@ -22,7 +22,7 @@ function varargout = csToolSegOpts(varargin)
 
 % Edit the above text to modify the response to help csToolSegOpts
 
-% Last Modified by GUIDE v2.5 19-Sep-2013 19:22:10
+% Last Modified by GUIDE v2.5 01-Jul-2014 14:34:19
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -167,7 +167,7 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
         set(handles.pmBitDepth, 'Value', 1);
     end
     set(handles.lbSegMethod, 'String', mstr);
-    set(handles.lbSegMethod, 'Value', 1);
+    set(handles.lbSegMethod, 'Value', sOpts.method);
     %Place current settings into editable text boxes
     set(handles.etBlkSz, 'String', num2str(sOpts.blkSz));
     set(handles.etDataSz, 'String', num2str(sOpts.dataSz));
@@ -195,6 +195,12 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
         set(handles.chkWeight, 'Value', 0);
     end
     %set(handles.chkFPGA, 'Value', sOpts.fpgaMode);
+
+	% Set size value to whatever is in options
+	set(handles.etXSize, 'String', num2str(sOpts.winRegion(1)));
+	set(handles.etYSize, 'String', num2str(sOpts.winRegion(2)));
+	% Set row length
+	set(handles.etRowLength, 'String', num2str(sOpts.rowLen));
 
     % Choose default command line output for csToolSegOpts
     handles.output = sOpts;
@@ -252,8 +258,11 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
     else
         kScale = fix(str2double(ksString{ksSel}));
     end
+    win_x = fix(str2double(get(handles.etXSize, 'String')));
+   	win_y = fix(str2double(get(handles.etYSize, 'String')));	
+	winRegion = [win_x win_y];
     
-    
+	rowLen = fix(str2double(get(handles.etRowLength, 'String')));
 
     %Do any parameter massaging (ie: converting from cell array), copy mhist
 	%from old parameters, copy mhist
@@ -266,6 +275,7 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
                        'fpgaMode',  fpgaMode, ...
                        'bpThresh',  bpThresh, ...
                        'bitDepth',  bitDepth, ...
+		               'rowLen',    rowLen, ...
                        'kBandwidth', kBandwidth, ...
                        'kWeight',    kWeight, ...
                        'kQuant',     kQuant, ...
@@ -273,6 +283,7 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
                        'method',    segMethod, ...
                        'bgMode',    0, ...
                        'bgWinSize', 0, ...
+		               'winRegion', winRegion, ...
                        'verbose',   verbose, ...
                        'imRegion',  handles.segopts.imRegion, ...
 					   'mhist',     handles.segopts.mhist);
@@ -349,7 +360,20 @@ function pmKernelBandwidth_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEF
         set(hObject,'BackgroundColor','white');
     end
 
+function etYSize_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 
+function etXSize_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
+
+function etRowLength_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 %---------------------------------------------------------------%
 %                          EMPTY FUNCTIONS                      %
 %---------------------------------------------------------------%
@@ -367,5 +391,9 @@ function chkWeight_Callback(hObject, eventdata, handles) %#ok>INUSD,DEFNU>
 function pmKernelQuant_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmKernelScale_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function pmKernelBandwidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function etXSize_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etYSize_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etRowLength_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
 
 

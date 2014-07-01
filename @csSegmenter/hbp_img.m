@@ -67,7 +67,6 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 	rhist(isnan(rhist)) = 0;
     rhist(isinf(rhist)) = 0;
     rhist = rhist ./ (max(max(rhist))); %TODO : DO this last
-	% TODO: MEX this?
 	
 	bpimg = hbp(T, img, rhist);
 
