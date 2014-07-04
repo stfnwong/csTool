@@ -26,9 +26,9 @@ function [bpdata rhist] = hbp_block_spatial(T, img, mhist, wparam)
 	%Get image paramters
 	[img_h img_w d] = size(img); %#ok
 	if(T.FPGA_MODE)
-		bpimg       = zeros(img_h, img_w, 'uint8');
+		bpimg = zeros(img_h, img_w, 'uint8');
 	else
-		bpimg           = zeros(img_h, img_w);
+		bpimg = zeros(img_h, img_w);
 	end
 	bins     = T.N_BINS .* (1:T.N_BINS);
 	%Create block memory
@@ -84,8 +84,6 @@ function [bpdata rhist] = hbp_block_spatial(T, img, mhist, wparam)
 				rhist(isnan(rhist)) = 0;
 				rhist(isinf(rhist)) = 0;
 				rhist = rhist ./ (max(max(rhist)));
-				%rhist(isinf(rhist)) = T.DATA_SZ;
-				%rhist = T.DATA_SZ .* rhist;		%scale to data size
 				%Save this ratio histogram
 				rhistBlk{x+1, y+1} = rhist;
 				ihistBlk{x+1, y+1} = ihist;

@@ -22,7 +22,7 @@ function varargout = csToolSegOpts(varargin)
 
 % Edit the above text to modify the response to help csToolSegOpts
 
-% Last Modified by GUIDE v2.5 01-Jul-2014 14:34:19
+% Last Modified by GUIDE v2.5 02-Jul-2014 10:53:37
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -394,6 +394,3 @@ function pmKernelBandwidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFN
 function etXSize_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etYSize_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etRowLength_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
-
-

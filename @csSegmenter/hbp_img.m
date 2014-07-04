@@ -35,7 +35,9 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 		end
 	end
 
-	[img_h img_w d] = size(img);
+	% NOTE : Need to call d as part of varargout otherwise second arg
+	% takes the value of (img_w * d)
+	[img_h img_w d] = size(img); %#ok
     imhist          = zeros(1,T.N_BINS);
 	%if(T.FPGA_MODE)
 	%	bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);

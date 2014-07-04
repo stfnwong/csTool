@@ -40,20 +40,11 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 		end
 	end
 
-	% If no bandwidth specified, use this default value
-	%if(KDENS && ~exist('kbw', 'var'))
-	%	kbw = T.KERNEL_BW;
-	%end
-	%if(exist('xy_prev', 'var'))
-	%	if(~isnumeric(xvy_prev))
-	%		fprintf('ERROR: Incorrect type for xy_prev, ignoring kernel weighting\n');
-	%		KDENS = false;
-	%	end
-	%end
-
 	%Get image paramters
-	
-	[img_h img_w d] = size(img);
+		
+	% NOTE : Need to call d as part of varargout otherwise second arg
+	% takes the value of (img_w * d)
+	[img_h img_w d] = size(img);   %#ok
 	if(T.FPGA_MODE)
 		bpimg       = zeros(img_h, img_w, 'uint8');
 	else

@@ -1,4 +1,4 @@
-function [bpdata rhist_row] = hbp_row_spatial(T, img, mhist, varargin)
+function [bpdata rhist_row] = hbp_row_spatial(T, img, mhist, wparam)
 % HBP_ROW_SPATIAL
 %
 % [bpdata rhist] = hbp_row(T, img, mhist)
@@ -26,33 +26,19 @@ function [bpdata rhist_row] = hbp_row_spatial(T, img, mhist, varargin)
 
 	rcomp = @(rl, rh, blk) (blk > rl) & (blk < rh);
 
-	KDENS = false;
-	if(~isempty(varargin))
-		for k = 1:length(varargin)
-			if(ischar(varargin{k}))
-				if(strncmpi(varargin{k}, 'kdens', 5))
-					xy_prev = vararginn{k+1};
-					KDENS   = true;
-				elseif(strncmpi(varargin{k}, 'bw', 2))
-					kbw     = varargin{k+1};		%kernel bandwidth
-				end
-			end
-		end
-	end
-
 	[img_h img_w d] = size(img); %#ok
-	%See if we have a row option
-	if(~isempty(varargin))
-		row_len = varargin{1};
-		N_ROWS  = fix(row_len / img_w);
-	else
+	% Check row length paramter, (0 is default)
+	if(T.rowLen == 0)
 		row_len = img_w;
 		N_ROWS  = 1;
+	else
+		row_len = T.rowLen;
+		N_ROWS  = fix(T.rowLen / img_w);
 	end
 
 	%Get image paramters
 	bpimg  = zeros(img_h, img_w, 'uint8');
-	imhist = zeros(1,T.N_BINS);
+	%imhist = zeros(1,T.N_BINS);
 	if(T.FPGA_MODE)
 		bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
 	else
