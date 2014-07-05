@@ -22,7 +22,7 @@ function varargout = csToolVerify(varargin)
 
 % Edit the above text to modify the response to help csToolVerify
 
-% Last Modified by GUIDE v2.5 19-May-2014 12:34:39
+% Last Modified by GUIDE v2.5 04-Jul-2014 23:26:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -559,6 +559,8 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		return;
 	end
 
+	wb = waitbar(0, 'Reading files...', 'Name', 'Reading vector files');
+
 	% Read files in loop
 	for N = 1 : numFiles
 		
@@ -570,6 +572,7 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		[vectors ef] = handles.vecManager.readVec('fname', fn, 'sz', vsize, 'vtype', vtype, 'dmode', dataFmt, 'delim', delim);
 		if(ef == -1)
 			fprintf('ERROR: Failed to read vector in file [%s]\n', fn);
+			delete(wb);
 			return;
 		end
 		% Set up data size based on vector type
@@ -651,7 +654,10 @@ function bRead_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 			handles.testFrameBuf = handles.testFrameBuf.setFrameParams(N, opts);
 		end
 
+		% update waitbar
+		waitbar(N/numFiles, wb, sprintf('Reading file (%d/%d)', N, numFiles));
 	end
+	delete(wb);
 	% Convert to bpvec and save into test buffer
     handles.vectors     = vectors;
 	handles.testBufRead = true;
@@ -720,6 +726,75 @@ function bCheckCurFrame_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     
     guidata(hObject, handles);
+
+
+function bGenErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+	
+	% Generate a plot that shows the number of error pixels in each frame
+	% for the entire sequence
+	
+	N = fix(str2double(get(handles.etNumFiles, 'String')));
+
+	wb = waitbar(0, sprintf('Generating Error Images'));
+	switch(handles.vclass)
+		case 'RGB'
+			modeStr = 'rgb';
+		case 'HSV'
+			modeStr = 'hsv';
+		case 'Hue'
+			modeStr = 'hue';
+		case 'backprojection'
+			modeStr = 'bp';
+		otherwise
+			modeStr = 'bp';
+	end
+
+	errVec = zeros(1, N);
+	for k = 1:N
+		% TODO : made this mode agnostic
+		refImg    = handles.refFrameBuf.getCurImg(k, 'mode', modeStr);
+		testImg   = handles.testFrameBuf.getCurImg(k, 'mode', modeStr);
+		% Convert to double
+		refImg    = double(refImg);
+		testImg   = double(testImg);
+		errImg    = abs(refImg - testImg);
+		errVec(k) = sum(sum(errImg(errImg > 0)));
+		waitbar(k/N, wb, sprintf('Generating Error Image (%d/%d)', k, N));
+	end
+	delete(wb);
+
+	% Generate error plot in a new figure.
+	if(~isfield(handles, 'errFigAbs'))
+		handles.errFigAbs = figure('Name', 'Frame Sequence Error Plot');
+	else
+		figure(handles.errFigAbs);
+	end
+
+	% Plot error sequence
+	plot(1:length(errVec), errVec, 'Color', [0 0 1], 'Marker', 'v', 'MarkerSize', 8, 'MarkerFaceColor', [0 1 0]);
+	axis tight;
+	xlabel('Frame Number');
+	ylabel('# error pixels');
+	title('Pixel difference between sequences (per frame)');
+
+	% Also plot % error sequence
+	dims       = handles.refFrameBuf.getDims(1);
+	tPix       = dims(1) * dims(2);
+	errVecPcnt = errVec ./ tPix;
+	
+	if(~isfield(handles, 'errFigPcnt'))
+		handles.errFigPcnt = figure('Name', 'Percent error');
+	else
+		figure(handles.errFigPcnt);
+	end
+
+	plot(1:length(errVecPcnt), errVecPcnt, 'Color', [0 1 0], 'Marker', 'o', 'MarkerFaceColor', [1 0 0]);
+	axis tight;
+	xlabel('Frame Number');
+	ylabel('% error pixels');
+	title('Percentage of pixels different between sequences');
+	
+	guidata(hObject, handles);
 
 function bPatternVerify_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     % Perform a pattern verification
@@ -861,3 +936,6 @@ function pmDelimiter_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
+
+
+
