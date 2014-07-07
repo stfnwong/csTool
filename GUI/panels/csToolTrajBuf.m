@@ -794,12 +794,14 @@ function bErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	xlabel('Frame #');
 	ylabel('Absolute Difference (pixels)');
 	title('Absolute error (x axis)');
+	ylabel('Absolute Difference (pixels)');
+	title('Absolute position error (x axis)');
 	subplot(2,1,2);
 	stem(1:length(err(2,:)), err(2,:), 'Color', [0 0 1], 'Marker', 'v', 'MarkerFaceColor', [1 0 0], 'MarkerSize', 6);
 	axis tight;
 	xlabel('Frame #');
 	ylabel('Absolute Difference (pixels)');
-	title('Absolute error (y axis)');
+	title('Absolute position error (y axis)');
 
 
 	guidata(hObject, handles);
