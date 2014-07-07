@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 13-May-2014 21:26:49
+% Last Modified by GUIDE v2.5 07-Jul-2014 02:43:43
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -770,6 +770,40 @@ function bResize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     guidata(hObject, handles);
 
+
+function bErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	% Get trajectory data
+	taidx = get(handles.pmBufIdx, 'Value');
+	traja = handles.vecManager.readTrajBuf(taidx);
+	tbidx = get(handles.pmCompIdx, 'Value');
+	trajb = handles.vecManager.readTrajBuf(tbidx);
+    err   = abs(traja - trajb);
+	% err(1,:) - x data
+	% err(2,:) - y data
+	
+	if(~isfield('errPlotFig', handles))
+		handles.errPlotFig = figure('Name', 'Trajectory Error Plot');
+	else
+		figure(handles.errPlotFig);
+	end
+
+	subplot(2,1,1);
+	stem(1:length(err(1,:)), err(1,:), 'Color', [0 0 1], 'Marker', 'v', 'MarkerFaceColor', [1 0 0], 'MarkerSize', 6);
+	axis tight;
+	xlabel('Frame #');
+	ylabel('Absolute Difference (pixels)');
+	title('Absolute error (x axis)');
+	subplot(2,1,2);
+	stem(1:length(err(2,:)), err(2,:), 'Color', [0 0 1], 'Marker', 'v', 'MarkerFaceColor', [1 0 0], 'MarkerSize', 6);
+	axis tight;
+	xlabel('Frame #');
+	ylabel('Absolute Difference (pixels)');
+	title('Absolute error (y axis)');
+
+
+	guidata(hObject, handles);
+
 function menu_bufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Re-size the trajectory buffer in vecManager (this requires a sub-menu)
 
@@ -1038,3 +1072,6 @@ function etStdDevX_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 		set(hObject,'BackgroundColor','white');
 	end
 %function bTrajExtract_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
+
+

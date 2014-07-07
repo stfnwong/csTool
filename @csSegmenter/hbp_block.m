@@ -67,6 +67,8 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 
 	%Normalise ratio histogram to fit block size
 	mhist = hist_norm(mhist, BLK_SZ*BLK_SZ);
+    mthresh = fix(0.1 * BLK_SZ*BLK_SZ);
+    mhist(mhist < mthresh) = 0;
 
 	for y = 0 : BLOCKS_Y - 1
 		for x = 0 : BLOCKS_X - 1
