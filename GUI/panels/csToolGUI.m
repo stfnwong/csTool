@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 22-Mar-2014 00:30:21
+% Last Modified by GUIDE v2.5 07-Jul-2014 23:31:09
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1891,6 +1891,28 @@ function menu_SaveBufData_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 			disp(sbOpts);
 		end
 	end
+
+    guidata(hObject, handles);
+
+end
+
+
+% --------------------------------------------------------------------
+function menu_clearTrackingData_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+    % Clear the tracking data in the current (reference) frame buffer
+    N = handles.frameBuf.getNumFrames();
+    fOpts = struct('winparams', zeros(1,5), 'moments', zeros(1,6), 'nIters', 0);
+
+    % Put a waitbar here so there is some visual cue that something happend
+    
+    wb = waitbar(0, 'Clearing frame data...', 'Name', 'Clearing Frame Data');
+
+    for k = 1:N
+        handles.frameBuf.setFrameParams(k, fOpts);
+        waitbar(k/N, wb, sprintf('Clearing frame data (%d/%d)', k, N));
+    end
+    delete(wb);
 
     guidata(hObject, handles);
 

@@ -44,7 +44,8 @@ classdef csSegmenter < handle
 		DATA_SZ;
 		BLK_SZ;
 		FPGA_MODE;
-		BP_THRESH;		%if the bin value is less than this value, zero out pixel
+		BP_THRESH; %if bin value less than this value, zero out pixel
+		mhistThresh;
 		GEN_BP_VEC;
 		BPIMG_BIT_DEPTH;
 		rowLen;        % Length of a row in the row backprojection method
@@ -121,6 +122,7 @@ classdef csSegmenter < handle
 					S.N_BINS          = 16;
 					S.FPGA_MODE       = 0;
 					S.BP_THRESH       = 0;
+					S.mhistThresh    = 0;
 					%S.GEN_BP_VEC = 0;
 					%Default internals
 					S.BPIMG_BIT_DEPTH = 1;
@@ -153,6 +155,7 @@ classdef csSegmenter < handle
 						S.BLK_SZ          = opts.blkSz;
 						S.FPGA_MODE       = opts.fpgaMode;
 						S.BP_THRESH       = opts.bpThresh;
+						S.mhistThresh     = opts.mhistThresh;
 						%S.GEN_BP_VEC = opts.gen_bpvec;
 						S.BPIMG_BIT_DEPTH = opts.bitDepth;
 						S.rowLen          = opts.rowLen;
@@ -191,6 +194,7 @@ classdef csSegmenter < handle
 			seg.BLK_SZ          = S.BLK_SZ;
 			seg.FPGA_MODE       = S.FPGA_MODE;
 			seg.BP_THRESH       = S.BP_THRESH;
+			seg.mhistThresh    = S.mhistThresh;
 			seg.BPIMG_BIT_DEPTH = S.BPIMG_BIT_DEPTH;
 			seg.rowLen          = S.rowLen;
 			seg.kBandwidth      = S.kBandwidth;
@@ -213,6 +217,7 @@ classdef csSegmenter < handle
 			S.BLK_SZ            = seg.BLK_SZ;
 			S.FPGA_MODE         = seg.FPGA_MODE;
 			S.BP_THRESH         = seg.BP_THRESH;
+			S.mhistThresh      = seg.mhistThresh;
 			S.BPIMG_BIT_DEPTH   = seg.BPIMG_BIT_DEPTH;
 			S.rowLen            = seg.rowLen;
 			S.kBandwidth        = seg.kBandwidth;
@@ -275,6 +280,7 @@ classdef csSegmenter < handle
                           'nBins'   ,   S.N_BINS,    ...
                           'fpgaMode',   S.FPGA_MODE, ...
                           'bpThresh',   S.BP_THRESH, ...
+				          'mhistThresh', S.mhistThresh, ...
 						  'bitDepth',   S.BPIMG_BIT_DEPTH, ...
 				          'rowLen',     S.rowLen, ...
 						  'kBandwidth', S.kBandwidth, ...

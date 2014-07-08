@@ -46,7 +46,9 @@ function [bpdata rhist_row] = hbp_row_spatial(T, img, mhist, wparam)
 	end
 
 	%Normalise ratio histogram to fit block size
-	mhist = hist_norm(mhist, row_len);
+	mhist   = hist_norm(mhist, row_len);
+    mthresh = fix(T.mhistThresh * BLK_SZ*BLK_SZ);
+    mhist(mhist < mthresh) = 0;
 
 	% Compute window boundaries
 	xmin = wparam(1) - wparam(4) - T.WIN_REGION(1);
