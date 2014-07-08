@@ -22,7 +22,7 @@ function varargout = csToolSegOpts(varargin)
 
 % Edit the above text to modify the response to help csToolSegOpts
 
-% Last Modified by GUIDE v2.5 02-Jul-2014 10:53:37
+% Last Modified by GUIDE v2.5 07-Jul-2014 14:48:20
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -201,6 +201,7 @@ function csToolSegOpts_OpeningFcn(hObject, eventdata, handles, varargin) %#ok <I
 	set(handles.etYSize, 'String', num2str(sOpts.winRegion(2)));
 	% Set row length
 	set(handles.etRowLength, 'String', num2str(sOpts.rowLen));
+	set(handles.etMhistThresh, 'String', num2str(sOpts.mhistThresh));
 
     % Choose default command line output for csToolSegOpts
     handles.output = sOpts;
@@ -263,6 +264,7 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
 	winRegion = [win_x win_y];
     
 	rowLen = fix(str2double(get(handles.etRowLength, 'String')));
+	mhistThresh = str2double(get(handles.etMhistThresh, 'String'));
 
     %Do any parameter massaging (ie: converting from cell array), copy mhist
 	%from old parameters, copy mhist
@@ -274,6 +276,7 @@ function bAccept_Callback(hObject, eventdata, handles)    %#ok <INUSL>
                        'nBins',     nBins, ...
                        'fpgaMode',  fpgaMode, ...
                        'bpThresh',  bpThresh, ...
+		               'mhistThresh', mhistThresh, ...
                        'bitDepth',  bitDepth, ...
 		               'rowLen',    rowLen, ...
                        'kBandwidth', kBandwidth, ...
@@ -374,6 +377,11 @@ function etRowLength_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
 		set(hObject,'BackgroundColor','white');
 	end
+
+function etMhistThresh_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+	if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+		set(hObject,'BackgroundColor','white');
+	end
 %---------------------------------------------------------------%
 %                          EMPTY FUNCTIONS                      %
 %---------------------------------------------------------------%
@@ -394,3 +402,7 @@ function pmKernelBandwidth_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFN
 function etXSize_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etYSize_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 function etRowLength_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+function etMhistThresh_Callback(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
+
+
+

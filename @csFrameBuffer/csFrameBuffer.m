@@ -416,6 +416,10 @@ classdef csFrameBuffer
 		function FB = setFrameParams(FB, idx, opts)
 		% SETFRAMEPARAMS
 		% Set frame parameters for the frame at position idx. 
+		%
+		% NOTE : This function is TERRIBLE design (what is the contract 
+		% between this and the caller?), but won't be fixed until the Python
+		% port.
 
 			if(isfield(opts, 'img'))
 				set(FB.frameBuf(idx), 'img', opts.img);
