@@ -39,11 +39,13 @@ bDone_Callback	GUI/panels/csToolSaveBuf.m	/^function bDone_Callback(hObject, eve
 bDone_Callback	GUI/panels/csToolSeqGen.m	/^function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bDone_Callback	GUI/panels/csToolTrajBuf.m	/^function bDone_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bDone_Callback	GUI/panels/csToolVerify.m	/^function bDone_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bErrorPlot_Callback	GUI/panels/csToolTrajBuf.m	/^function bErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bFirst_Callback	GUI/panels/csToolSeqGen.m	/^function bFirst_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bFirst_Callback	GUI/panels/csToolTrajBuf.m	/^function bFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bForward_Callback	GUI/panels/csToolGUI.m	/^function bForward_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>$/;"	f
 bFrameFirst_Callback	GUI/panels/csToolGUI.m	/^function bFrameFirst_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bFrameLast_Callback	GUI/panels/csToolGUI.m	/^function bFrameLast_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
+bGenErrorPlot_Callback	GUI/panels/csToolVerify.m	/^function bGenErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>$/;"	f
 bGenHist_Callback	GUI/panels/csToolPattern.m	/^function bGenHist_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bGenMhist_Callback	GUI/panels/csToolGenerate.m	/^function bGenMhist_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
 bGenTraj_Callback	GUI/panels/csToolGenerate.m	/^function bGenTraj_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>$/;"	f
@@ -512,7 +514,7 @@ hbp_img	@csSegmenter/hbp_img.m	/^function [bpdata rhist] = hbp_img(T, img, mhist
 hbp_img	mex/src/hbp_img.c	/^int hbp_img(double *img, $/;"	f
 hbp_img_sp	@csSegmenter/hbp_img_sp.m	/^function [spvec rhist] = hbp_img_sp(T, img, mhist, varargin)$/;"	f
 hbp_row	@csSegmenter/hbp_row.m	/^function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)$/;"	f
-hbp_row_spatial	@csSegmenter/hbp_row_spatial.m	/^function [bpdata rhist_row] = hbp_row_spatial(T, img, mhist, varargin)$/;"	f
+hbp_row_spatial	@csSegmenter/hbp_row_spatial.m	/^function [bpdata rhist_row] = hbp_row_spatial(T, img, mhist, wparam)$/;"	f
 hist_norm	util/hist_norm.m	/^function [ohist] = hist_norm(ihist, scale)$/;"	f
 ihist_generate	util/ihist_generate.m	/^function [ihist varargout] = ihist_generate(data, varargin)$/;"	f
 ihist_verify	util/ihist_verify.m	/^function [ihist varargout] = ihist_verify(ifile, bufsize, varargin)$/;"	f
@@ -654,6 +656,8 @@ t_imgAccum	@csTracker/t_imgAccum.m	/^function moments = t_imgAccum(T, bpimg)$/;"
 t_winAccum	@csTracker/t_winAccum.m	/^function [moments wparam] = t_winAccum(T, bpimg, varargin)$/;"	f
 trackMethodList_Callback	GUI/panels/csToolGUI.m	/^function trackMethodList_Callback(hObject, eventdata, handles) %#ok <INUSL>$/;"	f
 trackMethodList_CreateFcn	GUI/panels/csToolGUI.m	/^function trackMethodList_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>$/;"	f
+trajfiles_check	util/trajfiles_check.m	/^function checkStruct = trajfiles_check(fname, path, varargin)$/;"	f
+trajname_parse	util/trajname_parse.m	/^function parseStruct = trajname_parse(fstring, varargin)$/;"	f
 tst_guiCursorTest	GUI/tst_guiCursorTest.m	/^function [cimg status]  = tst_guiCursorTest(axHandle, cursorPos, img, imSz, varargin)$/;"	f
 ut_genmhist	util/ut_genmhist.m	/^function [mhist varargout] = ut_genmhist(img, varargin)$/;"	f
 ut_getimg	util/ut_getimg.m	/^function [img hsvimg hueimg] = ut_getimg(fn, varargin)$/;"	f
