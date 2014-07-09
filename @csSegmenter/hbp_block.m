@@ -23,32 +23,14 @@ function [bpdata rhist] = hbp_block(T, img, mhist, varargin)
 	%Create function handle to do block compares inside loop
 	bcomp = @(rl, rh, blk) (blk > rl) & (blk < rh);
 
-	%Check for dims parameter
-	KDENS = false;
-	if(~isempty(varargin))
-		for k = 1:length(varargin)
-			if(ischar(varargin{k}))
-				if(strncmpi(varargin{k}, 'kdens', 5))
-					xy_prev = varargin{k+1};
-					KDENS   = true;
-				elseif(strncmpi(varargin{k}, 'bw', 2))
-					kbw     = varargin{k+1};		%kernel bandwidth
-				elseif(strncmpi(varargin{k}, 'dims', 4))
-					dims    = varargin{k+1};
-				end
-			end
-		end
-	end
-
-	%Get image paramters
 		
 	% NOTE : Need to call d as part of varargout otherwise second arg
 	% takes the value of (img_w * d)
 	[img_h img_w d] = size(img);   %#ok
 	if(T.FPGA_MODE)
-		bpimg       = zeros(img_h, img_w, 'uint8');
+		bpimg = zeros(img_h, img_w, 'uint8');
 	else
-		bpimg           = zeros(img_h, img_w);
+		bpimg = zeros(img_h, img_w);
 	end
 	%if(T.FPGA_MODE)
 	%	bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);

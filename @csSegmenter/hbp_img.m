@@ -21,31 +21,14 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 	%Kernel range function
 	kbandw = @(x,y,bw) (x < bw) & (y < bw);
 
-	KDENS = false;
-	if(~isempty(varargin))
-		for k = 1:length(varargin)
-			if(ischar(varargin{k}))
-				if(strncmpi(varargin{k}, 'kdens', 5))
-					xy_prev = varargin{k+1};
-					KDENS   = true;
-				elseif(strncmpi(varargin{k}, 'bw', 2))
-					kbw     = varargin{k+1};		%kernel bandwidth
-				end
-			end
-		end
-	end
-
 	% NOTE : Need to call d as part of varargout otherwise second arg
 	% takes the value of (img_w * d)
 	[img_h img_w d] = size(img); %#ok
     imhist          = zeros(1,T.N_BINS);
-	%if(T.FPGA_MODE)
-	%	bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
-	%else
-	%	bins = T.DATA_SZ .* (1:T.N_BINS);
-	%end
-	bins  = T.N_BINS .* (1:T.N_BINS);
-	mhist = hist_norm(mhist, img_w * img_h); 
+	bins    = T.N_BINS .* (1:T.N_BINS);
+	mhist   = hist_norm(mhist, img_w * img_h); 
+    %mthresh = fix(T.mhistThresh * BLK_SZ*BLK_SZ);
+    %mhist(mhist < mthresh) = 0;
 
 	% Histogram computation
 	for x = 1:img_w
