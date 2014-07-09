@@ -273,6 +273,7 @@ function gui_renderErrorPlot(axHandle, traj, idx, varargin)
                     legend(sh, lgnd);       %DEPRECATED
                 end
 				hold(axHandle(k), 'off');
+				axis tight;
 			end
 		end
 	else
@@ -829,90 +830,81 @@ function etRangeHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 function menu_save_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 
-	% TODO : Add save dialogue here
-	
 	[fname path] = uiputfile('*.mat', 'Select Buffer File...');
-	fstring = sprintf('%s/%s', path, fname);
+	fstring      = sprintf('%s/%s', path, fname);
+	% TODO : Add -%03d here
+	pstruct      = trajname_parse(fstring);
+	if(pstruct.exitflag == -1)
+		return;
+	end
 
     %Save all available data to disk
     trajData  = handles.vecManager.readTrajBuf('all');
     trajLabel = handles.vecManager.getTrajBufLabel('all');
+    tbLen     = handles.vecManager.getTrajBufSize();
     fprintf('Saving trajectory data...\n');
-
-    tbLen    = handles.vecManager.getTrajBufSize();
 	
-	wb = waitbar(0, 'Name', 'Saving trajectory data...');
+	wb = waitbar(0, 'Saving trajectory data...', 'Name', 'Saving trajectory data...');
 	for k = 1:tbLen
-		tData  = trajData{k}; %#ok
-		tLabel = trajLabel{k}; %#ok
-		save(sprintf('%s-data%03d', fstring, k, 'tData'));
-		save(sprintf('%s-label%03d', fstring, k, 'tLabel'));
+		tData  = trajData{k}; 
+		tLabel = trajLabel{k};
+		tStruct = struct('data', tData, 'label', tLabel); %#ok
+		save(sprintf('%s%s-%03d.%s', pstruct.path, pstruct.filename, k, pstruct.ext), 'tStruct');
 		waitbar(k/tbLen, wb, sprintf('Saving trajectory data (%d/%d)', k, tbLen));
 	end	
-
 	delete(wb);
 
-    %wb = waitbar(0, 'Saving trajectories from buffer', ...
-    %                'Name', 'Saving Trajectory Data');
-    %for k = 1:length(trajData)
-    %    if(~isempty(trajData{k}))
-    %        tData = trajData{k};    %#ok
-    %        save(sprintf('%s/trajBuf-%02d', DATA_DIR, k), 'tData');
-    %    end
-    %    if(~isempty(trajLabel{k}))
-    %        tLabel = trajLabel{k};  %#ok
-    %        save(sprintf('%s/trajLabel-%02d', DATA_DIR, k), 'tLabel');
-    %    end
-    %    waitbar(k/length(trajData), wb, 'Saving Trajectory Data...');
-    %end
-    %delete(wb);
-    %fprintf('...done\n');
-            
+	guidata(hObject, handles);
 
 function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Load variables from disk
 	[fname path] = uigetfile('*.mat', 'Select Buffer File...');
-	checkstruct  = trajfiles_check(fname, path);
-	if(checkstruct.exitflag == -1)
-		fprintf('ERROR: No files matching [%s/%s.mat]\n', path, fname);
+	fn           = sprintf('%s%s', path, fname);
+	cstruct  = trajfiles_check(fn);
+	if(cstruct.exitflag == -1)
+		fprintf('ERROR: No files matching [%s%s.mat]\n', path, fname);
 		return;
 	end
 	% Make trajectory buffer large enough to hold all discovered files
-	handles.vecManager = handles.vecManager.resizeTrajBuf(checkStruct.bufIdx);
-
-	pstruct = trajname_parse(sprintf('%s/%s-001.mat', path, fname));
+	handles.vecManager = handles.vecManager.setTrajBufSize(cstruct.idx);
+	%pstruct = trajname_parse(sprintf('%s%s-001.mat', path, fname));
+	pstruct = trajname_parse(fn);
 	if(pstruct.exitflag == -1)
-		fprintf('ERROR: Cant parse filename [%s/%s-001.mat]\n', path, fname);
-		if(isempty(pstruct.dataIdx))
-			fprintf('No buffer data entry found\n');
-		end
-		if(isempty(pstruct.labelIdx))
-			fprintf('No buffer label entry found\n');
-		end
 		return;
 	end
-
-	wb = waitbar(0, 'Name', 'Loading trajectory data...');
-	for k = 1:checkstruct.bufIdx
-		dname = sprintf('%s/%s-data%03d.mat', pstruct.path, pstruct.filename, k);
-		lname = sprintf('%s/%s-label%03d.mat', pstruct.path, pstruct.filename, k);
-		tData = load(dname);
-		lData = load(lname);
-		handles.vecManager = handles.vecManager.writeTrajBuf(k, tData);
-		handles.vecManager = handles.vecManager.writeTrajLabel(k, lData);
+	wb = waitbar(0, 'Loading trajectory data', 'Name', 'Loading trajectory data...');
+	for k = 1:cstruct.idx
+		fname = sprintf('%s%s-%03d.%s', pstruct.path, pstruct.filename, k, pstruct.ext);
+		tStruct = load(fname);
+		handles.vecManager = handles.vecManager.writeTrajBuf(k, tStruct.tStruct.data);
+		handles.vecManager = handles.vecManager.writeTrajBufLabel(k, tStruct.tStruct.label);
 		% Update waitbar
-		waitbar(k/checkstruct.bufIdx, wb, sprintf('Loading trajectory (%d/%d)', k, checkstruct.bufIdx));
+		waitbar(k/cstruct.idx, wb, sprintf('Loading trajectory (%d/%d)', k, cstruct.idx));
 	end
 	delete(wb);
 
-    %DATA_DIR = 'data/settings';
-    %tbLen    = handles.vecManager.getTrajBufSize();
-    %for k = 1:tbLen
-    %    fname = sprintf('%s/trajBuf-%02d', DATA_DIR, k);
-    %    if(exist(fname, 'file') == 2)
-    %        load(fname);
-    %    end
-    %end
+	% TODO : Repaint GUI elements to reflect new data
+	vmanOpts = handles.vecManager.getOpts();
+	idxLabel = vmanOpts.trajLabel;
+    %We might not have tracked any frames yet, so check that the parameters
+    %we need are not empty before setting
+    if(isempty(idxLabel))
+		s = cell(1, length(vmanOpts.trajBuf));
+		for k = 1:length(s)
+			s{k} = '(Empty)';
+		end
+        set(handles.pmBufIdx, 'String', s);
+        set(handles.pmBufIdx, 'Value', 1);
+        set(handles.pmCompIdx, 'String', s);
+        set(handles.pmCompIdx, 'Value', 1);
+    else
+        set(handles.pmBufIdx, 'String', idxLabel);
+        set(handles.pmBufIdx, 'Value', 1);
+        %Initially, set the compare buffer to the same index
+        set(handles.pmCompIdx, 'String', idxLabel);
+        set(handles.pmCompIdx, 'Value', 1);
+        set(handles.etTrajLabel, 'String', idxLabel{1}); 	
+    end
 	
 	guidata(hObject, handles);
 

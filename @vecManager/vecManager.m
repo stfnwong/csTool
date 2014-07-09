@@ -511,35 +511,6 @@ classdef vecManager
 
 		end 	%clearTrajBuf()
 			
-
-		% ---- Resize Trajectory buffer ---- %
-		function Vout = resizeTrajBuf(V, newSize)
-		% RESIZETRAJBUF
-		% Resize the trajectory buffer to newSize, preserving data. If the
-		% new size is less than the old size, the last abs(new - old)
-		% elements of the buffer will be discarded.
-
-			trajTemp  = V.trajBuf;
-			labelTemp = V.trajLabel;
-			V.trajBuf   = cell(1, newSize);
-			V.trajLabel = cell(1, newSize);
-
-			if(newSize > length(trajTemp))
-				bufLim = length(trajTemp);
-			else
-				bufLim = newSize;
-			end
-
-			for k = 1:bufLim
-				V.trajBuf{k}   = trajTemp{k};
-				V.trajLabel{k} = labelTemp{k};
-			end
-
-			Vout = V;
-
-		end 	%resizeTrajBuf()
-
-
 		% ---- PROCESSING METHODS ---- %
 		% These methods provide one level of indirection to the methods in files.
 		% Each file method operates on a single file handle at a time, and so the

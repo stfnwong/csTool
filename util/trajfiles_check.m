@@ -1,4 +1,4 @@
-function checkStruct = trajfiles_check(fname, path, varargin)
+function checkStruct = trajfiles_check(fname, varargin)
 % TRAJFILES_CHECK
 % Check for the existence of trajectory buffer files
 %
@@ -20,7 +20,9 @@ function checkStruct = trajfiles_check(fname, path, varargin)
 		numFiles = 999;
 	end
 
-	pstruct = trajname_parse(sprintf('%s/%s', path, fname));
+	fn      = slashkill(fname);
+	pstruct = trajname_parse(fn);
+	%pstruct = trajname_parse(sprintf('%s%s', path, fname));
 	if(pstruct.exitflag == -1)
 		fprintf('ERROR: Cant parse filename [%s]\n', pstruct.filename);
 		checkStruct = struct('exitflag', -1, ...
@@ -30,11 +32,11 @@ function checkStruct = trajfiles_check(fname, path, varargin)
 
 	fileNum = 1;
 	while(fileNum < numFiles)
-		fdata = sprintf('%s%s-data%03d.mat', pstruct.path, pstruct.filename, fileNum);
+		fdata = sprintf('%s%s-%03d.%s', pstruct.path, pstruct.filename, fileNum, pstruct.ext);
 
 		if(exist(fdata, 'file') ~=2)
 			% Cant find that data
-			dataIdx  = fileNum;
+			idx = fileNum-1;
 			if(fileNum == 1)
 				exitflag = -1;
 			else
@@ -42,24 +44,10 @@ function checkStruct = trajfiles_check(fname, path, varargin)
 			end
 			break;
 		end
-		flabel = sprintf('%s%s-label%03d.mat', pstruct.path, pstruct.filename, fileNum);
-
-		if(exist(flabel, 'file') ~=2)
-			% Cant find that label
-			labelIdx = fileNum;
-			if(fileNum == 1)
-				exitflag = -1;
-			else
-				exitflag = 0;
-			end
-			break;
-		end
-
 		fileNum = fileNum + 1;
 	end
 
 	checkStruct = struct('exitflag', exitflag, ...
-		                 'dataIdx', dataIdx, ...
-		                 'labelIdx', labelIdx );
+		                 'idx', idx );
 
 end 	%trajfiles_check()

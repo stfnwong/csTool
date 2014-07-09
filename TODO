@@ -4,6 +4,14 @@
 #
 ###############################################################
 
+VECMANAGER
+Clean up unused properties. Change the vector options GUI to have an entry
+for selecting the trajectory buffer size
+
+BUFFER SAVE/LOAD
+Add keypress function to navigate through frames
+
+
 CSTOOL VERIFY MOMENT ONLY INPUT
 
 VEC008
