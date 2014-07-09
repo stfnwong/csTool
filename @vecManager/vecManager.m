@@ -438,15 +438,6 @@ classdef vecManager
 				Vout = V;
 				return;
 			end
-			if(~isempty(varargin))
-				if(strncmpi(varargin{1}, 'label', 5))
-					if(~ischar(varargin{2}))
-						fprintf('Label must be string\n');
-					else
-						V.trajLabel{idx} = varargin{2};
-					end
-				end
-			end
 
 			V.trajBuf{idx} = data;
 			Vout = V;

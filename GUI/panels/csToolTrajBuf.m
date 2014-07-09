@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 07-Jul-2014 02:43:43
+% Last Modified by GUIDE v2.5 10-Jul-2014 00:54:26
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -883,7 +883,6 @@ function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	end
 	delete(wb);
 
-	% TODO : Repaint GUI elements to reflect new data
 	vmanOpts = handles.vecManager.getOpts();
 	idxLabel = vmanOpts.trajLabel;
     %We might not have tracked any frames yet, so check that the parameters
@@ -908,6 +907,42 @@ function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	
 	guidata(hObject, handles);
 
+function menu_clear_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	% Clear the contents of the trajectory buffer
+    tbLen = handles.vecManager.getTrajBufSize();
+	
+	wb = waitbar(0, 'Clearing buffer...', 'Name', 'Clearing buffer');
+	for k = 1:tbLen
+		handles.vecManager = handles.vecManager.writeTrajBuf(k, []);
+		handles.vecManager = handles.vecManager.writeTrajBufLabel(k, 'Empty');
+		waitbar(k/tbLen, wb, sprintf('Clearing buffer (%d/%d)', k, tbLen));
+	end
+	delete(wb);
+
+	vmanOpts = handles.vecManager.getOpts();
+	idxLabel = vmanOpts.trajLabel;
+    %We might not have tracked any frames yet, so check that the parameters
+    %we need are not empty before setting
+    if(isempty(idxLabel))
+		s = cell(1, length(vmanOpts.trajBuf));
+		for k = 1:length(s)
+			s{k} = '(Empty)';
+		end
+        set(handles.pmBufIdx, 'String', s);
+        set(handles.pmBufIdx, 'Value', 1);
+        set(handles.pmCompIdx, 'String', s);
+        set(handles.pmCompIdx, 'Value', 1);
+    else
+        set(handles.pmBufIdx, 'String', idxLabel);
+        set(handles.pmBufIdx, 'Value', 1);
+        %Initially, set the compare buffer to the same index
+        set(handles.pmCompIdx, 'String', idxLabel);
+        set(handles.pmCompIdx, 'Value', 1);
+        set(handles.etTrajLabel, 'String', idxLabel{1}); 	
+    end
+
+	guidata(hObject, handles);
 
 function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Create a new figure with all data plotted for use in papers, reports, etc
@@ -1120,6 +1155,3 @@ function etStdDevX_CreateFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
 		set(hObject,'BackgroundColor','white');
 	end
 %function bTrajExtract_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSD,DEFNU>
-
-
-
