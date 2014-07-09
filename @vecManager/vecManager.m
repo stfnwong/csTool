@@ -3,7 +3,9 @@ classdef vecManager
 %
 % Manage test vectors for Verilog/VHDL testbenches.
 %
-% TODO: Document
+% TODO : Document
+
+% TODO : Have variable sized trajectory buffer
 
 % Stefan Wong 2012
 
@@ -15,6 +17,7 @@ classdef vecManager
 		vfParams;		%verification parameters structure
 		bpvecFmt;		%character code for backprojection vector format
 		% TRAJECTORY PARAMETERS
+		bufSize;
 		trajBuf;
 		trajLabel;		%labels for GUI
 		% DATA PARAMETERS
@@ -41,8 +44,9 @@ classdef vecManager
  					V.vecdata   = [];
 					V.vfParams  = [];
 					V.bpvecFmt  = 'scalar';
-					V.trajBuf   = cell(1,8);
-					V.trajLabel = cell(1,8);
+					V.bufSize   = 8;
+					V.trajBuf   = cell(1, V.bufSize);
+					V.trajLabel = cell(1, V.bufSize);
 					V.errorTol  = 0;
 					V.dataSz    = 256;
 					V.autoGen   = 0;
@@ -63,13 +67,9 @@ classdef vecManager
 						V.bpvecFmt  = opts.bpvecFmt;
 						%V.trajBuf   = opts.trajBuf;
 						%V.trajLabel = opts.trajLabel;
-						if(isfield(opts, 'bufSize'))
-							V.trajBuf   = cell(1,opts.bufSize);
-							V.trajLabel = cell(1, opts.bufSize);
-						else
-							V.trajBuf   = cell(1,8);
-							V.trajLabel = cell(1,8);
-						end
+						V.bufSize   = opts.bufSize;
+						V.trajBuf   = cell(1,opts.bufSize);
+						V.trajLabel = cell(1, opts.bufSize);
 						V.errorTol  = opts.errorTol;
 						V.dataSz    = opts.dataSz;
 						V.autoGen   = opts.autoGen;
@@ -89,6 +89,7 @@ classdef vecManager
                           'vecdata',   V.vecdata,   ...
                           'vfParams',  V.vfParams,  ...
                           'bpvecFmt',  V.bpvecFmt,  ...
+				          'bufSize',   V.bufSize, ...
                           'trajBuf',   {V.trajBuf}, ...
                           'trajLabel', {V.trajLabel}, ...
                           'errorTol',  V.errorTol,  ...
@@ -349,7 +350,6 @@ classdef vecManager
 	
 		end 	%readTrajLabel()
 
-
 		function auto = checkAutoGen(V)
 			auto = V.autoGen;
 		end
@@ -511,6 +511,33 @@ classdef vecManager
 
 		end 	%clearTrajBuf()
 			
+
+		% ---- Resize Trajectory buffer ---- %
+		function Vout = resizeTrajBuf(V, newSize)
+		% RESIZETRAJBUF
+		% Resize the trajectory buffer to newSize, preserving data. If the
+		% new size is less than the old size, the last abs(new - old)
+		% elements of the buffer will be discarded.
+
+			trajTemp  = V.trajBuf;
+			labelTemp = V.trajLabel;
+			V.trajBuf   = cell(1, newSize);
+			V.trajLabel = cell(1, newSize);
+
+			if(newSize > length(trajTemp))
+				bufLim = length(trajTemp);
+			else
+				bufLim = newSize;
+			end
+
+			for k = 1:bufLim
+				V.trajBuf{k}   = trajTemp{k};
+				V.trajLabel{k} = labelTemp{k};
+			end
+
+			Vout = V;
+
+		end 	%resizeTrajBuf()
 
 
 		% ---- PROCESSING METHODS ---- %

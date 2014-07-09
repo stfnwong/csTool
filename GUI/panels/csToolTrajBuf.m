@@ -828,38 +828,92 @@ function etRangeLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etRangeHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 function menu_save_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+	% TODO : Add save dialogue here
+	
+	[fname path] = uiputfile('*.mat', 'Select Buffer File...');
+	fstring = sprintf('%s/%s', path, fname);
+
     %Save all available data to disk
-    DATA_DIR  = 'data/settings';
     trajData  = handles.vecManager.readTrajBuf('all');
     trajLabel = handles.vecManager.getTrajBufLabel('all');
     fprintf('Saving trajectory data...\n');
-    wb = waitbar(0, 'Saving trajectories from buffer', ...
-                    'Name', 'Saving Trajectory Data');
-    for k = 1:length(trajData)
-        if(~isempty(trajData{k}))
-            tData = trajData{k};    %#ok
-            save(sprintf('%s/trajBuf-%02d', DATA_DIR, k), 'tData');
-        end
-        if(~isempty(trajLabel{k}))
-            tLabel = trajLabel{k};  %#ok
-            save(sprintf('%s/trajLabel-%02d', DATA_DIR, k), 'tLabel');
-        end
-        waitbar(k/length(trajData), wb, 'Saving Trajectory Data...');
-    end
-    delete(wb);
-    fprintf('...done\n');
+
+    tbLen    = handles.vecManager.getTrajBufSize();
+	
+	wb = waitbar(0, 'Name', 'Saving trajectory data...');
+	for k = 1:tbLen
+		tData  = trajData{k}; %#ok
+		tLabel = trajLabel{k}; %#ok
+		save(sprintf('%s-data%03d', fstring, k, 'tData'));
+		save(sprintf('%s-label%03d', fstring, k, 'tLabel'));
+		waitbar(k/tbLen, wb, sprintf('Saving trajectory data (%d/%d)', k, tbLen));
+	end	
+
+	delete(wb);
+
+    %wb = waitbar(0, 'Saving trajectories from buffer', ...
+    %                'Name', 'Saving Trajectory Data');
+    %for k = 1:length(trajData)
+    %    if(~isempty(trajData{k}))
+    %        tData = trajData{k};    %#ok
+    %        save(sprintf('%s/trajBuf-%02d', DATA_DIR, k), 'tData');
+    %    end
+    %    if(~isempty(trajLabel{k}))
+    %        tLabel = trajLabel{k};  %#ok
+    %        save(sprintf('%s/trajLabel-%02d', DATA_DIR, k), 'tLabel');
+    %    end
+    %    waitbar(k/length(trajData), wb, 'Saving Trajectory Data...');
+    %end
+    %delete(wb);
+    %fprintf('...done\n');
             
 
 function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Load variables from disk
-    DATA_DIR = 'data/settings';
-    tbLen    = handles.vecManager.getTrajBufSize();
-    for k = 1:tbLen
-        fname = sprintf('%s/trajBuf-%02d', DATA_DIR, k);
-        if(exist(fname, 'file') == 2)
-            load(fname);
-        end
-    end
+	[fname path] = uigetfile('*.mat', 'Select Buffer File...');
+	checkstruct  = trajfiles_check(fname, path);
+	if(checkstruct.exitflag == -1)
+		fprintf('ERROR: No files matching [%s/%s.mat]\n', path, fname);
+		return;
+	end
+	% Make trajectory buffer large enough to hold all discovered files
+	handles.vecManager = handles.vecManager.resizeTrajBuf(checkStruct.bufIdx);
+
+	pstruct = trajname_parse(sprintf('%s/%s-001.mat', path, fname));
+	if(pstruct.exitflag == -1)
+		fprintf('ERROR: Cant parse filename [%s/%s-001.mat]\n', path, fname);
+		if(isempty(pstruct.dataIdx))
+			fprintf('No buffer data entry found\n');
+		end
+		if(isempty(pstruct.labelIdx))
+			fprintf('No buffer label entry found\n');
+		end
+		return;
+	end
+
+	wb = waitbar(0, 'Name', 'Loading trajectory data...');
+	for k = 1:checkstruct.bufIdx
+		dname = sprintf('%s/%s-data%03d.mat', pstruct.path, pstruct.filename, k);
+		lname = sprintf('%s/%s-label%03d.mat', pstruct.path, pstruct.filename, k);
+		tData = load(dname);
+		lData = load(lname);
+		handles.vecManager = handles.vecManager.writeTrajBuf(k, tData);
+		handles.vecManager = handles.vecManager.writeTrajLabel(k, lData);
+		% Update waitbar
+		waitbar(k/checkstruct.bufIdx, wb, sprintf('Loading trajectory (%d/%d)', k, checkstruct.bufIdx));
+	end
+	delete(wb);
+
+    %DATA_DIR = 'data/settings';
+    %tbLen    = handles.vecManager.getTrajBufSize();
+    %for k = 1:tbLen
+    %    fname = sprintf('%s/trajBuf-%02d', DATA_DIR, k);
+    %    if(exist(fname, 'file') == 2)
+    %        load(fname);
+    %    end
+    %end
+	
 	guidata(hObject, handles);
 
 
