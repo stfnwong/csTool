@@ -777,19 +777,34 @@ function bErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	% Get trajectory data
 	taidx = get(handles.pmBufIdx, 'Value');
 	traja = handles.vecManager.readTrajBuf(taidx);
+	laba  = handles.vecManager.getTrajBufLabel(taidx);
 	tbidx = get(handles.pmCompIdx, 'Value');
 	trajb = handles.vecManager.readTrajBuf(tbidx);
+	labb  = handles.vecManager.getTrajBufLabel(tbidx);
     err   = abs(traja - trajb);
 	% err(1,:) - x data
 	% err(2,:) - y data
 	
-	if(~isfield('errPlotFig', handles))
+	if(~isfield(handles, 'errPlotFig'))
 		handles.errPlotFig = figure('Name', 'Trajectory Error Plot');
 	else
 		figure(handles.errPlotFig);
 	end
 
-	subplot(2,1,1);
+	img   = handles.frameBuf.getCurImg(handles.fbIdx);
+	% Place image with trajectories in first two panels
+	subplot(2,2,[1 3]);
+	imshow(img);
+	hold on;
+	pha = plot(traja(1,:), traja(2,:), 'v-'); 	%main trajectory
+	set(pha, 'Color', [0 1 0], 'MarkerSize', 8, 'LineWidth', 1);
+	phb = plot(trajb(1,:), trajb(2,:), 'v-'); 	%main trajectory
+	set(phb, 'Color', [0 0 1], 'MarkerSize', 8, 'LineWidth', 1);
+	legend(laba, labb);
+	title('Frame 1 with trajectories superimposed');
+	hold off;
+
+	subplot(2,2,2);
 	stem(1:length(err(1,:)), err(1,:), 'Color', [0 0 1], 'Marker', 'v', 'MarkerFaceColor', [1 0 0], 'MarkerSize', 6);
 	axis tight;
 	xlabel('Frame #');
@@ -797,7 +812,7 @@ function bErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 	title('Absolute error (x axis)');
 	ylabel('Absolute Difference (pixels)');
 	title('Absolute position error (x axis)');
-	subplot(2,1,2);
+	subplot(2,2,4);
 	stem(1:length(err(2,:)), err(2,:), 'Color', [0 0 1], 'Marker', 'v', 'MarkerFaceColor', [1 0 0], 'MarkerSize', 6);
 	axis tight;
 	xlabel('Frame #');
