@@ -22,7 +22,7 @@ function varargout = csToolGUI(varargin)
 
 % Edit the above text to modify the response to help csToolGUI
 
-% Last Modified by GUIDE v2.5 07-Jul-2014 23:31:09
+% Last Modified by GUIDE v2.5 11-Jul-2014 21:43:15
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1915,5 +1915,27 @@ function menu_clearTrackingData_Callback(hObject, eventdata, handles)%#ok<INUSL,
     delete(wb);
 
     guidata(hObject, handles);
+
+end
+
+
+% --------------------------------------------------------------------
+function menu_showHueImg_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	global frameIndex;
+
+	img = handles.frameBuf.getCurImg(frameIndex, 'mode', 'rgb');
+	hsvimg = rgb2hsv(img);
+
+	if(~isfield(handles, 'hueFig'));
+		handles.hueFig = figure('Name', sprintf('Hue Image (Frame %d)', frameIndex));
+	else
+		figure(handles.hueFig);
+	end
+
+	imshow(hsvimg(:,:,1));
+	title(sprintf('Hue Image (frame %d)', frameIndex));
+
+	guidata(hObject, handles);
 
 end
