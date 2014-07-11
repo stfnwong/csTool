@@ -44,9 +44,11 @@ classdef csSegmenter < handle
 		DATA_SZ;
 		BLK_SZ;
 		FPGA_MODE;
-		BP_THRESH;		%if the bin value is less than this value, zero out pixel
+		BP_THRESH; %if bin value less than this value, zero out pixel
+		mhistThresh;
 		GEN_BP_VEC;
 		BPIMG_BIT_DEPTH;
+		rowLen;        % Length of a row in the row backprojection method
 		XY_PREV;
 		%Kernel Weighting parameters
 		kBandwidth;		%Bandwidth of kernel in pixels
@@ -57,6 +59,7 @@ classdef csSegmenter < handle
 		%Parameters for online discriminative tracking
 		BG_MODE;		% 0=normal, 1=online disriminative mode
 		BG_WIN_SZ;		%How much to expand window by to encompass window
+		WIN_REGION;
 		% Parameters for prediction window
 		predWin;
 		%global settings
@@ -66,13 +69,17 @@ classdef csSegmenter < handle
 
 	% Internal ENUM for method
 	properties (Constant = true, GetAccess = 'public')
-		HIST_BP_IMG   = 1;
-		HIST_BP_BLOCK = 2;
-		HIST_BP_ROW   = 3;
+		HIST_BP_IMG           = 1;
+		HIST_BP_BLOCK         = 2;
+		HIST_BP_ROW           = 3;
+		HIST_BP_BLOCK_SPATIAL = 4;
+		HIST_BP_ROW_SPATIAL   = 5;
 		%Method strings
 		methodStr     = {'Pixel-Wise HBP', ...
                          'Block-Wise HBP', ...
-                         'Row-Wise HBP'
+                         'Row-Wise HBP', ...
+			             'Block-Wise HBP (Spatially Weighted)', ...
+			             'Row-Wise HBP (Spatially Weighted)'
                         };
 		modeStr       = {'Normal mode', ...
                          'FPGA Mode (binary)', ...
@@ -115,9 +122,11 @@ classdef csSegmenter < handle
 					S.N_BINS          = 16;
 					S.FPGA_MODE       = 0;
 					S.BP_THRESH       = 0;
+					S.mhistThresh    = 0;
 					%S.GEN_BP_VEC = 0;
 					%Default internals
 					S.BPIMG_BIT_DEPTH = 1;
+					S.rowLen          = 0;
 					% Kernel weighting properties
 					S.kBandwidth      = 1;
 					S.kWeight         = 1;
@@ -127,6 +136,7 @@ classdef csSegmenter < handle
 					S.XY_PREV         = zeros(1,2);
 					S.BG_MODE         = 0;
 					S.BG_WIN_SZ       = 0;
+					S.WIN_REGION      = [128 128];
 					S.predWin         = zeros(1,4);
 					S.method          = 1;
 					S.mhist           = zeros(1, S.N_BINS);
@@ -145,8 +155,10 @@ classdef csSegmenter < handle
 						S.BLK_SZ          = opts.blkSz;
 						S.FPGA_MODE       = opts.fpgaMode;
 						S.BP_THRESH       = opts.bpThresh;
+						S.mhistThresh     = opts.mhistThresh;
 						%S.GEN_BP_VEC = opts.gen_bpvec;
 						S.BPIMG_BIT_DEPTH = opts.bitDepth;
+						S.rowLen          = opts.rowLen;
 						% Kernel weighting parameters
 						S.kBandwidth      = opts.kBandwidth;
 						S.kWeight         = opts.kWeight;
@@ -165,6 +177,7 @@ classdef csSegmenter < handle
 						end
 						S.BG_MODE         = opts.bgMode;
 						S.BG_WIN_SZ       = opts.bgWinSize;
+						S.WIN_REGION      = opts.winRegion; %TODO
 						S.N_BINS          = opts.nBins;
 						S.method          = opts.method;
 						S.mhist           = opts.mhist;
@@ -181,7 +194,9 @@ classdef csSegmenter < handle
 			seg.BLK_SZ          = S.BLK_SZ;
 			seg.FPGA_MODE       = S.FPGA_MODE;
 			seg.BP_THRESH       = S.BP_THRESH;
+			seg.mhistThresh    = S.mhistThresh;
 			seg.BPIMG_BIT_DEPTH = S.BPIMG_BIT_DEPTH;
+			seg.rowLen          = S.rowLen;
 			seg.kBandwidth      = S.kBandwidth;
 			seg.kWeight         = S.kWeight;
 			seg.kQuant          = S.kQuant;
@@ -190,6 +205,7 @@ classdef csSegmenter < handle
 			seg.XY_PREV         = S.XY_PREV;
 			seg.BG_MODE         = S.BG_MODE;
 			seg.BG_WIN_SZ       = S.BG_WIN_SZ;
+			seg.WIN_REGION      = S.WIN_REGION;
 			seg.N_BINS          = S.N_BINS;
 			seg.method          = S.method;
 			seg.mhist           = S.mhist;
@@ -201,7 +217,9 @@ classdef csSegmenter < handle
 			S.BLK_SZ            = seg.BLK_SZ;
 			S.FPGA_MODE         = seg.FPGA_MODE;
 			S.BP_THRESH         = seg.BP_THRESH;
+			S.mhistThresh      = seg.mhistThresh;
 			S.BPIMG_BIT_DEPTH   = seg.BPIMG_BIT_DEPTH;
+			S.rowLen            = seg.rowLen;
 			S.kBandwidth        = seg.kBandwidth;
 			S.kWeight           = seg.kWeight;
 			S.kQuant            = seg.kQuant;
@@ -209,6 +227,7 @@ classdef csSegmenter < handle
 			S.XY_PREV           = seg.XY_PREV;
 			S.BG_MODE           = seg.BG_MODE;
 			S.BG_WIN_SZ         = seg.BG_WIN_SZ;
+			S.WIN_REGION        = seg.WIN_REGION;
 			S.N_BINS            = seg.N_BINS;
 			S.method            = seg.method;
 			S.mhist             = seg.mhist;
@@ -261,7 +280,9 @@ classdef csSegmenter < handle
                           'nBins'   ,   S.N_BINS,    ...
                           'fpgaMode',   S.FPGA_MODE, ...
                           'bpThresh',   S.BP_THRESH, ...
+				          'mhistThresh', S.mhistThresh, ...
 						  'bitDepth',   S.BPIMG_BIT_DEPTH, ...
+				          'rowLen',     S.rowLen, ...
 						  'kBandwidth', S.kBandwidth, ...
 						  'kWeight',    S.kWeight, ...
 						  'kQuant',     S.kQuant, ...
@@ -272,6 +293,7 @@ classdef csSegmenter < handle
                           'mhist'   ,   S.mhist,    ...
                           'bgMode',     S.BG_MODE,  ...
                           'bgWinSize',  S.BG_WIN_SZ, ...
+				          'winRegion',  S.WIN_REGION, ...
                           'imRegion',   S.imRegion, ...
                           'verbose' ,   S.verbose );
 		end 	%getOpts()
@@ -338,8 +360,14 @@ classdef csSegmenter < handle
 
 			NORM = false;	
 			if(~isempty(varargin))
-				if(strncmpi(varargin{1}, 'norm', 4))
-					NORM = true;
+				for k = 1:length(varargin)
+					if(ischar(varargin{k}))
+						if(strncmpi(varargin{k}, 'norm', 4))
+							NORM = true;
+						elseif(strncmpi(varargin{k}, 'wparam', 6))
+							wparam = varargin{k+1};
+						end
+					end
 				end
 			end
 
@@ -363,6 +391,16 @@ classdef csSegmenter < handle
 					if(S.BG_MODE)
 						[bgvec bg_rhist] = hbp_row(S, img, S.bghist);
 					end
+				case S.HIST_BP_BLOCK_SPATIAL
+					if(~exist('wparam', 'var'))
+						wparam = zeros(1, 5);
+					end
+					[bpvec rhist] = hbp_block_spatial(S, img, S.mhist, wparam);
+				case S.HIST_BP_ROW_SPATIAL
+					if(~exist('wparam', 'var'))
+						wparam = zeros(1, 5);
+					end
+					[bpvec rhist] = hbp_row_spatial(S, img, S.mhist, wparam);
 				case S.PCA
 					fprintf('Currently not implemented\n');
 				otherwise
@@ -476,7 +514,10 @@ classdef csSegmenter < handle
 		[bpdata rhist] = hbp_block(S, img, mhist);
 		% ---- hbp_row()   : HISTOGRAM BACKPROJECTION PER ROW
 		[bpdata rhist] = hbp_row(S, img, mhist);
-		bpimg          = hbp(S, img, rhist, KDENS, varargin);
+		% ---- Spatially weighted block and row backprojection
+		[bpdata rhist] = hbp_block_spatial(S, img, mhist, wparam);
+		[bpdata rhist] = hbp_row_spatial(S, img, mhist, wparam);
+		bpimg          = hbp(S, img, rhist, varargin);
 		wpixel         = kernelLookup(S, pixel, varargin);
 		klut           = gen_kernel_lut(S, scale, bw, quant, varargin);
 	end 		%csSegmenter METHODS (Private)

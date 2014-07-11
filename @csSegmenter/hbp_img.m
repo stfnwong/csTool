@@ -21,45 +21,14 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 	%Kernel range function
 	kbandw = @(x,y,bw) (x < bw) & (y < bw);
 
-	KDENS = false;
-	if(~isempty(varargin))
-		for k = 1:length(varargin)
-			if(ischar(varargin{k}))
-				if(strncmpi(varargin{k}, 'kdens', 5))
-					xy_prev = varargin{k+1};
-					KDENS   = true;
-				elseif(strncmpi(varargin{k}, 'bw', 2))
-					kbw     = varargin{k+1};		%kernel bandwidth
-				end
-			end
-		end
-	end
-
-	% If no bandwidth specified, use this default value
-	if(KDENS && ~exist('kbw', 'var'))
-		kbw = T.KERNEL_BW;
-	end
-	if(exist('xy_prev', 'var'))
-		if(~isnumeric(xvy_prev))
-			fprintf('ERROR: Incorrect type for xy_prev, ignoring kernel weighting\n');
-			KDENS = false;
-		end
-	end
-
-	%Get image parameters and set up histogram bins
-	[img_h img_w d] = size(img);
-	if(T.FPGA_MODE)
-		bpimg       = zeros(img_h, img_w, 'uint8');
-	else
-		bpimg       = zeros(img_h, img_w);
-	end
+	% NOTE : Need to call d as part of varargout otherwise second arg
+	% takes the value of (img_w * d)
+	[img_h img_w d] = size(img); %#ok
     imhist          = zeros(1,T.N_BINS);
-	%if(T.FPGA_MODE)
-	%	bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
-	%else
-	%	bins = T.DATA_SZ .* (1:T.N_BINS);
-	%end
-	bins = T.N_BINS .* (1:T.N_BINS);
+	bins    = T.N_BINS .* (1:T.N_BINS);
+	mhist   = hist_norm(mhist, img_w * img_h); 
+    %mthresh = fix(T.mhistThresh * BLK_SZ*BLK_SZ);
+    %mhist(mhist < mthresh) = 0;
 
 	% Histogram computation
 	for x = 1:img_w
@@ -71,24 +40,20 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
 			end
 		end
 	end
+
+	%NOTE: This should be upgraded in the future to handle multi-bit segmentation
+	%if(T.FPGA_MODE)
+	%	rhist = rhist .* T.DATA_SZ;
+	%end
+	
 	%Compute ratio histogram and backprojection
 	rhist = mhist ./ imhist;
-	%NOTE: This should be upgraded in the future to handle multi-bit segmentation
-	if(T.FPGA_MODE)
-		rhist = rhist .* T.DATA_SZ;
-	end
 	%clean up garbage values
 	rhist(isnan(rhist)) = 0;
     rhist(isinf(rhist)) = 0;
-	if(T.FPGA_MODE)
-		rhist(isinf(rhist)) = T.DATA_SZ;
-	else
-		rhist(isinf(rhist)) = 1;
-	end
     rhist = rhist ./ (max(max(rhist))); %TODO : DO this last
-	% TODO: MEX this?
 	
-	bpimg = hbp(T, img, rhist, KDENS);
+	bpimg = hbp(T, img, rhist);
 
 	if(T.FPGA_MODE)
 		bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]

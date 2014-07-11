@@ -23,7 +23,7 @@ function varargout = csToolTrajBuf(varargin)
 
 % Edit the above text to modify the response to help csToolTrajBuf
 
-% Last Modified by GUIDE v2.5 13-May-2014 21:26:49
+% Last Modified by GUIDE v2.5 10-Jul-2014 00:54:26
 
 	% Begin initialization code - DO NOT EDIT
 	gui_Singleton = 1;
@@ -273,6 +273,7 @@ function gui_renderErrorPlot(axHandle, traj, idx, varargin)
                     legend(sh, lgnd);       %DEPRECATED
                 end
 				hold(axHandle(k), 'off');
+				axis tight;
 			end
 		end
 	else
@@ -770,6 +771,57 @@ function bResize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     end
     guidata(hObject, handles);
 
+
+function bErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	% Get trajectory data
+	taidx = get(handles.pmBufIdx, 'Value');
+	traja = handles.vecManager.readTrajBuf(taidx);
+	laba  = handles.vecManager.getTrajBufLabel(taidx);
+	tbidx = get(handles.pmCompIdx, 'Value');
+	trajb = handles.vecManager.readTrajBuf(tbidx);
+	labb  = handles.vecManager.getTrajBufLabel(tbidx);
+    err   = abs(traja - trajb);
+	% err(1,:) - x data
+	% err(2,:) - y data
+	
+	if(~isfield(handles, 'errPlotFig'))
+		handles.errPlotFig = figure('Name', 'Trajectory Error Plot');
+	else
+		figure(handles.errPlotFig);
+	end
+
+	img   = handles.frameBuf.getCurImg(handles.fbIdx);
+	% Place image with trajectories in first two panels
+	subplot(2,2,[1 3]);
+	imshow(img);
+	hold on;
+	pha = plot(traja(1,:), traja(2,:), 'v-'); 	%main trajectory
+	set(pha, 'Color', [0 1 0], 'MarkerSize', 8, 'LineWidth', 1);
+	phb = plot(trajb(1,:), trajb(2,:), 'v-'); 	%main trajectory
+	set(phb, 'Color', [0 0 1], 'MarkerSize', 8, 'LineWidth', 1);
+	legend(laba, labb);
+	title('Frame 1 with trajectories superimposed');
+	hold off;
+
+	subplot(2,2,2);
+	stem(1:length(err(1,:)), err(1,:), 'Color', [0 0 1], 'Marker', 'v', 'MarkerFaceColor', [1 0 0], 'MarkerSize', 6);
+	axis tight;
+	xlabel('Frame #');
+	ylabel('Absolute Difference (pixels)');
+	title('Absolute error (x axis)');
+	ylabel('Absolute Difference (pixels)');
+	title('Absolute position error (x axis)');
+	subplot(2,2,4);
+	stem(1:length(err(2,:)), err(2,:), 'Color', [0 0 1], 'Marker', 'v', 'MarkerFaceColor', [1 0 0], 'MarkerSize', 6);
+	axis tight;
+	xlabel('Frame #');
+	ylabel('Absolute Difference (pixels)');
+	title('Absolute position error (y axis)');
+
+
+	guidata(hObject, handles);
+
 function menu_bufSize_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Re-size the trajectory buffer in vecManager (this requires a sub-menu)
 
@@ -792,40 +844,120 @@ function etRangeLow_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 function etRangeHigh_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 function menu_save_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+
+	[fname path] = uiputfile('*.mat', 'Select Buffer File...');
+	fstring      = sprintf('%s/%s', path, fname);
+	% TODO : Add -%03d here
+	pstruct      = trajname_parse(fstring);
+	if(pstruct.exitflag == -1)
+		return;
+	end
+
     %Save all available data to disk
-    DATA_DIR  = 'data/settings';
     trajData  = handles.vecManager.readTrajBuf('all');
     trajLabel = handles.vecManager.getTrajBufLabel('all');
+    tbLen     = handles.vecManager.getTrajBufSize();
     fprintf('Saving trajectory data...\n');
-    wb = waitbar(0, 'Saving trajectories from buffer', ...
-                    'Name', 'Saving Trajectory Data');
-    for k = 1:length(trajData)
-        if(~isempty(trajData{k}))
-            tData = trajData{k};    %#ok
-            save(sprintf('%s/trajBuf-%02d', DATA_DIR, k), 'tData');
-        end
-        if(~isempty(trajLabel{k}))
-            tLabel = trajLabel{k};  %#ok
-            save(sprintf('%s/trajLabel-%02d', DATA_DIR, k), 'tLabel');
-        end
-        waitbar(k/length(trajData), wb, 'Saving Trajectory Data...');
-    end
-    delete(wb);
-    fprintf('...done\n');
-            
+	
+	wb = waitbar(0, 'Saving trajectory data...', 'Name', 'Saving trajectory data...');
+	for k = 1:tbLen
+		tData  = trajData{k}; 
+		tLabel = trajLabel{k};
+		tStruct = struct('data', tData, 'label', tLabel); %#ok
+		save(sprintf('%s%s-%03d.%s', pstruct.path, pstruct.filename, k, pstruct.ext), 'tStruct');
+		waitbar(k/tbLen, wb, sprintf('Saving trajectory data (%d/%d)', k, tbLen));
+	end	
+	delete(wb);
+
+	guidata(hObject, handles);
 
 function menu_load_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
     %Load variables from disk
-    DATA_DIR = 'data/settings';
-    tbLen    = handles.vecManager.getTrajBufSize();
-    for k = 1:tbLen
-        fname = sprintf('%s/trajBuf-%02d', DATA_DIR, k);
-        if(exist(fname, 'file') == 2)
-            load(fname);
-        end
+	[fname path] = uigetfile('*.mat', 'Select Buffer File...');
+	fn           = sprintf('%s%s', path, fname);
+	cstruct  = trajfiles_check(fn);
+	if(cstruct.exitflag == -1)
+		fprintf('ERROR: No files matching [%s%s.mat]\n', path, fname);
+		return;
+	end
+	% Make trajectory buffer large enough to hold all discovered files
+	handles.vecManager = handles.vecManager.setTrajBufSize(cstruct.idx);
+	%pstruct = trajname_parse(sprintf('%s%s-001.mat', path, fname));
+	pstruct = trajname_parse(fn);
+	if(pstruct.exitflag == -1)
+		return;
+	end
+	wb = waitbar(0, 'Loading trajectory data', 'Name', 'Loading trajectory data...');
+	for k = 1:cstruct.idx
+		fname = sprintf('%s%s-%03d.%s', pstruct.path, pstruct.filename, k, pstruct.ext);
+		tStruct = load(fname);
+		handles.vecManager = handles.vecManager.writeTrajBuf(k, tStruct.tStruct.data);
+		handles.vecManager = handles.vecManager.writeTrajBufLabel(k, tStruct.tStruct.label);
+		% Update waitbar
+		waitbar(k/cstruct.idx, wb, sprintf('Loading trajectory (%d/%d)', k, cstruct.idx));
+	end
+	delete(wb);
+
+	vmanOpts = handles.vecManager.getOpts();
+	idxLabel = vmanOpts.trajLabel;
+    %We might not have tracked any frames yet, so check that the parameters
+    %we need are not empty before setting
+    if(isempty(idxLabel))
+		s = cell(1, length(vmanOpts.trajBuf));
+		for k = 1:length(s)
+			s{k} = '(Empty)';
+		end
+        set(handles.pmBufIdx, 'String', s);
+        set(handles.pmBufIdx, 'Value', 1);
+        set(handles.pmCompIdx, 'String', s);
+        set(handles.pmCompIdx, 'Value', 1);
+    else
+        set(handles.pmBufIdx, 'String', idxLabel);
+        set(handles.pmBufIdx, 'Value', 1);
+        %Initially, set the compare buffer to the same index
+        set(handles.pmCompIdx, 'String', idxLabel);
+        set(handles.pmCompIdx, 'Value', 1);
+        set(handles.etTrajLabel, 'String', idxLabel{1}); 	
     end
+	
 	guidata(hObject, handles);
 
+function menu_clear_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
+
+	% Clear the contents of the trajectory buffer
+    tbLen = handles.vecManager.getTrajBufSize();
+	
+	wb = waitbar(0, 'Clearing buffer...', 'Name', 'Clearing buffer');
+	for k = 1:tbLen
+		handles.vecManager = handles.vecManager.writeTrajBuf(k, []);
+		handles.vecManager = handles.vecManager.writeTrajBufLabel(k, 'Empty');
+		waitbar(k/tbLen, wb, sprintf('Clearing buffer (%d/%d)', k, tbLen));
+	end
+	delete(wb);
+
+	vmanOpts = handles.vecManager.getOpts();
+	idxLabel = vmanOpts.trajLabel;
+    %We might not have tracked any frames yet, so check that the parameters
+    %we need are not empty before setting
+    if(isempty(idxLabel))
+		s = cell(1, length(vmanOpts.trajBuf));
+		for k = 1:length(s)
+			s{k} = '(Empty)';
+		end
+        set(handles.pmBufIdx, 'String', s);
+        set(handles.pmBufIdx, 'Value', 1);
+        set(handles.pmCompIdx, 'String', s);
+        set(handles.pmCompIdx, 'Value', 1);
+    else
+        set(handles.pmBufIdx, 'String', idxLabel);
+        set(handles.pmBufIdx, 'Value', 1);
+        %Initially, set the compare buffer to the same index
+        set(handles.pmCompIdx, 'String', idxLabel);
+        set(handles.pmCompIdx, 'Value', 1);
+        set(handles.etTrajLabel, 'String', idxLabel{1}); 	
+    end
+
+	guidata(hObject, handles);
 
 function menu_formSubplot_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 	%Create a new figure with all data plotted for use in papers, reports, etc

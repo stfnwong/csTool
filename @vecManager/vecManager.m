@@ -3,7 +3,9 @@ classdef vecManager
 %
 % Manage test vectors for Verilog/VHDL testbenches.
 %
-% TODO: Document
+% TODO : Document
+
+% TODO : Have variable sized trajectory buffer
 
 % Stefan Wong 2012
 
@@ -15,6 +17,7 @@ classdef vecManager
 		vfParams;		%verification parameters structure
 		bpvecFmt;		%character code for backprojection vector format
 		% TRAJECTORY PARAMETERS
+		bufSize;
 		trajBuf;
 		trajLabel;		%labels for GUI
 		% DATA PARAMETERS
@@ -41,8 +44,9 @@ classdef vecManager
  					V.vecdata   = [];
 					V.vfParams  = [];
 					V.bpvecFmt  = 'scalar';
-					V.trajBuf   = cell(1,8);
-					V.trajLabel = cell(1,8);
+					V.bufSize   = 8;
+					V.trajBuf   = cell(1, V.bufSize);
+					V.trajLabel = cell(1, V.bufSize);
 					V.errorTol  = 0;
 					V.dataSz    = 256;
 					V.autoGen   = 0;
@@ -63,13 +67,9 @@ classdef vecManager
 						V.bpvecFmt  = opts.bpvecFmt;
 						%V.trajBuf   = opts.trajBuf;
 						%V.trajLabel = opts.trajLabel;
-						if(isfield(opts, 'bufSize'))
-							V.trajBuf   = cell(1,opts.bufSize);
-							V.trajLabel = cell(1, opts.bufSize);
-						else
-							V.trajBuf   = cell(1,8);
-							V.trajLabel = cell(1,8);
-						end
+						V.bufSize   = opts.bufSize;
+						V.trajBuf   = cell(1,opts.bufSize);
+						V.trajLabel = cell(1, opts.bufSize);
 						V.errorTol  = opts.errorTol;
 						V.dataSz    = opts.dataSz;
 						V.autoGen   = opts.autoGen;
@@ -89,6 +89,7 @@ classdef vecManager
                           'vecdata',   V.vecdata,   ...
                           'vfParams',  V.vfParams,  ...
                           'bpvecFmt',  V.bpvecFmt,  ...
+				          'bufSize',   V.bufSize, ...
                           'trajBuf',   {V.trajBuf}, ...
                           'trajLabel', {V.trajLabel}, ...
                           'errorTol',  V.errorTol,  ...
@@ -349,7 +350,6 @@ classdef vecManager
 	
 		end 	%readTrajLabel()
 
-
 		function auto = checkAutoGen(V)
 			auto = V.autoGen;
 		end
@@ -438,15 +438,6 @@ classdef vecManager
 				Vout = V;
 				return;
 			end
-			if(~isempty(varargin))
-				if(strncmpi(varargin{1}, 'label', 5))
-					if(~ischar(varargin{2}))
-						fprintf('Label must be string\n');
-					else
-						V.trajLabel{idx} = varargin{2};
-					end
-				end
-			end
 
 			V.trajBuf{idx} = data;
 			Vout = V;
@@ -511,8 +502,6 @@ classdef vecManager
 
 		end 	%clearTrajBuf()
 			
-
-
 		% ---- PROCESSING METHODS ---- %
 		% These methods provide one level of indirection to the methods in files.
 		% Each file method operates on a single file handle at a time, and so the

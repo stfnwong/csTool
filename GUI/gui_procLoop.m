@@ -171,7 +171,21 @@ function [status] = gui_procLoop(handles, varargin)
 			end
 			%hsv_img  = rgb2hsv(img);
 			%hue_img  = hsv_img(:,:,1);
-			[bpvec bpsum rhist] = handles.segmenter.segFrame(hue_img, 'norm');
+
+			% Get previous parameters for spatial methods
+			if(k == 1)
+				% Use the rectangle 
+				rpos        = handles.rData.rPos;
+				segParam    = zeros(1,5);
+				segParam(1) = fix((rpos(1) + rpos(3))/2);
+				segParam(2) = fix((rpos(2) + rpos(4))/2);
+				segParam(4) = fix((segParam(1) + rpos(1))/2);
+				segParam(5) = fix((segParam(2) + rpos(3))/2);
+			else
+				segParam = handles.frameBuf.getWinParams(k-1);
+			end
+
+			[bpvec bpsum rhist] = handles.segmenter.segFrame(hue_img, 'norm', 'wparam', segParam);
 			params  = struct('bpvec',bpvec,'bpsum',bpsum,'rhist',rhist);
 			handles.frameBuf = handles.frameBuf.setFrameParams(k, params);
         end

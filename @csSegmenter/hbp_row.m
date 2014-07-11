@@ -52,23 +52,29 @@ function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)
 	end
 
 	[img_h img_w d] = size(img); %#ok
-	%See if we have a row option
-	if(~isempty(varargin))
-		row_len = varargin{1};
-		N_ROWS  = fix(row_len / img_w);
-	else
+	if(T.rowLen == 0)
 		row_len = img_w;
 		N_ROWS  = 1;
+	else
+		row_len = T.rowLen;
+		N_ROWS  = fix(T.rowLen / img_w);
 	end
 
 	%Get image paramters
 	bpimg  = zeros(img_h, img_w, 'uint8');
-	imhist = zeros(1,T.N_BINS);
 	if(T.FPGA_MODE)
 		bins = (T.DATA_SZ/T.N_BINS) .* (1:T.N_BINS);
 	else
 		bins = T.DATA_SZ .* (1:T.N_BINS);
 	end
+
+	%Normalise ratio histogram to fit block size
+	mhist   = hist_norm(mhist, row_len);
+    mthresh = fix(T.mhistThresh * row_len);
+    mhist(mhist < mthresh) = 0;
+
+	rhistRow = cell(img_w, row_len);
+	ihistRow = cell(img_w, row_len);
 
 	% Process rows
 	for r = 1:img_h
@@ -89,6 +95,9 @@ function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)
 				end
 			end
 			rhist_row = mhist ./ ihist_row;
+			rhist_row(isnan(rhist_row)) = 0;
+            rhist_row(isinf(rhist_row)) = 0;
+            rhist_row = rhist_row ./ (max(max(rhist_row)));
 			bprow = hbp(T, imRow, rhist_row, KDENS, 'offset', [n 0]);
 			bpimg(r, (n-1)*row_len+1:n*row_len) = bprow;
 			%bpimg(r, :) = bprow;
@@ -98,8 +107,8 @@ function [bpdata rhist_row] = hbp_row(T, img, mhist, varargin)
 		%bprow = hbp(T, imRow, rhist_row, KDENS, 'offset', [n 0]);
 		%bpimg(r, :) = bprow;
 	end
-
-
+	
+	bpimg(bpimg < T.BP_THRESH) = 0;
 	if(T.FPGA_MODE)
 		bpimg = bpimg ./ (max(max(bpimg))); 	%range - [0 1]
 		bpimg = fix(bpimg .* T.kQuant);			%range - [0 kQuant]
