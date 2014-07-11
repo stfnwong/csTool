@@ -237,6 +237,9 @@ function csToolVerifyFig_CloseRequestFcn(hObject, eventdata, handles) %#ok<INUSL
         uiresume(handles.csToolVerifyFig);
     else
         %Ok to clean up
+		%if(isfield(handles, 'errPlot'))
+		%	clf(handles.errPlot);
+		%end
         delete(handles.csToolVerifyFig);
     end
 
@@ -758,41 +761,57 @@ function bGenErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		refImg    = double(refImg);
 		testImg   = double(testImg);
 		errImg    = abs(refImg - testImg);
-		errVec(k) = sum(sum(errImg(errImg > 0)));
+		errVec(k) = length(errImg(errImg > 0));
+		%errVec(k) = sum(sum(errImg));
 		waitbar(k/N, wb, sprintf('Generating Error Image (%d/%d)', k, N));
 	end
 	delete(wb);
 
-	% Generate error plot in a new figure.
-	if(~isfield(handles, 'errFigAbs'))
-		handles.errFigAbs = figure('Name', 'Frame Sequence Error Plot');
-	else
-		figure(handles.errFigAbs);
-	end
-
-	% Plot error sequence
-	plot(1:length(errVec), errVec, 'Color', [0 0 1], 'Marker', 'v', 'MarkerSize', 8, 'MarkerFaceColor', [0 1 0]);
-	axis tight;
-	xlabel('Frame Number');
-	ylabel('# error pixels');
-	title('Pixel difference between sequences (per frame)');
-
-	% Also plot % error sequence
-	dims       = handles.refFrameBuf.getDims(1);
-	tPix       = dims(1) * dims(2);
-	errVecPcnt = errVec ./ tPix;
+	%% Generate error plot in a new figure.
+	%if(~isfield(handles, 'errFigAbs'))
+	%	handles.errFigAbs = figure('Name', 'Frame Sequence Error Plot');
+	%else
+	%	figure(handles.errFigAbs);
+	%end
 	
-	if(~isfield(handles, 'errFigPcnt'))
-		handles.errFigPcnt = figure('Name', 'Percent error');
+	if(~isfield(handles, 'errPlot'))
+		handles.errPlot = figure('Name', 'Frame Sequence Error Plot');
 	else
-		figure(handles.errFigPcnt);
+		figure(handles.errPlot);
 	end
 
+	dims       = handles.refFrameBuf.getDims(1);
+	errVecPcnt = (errVec ./(dims(1) * dims(2))) * 100;
+
+	% Plot first frame of sequence
+	%img = handles.refFrameBuf.getCurImg(1, 'mode', modeStr);
+	img = handles.testFrameBuf.getCurImg(handles.idx, 'mode', modeStr);
+	subplot(1,2,1);
+	imshow(img);
+	title(sprintf('Backprojection Image (Frame %d)', handles.idx));
+	% Plot error sequence
+	subplot(1,2,2);
 	plot(1:length(errVecPcnt), errVecPcnt, 'Color', [0 1 0], 'Marker', 'o', 'MarkerFaceColor', [1 0 0]);
-	axis tight;
+	%plot(1:length(errVec), errVec, 'Color', [0 0 1], 'Marker', 'v', 'MarkerSize', 8, 'MarkerFaceColor', [0 1 0]);
+	axis([0 length(errVecPcnt) 0 (max(errVecPcnt) + 0.1*max(errVecPcnt))]);
 	xlabel('Frame Number');
 	ylabel('% error pixels');
 	title('Percentage of pixels different between sequences');
+	%subplot(1,2,2);
+	%plot(1:length(errVec), errVec, 'Color', [0 0 1], 'Marker', 'v', 'MarkerSize', 8, 'MarkerFaceColor', [0 1 0]);
+	%axis tight;
+	%axis([0 length(errVec) 0 (max(errVec) + 0.1*max(errVec))]);
+	%xlabel('Frame Number');
+	%ylabel('# error pixels');
+	%title('Pixel difference between sequences (per frame)');
+
+	% Also plot % error sequence
+
+	%if(~isfield(handles, 'errFigPcnt'))
+	%	handles.errFigPcnt = figure('Name', 'Percent error');
+	%else
+	%	figure(handles.errFigPcnt);
+	%end
 	
 	guidata(hObject, handles);
 
