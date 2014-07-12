@@ -760,6 +760,8 @@ function bGenErrorPlot_Callback(hObject, eventdata, handles)%#ok<INUSL,DEFNU>
 		% Convert to double
 		refImg    = double(refImg);
 		testImg   = double(testImg);
+		refImg    = imgNorm(refImg);
+		testImg   = imgNorm(testImg);
 		errImg    = abs(refImg - testImg);
 		errVec(k) = length(errImg(errImg > 0));
 		%errVec(k) = sum(sum(errImg));

@@ -45,11 +45,6 @@ function [vec varargout] = genBPVec(V, bpimg, vtype, val, varargin) %#ok
 			%pulled out along the row dimension of the image
 			rdim = fix(img_w / val);
 			vec  = cell(val, 1);
-			%Bookkeeping for waitbar
-			t    = rdim * (img_h / rdim);
-			p    = 1;				%progress counter
-			wb   = waitbar(0, sprintf('Generating row vector (0/%d)', t));
-			
 			for k = 1 : length(vec)
 				vk = zeros(1, rdim*img_h);
 				n  = 1;
@@ -60,9 +55,7 @@ function [vec varargout] = genBPVec(V, bpimg, vtype, val, varargin) %#ok
 					end
 				end
 				vec{k} = vk;
-				waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', p, t));
 			end
-			delete(wb);
 			if(nargout > 1)
 				varargout{1} = 0;
 			end
@@ -70,10 +63,6 @@ function [vec varargout] = genBPVec(V, bpimg, vtype, val, varargin) %#ok
 		case 'col'
 			cdim = fix(img_h / val);
 			vec  = cell(val, 1);
-			% Bookkeeping for waitbar
-			t    = cdim * (img_w / cdim);
-			p    = 1;		%progress counter
-			wb   = waitbar(0, sprintf('Generating col vector (0/%d)', t));
 			for v = 1 : val
 				%Need to compute start and end row for vector 
 				idx     = 0;
@@ -81,12 +70,9 @@ function [vec varargout] = genBPVec(V, bpimg, vtype, val, varargin) %#ok
 				for n = v : val : img_h
                     cur_col(idx*img_w+1 : (idx+1)*img_w) = bpimg(n, 1:img_w);
 					idx = idx + 1;
-					waitbar(p/t, wb, sprintf('Generating row vector (%d/%d)', p,t));
-					p = p + 1;
 				end
                 vec{v} = cur_col;
 			end
-			delete(wb);
 			if(nargout > 1)
 				varargout{1} = 0;
 			end
@@ -94,17 +80,11 @@ function [vec varargout] = genBPVec(V, bpimg, vtype, val, varargin) %#ok
 		case 'scalar'
 			%Linearise data into raster
 			data = zeros(1, img_w*img_h);
-			%t    = img_w * img_h;
-			t    = img_w;
-			wb   = waitbar(0, sprintf('Generating raster vector (0/%d)', t), 'Name', 'Generating raster vector');
-			p    = 1;		%Progress counter
 			for y = 1:img_h
 				data((y-1)*img_w+1:y*img_w) = bpimg(y,:);
-				waitbar(y/t, wb, sprintf('Generating raster vector (%d/%d)...', p, t));
 			end
 			vec    = cell(1,1);
 			vec{1} = data;
-			delete(wb);
 			if(nargout > 1)
 				varargout{1} = 0;
 			end

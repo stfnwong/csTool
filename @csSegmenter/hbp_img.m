@@ -27,6 +27,7 @@ function [bpdata rhist] = hbp_img(T, img, mhist, varargin)
     imhist          = zeros(1,T.N_BINS);
 	bins    = T.N_BINS .* (1:T.N_BINS);
 	mhist   = hist_norm(mhist, img_w * img_h); 
+    mhist(mhist < T.mhistThresh) = 0;
     %mthresh = fix(T.mhistThresh * BLK_SZ*BLK_SZ);
     %mhist(mhist < mthresh) = 0;
 

@@ -409,6 +409,10 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 		end
 	end
 
+	wb = waitbar(0, 'Generating vector', 'Name', 'Generating Vector...');
+	p = 1;
+	t = length(range(1):range(2));
+
 	% Generate vectors as required
 	for idx = range(1) : range(2)
 
@@ -520,7 +524,10 @@ function bGenerate_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 				fclose(fp);
 			end
 		end
+		waitbar(p/t, wb, sprintf('Generating vector (%d/%d)', p, t));
+		p = p + 1;
 	end
+	delete(wb);
 
     guidata(hObject, handles);
     uiresume(handles.csToolGenerateFig);
